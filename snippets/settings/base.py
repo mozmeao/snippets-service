@@ -3,46 +3,24 @@
 
 from funfactory.settings_base import *
 
-# Name of the top-level module where you put all your apps.
-# If you did not install Playdoh with the funfactory installer script
-# you may need to edit this value. See the docs about installing from a
-# clone.
-PROJECT_MODULE = 'snippets'
 
 # Defines the views served for root URLs.
-ROOT_URLCONF = '%s.urls' % PROJECT_MODULE
+ROOT_URLCONF = 'snippets.urls'
 
 INSTALLED_APPS = list(INSTALLED_APPS) + [
-    # Application base, containing global templates.
-    '%s.base' % PROJECT_MODULE,
-    # Example code. Can (and should) be removed for actual projects.
-    '%s.examples' % PROJECT_MODULE,
-]
+    'snippets.base',
 
-LOCALE_PATHS = (
-    os.path.join(ROOT, PROJECT_MODULE, 'locale'),
-)
+    # Django contrib apps
+    'django.contrib.admin',
+
+    # Libraries
+    'south',
+]
 
 # Because Jinja2 is the default template loader, add any non-Jinja templated
 # apps here:
 JINGO_EXCLUDE_APPS = [
     'admin',
-    'registration',
-]
-
-# BrowserID configuration
-AUTHENTICATION_BACKENDS = [
-    'django_browserid.auth.BrowserIDBackend',
-    'django.contrib.auth.backends.ModelBackend',
-]
-
-SITE_URL = 'http://127.0.0.1:8000'
-LOGIN_URL = '/'
-LOGIN_REDIRECT_URL = 'examples.home'
-LOGIN_REDIRECT_URL_FAILURE = 'examples.home'
-
-TEMPLATE_CONTEXT_PROCESSORS = list(TEMPLATE_CONTEXT_PROCESSORS) + [
-    'django_browserid.context_processors.browserid_form',
 ]
 
 # Should robots.txt deny everything or disallow a calculated list of URLs we
@@ -53,28 +31,26 @@ ENGAGE_ROBOTS = False
 # Always generate a CSRF token for anonymous users.
 ANON_ALWAYS = True
 
-# Tells the extract script what files to look for L10n in and what function
-# handles the extraction. The Tower library expects this.
-DOMAIN_METHODS['messages'] = [
-    ('%s/**.py' % PROJECT_MODULE,
-        'tower.management.commands.extract.extract_tower_python'),
-    ('%s/**/templates/**.html' % PROJECT_MODULE,
-        'tower.management.commands.extract.extract_tower_template'),
-    ('templates/**.html',
-        'tower.management.commands.extract.extract_tower_template'),
-]
-
-# # Use this if you have localizable HTML files:
-# DOMAIN_METHODS['lhtml'] = [
-#    ('**/templates/**.lhtml',
-#        'tower.management.commands.extract.extract_tower_template'),
-# ]
-
-# # Use this if you have localizable JS files:
-# DOMAIN_METHODS['javascript'] = [
-#    # Make sure that this won't pull in strings from external libraries you
-#    # may use.
-#    ('media/js/**.js', 'javascript'),
-# ]
-
 LOGGING = dict(loggers=dict(playdoh = {'level': logging.DEBUG}))
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.media',
+    'django.core.context_processors.request',
+    'session_csrf.context_processor',
+    'django.contrib.messages.context_processors.messages',
+    'funfactory.context_processors.globals',
+)
+
+MIDDLEWARE_CLASSES = (
+    'multidb.middleware.PinningRouterMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'session_csrf.CsrfMiddleware',  # Must be after auth middleware.
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'commonware.middleware.FrameOptionsHeader',
+    'mobility.middleware.DetectMobileMiddleware',
+    'mobility.middleware.XMobileMiddleware',
+)

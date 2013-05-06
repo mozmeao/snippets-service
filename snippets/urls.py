@@ -1,35 +1,35 @@
 from django.conf import settings
-from django.conf.urls.defaults import patterns, include
+from django.conf.urls.defaults import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-
-from .examples import urls
+from django.http import HttpResponse
 
 from funfactory.monkeypatches import patch
+
+
+# Apply funfactory monkeypatches.
 patch()
 
 # Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
+from django.contrib import admin
+admin.autodiscover()
+
+
+def robots_txt(request):
+    permission = 'Allow' if settings.ENGAGE_ROBOTS else 'Disallow'
+    return HttpResponse('User-agent: *\n{0}: /'.format(permission),
+                        mimetype='text/plain')
 
 urlpatterns = patterns('',
-    # Example:
-    (r'', include(urls)),
-    
-    # Generate a robots.txt
-    (r'^robots\.txt$', 
-        lambda r: HttpResponse(
-            "User-agent: *\n%s: /" % 'Allow' if settings.ENGAGE_ROBOTS else 'Disallow' ,
-            mimetype="text/plain"
-        )
-    )
+    url(r'', include('snippets.base.urls')),
 
-    # Uncomment the admin/doc line below to enable admin documentation:
-    # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
-    # (r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^robots\.txt$', robots_txt)
 )
 
 ## In DEBUG mode, serve media files through Django.
 if settings.DEBUG:
-    urlpatterns += staticfiles_urlpatterns()
+    urlpatterns += patterns('',
+        url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {
+            'document_root': settings.MEDIA_ROOT,
+        }),
+    ) + staticfiles_urlpatterns()
