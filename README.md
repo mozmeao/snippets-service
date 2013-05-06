@@ -9,6 +9,11 @@ You can read more about the Mozilla-hosted instance of Snippets
 Snippets is based on [Playdoh](https://github.com/mozilla/playdoh).
 
 
+## Documentation
+
+https://abouthome-snippets-service.readthedocs.org/en/latest/
+
+
 ## License
 
 This software is licensed under the
