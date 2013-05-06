@@ -1,13 +1,11 @@
-========================================
-Welcome to this project's documentation!
-========================================
+Snippets Service
+================
 
-This is a documentation template for a **web application based on Playdoh**.
-Feel free to change this to your liking.
+The Snippets Service hosts small chunks of HTML, CSS, and JavaScript that are
+displayed on `about:home <about:home>`_. in Firefox, among other places.
 
-
-About playdoh
--------------
+Playdoh
+-------
 
 This project is based on **playdoh**. Mozilla's Playdoh is an open source
 web application template based on `Django <http://www.djangoproject.com/>`_.
@@ -20,6 +18,8 @@ Contents
 
 .. toctree::
    :maxdepth: 1
+
+   install
 
 
 Indices and tables
