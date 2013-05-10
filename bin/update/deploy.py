@@ -4,6 +4,7 @@ Deploy this project in dev/stage/production.
 Requires commander_ which is installed on the systems that need it.
 
 .. _commander: https://github.com/oremj/commander
+
 """
 
 import os
@@ -26,51 +27,68 @@ def update_code(ctx, tag):
 
 
 @task
-def update_locales(ctx):
-    """Update a locale directory from SVN.
+def update_info(ctx):
+    """Write info about the current state to a publicly visible file."""
+    with ctx.lcd(settings.SRC_DIR):
+        ctx.local('date')
+        ctx.local('git branch')
+        ctx.local('git log -3')
+        ctx.local('git status')
+        ctx.local('git submodule status')
+        with ctx.lcd('locale'):
+            ctx.local('svn info')
+            ctx.local('svn status')
 
-    Assumes localizations 1) exist, 2) are in SVN, 3) are in SRC_DIR/locale and
-    4) have a compile-mo.sh script. This should all be pretty standard, but
-    change it if you need to.
+        ctx.local('git rev-parse HEAD > static/revision')
 
-    """
-    with ctx.lcd(os.path.join(settings.SRC_DIR, 'locale')):
-        ctx.local('svn up')
-        ctx.local('./compile-mo.sh .')
+
+@task
+def clean(ctx):
+    """Clean .gitignore and .pyc files."""
+    with ctx.lcd(settings.SRC_DIR):
+        ctx.local("find . -type f -name '.gitignore' -or -name '*.pyc' -delete")
 
 
 @task
 def update_assets(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local("python2.6 manage.py collectstatic --noinput")
-        # un-comment if you haven't moved to django-compressor yet
-        ## LANG=en_US.UTF-8 is sometimes necessary for the YUICompressor.
-        #ctx.local('LANG=en_US.UTF8 python2.6 manage.py compress_assets')
+        ctx.local('python2.6 manage.py collectstatic --noinput')
+        # LANG=en_US.UTF-8 is sometimes necessary for the YUICompressor.
+        ctx.local('LANG=en_US.UTF8 python2.6 manage.py compress_assets')
 
 
 @task
 def update_db(ctx):
-    """Update the database schema, if necessary.
+    """
+    Update the database schema, if necessary.
 
     Uses schematic by default. Change to south if you need to.
-
     """
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local('python2.6 ./vendor/src/schematic/schematic migrations')
+        ctx.local('python2.6 manage.py syncdb --noinput')
+        ctx.local('python2.6 manage.py migrate --noinput')
+        ctx.local('python2.6 manage.py migrate --list')
 
 
 @task
-def install_cron(ctx):
-    """Use gen-crons.py method to install new crontab.
-
-    Ops will need to adjust this to put it in the right place.
-
+def update_locales(ctx):
     """
+    Update a locale directory from SVN.
+
+    Assumes localizations 1) exist, 2) are in SVN, 3) are in SRC_DIR/locale and
+    4) have a compile-mo.sh script. This should all be pretty standard, but
+    change it if you need to.
+    """
+    with ctx.lcd(os.path.join(settings.SRC_DIR, 'locale')):
+        ctx.local('svn up')
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local('python2.6 ./bin/crontab/gen-crons.py -w %s -u apache > '
-                  '/etc/cron.d/.%' % (settings.WWW_DIR, settings.CRON_NAME))
-        ctx.local('mv /etc/cron.d/.%s /etc/cron.d/%s' %
-                  (settings.CRON_NAME,  settings.CRON_NAME))
+        ctx.local('./bin/compile-mo.sh locale/')
+
+
+@task
+def update_product_details(ctx):
+    with ctx.lcd(settings.SRC_DIR):
+        ctx.local('python2.6 manage.py update_product_details')
 
 
 @task
@@ -82,32 +100,14 @@ def checkin_changes(ctx):
 @hostgroups(settings.WEB_HOSTGROUP, remote_kwargs={'ssh_key': settings.SSH_KEY})
 def deploy_app(ctx):
     """Call the remote update script to push changes to webheads."""
-    ctx.remote(settings.REMOTE_UPDATE_SCRIPT)
-    ctx.remote('/bin/touch %s' % settings.REMOTE_WSGI)
+    ctx.remote('touch %s' % settings.REMOTE_WSGI)
 
 
 @hostgroups(settings.CELERY_HOSTGROUP, remote_kwargs={'ssh_key': settings.SSH_KEY})
 def update_celery(ctx):
     """Update and restart Celery."""
     ctx.remote(settings.REMOTE_UPDATE_SCRIPT)
-    ctx.remote('/sbin/service %s restart' % settings.CELERY_SERVICE)
-
-
-@task
-def update_info(ctx):
-    """Write info about the current state to a publicly visible file."""
-    with ctx.lcd(settings.SRC_DIR):
-        ctx.local('date')
-        ctx.local('git branch')
-        ctx.local('git log -3')
-        ctx.local('git status')
-        ctx.local('git submodule status')
-        ctx.local('python2.6 ./vendor/src/schematic/schematic -v migrations/')
-        with ctx.lcd('locale'):
-            ctx.local('svn info')
-            ctx.local('svn status')
-
-        ctx.local('git rev-parse HEAD > media/revision.txt')
+    ctx.remote('supervisorctl restart %s' % settings.CELERY_SERVICE)
 
 
 @task
@@ -115,21 +115,22 @@ def pre_update(ctx, ref=settings.UPDATE_REF):
     """Update code to pick up changes to this file."""
     update_code(ref)
     update_info()
+    clean()
 
 
 @task
 def update(ctx):
     update_assets()
-    update_locales()
+    #update_locales()
     update_db()
+    update_product_details()
 
 
 @task
 def deploy(ctx):
-    install_cron()
     checkin_changes()
     deploy_app()
-    update_celery()
+    #update_celery()
 
 
 @task
