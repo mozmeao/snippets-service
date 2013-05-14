@@ -4,3 +4,6 @@
 
 -r ../vendor/src/funfactory/funfactory/requirements/compiled.txt
 -r ../vendor/src/funfactory/funfactory/requirements/dev.txt
+
+factory_boy==2.0.2
+mock==1.0.1
