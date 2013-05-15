@@ -35,7 +35,9 @@ pip install -q -r requirements/compiled.txt
 pip install -q -r requirements/dev.txt
 
 cat > snippets/settings/local.py <<SETTINGS
-from settings.base import *
+import logging
+
+from snippets.settings.base import INSTALLED_APPS
 
 ROOT_URLCONF = 'snippets.urls'
 LOG_LEVEL = logging.ERROR
@@ -56,10 +58,15 @@ DATABASES = {
 
 INSTALLED_APPS += ('django_nose',)
 CELERY_ALWAYS_EAGER = True
+SECRET_KEY = 'asdf'
+SESSION_COOKIE_SECURE = True
+HMAC_KEYS = {
+    '2012-06-06': 'some secret',
+}
 SETTINGS
 
 echo "Creating database if we need it..."
-echo "CREATE DATABASE IF NOT EXISTS ${JOB_NAME}"|mysql -u $DB_USER -h $DB_HOST
+echo "CREATE DATABASE IF NOT EXISTS \`${JOB_NAME}\`"|mysql -u $DB_USER -h $DB_HOST
 
 echo "Starting tests..."
 export FORCE_DB=1
