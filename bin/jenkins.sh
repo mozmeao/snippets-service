@@ -34,10 +34,10 @@ source $VENV/bin/activate
 pip install -q -r requirements/compiled.txt
 pip install -q -r requirements/dev.txt
 
-cat > settings/local.py <<SETTINGS
+cat > snippets/settings/local.py <<SETTINGS
 from settings.base import *
 
-ROOT_URLCONF = 'workspace.urls'
+ROOT_URLCONF = 'snippets.urls'
 LOG_LEVEL = logging.ERROR
 # Database name has to be set because of sphinx
 DATABASES = {
