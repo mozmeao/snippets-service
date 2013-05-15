@@ -6,7 +6,7 @@
 -r prod.txt
 
 # Documentation
-Sphinx==1.0.7
+Sphinx>=1.0.7
 
 # Testing
 factory_boy==2.0.2

@@ -1,1 +1,38 @@
--r ../vendor/src/funfactory/funfactory/requirements/prod.txt
+# Django stuff
+Django==1.4
+-e git://github.com/jbalogh/django-multidb-router.git#egg=django-multidb-router
+-e git://github.com/jsocol/django-cronjobs.git#egg=django-cronjobs
+
+# BrowserID
+django-browserid==0.7.1
+requests==0.13.0
+
+# Forms
+-e git://github.com/mozilla/happyforms.git#egg=happyforms
+
+# Templates
+-e git://github.com/jbalogh/jingo.git#egg=jingo
+-e git://github.com/jsocol/jingo-minify.git#egg=jingo-minify
+GitPython==0.1.7
+
+# Various tidbits
+-e git://github.com/jsocol/commonware.git#egg=commonware
+-e git://github.com/mozilla/nuggets.git#egg=nuggets
+
+# Security
+-e git://github.com/fwenzel/django-sha2.git#egg=django-sha2
+-e git://github.com/jsocol/bleach.git#egg=bleach
+-e git://github.com/mozilla/django-session-csrf.git#egg=django-session-csrf
+cef==0.3
+
+# Celery: Message queue
+celery
+django-celery
+
+# L10n
+Babel>=0.9.4
+-e git://github.com/clouserw/tower.git#egg=tower
+-e git://github.com/fwenzel/django-mozilla-product-details@36ef06539d6b34c4f345fd0d3e16937d0db9a752#egg=django-mozilla-product-details
+
+# Mobile
+-e git://github.com/jbalogh/django-mobility@644e0c1c58#egg=django-mobility
