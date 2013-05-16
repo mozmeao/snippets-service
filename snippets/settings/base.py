@@ -14,6 +14,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.admin',
 
     # Libraries
+    'django_ace',
     'south',
 ]
 
