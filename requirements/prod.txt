@@ -3,12 +3,9 @@ Django==1.4
 -e git://github.com/jbalogh/django-multidb-router.git#egg=django-multidb-router
 -e git://github.com/jsocol/django-cronjobs.git#egg=django-cronjobs
 
-# BrowserID
-django-browserid==0.7.1
-requests==0.13.0
-
 # Forms
 -e git://github.com/mozilla/happyforms.git#egg=happyforms
+django-ace==0.3.1
 
 # Templates
 -e git://github.com/jbalogh/jingo.git#egg=jingo
@@ -33,6 +30,3 @@ django-celery
 Babel>=0.9.4
 -e git://github.com/clouserw/tower.git#egg=tower
 -e git://github.com/fwenzel/django-mozilla-product-details@36ef06539d6b34c4f345fd0d3e16937d0db9a752#egg=django-mozilla-product-details
-
-# Mobile
--e git://github.com/jbalogh/django-mobility@644e0c1c58#egg=django-mobility
