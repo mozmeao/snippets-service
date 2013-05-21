@@ -1,6 +1,7 @@
 import re
 from collections import namedtuple
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from jinja2 import Markup
@@ -23,21 +24,39 @@ Client = namedtuple('Client', (
 ))
 
 
+def validate_regex(regex_str):
+    if regex_str.startswith('/'):
+        try:
+            re.compile(regex_str[1:-1])
+        except re.error, exp:
+            raise ValidationError(str(exp))
+    return regex_str
+
+
+class RegexField(models.CharField):
+    def __init__(self, *args, **kwargs):
+        myargs = {'max_length': 64,
+                  'blank': True,
+                  'validators': [validate_regex]}
+        myargs.update(kwargs)
+        return super(RegexField, self).__init__(*args, **myargs)
+
+
 class ClientMatchRule(models.Model):
     """Defines a rule that matches a snippet to certain clients."""
     description = models.CharField(max_length=255)
     is_exclusion = models.BooleanField(default=False)
 
-    startpage_version = models.CharField(max_length=64, blank=True)
-    name = models.CharField(max_length=64, blank=True)
-    version = models.CharField(max_length=64, blank=True)
-    appbuildid = models.CharField(max_length=64, blank=True)
-    build_target = models.CharField(max_length=64, blank=True)
-    locale = models.CharField(max_length=64, blank=True)
-    channel = models.CharField(max_length=64, blank=True)
-    os_version = models.CharField(max_length=64, blank=True)
-    distribution = models.CharField(max_length=64, blank=True)
-    distribution_version = models.CharField(max_length=64, blank=True)
+    startpage_version = RegexField()
+    name = RegexField()
+    version = RegexField()
+    appbuildid = RegexField()
+    build_target = RegexField()
+    locale = RegexField()
+    channel = RegexField()
+    os_version = RegexField()
+    distribution = RegexField()
+    distribution_version = RegexField()
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -54,12 +73,7 @@ class ClientMatchRule(models.Model):
 
             client_field_value = getattr(client, field)
             if field_value.startswith('/'):  # Match field as a regex.
-                try:
-                    if re.match(field_value[1:-1], client_field_value) is None:
-                        match = False
-                        break
-                except re.error:
-                    # TODO: Figure out better behavior here.
+                if re.match(field_value[1:-1], client_field_value) is None:
                     match = False
                     break
             elif field_value != client_field_value:  # Match field as a string.
