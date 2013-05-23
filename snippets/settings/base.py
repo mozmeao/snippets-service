@@ -32,7 +32,16 @@ ENGAGE_ROBOTS = False
 # Always generate a CSRF token for anonymous users.
 ANON_ALWAYS = True
 
-LOGGING = dict(loggers=dict(playdoh = {'level': logging.DEBUG}))
+LOGGING = {
+    'loggers': {
+        'playdoh': {
+            'level': logging.DEBUG
+        },
+        'south': {
+            'level': logging.ERROR
+        }
+    }
+}
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',

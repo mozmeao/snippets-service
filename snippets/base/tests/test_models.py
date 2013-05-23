@@ -1,9 +1,11 @@
 from django.core.exceptions import ValidationError
 
-from nose.tools import ok_
+from mock import Mock
+from nose.tools import eq_, ok_
 
 from snippets.base.models import Client, validate_regex
-from snippets.base.tests import ClientMatchRuleFactory, TestCase
+from snippets.base.tests import (ClientMatchRuleFactory, SnippetFactory,
+                                 SnippetTemplateFactory, TestCase)
 
 
 class ClientMatchRuleTests(TestCase):
@@ -64,3 +66,24 @@ class RegexValidatorTests(TestCase):
     def test_invalid_regex(self):
         bogus_regex = '/(?P\d+)/'
         self.assertRaises(ValidationError, validate_regex, bogus_regex)
+
+
+class SnippetTemplateTests(TestCase):
+    def test_render(self):
+        template = SnippetTemplateFactory(code='<p>{{myvar}}</p>')
+        eq_(template.render({'myvar': 'foo'}), '<p>foo</p>')
+
+
+class SnippetTests(TestCase):
+    def test_render(self):
+        template = SnippetTemplateFactory.create()
+        template.render = Mock()
+        template.render.return_value = '<a href="asdf">qwer</a>'
+
+        data = '{"url": "asdf", "text": "qwer"}'
+        snippet = SnippetFactory.create(template=template, data=data)
+
+        expected = ('<div data-snippet-id="{0}"><a href="asdf">qwer</a></div>'
+                    .format(snippet.id))
+        eq_(snippet.render().strip(), expected)
+        template.render.assert_called_with({'url': 'asdf', 'text': 'qwer'})
