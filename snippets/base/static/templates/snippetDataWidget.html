@@ -1,0 +1,19 @@
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  {% for variable in variables %}
+    <tr class="variable" data-variable="{{ variable.name }}" data-type="{{ variable.type }}">
+      <td>{{ variable.name }}</td>
+      <td>
+        {% if variable.type == types.text %}
+          <input type="text" value="{{ originalData[variable.name] }}">
+        {% elif variable.type == types.image %}
+          <input type="file" class="image-input">
+          <img src="{{ originalData[variable.name] }}">
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+</table>
