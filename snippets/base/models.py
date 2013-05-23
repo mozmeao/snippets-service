@@ -1,9 +1,11 @@
+import json
 import re
 from collections import namedtuple
 
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from jingo import env
 from jinja2 import Markup
 
 from snippets.base.managers import ClientMatchRuleManager
@@ -42,9 +44,44 @@ class RegexField(models.CharField):
         return super(RegexField, self).__init__(*args, **myargs)
 
 
+class SnippetTemplate(models.Model):
+    """
+    A template for the body of a snippet. Can have multiple variables that the
+    snippet will fill in.
+    """
+    name = models.CharField(max_length=255, unique=True)
+    code = models.TextField()
+
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def render(self, ctx):
+        return env.from_string(self.code).render(ctx)
+
+    def __unicode__(self):
+        return self.name
+
+
+class SnippetTemplateVariable(models.Model):
+    """
+    A variable for a template that an individual snippet can fill in with its
+    own content.
+    """
+    TEXT = 0
+    IMAGE = 1
+    TYPE_CHOICES = ((TEXT, 'Text'), (IMAGE, 'Image'))
+
+    template = models.ForeignKey(SnippetTemplate, related_name='variable_set')
+    name = models.CharField(max_length=255)
+    type = models.IntegerField(choices=TYPE_CHOICES, default=TEXT)
+
+    def __unicode__(self):
+        return u'{0}: {1}'.format(self.template.name, self.name)
+
+
 class ClientMatchRule(models.Model):
     """Defines a rule that matches a snippet to certain clients."""
-    description = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, unique=True)
     is_exclusion = models.BooleanField(default=False)
 
     startpage_version = RegexField()
@@ -89,7 +126,8 @@ class ClientMatchRule(models.Model):
 
 class Snippet(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    body = models.TextField()
+    template = models.ForeignKey(SnippetTemplate)
+    data = models.TextField()
 
     priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)
@@ -104,7 +142,15 @@ class Snippet(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     def render(self):
-        return Markup(self.body)
+        data = json.loads(self.data)
+        rendered_snippet = """
+            <div data-snippet-id="{id}">{content}</div>
+        """.format(
+            id=self.id,
+            content=self.template.render(data)
+        )
+
+        return Markup(rendered_snippet)
 
     def __unicode__(self):
         return self.name
