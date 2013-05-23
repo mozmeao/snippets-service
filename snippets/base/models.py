@@ -113,7 +113,7 @@ class ClientMatchRule(models.Model):
 class Snippet(models.Model):
     name = models.CharField(max_length=255, unique=True)
     template = models.ForeignKey(SnippetTemplate)
-    data = models.TextField()
+    data = models.TextField(default='{}')
 
     priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)

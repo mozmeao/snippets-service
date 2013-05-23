@@ -12,6 +12,7 @@ Sphinx>=1.0.7
 factory_boy==2.0.2
 mock==1.0.1
 nose==1.0.0
+-e git://github.com/gawel/pyquery.git#egg=pyquery
 -e git://github.com/jbalogh/django-nose.git#egg=django_nose
 -e git://github.com/jbalogh/test-utils.git#egg=test-utils
 

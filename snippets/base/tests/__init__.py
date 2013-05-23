@@ -8,10 +8,30 @@ class TestCase(BaseTestCase):
     pass  # Will be filled in when we need this, which we usually do.
 
 
+class SnippetTemplateFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = models.SnippetTemplate
+    name = factory.Sequence(lambda n: 'Test Template {0}'.format(n))
+    code = factory.Sequence(lambda n: '<p>Test Snippet {0}</p>'.format(n))
+
+    @factory.post_generation
+    def variable_set(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.variable_set.add(*extracted)
+
+
+class SnippetTemplateVariableFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = models.SnippetTemplateVariable
+    name = factory.Sequence(lambda n: 'test_var_{0}'.format(n))
+    template = factory.SubFactory(SnippetTemplateFactory)
+
+
 class SnippetFactory(factory.DjangoModelFactory):
     FACTORY_FOR = models.Snippet
     name = factory.Sequence(lambda n: 'Test Snippet {0}'.format(n))
-    body = factory.Sequence(lambda n: 'Test body {0}'.format(n))
+    template = factory.SubFactory(SnippetTemplateFactory)
     disabled = False
 
     @factory.post_generation
@@ -25,4 +45,4 @@ class SnippetFactory(factory.DjangoModelFactory):
 
 class ClientMatchRuleFactory(factory.DjangoModelFactory):
     FACTORY_FOR = models.ClientMatchRule
-    description = 'Client Match Rule'
+    description = factory.Sequence(lambda n: 'Client Match Rule {0}'.format(n))
