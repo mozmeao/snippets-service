@@ -69,9 +69,8 @@ class TemplateDataWidget(forms.TextInput):
             'all': ('css/templateDataWidget.css',)
         }
         js = filter(None, [
-            'js/lib/jquery-2.0.0.min.js',
-            'js/lib/nunjucks-{0}.js'.format(
-                'dev' if settings.DEBUG else 'min'),
+            'js/lib/jquery-2.0.0.js',
+            'js/lib/nunjucks{0}.js'.format('-dev' if settings.DEBUG else ''),
             'templates/compiled.js' if not settings.DEBUG else None,
             'js/templateDataWidget.js'
         ])

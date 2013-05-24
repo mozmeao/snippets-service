@@ -1,4 +1,7 @@
+/* global nunjucks:false */
 ;(function($, nunjucks) {
+    'use strict';
+
     var VARIABLE_TYPES = {
         text: 0,
         image: 1
@@ -37,7 +40,7 @@
         this.originalData = {};
         try {
             this.originalData = JSON.parse(this.$dataInput.val());
-        } catch(e) {
+        } catch (e) {
             // Do nothing.
         }
 
