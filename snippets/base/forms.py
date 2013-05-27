@@ -1,13 +1,26 @@
+import itertools
 import json
 
 from collections import defaultdict
 
 from django import forms
 from django.conf import settings
+from django.db.models import Q
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from snippets.base.models import Snippet, SnippetTemplateVariable
+from snippets.base.models import (ClientMatchRule, Snippet,
+                                  SnippetTemplateVariable)
+
+CLIENT_MATCH_RULE_SETS = (('Release', 'Beta', 'Aurora', 'Nightly'),
+                          ('Firefox', 'Fennec'),
+                          ('StartPageV1', 'StartPageV2', 'StartPageV3',
+                           'StartPageV4'))
+COMBINATIONS = []
+for set in CLIENT_MATCH_RULE_SETS:
+    for i in range(1, len(set) + 1):
+        COMBINATIONS += [' and '.join(k) for k in
+                         itertools.combinations(set, i)]
 
 
 class TemplateSelect(forms.Select):
@@ -77,6 +90,42 @@ class TemplateDataWidget(forms.TextInput):
 
 
 class SnippetAdminForm(forms.ModelForm):
+    Release = forms.BooleanField(required=False)
+    Beta = forms.BooleanField(required=False)
+    Aurora = forms.BooleanField(required=False)
+    Nightly = forms.BooleanField(required=False)
+    Firefox = forms.BooleanField(required=False)
+    Fennec = forms.BooleanField(required=False)
+    StartPageV1 = forms.BooleanField(required=False)
+    StartPageV2 = forms.BooleanField(required=False)
+    StartPageV3 = forms.BooleanField(required=False)
+    StartPageV4= forms.BooleanField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(SnippetAdminForm, self).__init__(*args, **kwargs)
+        if self.instance.id:
+            rules = self.instance.client_match_rules
+            for match in rules.filter(description__in=COMBINATIONS):
+                for option in match.description.split(' and '):
+                    self.fields[option].initial = True
+        else:
+            for field in ['Release', 'Firefox',
+                          'StartPageV2', 'StartPageV3', 'StartPageV4']:
+                self.fields[field].initial = True
+
+    def clean_client_match_rules(self):
+        results = []
+        for set in CLIENT_MATCH_RULE_SETS:
+            result = (' and '.join(
+                filter(lambda option: self.cleaned_data.get(option), set)))
+            results.append(result)
+
+        matches = (ClientMatchRule.objects
+                   .filter(Q(pk__in=self.cleaned_data['client_match_rules']))
+                   .exclude(description__in=COMBINATIONS))
+        matches |= ClientMatchRule.objects.filter(Q(description__in=results))
+        return matches
+
     class Meta:
         model = Snippet
         widgets = {

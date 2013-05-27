@@ -1,0 +1,662 @@
+[
+    {
+        "pk": 1,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Release",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:34:22.727",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:30:41.953",
+            "distribution": "",
+            "build_target": "",
+            "channel": "release",
+            "name": ""
+        }
+    },
+    {
+        "pk": 2,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Release and Beta",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:34:29.957",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:31:01.230",
+            "distribution": "",
+            "build_target": "",
+            "channel": "/(release)|(beta)/",
+            "name": ""
+        }
+    },
+    {
+        "pk": 3,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Release and Beta and Aurora",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:34:37.889",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:31:56.836",
+            "distribution": "",
+            "build_target": "",
+            "channel": "/(release)|(beta)|(aurora)/",
+            "name": ""
+        }
+    },
+    {
+        "pk": 4,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Release and Aurora",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:34:42.767",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:32:06.502",
+            "distribution": "",
+            "build_target": "",
+            "channel": "/(release)|(aurora)/",
+            "name": ""
+        }
+    },
+    {
+        "pk": 5,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Release and Aurora and Nightly",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:34:48.796",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:32:18.280",
+            "distribution": "",
+            "build_target": "",
+            "channel": "/(release)|(aurora)|(nightly)/",
+            "name": ""
+        }
+    },
+    {
+        "pk": 6,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Release and Nightly",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:34:53.761",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:32:26.278",
+            "distribution": "",
+            "build_target": "",
+            "channel": "/(release)|(nightly)/",
+            "name": ""
+        }
+    },
+    {
+        "pk": 7,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Beta",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:34:55.793",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:32:39.295",
+            "distribution": "",
+            "build_target": "",
+            "channel": "beta",
+            "name": ""
+        }
+    },
+    {
+        "pk": 8,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Beta and Aurora",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:35:01.239",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:32:47.920",
+            "distribution": "",
+            "build_target": "",
+            "channel": "/(beta)|(aurora)/",
+            "name": ""
+        }
+    },
+    {
+        "pk": 9,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Beta and Aurora and Nightly",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:35:06.244",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:33:02.159",
+            "distribution": "",
+            "build_target": "",
+            "channel": "/(beta)|(aurora)|(nightly)/",
+            "name": ""
+        }
+    },
+    {
+        "pk": 10,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Beta and Nightly",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:35:09.898",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:33:09.141",
+            "distribution": "",
+            "build_target": "",
+            "channel": "/(beta)|(nightly)/",
+            "name": ""
+        }
+    },
+    {
+        "pk": 11,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Aurora",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:35:11.885",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:33:13.782",
+            "distribution": "",
+            "build_target": "",
+            "channel": "aurora",
+            "name": ""
+        }
+    },
+    {
+        "pk": 12,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Aurora and Nightly",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:35:16.577",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:33:23.941",
+            "distribution": "",
+            "build_target": "",
+            "channel": "/(aurora)|(nightly)/",
+            "name": ""
+        }
+    },
+    {
+        "pk": 13,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Nightly",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:35:19.500",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:33:28.355",
+            "distribution": "",
+            "build_target": "",
+            "channel": "nightly",
+            "name": ""
+        }
+    },
+    {
+        "pk": 14,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Release and Beta and Aurora and Nightly",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T02:36:02.492",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:33:39.738",
+            "distribution": "",
+            "build_target": "",
+            "channel": "/(release)|(beta)|(aurora)|(nightly)/",
+            "name": ""
+        }
+    },
+    {
+        "pk": 15,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Firefox",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T03:15:47.958",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:34:44.579",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": "Firefox"
+        }
+    },
+    {
+        "pk": 16,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Fennec",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T03:15:50.345",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:34:47.853",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": "fennec"
+        }
+    },
+    {
+        "pk": 17,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Firefox and Fennec",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T03:15:55.830",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:34:58.118",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": "/(Firefox)|(fennec)/"
+        }
+    },
+    {
+        "pk": 19,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV1",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:02:31.167",
+            "startpage_version": "1",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:35:21.907",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 20,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV1 and StartPageV2",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:02:37.460",
+            "startpage_version": "/[12]/",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:35:26.110",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 21,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV1 and StartPageV2 and StartPageV3",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:02:46.583",
+            "startpage_version": "/[123]/",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:35:33.069",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 22,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV1 and StartPageV2 and StartPageV3 and StartPageV4",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:02:52.521",
+            "startpage_version": "/[1234]/",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:35:38.853",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 23,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV1 and StartPageV3",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:02:57.893",
+            "startpage_version": "/[13]/",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:35:42.515",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 24,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV1 and StartPageV4",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:03:05.506",
+            "startpage_version": "/[14]/",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:35:46.988",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 25,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV2",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:03:14.963",
+            "startpage_version": "2",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:35:49.187",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 26,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV2 and StartPageV3",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:03:17.988",
+            "startpage_version": "/[23]/",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:35:51.693",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 27,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV2 and StartPageV3 and StartPageV4",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:03:23.310",
+            "startpage_version": "/[234]/",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:35:55.446",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 28,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV2 and StartPageV4",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:03:26.406",
+            "startpage_version": "/[24]/",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:35:58.427",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 29,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV3",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:03:29.704",
+            "startpage_version": "3",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:36:00.979",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 30,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV3 and StartPageV4",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:03:36.632",
+            "startpage_version": "/[34]/",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:36:05.072",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 31,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV4",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:03:38.389",
+            "startpage_version": "4",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:36:07.362",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 32,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV1 and StartPageV3 and StartPageV4",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:06:00.540",
+            "startpage_version": "/[134]/",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:36:14.298",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 33,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "StartPageV1 and StartPageV2 and StartPageV4",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:06:16.506",
+            "startpage_version": "/[124]/",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:36:23.926",
+            "distribution": "",
+            "build_target": "",
+            "channel": "",
+            "name": ""
+        }
+    },
+    {
+        "pk": 34,
+        "model": "base.clientmatchrule",
+        "fields": {
+            "description": "Release and Beta and Nightly",
+            "appbuildid": "",
+            "distribution_version": "",
+            "locale": "",
+            "created": "2013-05-27T04:06:49.154",
+            "startpage_version": "",
+            "is_exclusion": false,
+            "os_version": "",
+            "version": "",
+            "modified": "2013-05-27T06:36:41.202",
+            "distribution": "",
+            "build_target": "",
+            "channel": "/(release)|(beta)|(nightly)/",
+            "name": ""
+        }
+    }
+]

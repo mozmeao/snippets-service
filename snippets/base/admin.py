@@ -29,9 +29,25 @@ class SnippetAdmin(admin.ModelAdmin):
             'fields': ('publish_start', 'publish_end'),
         }),
         ('Client Match Rules', {
-            'fields': ('client_match_rules',),
+            'fields': (('Release', 'Beta', 'Aurora', 'Nightly'),
+                       ('Firefox', 'Fennec'))
         }),
+        ('Advanced Client Match Rules', {
+            'fields': (('StartPageV1', 'StartPageV2',
+                        'StartPageV3', 'StartPageV4'), 'client_match_rules',),
+            'classes': ['collapse']
+        })
     )
+
+    def formfield_for_manytomany(self, db_field, request=None, **kwargs):
+        # Exclude rules with checkboxes
+        if db_field.name == 'client_match_rules':
+            kwargs['queryset'] = (models.ClientMatchRule.objects
+                                  .exclude(description__in=forms.COMBINATIONS))
+            return (super(SnippetAdmin, self)
+                    .formfield_for_manytomany(db_field, request=request,
+                                              **kwargs))
+
 admin.site.register(models.Snippet, SnippetAdmin)
 
 
