@@ -28,8 +28,21 @@ class SnippetAdmin(admin.ModelAdmin):
             'description': 'When will this snippet be available? (Optional)',
             'fields': ('publish_start', 'publish_end'),
         }),
+        ('Products', {
+            'fields': (('on_firefox', 'on_fennec'),)
+        }),
+        ('Product channels', {
+            'description': 'What channels will this snippet be available in?',
+            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
+        }),
+        ('Startpage Versions', {
+            'fields': (('on_startpage_1', 'on_startpage_2', 'on_startpage_3',
+                        'on_startpage_4'),),
+            'classes': ('collapse',)
+        }),
         ('Client Match Rules', {
             'fields': ('client_match_rules',),
+            'classes': ('collapse',)
         }),
     )
 admin.site.register(models.Snippet, SnippetAdmin)
