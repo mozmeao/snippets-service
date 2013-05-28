@@ -8,8 +8,12 @@ from django.db import models
 from jingo import env
 from jinja2 import Markup
 
-from snippets.base.managers import ClientMatchRuleManager
+from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 
+
+CHANNELS = ('release', 'beta', 'aurora', 'nightly')
+STARTPAGE_VERSIONS = ('1', '2', '3', '4')
+CLIENT_NAMES = {'Firefox': 'firefox', 'fennec': 'fennec'}
 
 # NamedTuple that represents a user's client program.
 Client = namedtuple('Client', (
@@ -135,11 +139,26 @@ class Snippet(models.Model):
     publish_start = models.DateTimeField(blank=True, null=True)
     publish_end = models.DateTimeField(blank=True, null=True)
 
+    on_firefox = models.BooleanField(default=True, verbose_name='Firefox')
+    on_fennec = models.BooleanField(default=False, verbose_name='Fennec')
+
+    on_release = models.BooleanField(default=True, verbose_name='Release')
+    on_beta = models.BooleanField(default=False, verbose_name='Beta')
+    on_aurora = models.BooleanField(default=False, verbose_name='Aurora')
+    on_nightly = models.BooleanField(default=False, verbose_name='Nightly')
+
+    on_startpage_1 = models.BooleanField(default=False, verbose_name='Version 1')
+    on_startpage_2 = models.BooleanField(default=True, verbose_name='Version 2')
+    on_startpage_3 = models.BooleanField(default=True, verbose_name='Version 3')
+    on_startpage_4 = models.BooleanField(default=True, verbose_name='Version 4')
+
     client_match_rules = models.ManyToManyField(
         ClientMatchRule, blank=True, verbose_name='Client Match Rules')
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+
+    objects = SnippetManager()
 
     def render(self):
         data = json.loads(self.data)
@@ -154,3 +173,7 @@ class Snippet(models.Model):
 
     def __unicode__(self):
         return self.name
+
+
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^snippets\.base\.models\.RegexField"])
