@@ -1,6 +1,33 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h1>about:home snippet service</h1>
-  <p>Nothing to see, here. <a href="about:home">Look here, instead.</a>
+  <div class="row-fluid">
+    <div class="span3">
+      <form>
+        {% for field in snippetsfilter.form %}
+          <strong>{{ field.label }}</strong>
+          {{ field_with_attrs(field, **{'class': 'span11'}) }}
+        {% endfor %}
+        <input type="submit" class="btn btn-primary span11"
+               value="{{ "Filter!" }}">
+      </form>
+    </div>
+    <div class="span9">
+      <h1>Snippets</h1>
+      {% for snippet in snippets %}
+        {{ snippet.render() }}
+      {% else %}
+        No snippets! Maybe try
+        <a href="{{ url('snippets.base.index') }}">without filters</a>?
+      {% endfor %}
+
+      <div class="row text-right">
+        Total snippets: <em>{{ snippets.paginator.count }}</em>
+      </div>
+
+      {% from 'base/includes/pagination.html' import pagination %}
+      {{ pagination(snippets, pagination_range, request.get_full_path()) }}
+    </div>
+  </div>
+
 {% endblock %}

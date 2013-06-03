@@ -13,7 +13,8 @@ class SnippetAdmin(admin.ModelAdmin):
 
     list_display = ('name', 'priority', 'disabled', 'publish_start',
                     'publish_end', 'modified')
-    list_filter = ('disabled', 'client_match_rules')
+    list_filter = ('disabled', 'client_match_rules' 'on_release', 'on_beta',
+                   'on_aurora', 'on_nightly', 'on_firefox', 'on_fennec')
     list_editable = ('disabled', 'priority', 'publish_start', 'publish_end')
 
     readonly_fields = ('created', 'modified')
