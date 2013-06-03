@@ -1,12 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <title>about:home Snippets Service</title>
-    {% block site_css %}{% endblock %}
-  </head>
-  <body>
-    {% block content %}{% endblock %}
-    {% block site_js %}{% endblock %}
+     <meta charset="utf-8">
+     <title>Snippets Service</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <meta name="description" content="">
+     <meta name="author" content="">
+
+     <link href="{{ static('css/bootstrap.css') }}" rel="stylesheet">
+     <link href="{{ static('css/app.css') }}" rel="stylesheet">
+     <link href="{{ static('css/bootstrap-responsive.css') }}" rel="stylesheet">
+   </head>
+
+   <body>
+
+     <div class="navbar navbar-inverse navbar-fixed-top">
+       <div class="navbar-inner">
+         <div class="container">
+           <a class="brand" href="{{ url('snippets.base.index') }}">
+             Snippets Service
+           </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div> <!-- /container -->
+
   </body>
 </html>

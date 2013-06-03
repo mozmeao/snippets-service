@@ -3,11 +3,14 @@ from time import gmtime, strftime
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render
 from django.views.decorators.cache import cache_control
 
 from commonware.response.decorators import xframe_allow
+
+import django_filters
 
 from snippets.base.decorators import access_control
 from snippets.base.models import (Client, ClientMatchRule, Snippet,
@@ -16,10 +19,38 @@ from snippets.base.util import get_object_or_none
 
 
 HTTP_MAX_AGE = getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 1)
+SNIPPETS_PER_PAGE = 25
+
+
+class SnippetFilter(django_filters.FilterSet):
+
+    class Meta:
+        model = Snippet
+        fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly',
+                  'on_firefox', 'on_fennec', 'template']
 
 
 def index(request):
-    return render(request, 'base/index.html')
+    snippets = Snippet.objects.all()
+    snippetsfilter = SnippetFilter(request.GET, snippets)
+    paginator = Paginator(snippetsfilter.qs, SNIPPETS_PER_PAGE)
+
+    page = request.GET.get('page', 1)
+    try:
+        snippets = paginator.page(page)
+    except PageNotAnInteger:
+        snippets = paginator.page(1)
+    except EmptyPage:
+        snippets = paginator.page(paginator.num_pages)
+
+    # Display links to the page before and after the current page when
+    # applicable.
+    pagination_range = range(max(1, snippets.number-1),
+                             min(snippets.number+2, paginator.num_pages+1))
+    data = {'snippets': snippets,
+            'pagination_range': pagination_range,
+            'snippetsfilter': snippetsfilter}
+    return render(request, 'base/index.html', data)
 
 
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
