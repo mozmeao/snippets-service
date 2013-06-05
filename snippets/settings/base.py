@@ -64,3 +64,5 @@ MIDDLEWARE_CLASSES = (
     'mobility.middleware.DetectMobileMiddleware',
     'mobility.middleware.XMobileMiddleware',
 )
+
+DATABASE_ROUTERS = ('multidb.PinningMasterSlaveRouter',)
