@@ -1,0 +1,8 @@
+.widget-container {
+    float: left;
+}
+
+.snippet-preview-container iframe {
+    width: 640px;
+    height: 480px;
+}

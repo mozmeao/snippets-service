@@ -1,0 +1,56 @@
+{# Pulled from about:home around Firefox 20 or so. #}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>about:home Snippet Preview</title>
+    <link rel="stylesheet" type="text/css" media="all"
+          href="chrome://browser/content/abouthome/aboutHome.css"/>
+    <link rel="stylesheet" type="text/css" media="all"
+          href="{{ static('base/css/aboutHomePreview.css') }}" />
+  </head>
+
+  <body>
+    <a id="aboutMozilla" href="http://www.mozilla.org/about/"></a>
+    <div class="spacer"></div>
+    <div id="topSection">
+      <img id="brandLogo" src="chrome://branding/content/about-logo.png" alt=""/>
+
+      <div id="searchContainer">
+        <form name="searchForm" id="searchForm">
+          <div id="searchLogoContainer">
+            <img id="searchEngineLogo" src="{{ static('img/google.png') }}" />
+          </div>
+          <input type="text" name="q" value="" id="searchText" maxlength="256"
+                 autofocus="autofocus"/>
+          <input id="searchSubmit" type="button" value="Search"/>
+        </form>
+      </div>
+
+      <div id="snippetContainer">
+        <div id="snippets">
+          {% block snippets %}
+            <div class="snippet-set">
+              {% include 'base/includes/snippet_css.html' %}
+              {{ snippet.render() }}
+              {% include 'base/includes/snippet_js.html' %}
+            </div>
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+
+    <div id="launcher">
+      <button class="launchButton" id="downloads">Downloads</button>
+      <button class="launchButton" id="bookmarks">Bookmarks</button>
+      <button class="launchButton" id="history">History</button>
+      <button class="launchButton" id="apps" hidden="true">Apps</button>
+      <button class="launchButton" id="addons">Add-ons</button>
+      <button class="launchButton" id="sync">Sync</button>
+      <button class="launchButton" id="settings">Settings</button>
+      <div id="restorePreviousSessionSeparator"/>
+      <button class="launchButton" id="restorePreviousSession">Restore Previous Session</button>
+    </div>
+  </body>
+</html>
