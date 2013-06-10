@@ -3,6 +3,7 @@
 }
 
 .snippet-preview-container iframe {
-    width: 640px;
+    border: 1px solid #EEE;
     height: 480px;
+    width: 640px;
 }
