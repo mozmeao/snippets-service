@@ -23,7 +23,12 @@
      *             data-input-name attribute.
      */
     function SnippetDataWidget(elem) {
+        var self = this;
+
         this.$container = $(elem);
+        this.dataListeners = [];
+        this.dataChanged = false;
+
         var selectName = this.$container.data('selectName');
         var inputName = this.$container.data('inputName');
 
@@ -49,6 +54,17 @@
         this.$dataInput.hide();
         this.bindEvents();
         this.onTemplateChange();
+
+        // Set an interval to run the dataListeners when the data has changed.
+        // This helps avoid triggering on each and every keypress.
+        setInterval(function() {
+            if (self.dataChanged) {
+                self.dataChanged = false;
+                for (var k = 0; k < self.dataListeners.length; k++) {
+                    self.dataListeners[k].call();
+                }
+            }
+        }, 500);
     }
 
     SnippetDataWidget.prototype = {
@@ -66,6 +82,24 @@
             this.$container.on('change', '.image-input', function() {
                 self.onImageFieldChange(this);
             });
+
+            this.$container.on('keydown', 'input[type="text"]', function() {
+                self.triggerDataChange();
+            });
+        },
+
+        /**
+         * Register a callback to be run whenever the template data changes.
+         */
+        onDataChange: function(callback) {
+            this.dataListeners.push(callback);
+        },
+
+        /**
+         * Notify listeners that the template data has changed.
+         */
+        triggerDataChange: function() {
+            this.dataChanged = true;
         },
 
         /**
@@ -84,12 +118,15 @@
                     originalData: this.originalData
                 }));
             }
+
+            this.triggerDataChange();
         },
 
         /**
          * Update the image in an image field when the file input changes.
          */
         onImageFieldChange: function(input) {
+            var self = this;
             if (input.files.length < 1) {
                 return;
             }
@@ -105,15 +142,15 @@
             var reader = new FileReader();
             reader.onload = function(e) {
                 preview.src = e.target.result;
+                self.triggerDataChange();
             };
             reader.readAsDataURL(file);
         },
 
         /**
-         * When the form is submitted, serialize the widget to JSON and fill in
-         * the original data input.
+         * Generate an object containing the currently entered template data.
          */
-        onFormSubmit: function() {
+        generateData: function() {
             var data = {};
             this.$container.find('.variable').each(function() {
                 var $item = $(this);
@@ -128,16 +165,54 @@
                         break;
                 }
             });
+            return data;
+        },
 
-            this.$dataInput.val(JSON.stringify(data));
+        getTemplateId: function() {
+            return this.$templateSelect.val();
+        },
+
+        /**
+         * When the form is submitted, serialize the widget to JSON and fill in
+         * the original data input.
+         */
+        onFormSubmit: function() {
+            this.$dataInput.val(JSON.stringify(this.generateData()));
         }
     };
 
-    // Create widgets once the page is finished loading.
-    $(function() {
-        $('.template-data-widget').each(function() {
-            new SnippetDataWidget(this);
+    /**
+     * Initialize a snippet preview in the given element.
+     *
+     * @param elem Element to use as the container for the preview.
+     */
+    function SnippetPreview(elem, dataWidget) {
+        var self = this;
+        this.$container = $(elem);
+        this.dataWidget = dataWidget;
+        this.$iframe = $('<iframe class="snippet-preview"></iframe>');
+        this.$container.append(this.$iframe);
+
+        dataWidget.onDataChange(function() {
+            self.onDataChange();
         });
+    }
+
+    SnippetPreview.prototype = {
+        onDataChange: function() {
+            var previewUrl = this.$container.data('previewUrl');
+            var args = $.param({
+                data: JSON.stringify(this.dataWidget.generateData()),
+                template_id: this.dataWidget.getTemplateId()
+            });
+            this.$iframe.attr('src', previewUrl + '?' + args);
+        }
+    };
+
+    // Initialize the data widget and preview frame when the page loads.
+    $(function() {
+        var dataWidget = new SnippetDataWidget($('.template-data-widget'));
+        new SnippetPreview($('.snippet-preview-container'), dataWidget);
     });
 
     // Utility functions

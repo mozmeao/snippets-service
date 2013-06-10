@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from django import forms
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
@@ -58,11 +59,19 @@ class TemplateDataWidget(forms.TextInput):
         widget_code = super(TemplateDataWidget, self).render(
             name, value, attrs)
         return mark_safe(u''.join([widget_code, u"""
-            <div class="template-data-widget"
-                 data-select-name="{0}"
-                 data-input-name="{1}">
+            <div class="widget-container">
+              <div class="template-data-widget"
+                   data-select-name="{select_name}"
+                   data-input-name="{input_name}">
+              </div>
+              <div class="snippet-preview-container"
+                   data-preview-url="{preview_url}">
+              </div>
             </div>
-        """.format(self.template_select_name, name)]))
+        """.format(select_name=self.template_select_name,
+                   input_name=name,
+                   preview_url=reverse('base.preview'))
+        ]))
 
     class Media:
         css = {

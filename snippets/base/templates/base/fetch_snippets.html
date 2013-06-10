@@ -1,6 +1,8 @@
 <div class="snippet-set">
+  {% include 'base/includes/snippet_css.html' %}
   {% for snippet in snippets %}
     {{ snippet.render() }}
   {% endfor %}
+  {% include 'base/includes/snippet_js.html' %}
 </div>
 <!-- Content generated at {{ current_time }} -->
