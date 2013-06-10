@@ -19,3 +19,5 @@ https://abouthome-snippets-service.readthedocs.org/en/latest/
 This software is licensed under the
 [New BSD License](http://creativecommons.org/licenses/BSD/). For more
 information, read the file ``LICENSE``.
+
+asdf
