@@ -15,6 +15,7 @@ class SnippetAdmin(admin.ModelAdmin):
                     'publish_end', 'created', 'modified')
     list_filter = ('disabled', 'client_match_rules')
     readonly_fields = ('created', 'modified')
+    save_on_top = True
 
     filter_horizontal = ('client_match_rules',)
 
@@ -36,7 +37,7 @@ admin.site.register(models.Snippet, SnippetAdmin)
 
 
 class ClientMatchRuleAdmin(admin.ModelAdmin):
-    pass
+    save_on_top = True
 admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 
 
@@ -52,6 +53,7 @@ RESERVED_VARIABLES = ('_',)
 
 
 class SnippetTemplateAdmin(admin.ModelAdmin):
+    save_on_top = True
     inlines = (SnippetTemplateVariableInline,)
     formfield_overrides = {
         TextField: {'widget': AceWidget(mode='html', theme='github', attrs={'cols': 500})},
