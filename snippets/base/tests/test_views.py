@@ -4,37 +4,64 @@ from django.core.urlresolvers import reverse
 from mock import patch
 from nose.tools import eq_, ok_
 
+import snippets.base.models
+from snippets.base.models import ClientMatchRule
 from snippets.base.tests import (ClientMatchRuleFactory, SnippetFactory,
                                  SnippetTemplateFactory, TestCase)
 
+snippets.base.models.CHANNELS = ('release', 'beta', 'aurora', 'nightly')
+snippets.base.models.STARTPAGE_VERSIONS = ('1', '2', '3', '4')
+snippets.base.models.CLIENT_NAMES = {'Firefox': 'firefox', 'fennec': 'fennec'}
+
 
 class FetchSnippetsTests(TestCase):
-    @patch('snippets.base.views.ClientMatchRule')
-    def test_basic(self, ClientMatchRule):
-        failrule1 = ClientMatchRuleFactory.create()
-        failrule2 = ClientMatchRuleFactory.create()
-        passrule1 = ClientMatchRuleFactory.create()
-        passrule2 = ClientMatchRuleFactory.create()
+    @patch('snippets.base.views.ClientMatchRule', wraps=ClientMatchRule)
+    def test_base(self, ClientMatchRuleMock):
+        client_match_rule_pass = ClientMatchRuleFactory(
+            name='Firefox', channel='nightly', startpage_version='4')
+        client_match_rule_fail = ClientMatchRuleFactory(
+            name='Firefox', channel='release', startpage_version='4')
 
-        evaluate = ClientMatchRule.objects.all.return_value.evaluate
-        evaluate.return_value = (
-            [passrule1, passrule2], [failrule1, failrule2]
-        )
+        snippet_pass_1 = SnippetFactory.create(on_nightly=True)
+        snippet_pass_2 = SnippetFactory.create(
+            on_nightly=True, client_match_rules=[client_match_rule_pass])
 
-        snippet_pass = SnippetFactory.create(client_match_rules=[passrule1])
-        snippet_fail = SnippetFactory.create(client_match_rules=[failrule1])
-        snippet_passfail = SnippetFactory.create(
-            client_match_rules=[passrule2, failrule2]
-        )
+        snippet_fail_1 = SnippetFactory.create(on_nightly=False),
+        snippet_fail_2 = SnippetFactory.create(
+            on_nightly=False, client_match_rules=[client_match_rule_pass])
+        snippet_fail_2 = SnippetFactory.create(
+            on_nightly=False, client_match_rules=[client_match_rule_fail])
+        snippet_fail_3 = SnippetFactory.create(
+            on_nightly=True, client_match_rules=[client_match_rule_fail])
+        snippet_fail_4 = SnippetFactory.create(
+            on_nightly=True, client_match_rules=[client_match_rule_fail,
+                                                 client_match_rule_pass])
+
+        snippets_ok = [snippet_pass_1, snippet_pass_2]
+        snippets_fail = [snippet_fail_1, snippet_fail_2, snippet_fail_3,
+                         snippet_fail_4]
+        snippets_pass_match_client = (snippets_ok + 
+                                      [snippet_fail_3, snippet_fail_4])
 
         params = ('4', 'Firefox', '23.0a1', '20130510041606',
                   'Darwin_Universal-gcc3', 'en-US', 'nightly',
                   'Darwin%2010.8.0', 'default', 'default_version')
         response = self.client.get('/{0}/'.format('/'.join(params)))
 
-        ok_(snippet_pass in response.context['snippets'])
-        ok_(snippet_fail not in response.context['snippets'])
-        ok_(snippet_passfail not in response.context['snippets'])
+        eq_(set(snippets_ok), set(response.context['snippets']))
+        call_args = (ClientMatchRuleMock.objects
+                     .filter.call_args[1]['snippet__in'])
+        eq_(set(snippets_pass_match_client), set(call_args))
+        
+    @patch('snippets.base.views.ClientMatchRule.objects')
+    def test_client_construction(self, mock_objects):
+        evaluate = mock_objects.filter.return_value.evaluate
+        evaluate.return_value = ([], [])
+
+        params = ('4', 'Firefox', '23.0a1', '20130510041606',
+                  'Darwin_Universal-gcc3', 'en-US', 'nightly',
+                  'Darwin%2010.8.0', 'default', 'default_version')
+        self.client.get('/{0}/'.format('/'.join(params)))
 
         # Test that the client was constructed correctly.
         client = evaluate.call_args[0][0]
