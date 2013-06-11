@@ -1,6 +1,9 @@
 import json
 import re
+import xml.sax
+
 from collections import namedtuple
+from xml.sax import ContentHandler
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -33,6 +36,21 @@ def validate_regex(regex_str):
         except re.error, exp:
             raise ValidationError(str(exp))
     return regex_str
+
+
+def validate_xml(data):
+    data_dict = json.loads(data)
+    for name, value in data_dict.items():
+        xml_str = '<div>{0}</div>'.format(value)
+        try:
+            xml.sax.parseString(xml_str, ContentHandler())
+        except xml.sax.SAXParseException as e:
+            error_msg = (
+                'XML Error in value "{name}": {message} in column {column}'
+                ).format(name=name, message=e.getMessage(),
+                         column=e.getColumnNumber())
+            raise ValidationError(error_msg)
+    return data
 
 
 class RegexField(models.CharField):
@@ -127,7 +145,7 @@ class ClientMatchRule(models.Model):
 class Snippet(models.Model):
     name = models.CharField(max_length=255, unique=True)
     template = models.ForeignKey(SnippetTemplate)
-    data = models.TextField(default='{}')
+    data = models.TextField(default='{}', validators=[validate_xml])
 
     priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)

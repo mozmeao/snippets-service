@@ -1,9 +1,9 @@
 from django.core.exceptions import ValidationError
 
 from mock import Mock
-from nose.tools import eq_, ok_
+from nose.tools import eq_, ok_, assert_raises
 
-from snippets.base.models import Client, validate_regex
+from snippets.base.models import Client, validate_regex, validate_xml
 from snippets.base.tests import (ClientMatchRuleFactory, SnippetFactory,
                                  SnippetTemplateFactory, TestCase)
 
@@ -57,15 +57,25 @@ class ClientMatchRuleTests(TestCase):
 class RegexValidatorTests(TestCase):
     def test_valid_string(self):
         valid_string = 'foobar'
-        self.assertEqual(validate_regex(valid_string), valid_string)
+        eq_(validate_regex(valid_string), valid_string)
 
     def test_valid_regex(self):
         valid_regex = '/\d+/'
-        self.assertEqual(validate_regex(valid_regex), valid_regex)
+        eq_(validate_regex(valid_regex), valid_regex)
 
     def test_invalid_regex(self):
         bogus_regex = '/(?P\d+)/'
-        self.assertRaises(ValidationError, validate_regex, bogus_regex)
+        assert_raises(ValidationError, validate_regex, bogus_regex)
+
+
+class XMLValidatorTests(TestCase):
+    def test_valid_xml(self):
+        valid_xml = '{"foo": "<b>foobar</b>"}'
+        eq_(validate_xml(valid_xml), valid_xml)
+
+    def test_invalid_xml(self):
+        invalid_xml = '{"foo": "<b><i>foobar<i></b>"}'
+        assert_raises(ValidationError, validate_xml, invalid_xml)
 
 
 class SnippetTemplateTests(TestCase):
