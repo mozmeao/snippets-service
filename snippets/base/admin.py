@@ -41,7 +41,14 @@ admin.site.register(models.Snippet, SnippetAdmin)
 
 
 class ClientMatchRuleAdmin(admin.ModelAdmin):
+    list_display = ('description', 'startpage_version', 'name',
+                    'version', 'locale', 'appbuildid', 'build_target',
+                    'channel', 'os_version', 'distribution', 'distribution_version',
+                    'modified')
+    list_filter = ('name', 'version', 'os_version', 'appbuildid', 'build_target',
+                   'channel', 'distribution', 'locale')
     save_on_top = True
+    search_fields = ('description',)
 admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 
 
