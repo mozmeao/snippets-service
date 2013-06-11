@@ -14,6 +14,8 @@ class SnippetAdmin(admin.ModelAdmin):
     list_display = ('name', 'priority', 'disabled', 'publish_start',
                     'publish_end', 'created', 'modified')
     list_filter = ('disabled', 'client_match_rules')
+    list_editable = ('disabled', 'priority', 'publish_start', 'publish_end')
+
     readonly_fields = ('created', 'modified')
     save_on_top = True
     search_fields = ('name', 'client_match_rules__description',
