@@ -16,6 +16,8 @@ class SnippetAdmin(admin.ModelAdmin):
     list_filter = ('disabled', 'client_match_rules')
     readonly_fields = ('created', 'modified')
     save_on_top = True
+    search_fields = ('name', 'client_match_rules__description',
+                     'template__name')
 
     filter_horizontal = ('client_match_rules',)
 
