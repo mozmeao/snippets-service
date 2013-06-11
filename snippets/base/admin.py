@@ -12,7 +12,7 @@ class SnippetAdmin(admin.ModelAdmin):
     form = forms.SnippetAdminForm
 
     list_display = ('name', 'priority', 'disabled', 'publish_start',
-                    'publish_end', 'created', 'modified')
+                    'publish_end', 'modified')
     list_filter = ('disabled', 'client_match_rules')
     list_editable = ('disabled', 'priority', 'publish_start', 'publish_end')
 
