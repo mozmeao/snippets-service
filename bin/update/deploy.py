@@ -49,8 +49,6 @@ def clean(ctx):
 def update_assets(ctx):
     with ctx.lcd(settings.SRC_DIR):
         ctx.local('python2.6 manage.py collectstatic --noinput')
-        # LANG=en_US.UTF-8 is sometimes necessary for the YUICompressor.
-        ctx.local('LANG=en_US.UTF8 python2.6 manage.py compress_assets')
 
         # Compile nunjucks templates.
         ctx.local('node {compile_bin} {dir} > {dir}/compiled.js'.format(
