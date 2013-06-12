@@ -14,8 +14,9 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.admin',
 
     # Libraries
-    'django_filters',
     'django_ace',
+    'django_filters',
+    'smuggler',
     'south',
 ]
 
@@ -23,6 +24,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
 # apps here:
 JINGO_EXCLUDE_APPS = [
     'admin',
+    'smuggler',
 ]
 
 # Should robots.txt deny everything or disallow a calculated list of URLs we

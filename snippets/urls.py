@@ -22,6 +22,7 @@ def robots_txt(request):
 urlpatterns = patterns('',
     url(r'', include('snippets.base.urls')),
 
+    url(r'^admin/', include('smuggler.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^robots\.txt$', robots_txt)
 )

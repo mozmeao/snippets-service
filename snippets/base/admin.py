@@ -8,7 +8,12 @@ from jinja2.meta import find_undeclared_variables
 from snippets.base import forms, models
 
 
-class SnippetAdmin(admin.ModelAdmin):
+class BaseModelAdmin(admin.ModelAdmin):
+    """Holds customizations shared by every ModelAdmin in the site."""
+    change_list_template = 'smuggler/change_list.html'
+
+
+class SnippetAdmin(BaseModelAdmin):
     form = forms.SnippetAdminForm
 
     list_display = ('name', 'priority', 'disabled', 'publish_start',
@@ -54,7 +59,7 @@ class SnippetAdmin(admin.ModelAdmin):
 admin.site.register(models.Snippet, SnippetAdmin)
 
 
-class ClientMatchRuleAdmin(admin.ModelAdmin):
+class ClientMatchRuleAdmin(BaseModelAdmin):
     list_display = ('description', 'startpage_version', 'name',
                     'version', 'locale', 'appbuildid', 'build_target',
                     'channel', 'os_version', 'distribution', 'distribution_version',
@@ -77,7 +82,7 @@ class SnippetTemplateVariableInline(admin.TabularInline):
 RESERVED_VARIABLES = ('_',)
 
 
-class SnippetTemplateAdmin(admin.ModelAdmin):
+class SnippetTemplateAdmin(BaseModelAdmin):
     save_on_top = True
     inlines = (SnippetTemplateVariableInline,)
     formfield_overrides = {
