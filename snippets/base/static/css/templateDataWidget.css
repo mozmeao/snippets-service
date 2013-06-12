@@ -1,9 +1,60 @@
 .widget-container {
     float: left;
+    border: 1px solid #DDD;
+}
+
+.template-data-widget table {
+    border: none;
+    width: 100%;
+}
+
+.template-data-widget td {
+    border-right: 1px solid #DDD;
+    padding: 10px;
+}
+
+.template-data-widget td:last-child {
+    border-right: none;
+}
+
+.template-data-widget th {
+    margin: 0;
+    padding: 2px 5px 3px 5px;
+    font-size: 11px;
+    font-weight: bold;
+    background: #7CA0C7 url(/static/admin/img/default-bg.gif) top left repeat-x;
+    color: white;
+}
+
+.template-data-widget .variable-name {
+    font-size: 16px;
+}
+
+.template-data-widget textarea {
+    display: block;
+    height: 200px;
+    font-size: 12px;
+    width: 500px;
+}
+
+.template-data-widget .image-input {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.template-data-widget img {
+    display: inline-block;
+    border: 1px solid #DDD;
+}
+
+.snippet-preview-container {
+    border-top: 1px solid #DDD;
+    height: 480px;
+    width: 640px;
 }
 
 .snippet-preview-container iframe {
-    border: 1px solid #EEE;
-    height: 480px;
-    width: 640px;
+    border: none;
+    height: 100%;
+    width: 100%;
 }
