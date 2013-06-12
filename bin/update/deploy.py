@@ -35,10 +35,6 @@ def update_info(ctx):
         ctx.local('git log -3')
         ctx.local('git status')
         ctx.local('git submodule status')
-        with ctx.lcd('locale'):
-            ctx.local('svn info')
-            ctx.local('svn status')
-
         ctx.local('git rev-parse HEAD > static/revision')
 
 
@@ -77,21 +73,6 @@ def update_db(ctx):
 
 
 @task
-def update_locales(ctx):
-    """
-    Update a locale directory from SVN.
-
-    Assumes localizations 1) exist, 2) are in SVN, 3) are in SRC_DIR/locale and
-    4) have a compile-mo.sh script. This should all be pretty standard, but
-    change it if you need to.
-    """
-    with ctx.lcd(os.path.join(settings.SRC_DIR, 'locale')):
-        ctx.local('svn up')
-    with ctx.lcd(settings.SRC_DIR):
-        ctx.local('./bin/compile-mo.sh locale/')
-
-
-@task
 def update_product_details(ctx):
     with ctx.lcd(settings.SRC_DIR):
         ctx.local('python2.6 manage.py update_product_details')
@@ -120,7 +101,6 @@ def pre_update(ctx, ref=settings.UPDATE_REF):
 @task
 def update(ctx):
     update_assets()
-    #update_locales()
     update_db()
     update_product_details()
 
