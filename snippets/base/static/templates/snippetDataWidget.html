@@ -8,7 +8,7 @@
       <td>{{ variable.name }}</td>
       <td>
         {% if variable.type == types.text %}
-          <input type="text" value="{{ originalData[variable.name] }}">
+          <textarea>{{ originalData[variable.name] }}</textarea>
         {% elif variable.type == types.image %}
           <input type="file" class="image-input">
           <img src="{{ originalData[variable.name] }}">
