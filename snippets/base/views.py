@@ -27,10 +27,13 @@ def index(request):
 def fetch_snippets(request, **kwargs):
     client = Client(**kwargs)
 
-    passed_rules, failed_rules = ClientMatchRule.objects.all().evaluate(client)
-    matching_snippets = Snippet.objects.exclude(
-        client_match_rules__in=failed_rules
-    )
+    matching_snippets = Snippet.objects.match_client(client)
+    passed_rules, failed_rules = (ClientMatchRule.objects
+                                  .filter(snippet__in=matching_snippets)
+                                  .evaluate(client))
+
+    matching_snippets = (matching_snippets
+                         .exclude(client_match_rules__in=failed_rules))
 
     return render(request, 'base/fetch_snippets.html', {
         'snippets': matching_snippets,
