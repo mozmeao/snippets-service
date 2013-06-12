@@ -109,13 +109,6 @@ def deploy_app(ctx):
     ctx.remote('touch %s' % settings.REMOTE_WSGI)
 
 
-@hostgroups(settings.CELERY_HOSTGROUP, remote_kwargs={'ssh_key': settings.SSH_KEY})
-def update_celery(ctx):
-    """Update and restart Celery."""
-    ctx.remote(settings.REMOTE_UPDATE_SCRIPT)
-    ctx.remote('supervisorctl restart %s' % settings.CELERY_SERVICE)
-
-
 @task
 def pre_update(ctx, ref=settings.UPDATE_REF):
     """Update code to pick up changes to this file."""
@@ -136,7 +129,6 @@ def update(ctx):
 def deploy(ctx):
     checkin_changes()
     deploy_app()
-    #update_celery()
 
 
 @task
