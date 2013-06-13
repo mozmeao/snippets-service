@@ -4,11 +4,13 @@ from collections import defaultdict
 
 from django import forms
 from django.conf import settings
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from snippets.base.models import Snippet, SnippetTemplateVariable
+from snippets.base.models import (ENGLISH_LANGUAGE_CHOICES, Snippet,
+                                  SnippetTemplateVariable)
 
 
 class TemplateSelect(forms.Select):
@@ -86,9 +88,21 @@ class TemplateDataWidget(forms.TextInput):
 
 
 class SnippetAdminForm(forms.ModelForm):
+    locales = forms.MultipleChoiceField(
+        required=False,
+        choices=ENGLISH_LANGUAGE_CHOICES,
+        widget=FilteredSelectMultiple('locales', is_stacked=False))
+
     class Meta:
         model = Snippet
         widgets = {
             'template': TemplateSelect,
             'data': TemplateDataWidget('template'),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(SnippetAdminForm, self).__init__(*args, **kwargs)
+
+        # Populates the list of locales from the snippet's existing values.
+        locales = self.instance.locale_set.all()
+        self.fields['locales'].initial = [l.locale for l in locales]

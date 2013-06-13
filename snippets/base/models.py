@@ -5,11 +5,13 @@ import xml.sax
 from collections import namedtuple
 from xml.sax import ContentHandler
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from jingo import env
 from jinja2 import Markup
+from product_details import product_details
 
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 
@@ -18,19 +20,54 @@ CHANNELS = ('release', 'beta', 'aurora', 'nightly')
 STARTPAGE_VERSIONS = ('1', '2', '3', '4')
 CLIENT_NAMES = {'Firefox': 'firefox', 'fennec': 'fennec'}
 
-# NamedTuple that represents a user's client program.
-Client = namedtuple('Client', (
-    'startpage_version',
-    'name',
-    'version',
-    'appbuildid',
-    'build_target',
-    'locale',
-    'channel',
-    'os_version',
-    'distribution',
-    'distribution_version'
-))
+ENGLISH_LANGUAGE_CHOICES = sorted(
+    [(key.lower(), u'{0} ({1})'.format(key, value['English']))
+     for key, value in product_details.languages.items()]
+)
+ENGLISH_LANGUAGE_VALUES = [choice[0] for choice in ENGLISH_LANGUAGE_CHOICES]
+
+ENGLISH_COUNTRY_CHOICES = sorted(
+    [(code, u'{0} ({1})'.format(name, code)) for code, name in
+     product_details.get_regions('en-US').items()],
+    cmp=lambda x, y: cmp(x[1], y[1])
+)
+
+
+class LocaleField(models.CharField):
+    description = ('CharField with locale settings specific to Snippets '
+                   'defaults.')
+
+    def __init__(self, *args, **kwargs):
+        options = {
+            'max_length': 32,
+            'default': settings.LANGUAGE_CODE,
+            'choices': ENGLISH_LANGUAGE_CHOICES
+        }
+        options.update(kwargs)
+        return super(LocaleField, self).__init__(*args, **options)
+
+
+class CountryField(models.CharField):
+    description = ('CharField with country settings specific to Snippets '
+                   'defaults.')
+
+    def __init__(self, *args, **kwargs):
+        options = {
+            'max_length': 16,
+            'default': u'us',
+            'choices': ENGLISH_COUNTRY_CHOICES
+        }
+        options.update(kwargs)
+        return super(CountryField, self).__init__(*args, **options)
+
+
+class RegexField(models.CharField):
+    def __init__(self, *args, **kwargs):
+        myargs = {'max_length': 64,
+                  'blank': True,
+                  'validators': [validate_regex]}
+        myargs.update(kwargs)
+        return super(RegexField, self).__init__(*args, **myargs)
 
 
 def validate_regex(regex_str):
@@ -52,19 +89,25 @@ def validate_xml(data):
         except xml.sax.SAXParseException as e:
             error_msg = (
                 'XML Error in value "{name}": {message} in column {column}'
-                ).format(name=name, message=e.getMessage(),
-                         column=e.getColumnNumber())
+                .format(name=name, message=e.getMessage(),
+                        column=e.getColumnNumber()))
             raise ValidationError(error_msg)
     return data
 
 
-class RegexField(models.CharField):
-    def __init__(self, *args, **kwargs):
-        myargs = {'max_length': 64,
-                  'blank': True,
-                  'validators': [validate_regex]}
-        myargs.update(kwargs)
-        return super(RegexField, self).__init__(*args, **myargs)
+# NamedTuple that represents a user's client program.
+Client = namedtuple('Client', (
+    'startpage_version',
+    'name',
+    'version',
+    'appbuildid',
+    'build_target',
+    'locale',
+    'channel',
+    'os_version',
+    'distribution',
+    'distribution_version'
+))
 
 
 class SnippetTemplate(models.Model):
@@ -158,6 +201,8 @@ class Snippet(models.Model):
     priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)
 
+    country = CountryField('Geolocation Country', blank=True, default='')
+
     publish_start = models.DateTimeField(blank=True, null=True)
     publish_end = models.DateTimeField(blank=True, null=True)
 
@@ -187,10 +232,16 @@ class Snippet(models.Model):
 
     def render(self):
         data = json.loads(self.data)
+        attrs = {'data-snippet-id': self.id}
+        if self.country:
+            attrs['data-country'] = self.country
+
+        attr_string = ' '.join('{0}="{1}"'.format(key, value) for key, value in
+                               attrs.items())
         rendered_snippet = u"""
-            <div data-snippet-id="{id}">{content}</div>
+            <div {attrs}>{content}</div>
         """.format(
-            id=self.id,
+            attrs=attr_string,
             content=self.template.render(data)
         )
 
@@ -200,5 +251,12 @@ class Snippet(models.Model):
         return self.name
 
 
+class SnippetLocale(models.Model):
+    snippet = models.ForeignKey(Snippet, related_name='locale_set')
+    locale = LocaleField()
+
+
 from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ['^snippets\.base\.models\.LocaleField'])
+add_introspection_rules([], ['^snippets\.base\.models\.CountryField'])
 add_introspection_rules([], ["^snippets\.base\.models\.RegexField"])
