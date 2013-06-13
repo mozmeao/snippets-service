@@ -2,10 +2,13 @@ from django.core.exceptions import ValidationError
 
 from mock import Mock
 from nose.tools import eq_, ok_, assert_raises
+from pyquery import PyQuery as pq
 
 from snippets.base.models import Client, validate_regex, validate_xml
 from snippets.base.tests import (ClientMatchRuleFactory, SnippetFactory,
-                                 SnippetTemplateFactory, TestCase)
+                                 SnippetTemplateFactory, 
+                                 SnippetTemplateVariableFactory,
+                                 TestCase)
 
 
 class ClientMatchRuleTests(TestCase):
@@ -77,6 +80,10 @@ class XMLValidatorTests(TestCase):
         invalid_xml = '{"foo": "<b><i>foobar<i></b>"}'
         assert_raises(ValidationError, validate_xml, invalid_xml)
 
+    def test_unicode(self):
+        unicode_xml = '{"foo": "<b>\u03c6\u03bf\u03bf</b>"}'
+        eq_(validate_xml(unicode_xml), unicode_xml)
+
 
 class SnippetTemplateTests(TestCase):
     def test_render(self):
@@ -97,3 +104,12 @@ class SnippetTests(TestCase):
                     .format(snippet.id))
         eq_(snippet.render().strip(), expected)
         template.render.assert_called_with({'url': 'asdf', 'text': 'qwer'})
+
+    def test_render_unicode(self):
+        variable = SnippetTemplateVariableFactory(name='data')
+        template = SnippetTemplateFactory.create(code='{{ data }}',
+                                                 variable_set=[variable])
+        snippet = SnippetFactory(template=template,
+                                 data='{"data": "\u03c6\u03bf\u03bf"}')
+        output = snippet.render()
+        eq_(pq(output)[0].text, u'\u03c6\u03bf\u03bf')
