@@ -123,6 +123,9 @@ class ClientMatchRule(models.Model):
 
     objects = ClientMatchRuleManager()
 
+    class Meta:
+        ordering = ('-modified',)
+
     def matches(self, client):
         """Evaluate whether this rule matches the given client."""
         match = True
@@ -178,6 +181,9 @@ class Snippet(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     objects = SnippetManager()
+
+    class Meta:
+        ordering = ('-modified',)
 
     def render(self):
         data = json.loads(self.data)
