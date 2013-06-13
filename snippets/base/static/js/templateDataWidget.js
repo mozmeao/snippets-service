@@ -11,7 +11,9 @@
     if (!nunjucks.env) {
         // If not precompiled, create an environment with an HTTP loader.
         var loader = new nunjucks.HttpLoader('/static/templates');
-        nunjucks.env = new nunjucks.Environment(loader);
+        nunjucks.env = new nunjucks.Environment(loader, {
+            autoescape: true
+        });
     }
     var nj = nunjucks.env;
 
@@ -83,7 +85,7 @@
                 self.onImageFieldChange(this);
             });
 
-            this.$container.on('keydown', 'input[type="text"]', function() {
+            this.$container.on('input', 'textarea', function() {
                 self.triggerDataChange();
             });
         },
@@ -158,7 +160,7 @@
 
                 switch ($item.data('type')) {
                     case VARIABLE_TYPES.text:
-                        data[variable] = $item.find('input').val();
+                        data[variable] = $item.find('textarea').val();
                         break;
                     case VARIABLE_TYPES.image:
                         data[variable] = $item.find('img').attr('src');

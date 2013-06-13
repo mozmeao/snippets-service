@@ -5,10 +5,11 @@
   </tr>
   {% for variable in variables %}
     <tr class="variable" data-variable="{{ variable.name }}" data-type="{{ variable.type }}">
-      <td>{{ variable.name }}</td>
+      <td class="variable-name">{{ variable.name }}</td>
       <td>
         {% if variable.type == types.text %}
-          <input type="text" value="{{ originalData[variable.name] }}">
+          <textarea>{{ originalData[variable.name] }}</textarea>
+          <small>HTML is allowed.</small>
         {% elif variable.type == types.image %}
           <input type="file" class="image-input">
           <img src="{{ originalData[variable.name] }}">
