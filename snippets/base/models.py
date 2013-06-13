@@ -45,6 +45,7 @@ def validate_regex(regex_str):
 def validate_xml(data):
     data_dict = json.loads(data)
     for name, value in data_dict.items():
+        value = value.encode('utf-8')
         xml_str = '<div>{0}</div>'.format(value)
         try:
             xml.sax.parseString(xml_str, ContentHandler())
@@ -180,7 +181,7 @@ class Snippet(models.Model):
 
     def render(self):
         data = json.loads(self.data)
-        rendered_snippet = """
+        rendered_snippet = u"""
             <div data-snippet-id="{id}">{content}</div>
         """.format(
             id=self.id,
