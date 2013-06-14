@@ -1,6 +1,7 @@
 from django.db.models import Manager
 from django.db.models.query import QuerySet
 
+from snippets.base import LANGUAGE_VALUES
 from snippets.base.util import first
 
 
@@ -23,8 +24,7 @@ class ClientMatchRuleManager(Manager):
 class SnippetManager(Manager):
     def match_client(self, client):
         from snippets.base.models import (
-            CHANNELS, CLIENT_NAMES, ENGLISH_LANGUAGE_VALUES,
-            STARTPAGE_VERSIONS)
+            CHANNELS, CLIENT_NAMES, STARTPAGE_VERSIONS)
 
         filters = {}
 
@@ -47,8 +47,7 @@ class SnippetManager(Manager):
             filters.update(**{'on_{0}'.format(client_name): True})
 
         # Only filter by locale if they pass a valid locale.
-        locale = first(ENGLISH_LANGUAGE_VALUES,
-                       client.locale.lower().startswith)
+        locale = first(LANGUAGE_VALUES, client.locale.lower().startswith)
         if locale:
             filters.update(locale_set__locale=client.locale)
 

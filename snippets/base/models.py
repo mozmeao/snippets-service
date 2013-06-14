@@ -2,81 +2,22 @@ import json
 import re
 import xml.sax
 
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from xml.sax import ContentHandler
 
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from jingo import env
 from jinja2 import Markup
-from product_details import product_details
 
+from snippets.base.fields import CountryField, LocaleField, RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly')
 STARTPAGE_VERSIONS = ('1', '2', '3', '4')
 CLIENT_NAMES = {'Firefox': 'firefox', 'fennec': 'fennec'}
-
-ENGLISH_LANGUAGE_CHOICES = sorted(
-    [(key.lower(), u'{0} ({1})'.format(key, value['English']))
-     for key, value in product_details.languages.items()]
-)
-ENGLISH_LANGUAGE_VALUES = [choice[0] for choice in ENGLISH_LANGUAGE_CHOICES]
-
-ENGLISH_COUNTRY_CHOICES = sorted(
-    [(code, u'{0} ({1})'.format(name, code)) for code, name in
-     product_details.get_regions('en-US').items()],
-    cmp=lambda x, y: cmp(x[1], y[1])
-)
-
-
-class LocaleField(models.CharField):
-    description = ('CharField with locale settings specific to Snippets '
-                   'defaults.')
-
-    def __init__(self, *args, **kwargs):
-        options = {
-            'max_length': 32,
-            'default': settings.LANGUAGE_CODE,
-            'choices': ENGLISH_LANGUAGE_CHOICES
-        }
-        options.update(kwargs)
-        return super(LocaleField, self).__init__(*args, **options)
-
-
-class CountryField(models.CharField):
-    description = ('CharField with country settings specific to Snippets '
-                   'defaults.')
-
-    def __init__(self, *args, **kwargs):
-        options = {
-            'max_length': 16,
-            'default': u'us',
-            'choices': ENGLISH_COUNTRY_CHOICES
-        }
-        options.update(kwargs)
-        return super(CountryField, self).__init__(*args, **options)
-
-
-class RegexField(models.CharField):
-    def __init__(self, *args, **kwargs):
-        myargs = {'max_length': 64,
-                  'blank': True,
-                  'validators': [validate_regex]}
-        myargs.update(kwargs)
-        return super(RegexField, self).__init__(*args, **myargs)
-
-
-def validate_regex(regex_str):
-    if regex_str.startswith('/'):
-        try:
-            re.compile(regex_str[1:-1])
-        except re.error, exp:
-            raise ValidationError(str(exp))
-    return regex_str
 
 
 def validate_xml(data):
@@ -232,12 +173,14 @@ class Snippet(models.Model):
 
     def render(self):
         data = json.loads(self.data)
-        attrs = {'data-snippet-id': self.id}
+
+        attrs = OrderedDict()  # Makes output predictable.
+        attrs['data-snippet-id'] = self.id
         if self.country:
             attrs['data-country'] = self.country
-
         attr_string = ' '.join('{0}="{1}"'.format(key, value) for key, value in
                                attrs.items())
+
         rendered_snippet = u"""
             <div {attrs}>{content}</div>
         """.format(

@@ -12,6 +12,6 @@ def get_object_or_none(model_class, **filters):
 def first(collection, callback):
     """
     Find the first item in collection that, when passed to callback, returns
-    True. Returns False if no such item is found.
+    True. Returns None if no such item is found.
     """
-    return next((item for item in collection if callback(item)), False)
+    return next((item for item in collection if callback(item)), None)

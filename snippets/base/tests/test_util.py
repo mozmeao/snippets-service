@@ -2,7 +2,7 @@ from nose.tools import eq_
 
 from snippets.base.models import Snippet
 from snippets.base.tests import SnippetFactory, TestCase
-from snippets.base.util import get_object_or_none
+from snippets.base.util import first, get_object_or_none
 
 
 class TestGetObjectOrNone(TestCase):
@@ -23,3 +23,14 @@ class TestGetObjectOrNone(TestCase):
         video = SnippetFactory.create(name='exists')
         value = get_object_or_none(Snippet, name='exists')
         eq_(value, video)
+
+
+class TestFirst(TestCase):
+    def test_basic(self):
+        items = [(0, 'foo'), (1, 'bar'), (2, 'baz')]
+        eq_(first(items, lambda x: x[0] == 1), (1, 'bar'))
+
+    def test_no_match(self):
+        """Return None if the callback never passes for any item."""
+        items = [(0, 'foo'), (1, 'bar'), (2, 'baz')]
+        eq_(first(items, lambda x: x[0] == 17), None)

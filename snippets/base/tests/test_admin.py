@@ -3,10 +3,48 @@ from django.test.client import RequestFactory
 from mock import Mock, patch
 from nose.tools import eq_, ok_
 
-from snippets.base.admin import SnippetTemplateAdmin
-from snippets.base.models import SnippetTemplate, SnippetTemplateVariable
-from snippets.base.tests import (SnippetTemplateFactory,
+from snippets.base.admin import SnippetAdmin, SnippetTemplateAdmin
+from snippets.base.models import (Snippet, SnippetLocale, SnippetTemplate,
+                                  SnippetTemplateVariable)
+from snippets.base.tests import (SnippetFactory, SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase)
+
+
+class SnippetAdminTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.model_admin = SnippetAdmin(Snippet, None)
+        self.model_admin.admin_site = Mock()
+
+    def _save_model(self, snippet, data):
+        """Call SnippetAdmin.save_model for the given snippet instance."""
+        request = self.factory.post('/url', {})
+        ModelForm = self.model_admin.get_form(request)
+
+        form = ModelForm(data, instance=snippet)
+        form.is_valid()  # Generate cleaned_data.
+        self.model_admin.save_model(request, snippet, form, True)
+
+    def test_save_model_locales(self):
+        """
+        save_model should delete any locales that were removed from the snippet
+        and save any locales that were added.
+        """
+        en_us = SnippetLocale(locale='en-us')
+        fr = SnippetLocale(locale='fr')
+        snippet = SnippetFactory.create(locale_set=[en_us, fr])
+
+        self._save_model(snippet, {
+            'name': 'test',
+            'data': '{}',
+            'template': snippet.template.id,
+            'locales': ['en-us', 'de'],
+            'priority': 0
+        })
+
+        snippet = Snippet.objects.get(pk=snippet.pk)
+        locales = (l.locale for l in snippet.locale_set.all())
+        eq_(set(locales), set(('en-us', 'de')))
 
 
 class SnippetTemplateAdminTests(TestCase):

@@ -1,12 +1,12 @@
 from django.core.exceptions import ValidationError
 
 from mock import Mock
-from nose.tools import eq_, ok_, assert_raises
+from nose.tools import assert_raises, eq_, ok_
 from pyquery import PyQuery as pq
 
-from snippets.base.models import Client, validate_regex, validate_xml
+from snippets.base.models import Client, validate_xml
 from snippets.base.tests import (ClientMatchRuleFactory, SnippetFactory,
-                                 SnippetTemplateFactory, 
+                                 SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory,
                                  TestCase)
 
@@ -57,20 +57,6 @@ class ClientMatchRuleTests(TestCase):
         ok_(not fail_rule.matches(client))
 
 
-class RegexValidatorTests(TestCase):
-    def test_valid_string(self):
-        valid_string = 'foobar'
-        eq_(validate_regex(valid_string), valid_string)
-
-    def test_valid_regex(self):
-        valid_regex = '/\d+/'
-        eq_(validate_regex(valid_regex), valid_regex)
-
-    def test_invalid_regex(self):
-        bogus_regex = '/(?P\d+)/'
-        assert_raises(ValidationError, validate_regex, bogus_regex)
-
-
 class XMLValidatorTests(TestCase):
     def test_valid_xml(self):
         valid_xml = '{"foo": "<b>foobar</b>"}'
@@ -98,12 +84,29 @@ class SnippetTests(TestCase):
         template.render.return_value = '<a href="asdf">qwer</a>'
 
         data = '{"url": "asdf", "text": "qwer"}'
+        snippet = SnippetFactory.create(template=template, data=data,
+                                        country='us')
+
+        expected = ('<div data-snippet-id="{0}" data-country="us">'
+                    '<a href="asdf">qwer</a></div>'.format(snippet.id))
+        eq_(snippet.render().strip(), expected)
+        template.render.assert_called_with({'url': 'asdf', 'text': 'qwer'})
+
+    def test_render_no_country(self):
+        """
+        If the snippet isn't geolocated, don't include the data-country
+        attribute.
+        """
+        template = SnippetTemplateFactory.create()
+        template.render = Mock()
+        template.render.return_value = '<a href="asdf">qwer</a>'
+
+        data = '{"url": "asdf", "text": "qwer"}'
         snippet = SnippetFactory.create(template=template, data=data)
 
         expected = ('<div data-snippet-id="{0}"><a href="asdf">qwer</a></div>'
                     .format(snippet.id))
         eq_(snippet.render().strip(), expected)
-        template.render.assert_called_with({'url': 'asdf', 'text': 'qwer'})
 
     def test_render_unicode(self):
         variable = SnippetTemplateVariableFactory(name='data')

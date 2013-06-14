@@ -9,8 +9,8 @@ from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from snippets.base.models import (ENGLISH_LANGUAGE_CHOICES, Snippet,
-                                  SnippetTemplateVariable)
+from snippets.base import ENGLISH_LANGUAGE_CHOICES
+from snippets.base.models import Snippet, SnippetTemplateVariable
 
 
 class TemplateSelect(forms.Select):

@@ -25,6 +25,8 @@ class ClientMatchRuleQuerySetTests(TestCase):
         eq_([rule1_pass, rule2_pass, rule4_pass], passed)
         eq_([rule3_fail, rule5_fail], failed)
 
+
+@patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
 class SnippetManagerTests(TestCase):
     def _assert_client_passes_filters(self, client_attrs, filters):
         params = {'startpage_version': '4',
@@ -46,21 +48,46 @@ class SnippetManagerTests(TestCase):
 
     def test_match_client(self):
         params = {}
-        filters = {'on_startpage_4': True, 'on_release':True,
-                   'on_firefox': True}
+        filters = {
+            'on_startpage_4': True,
+            'on_release': True,
+            'on_firefox': True,
+            'locale_set__locale': 'en-US'
+        }
         self._assert_client_passes_filters(params, filters)
 
     def test_match_client_not_matching_channel(self):
         params = {'channel': 'phantom'}
-        filters = {'on_startpage_4': True, 'on_firefox': True}
+        filters = {
+            'on_startpage_4': True,
+            'on_firefox': True,
+            'locale_set__locale': 'en-US'
+        }
         self._assert_client_passes_filters(params, filters)
 
     def test_match_client_not_matching_startpage(self):
         params = {'startpage_version': '0'}
-        filters = {'on_release': True, 'on_firefox': True}
+        filters = {
+            'on_release': True,
+            'on_firefox': True,
+            'locale_set__locale': 'en-US'
+        }
         self._assert_client_passes_filters(params, filters)
 
     def test_match_client_not_matching_name(self):
         params = {'name': 'unicorn'}
-        filters = {'on_startpage_4': True, 'on_release': True}
+        filters = {
+            'on_startpage_4': True,
+            'on_release': True,
+            'locale_set__locale': 'en-US'
+        }
+        self._assert_client_passes_filters(params, filters)
+
+    def test_match_client_not_matching_locale(self):
+        params = {'locale': 'de'}
+        filters = {
+            'on_startpage_4': True,
+            'on_release': True,
+            'on_firefox': True
+        }
         self._assert_client_passes_filters(params, filters)
