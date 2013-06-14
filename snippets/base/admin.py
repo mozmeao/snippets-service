@@ -36,7 +36,10 @@ class SnippetAdmin(BaseModelAdmin):
             'fields': ('template', 'data'),
         }),
         ('Publish Duration', {
-            'description': 'When will this snippet be available? (Optional)',
+            'description': ('When will this snippet be available? (Optional)'
+                            '<br>Publish times are in UTC. '
+                            '<a href="http://time.is/UTC" target="_blank">'
+                            'Click here to see the current time in UTC</a>.'),
             'fields': ('publish_start', 'publish_end'),
         }),
         ('Products', {

@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
 from mock import patch
-from nose.tools import eq_, ok_
+from nose.tools import eq_
 
 import snippets.base.models
 from snippets.base.models import ClientMatchRule
@@ -22,15 +24,17 @@ class FetchSnippetsTests(TestCase):
         client_match_rule_fail = ClientMatchRuleFactory(
             name='Firefox', channel='release', startpage_version='4')
 
+        # Matching snippets
         snippet_pass_1 = SnippetFactory.create(on_nightly=True)
         snippet_pass_2 = SnippetFactory.create(
             on_nightly=True, client_match_rules=[client_match_rule_pass])
 
-        snippet_fail_1 = SnippetFactory.create(on_nightly=False),
-        snippet_fail_2 = SnippetFactory.create(
-            on_nightly=False, client_match_rules=[client_match_rule_pass])
-        snippet_fail_2 = SnippetFactory.create(
-            on_nightly=False, client_match_rules=[client_match_rule_fail])
+        # Snippets that do not match.
+        SnippetFactory.create(on_nightly=False),
+        SnippetFactory.create(on_nightly=False,
+                              client_match_rules=[client_match_rule_pass])
+        SnippetFactory.create(on_nightly=False,
+                              client_match_rules=[client_match_rule_fail])
         snippet_fail_3 = SnippetFactory.create(
             on_nightly=True, client_match_rules=[client_match_rule_fail])
         snippet_fail_4 = SnippetFactory.create(
@@ -38,9 +42,7 @@ class FetchSnippetsTests(TestCase):
                                                  client_match_rule_pass])
 
         snippets_ok = [snippet_pass_1, snippet_pass_2]
-        snippets_fail = [snippet_fail_1, snippet_fail_2, snippet_fail_3,
-                         snippet_fail_4]
-        snippets_pass_match_client = (snippets_ok + 
+        snippets_pass_match_client = (snippets_ok +
                                       [snippet_fail_3, snippet_fail_4])
 
         params = ('4', 'Firefox', '23.0a1', '20130510041606',
@@ -52,9 +54,61 @@ class FetchSnippetsTests(TestCase):
         call_args = (ClientMatchRuleMock.objects
                      .filter.call_args[1]['snippet__in'])
         eq_(set(snippets_pass_match_client), set(call_args))
-        
+
+    @patch('snippets.base.views.datetime')
+    def test_publish_date_filters(self, mock_datetime):
+        """
+        If it is currently outside of the publish times for a snippet, it
+        should not be included in the response.
+        """
+        mock_datetime.utcnow.return_value = datetime(2013, 4, 5)
+
+        # Passing snippets.
+        snippet_no_dates = SnippetFactory.create(on_release=True)
+        snippet_after_start_date = SnippetFactory.create(
+            on_release=True,
+            publish_start=datetime(2013, 3, 6)
+        )
+        snippet_before_end_date = SnippetFactory.create(
+            on_release=True,
+            publish_end=datetime(2013, 6, 6)
+        )
+        snippet_within_range = SnippetFactory.create(
+            on_release=True,
+            publish_start=datetime(2013, 3, 6),
+            publish_end=datetime(2013, 6, 6)
+        )
+
+        # Failing snippets.
+        SnippetFactory.create(  # Before start date.
+            on_release=True,
+            publish_start=datetime(2013, 5, 6)
+        )
+        SnippetFactory.create(  # After end date.
+            on_release=True,
+            publish_end=datetime(2013, 3, 6)
+        )
+        SnippetFactory.create(  # Outside range.
+            on_release=True,
+            publish_start=datetime(2013, 6, 6),
+            publish_end=datetime(2013, 7, 6)
+        )
+
+        params = ('4', 'Firefox', '23.0a1', '20130510041606',
+                  'Darwin_Universal-gcc3', 'en-US', 'release',
+                  'Darwin%2010.8.0', 'default', 'default_version')
+        response = self.client.get('/{0}/'.format('/'.join(params)))
+
+        expected = set([snippet_no_dates, snippet_after_start_date,
+                       snippet_before_end_date, snippet_within_range])
+        eq_(expected, set(response.context['snippets']))
+
     @patch('snippets.base.views.ClientMatchRule.objects')
     def test_client_construction(self, mock_objects):
+        """
+        Ensure that the client object is constructed correctly from the URL
+        arguments.
+        """
         evaluate = mock_objects.filter.return_value.evaluate
         evaluate.return_value = ([], [])
 
@@ -63,7 +117,6 @@ class FetchSnippetsTests(TestCase):
                   'Darwin%2010.8.0', 'default', 'default_version')
         self.client.get('/{0}/'.format('/'.join(params)))
 
-        # Test that the client was constructed correctly.
         client = evaluate.call_args[0][0]
         eq_('4', client.startpage_version)
         eq_('Firefox', client.name)
