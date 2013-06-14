@@ -13,6 +13,7 @@ django-ace==0.3.1
 GitPython==0.1.7
 
 # Various tidbits
+django-smuggler==0.4
 -e git://github.com/jsocol/commonware.git#egg=commonware
 -e git://github.com/mozilla/nuggets.git#egg=nuggets
 
