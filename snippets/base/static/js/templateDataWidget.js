@@ -190,24 +190,29 @@
      */
     function SnippetPreview(elem, dataWidget) {
         var self = this;
-        this.$container = $(elem);
         this.dataWidget = dataWidget;
-        this.$iframe = $('<iframe class="snippet-preview"></iframe>');
-        this.$container.append(this.$iframe);
+
+        this.$container = $(elem);
+        this.$container.html(nj.render('snippetPreview.html', {
+            preview_url: this.$container.data('previewUrl')
+        }));
+
+        this.$form = this.$container.find('form');
+        this.$dataInput = this.$form.find('input[name="data"]');
+        this.$templateIdInput = this.$form.find('input[name="template_id"]');
 
         dataWidget.onDataChange(function() {
             self.onDataChange();
         });
+        self.onDataChange(); // Trigger initial preview.
     }
 
     SnippetPreview.prototype = {
         onDataChange: function() {
-            var previewUrl = this.$container.data('previewUrl');
-            var args = $.param({
-                data: JSON.stringify(this.dataWidget.generateData()),
-                template_id: this.dataWidget.getTemplateId()
-            });
-            this.$iframe.attr('src', previewUrl + '?' + args);
+            var data = JSON.stringify(this.dataWidget.generateData());
+            this.$dataInput.val(data);
+            this.$templateIdInput.val(this.dataWidget.getTemplateId());
+            this.$form.submit();
         }
     };
 

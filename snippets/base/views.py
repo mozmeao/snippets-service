@@ -8,6 +8,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render
 from django.views.decorators.cache import cache_control
+from django.views.decorators.csrf import csrf_exempt
 
 from commonware.response.decorators import xframe_allow
 
@@ -88,15 +89,16 @@ PREVIEW_CLIENT = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
 
 
 @xframe_allow
+@csrf_exempt
 @permission_required('base.change_snippet')
 def preview_snippet(request):
     """
-    Build a snippet using info from the GET parameters, and preview that
+    Build a snippet using info from the POST parameters, and preview that
     snippet on a mock about:home page.
     """
-    template_id = request.GET.get('template_id', None)
+    template_id = request.POST.get('template_id', None)
     template = get_object_or_none(SnippetTemplate, id=template_id)
-    data = request.GET.get('data', None)
+    data = request.POST.get('data', None)
 
     # Validate that data is JSON.
     try:

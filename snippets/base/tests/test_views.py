@@ -136,7 +136,7 @@ class PreviewSnippetTests(TestCase):
         self.client.login(username='admin', password='asdf')
 
     def _preview_snippet(self, **kwargs):
-        return self.client.get(reverse('base.preview'), kwargs)
+        return self.client.post(reverse('base.preview'), kwargs)
 
     def test_invalid_template(self):
         """If template_id is missing or invalid, return a 400 Bad Request."""
