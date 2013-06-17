@@ -42,6 +42,16 @@ class SnippetFactory(factory.DjangoModelFactory):
         if extracted:
             self.client_match_rules.add(*extracted)
 
+    @factory.post_generation
+    def locale_set(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.locale_set.add(*extracted)
+        else:
+            self.locale_set.create(locale='en-us')
+
 
 class ClientMatchRuleFactory(factory.DjangoModelFactory):
     FACTORY_FOR = models.ClientMatchRule
