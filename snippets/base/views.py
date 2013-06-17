@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from time import gmtime, strftime
 
 from django.conf import settings
@@ -58,13 +59,22 @@ def index(request):
 def fetch_snippets(request, **kwargs):
     client = Client(**kwargs)
 
-    matching_snippets = Snippet.objects.match_client(client)
+    matching_snippets = (Snippet.objects.match_client(client)
+                         .order_by('priority'))
+
     passed_rules, failed_rules = (ClientMatchRule.objects
                                   .filter(snippet__in=matching_snippets)
                                   .evaluate(client))
-
     matching_snippets = (matching_snippets
                          .exclude(client_match_rules__in=failed_rules))
+
+    # Filter by date in python to avoid caching based on the passing of time.
+    now = datetime.utcnow()
+    matching_snippets = [
+        snippet for snippet in matching_snippets if
+        (not snippet.publish_start or snippet.publish_start <= now) and
+        (not snippet.publish_end or snippet.publish_end >= now)
+    ]
 
     return render(request, 'base/fetch_snippets.html', {
         'snippets': matching_snippets,

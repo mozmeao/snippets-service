@@ -11,12 +11,30 @@ from django.db import models
 from jingo import env
 from jinja2 import Markup
 
+from snippets.base.fields import CountryField, LocaleField, RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly')
 STARTPAGE_VERSIONS = ('1', '2', '3', '4')
 CLIENT_NAMES = {'Firefox': 'firefox', 'fennec': 'fennec'}
+
+
+def validate_xml(data):
+    data_dict = json.loads(data)
+    for name, value in data_dict.items():
+        value = value.encode('utf-8')
+        xml_str = '<div>{0}</div>'.format(value)
+        try:
+            xml.sax.parseString(xml_str, ContentHandler())
+        except xml.sax.SAXParseException as e:
+            error_msg = (
+                'XML Error in value "{name}": {message} in column {column}'
+                .format(name=name, message=e.getMessage(),
+                        column=e.getColumnNumber()))
+            raise ValidationError(error_msg)
+    return data
+
 
 # NamedTuple that represents a user's client program.
 Client = namedtuple('Client', (
@@ -31,40 +49,6 @@ Client = namedtuple('Client', (
     'distribution',
     'distribution_version'
 ))
-
-
-def validate_regex(regex_str):
-    if regex_str.startswith('/'):
-        try:
-            re.compile(regex_str[1:-1])
-        except re.error, exp:
-            raise ValidationError(str(exp))
-    return regex_str
-
-
-def validate_xml(data):
-    data_dict = json.loads(data)
-    for name, value in data_dict.items():
-        value = value.encode('utf-8')
-        xml_str = '<div>{0}</div>'.format(value)
-        try:
-            xml.sax.parseString(xml_str, ContentHandler())
-        except xml.sax.SAXParseException as e:
-            error_msg = (
-                'XML Error in value "{name}": {message} in column {column}'
-                ).format(name=name, message=e.getMessage(),
-                         column=e.getColumnNumber())
-            raise ValidationError(error_msg)
-    return data
-
-
-class RegexField(models.CharField):
-    def __init__(self, *args, **kwargs):
-        myargs = {'max_length': 64,
-                  'blank': True,
-                  'validators': [validate_regex]}
-        myargs.update(kwargs)
-        return super(RegexField, self).__init__(*args, **myargs)
 
 
 class SnippetTemplate(models.Model):
@@ -158,6 +142,8 @@ class Snippet(models.Model):
     priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)
 
+    country = CountryField('Geolocation Country', blank=True, default='')
+
     publish_start = models.DateTimeField(blank=True, null=True)
     publish_end = models.DateTimeField(blank=True, null=True)
 
@@ -187,10 +173,16 @@ class Snippet(models.Model):
 
     def render(self):
         data = json.loads(self.data)
-        rendered_snippet = u"""
-            <div data-snippet-id="{id}">{content}</div>
-        """.format(
-            id=self.id,
+
+        # Use a list for attrs to make the output order predictable.
+        attrs = [('data-snippet-id', self.id)]
+        if self.country:
+            attrs.append(('data-country', self.country))
+        attr_string = ' '.join('{0}="{1}"'.format(key, value) for key, value in
+                               attrs)
+
+        rendered_snippet = u'<div {attrs}>{content}</div>'.format(
+            attrs=attr_string,
             content=self.template.render(data)
         )
 
@@ -200,5 +192,12 @@ class Snippet(models.Model):
         return self.name
 
 
+class SnippetLocale(models.Model):
+    snippet = models.ForeignKey(Snippet, related_name='locale_set')
+    locale = LocaleField()
+
+
 from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ['^snippets\.base\.models\.LocaleField'])
+add_introspection_rules([], ['^snippets\.base\.models\.CountryField'])
 add_introspection_rules([], ["^snippets\.base\.models\.RegexField"])

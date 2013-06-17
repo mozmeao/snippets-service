@@ -36,7 +36,10 @@ class SnippetAdmin(BaseModelAdmin):
             'fields': ('template', 'data'),
         }),
         ('Publish Duration', {
-            'description': 'When will this snippet be available? (Optional)',
+            'description': ('When will this snippet be available? (Optional)'
+                            '<br>Publish times are in UTC. '
+                            '<a href="http://time.is/UTC" target="_blank">'
+                            'Click here to see the current time in UTC</a>.'),
             'fields': ('publish_start', 'publish_end'),
         }),
         ('Products', {
@@ -46,16 +49,30 @@ class SnippetAdmin(BaseModelAdmin):
             'description': 'What channels will this snippet be available in?',
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
         }),
-        ('Startpage Versions', {
-            'fields': (('on_startpage_1', 'on_startpage_2', 'on_startpage_3',
-                        'on_startpage_4'),),
-            'classes': ('collapse',)
+        ('Country and Locale', {
+            'description': ('What country and locales will this snippet be '
+                            'available in?'),
+            'fields': (('country', 'locales'))
         }),
         ('Client Match Rules', {
             'fields': ('client_match_rules',),
             'classes': ('collapse',)
         }),
+        ('Startpage Versions', {
+            'fields': (('on_startpage_1', 'on_startpage_2', 'on_startpage_3',
+                        'on_startpage_4'),),
+            'classes': ('collapse',)
+        }),
     )
+
+    def save_model(self, request, obj, form, change):
+        """Save locale changes as well as the snippet itself."""
+        super(SnippetAdmin, self).save_model(request, obj, form, change)
+
+        locales = form.cleaned_data['locales']
+        obj.locale_set.all().delete()
+        for locale in locales:
+            models.SnippetLocale.objects.create(snippet=obj, locale=locale)
 admin.site.register(models.Snippet, SnippetAdmin)
 
 
