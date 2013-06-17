@@ -2,7 +2,7 @@ import json
 import re
 import xml.sax
 
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
 from xml.sax import ContentHandler
 
 from django.core.exceptions import ValidationError
@@ -174,16 +174,14 @@ class Snippet(models.Model):
     def render(self):
         data = json.loads(self.data)
 
-        attrs = OrderedDict()  # Makes output predictable.
-        attrs['data-snippet-id'] = self.id
+        # Use a list for attrs to make the output order predictable.
+        attrs = [('data-snippet-id', self.id)]
         if self.country:
-            attrs['data-country'] = self.country
+            attrs.append(('data-country', self.country))
         attr_string = ' '.join('{0}="{1}"'.format(key, value) for key, value in
-                               attrs.items())
+                               attrs)
 
-        rendered_snippet = u"""
-            <div {attrs}>{content}</div>
-        """.format(
+        rendered_snippet = u'<div {attrs}>{content}</div>'.format(
             attrs=attr_string,
             content=self.template.render(data)
         )
