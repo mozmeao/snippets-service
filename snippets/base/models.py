@@ -2,6 +2,7 @@ import json
 import re
 import xml.sax
 
+from StringIO import StringIO
 from collections import namedtuple
 from xml.sax import ContentHandler
 
@@ -22,11 +23,18 @@ CLIENT_NAMES = {'Firefox': 'firefox', 'fennec': 'fennec'}
 
 def validate_xml(data):
     data_dict = json.loads(data)
+
+    # set up a safer XML parser that does not resolve external
+    # entities
+    parser = xml.sax.make_parser()
+    parser.setContentHandler(ContentHandler())
+    parser.setFeature(xml.sax.handler.feature_external_ges, 0)
+
     for name, value in data_dict.items():
         value = value.encode('utf-8')
         xml_str = '<div>{0}</div>'.format(value)
         try:
-            xml.sax.parseString(xml_str, ContentHandler())
+            parser.parse(StringIO(xml_str))
         except xml.sax.SAXParseException as e:
             error_msg = (
                 'XML Error in value "{name}": {message} in column {column}'
