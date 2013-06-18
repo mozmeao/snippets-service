@@ -25,6 +25,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
 JINGO_EXCLUDE_APPS = [
     'admin',
     'smuggler',
+    'registration',
 ]
 
 # Should robots.txt deny everything or disallow a calculated list of URLs we
