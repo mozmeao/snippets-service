@@ -4,3 +4,6 @@
 [submodule "vendor-local/src/django-mozilla-product-details"]
 	path = vendor-local/src/django-mozilla-product-details
 	url = git://github.com/fwenzel/django-mozilla-product-details.git
+[submodule "vendor-local/src/django-sha2"]
+	path = vendor-local/src/django-sha2
+	url = https://github.com/fwenzel/django-sha2.git
