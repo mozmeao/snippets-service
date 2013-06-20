@@ -31,3 +31,6 @@ django-celery
 Babel>=0.9.4
 -e git://github.com/clouserw/tower.git#egg=tower
 -e git://github.com/fwenzel/django-mozilla-product-details@36ef06539d6b34c4f345fd0d3e16937d0db9a752#egg=django-mozilla-product-details
+
+# Caching
+django-cache-machine==0.8
