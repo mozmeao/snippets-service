@@ -196,6 +196,22 @@ class Snippet(models.Model):
 
         return Markup(rendered_snippet)
 
+    @property
+    def products(self):
+        products = []
+        for key, value in CLIENT_NAMES.items():
+            if getattr(self, 'on_{0}'.format(value), False):
+                products.append(key)
+        return products
+
+    @property
+    def channels(self):
+        channels = []
+        for channel in CHANNELS:
+            if getattr(self, 'on_{0}'.format(channel), False):
+                channels.append(channel)
+        return channels
+
     def __unicode__(self):
         return self.name
 

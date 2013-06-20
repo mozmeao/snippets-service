@@ -3,34 +3,34 @@
     <div class="row text-center">
       <div class="pagination">
         <ul>
-          {% if page.has_previous() %}
-            {% set prev_page = path|urlparams(page=page.previous_page_number()) %}
-          {% else %}
-            {% set prev_page = '' %}
-          {% endif %}
           <li><a href="{{ path|urlparams(page=1) }}">First</a></li>
-          <li><a href="{{ prev_page }}">«</a></li>
+          {% if page.has_previous() %}
+            <li><a href="{{ path|urlparams(page=page.previous_page_number()) }}">«</a></li>
+          {% else %}
+            <li class="disabled"><a href="#">«</a></li>
+          {% endif %}
 
 
           {% if pagination_range and pagination_range[0] != 1 %}
-            <li><a href="#">...</a></li>
+            <li class="disabled"><a href="#">...</a></li>
           {% endif %}
 
           {% for number in pagination_range %}
-            <li><a href="{{ path|urlparams(page=number) }}"> {{ number }}</a></li>
+            <li {{ page.number|ifeq(number, 'class="active"') }}>
+              <a href="{{ path|urlparams(page=number) }}">{{ number }}</a>
+            </li>
           {% endfor %}
 
           {% if (pagination_range and
                  pagination_range[-1] != page.paginator.num_pages) %}
-            <li><a href="#">...</a></li>
+            <li class="disabled"><a href="#">...</a></li>
           {% endif %}
 
           {% if page.has_next() %}
-            {% set next_page = path|urlparams(page=page.next_page_number()) %}
+            <li><a href="{{ path|urlparams(page=page.next_page_number()) }}">»</a></li>
           {% else %}
-            {% set next_page = '' %}
+            <li class="disabled"><a href="#">»</a></li>
           {% endif %}
-          <li><a href="{{ next_page }}">»</a></li>
           <li>
             <a href="{{ path|urlparams(page=page.paginator.num_pages) }}">
               Last

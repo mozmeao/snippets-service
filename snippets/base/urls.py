@@ -12,4 +12,5 @@ urlpatterns = patterns('',
         name='base.fetch_snippets'),
 
     url(r'^preview/$', views.preview_snippet, name='base.preview'),
+    url(r'^show/(?P<snippet_id>\d+)/$', views.show_snippet, name='base.show'),
 )

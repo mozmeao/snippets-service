@@ -167,3 +167,25 @@ class PreviewSnippetTests(TestCase):
         snippet = response.context['snippet']
         eq_(snippet.template, template)
         eq_(snippet.data, data)
+
+
+class ShowSnippetTests(TestCase):
+    def test_valid_snippet(self):
+        """Test show of snippet."""
+        snippet = SnippetFactory.create()
+        response = self.client.get(
+            reverse('base.show', kwargs={'snippet_id': snippet.id}))
+        eq_(response.status_code, 200)
+
+    def test_invalid_snippet(self):
+        """Test invalid snippet returns 404."""
+        response = self.client.get(
+            reverse('base.show', kwargs={'snippet_id': '100'}))
+        eq_(response.status_code, 404)
+
+    def test_valid_disabled_snippet(self):
+        """Test disabled snippet returns 404."""
+        snippet = SnippetFactory.create(disabled=True)
+        response = self.client.get(
+            reverse('base.show', kwargs={'snippet_id': snippet.id}))
+        eq_(response.status_code, 404)

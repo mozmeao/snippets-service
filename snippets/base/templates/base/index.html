@@ -1,26 +1,72 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="row-fluid">
-    <div class="span3">
-      <form>
-        {% for field in snippetsfilter.form %}
-          <strong>{{ field.label }}</strong>
-          {{ field_with_attrs(field, **{'class': 'span11'}) }}
-        {% endfor %}
-        <input type="submit" class="btn btn-primary span11"
-               value="{{ "Filter!" }}">
-      </form>
+  <div class="row">
+    <div class="span12 well">
+      <div class="row">
+        <form>
+          <fieldset>
+            {% for column in snippetsfilter.form|slice(3) %}
+              {% set parent_loop = loop %}
+              <div class="span4">
+                {% for field in column %}
+                  <label>{{ field.label }}</label>
+                  {{ field }}
+                {% endfor %}
+                {% if parent_loop.last %}
+                  <input type="submit" class="btn btn-primary span2" value="Filter!">
+               {% endif %}
+              </div>
+            {% endfor %}
+          </fieldset>
+        </form>
+      </div>
     </div>
-    <div class="span9">
+  </div>
+  <div class="row-fluid">
+    <div class="span12">
       <h1>Snippets</h1>
-      {% for snippet in snippets %}
-        {{ snippet.render() }}
+      {% if snippets.paginator.count %}
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Products</th>
+              <th>Channels</th>
+              <th>Locales</th>
+              <th>Country</th>
+              <th>Publish Start</th>
+              <th>Publish End</th>
+            </tr>
+          </thread>
+          {% for snippet in snippets %}
+            <tbody>
+              <tr>
+                <td>
+                  <a href="{{ url('base.show', snippet.id) }}" title="{{snippet.name }}">
+                    {{ snippet.name|truncate(30, end='...') }}
+                  </a>
+                </td>
+                <td>{{ snippet.products|join(', ')|title }}</td>
+                <td>{{ snippet.channels|join(', ')|title }}</td>
+                <td>
+                  <select multiple="multiple">
+                    {% for locale in snippet.locale_set.all() %}
+                      <option>{{ locale.get_locale_display() }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>{{ snippet.get_country_display() }}</td>
+                <td>{{ snippet.publish_start|humanize }}</td>
+                <td>{{ snippet.publish_end|humanize }}</td>
+              </tr>
+            </tbody>
+          {% endfor %}
+        </table>
       {% else %}
         No snippets! Maybe try
         <a href="{{ url('base.index') }}">without filters</a>?
-      {% endfor %}
-
+      {% endif %}
       <div class="row text-right">
         Total snippets: <em>{{ snippets.paginator.count }}</em>
       </div>

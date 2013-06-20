@@ -1,4 +1,7 @@
+from datetime import datetime
+
 from jingo import register
+
 
 @register.function
 def field_with_attrs(bfield, **kwargs):
@@ -11,3 +14,11 @@ def field_with_attrs(bfield, **kwargs):
         bfield.label = kwargs['label']
     bfield.field.widget.attrs.update(kwargs)
     return bfield
+
+
+@register.filter
+def humanize(date):
+    """Return a human readable date string."""
+    if isinstance(date, datetime):
+        return date.strftime('%a %d %b %Y, %H:%M UTC')
+    return None
