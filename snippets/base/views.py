@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseBadRequest
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 
@@ -21,7 +21,7 @@ from snippets.base.util import get_object_or_none
 
 
 HTTP_MAX_AGE = getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 1)
-SNIPPETS_PER_PAGE = 25
+SNIPPETS_PER_PAGE = 50
 
 
 class SnippetFilter(django_filters.FilterSet):
@@ -47,8 +47,8 @@ def index(request):
 
     # Display links to the page before and after the current page when
     # applicable.
-    pagination_range = range(max(1, snippets.number-1),
-                             min(snippets.number+2, paginator.num_pages+1))
+    pagination_range = range(max(1, snippets.number-2),
+                             min(snippets.number+3, paginator.num_pages+1))
     data = {'snippets': snippets,
             'pagination_range': pagination_range,
             'snippetsfilter': snippetsfilter}
@@ -116,3 +116,11 @@ def preview_snippet(request):
         'snippet': snippet,
         'client': PREVIEW_CLIENT
     })
+
+
+def show_snippet(request, snippet_id):
+    snippet = get_object_or_404(Snippet, pk=snippet_id, disabled=False)
+    return render(request, 'base/preview.html', {
+        'snippet': snippet,
+        'client': PREVIEW_CLIENT
+        })
