@@ -1,11 +1,10 @@
-from django.db.models import Manager
-from django.db.models.query import QuerySet
+from caching.base import CachingManager, CachingQuerySet
 
 from snippets.base import LANGUAGE_VALUES
 from snippets.base.util import first
 
 
-class ClientMatchRuleQuerySet(QuerySet):
+class ClientMatchRuleQuerySet(CachingQuerySet):
     def evaluate(self, client):
         passed_rules, failed_rules = [], []
         for rule in self:
@@ -16,12 +15,12 @@ class ClientMatchRuleQuerySet(QuerySet):
         return passed_rules, failed_rules
 
 
-class ClientMatchRuleManager(Manager):
+class ClientMatchRuleManager(CachingManager):
     def get_query_set(self):
         return ClientMatchRuleQuerySet(self.model)
 
 
-class SnippetManager(Manager):
+class SnippetManager(CachingManager):
     def match_client(self, client):
         from snippets.base.models import (
             CHANNELS, CLIENT_NAMES, STARTPAGE_VERSIONS)

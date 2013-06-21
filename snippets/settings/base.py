@@ -36,6 +36,9 @@ ENGAGE_ROBOTS = False
 # Always generate a CSRF token for anonymous users.
 ANON_ALWAYS = True
 
+# Caching
+CACHE_EMPTY_QUERYSETS = True
+
 LOGGING = {
     'loggers': {
         'playdoh': {

@@ -1,7 +1,6 @@
 import json
 import re
 import xml.sax
-
 from StringIO import StringIO
 from collections import namedtuple
 from xml.sax import ContentHandler
@@ -9,6 +8,7 @@ from xml.sax import ContentHandler
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from caching.base import CachingManager, CachingMixin
 from jingo import env
 from jinja2 import Markup
 
@@ -59,7 +59,7 @@ Client = namedtuple('Client', (
 ))
 
 
-class SnippetTemplate(models.Model):
+class SnippetTemplate(CachingMixin, models.Model):
     """
     A template for the body of a snippet. Can have multiple variables that the
     snippet will fill in.
@@ -70,6 +70,8 @@ class SnippetTemplate(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
+    objects = CachingManager()
+
     def render(self, ctx):
         return env.from_string(self.code).render(ctx)
 
@@ -77,7 +79,7 @@ class SnippetTemplate(models.Model):
         return self.name
 
 
-class SnippetTemplateVariable(models.Model):
+class SnippetTemplateVariable(CachingMixin, models.Model):
     """
     A variable for a template that an individual snippet can fill in with its
     own content.
@@ -90,11 +92,13 @@ class SnippetTemplateVariable(models.Model):
     name = models.CharField(max_length=255)
     type = models.IntegerField(choices=TYPE_CHOICES, default=TEXT)
 
+    objects = CachingManager()
+
     def __unicode__(self):
         return u'{0}: {1}'.format(self.template.name, self.name)
 
 
-class ClientMatchRule(models.Model):
+class ClientMatchRule(CachingMixin, models.Model):
     """Defines a rule that matches a snippet to certain clients."""
     description = models.CharField(max_length=255, unique=True)
     is_exclusion = models.BooleanField(default=False)
@@ -142,7 +146,7 @@ class ClientMatchRule(models.Model):
         return self.description
 
 
-class Snippet(models.Model):
+class Snippet(CachingMixin, models.Model):
     name = models.CharField(max_length=255, unique=True)
     template = models.ForeignKey(SnippetTemplate)
     data = models.TextField(default='{}', validators=[validate_xml])
@@ -216,9 +220,11 @@ class Snippet(models.Model):
         return self.name
 
 
-class SnippetLocale(models.Model):
+class SnippetLocale(CachingMixin, models.Model):
     snippet = models.ForeignKey(Snippet, related_name='locale_set')
     locale = LocaleField()
+
+    objects = CachingManager()
 
 
 from south.modelsinspector import add_introspection_rules
