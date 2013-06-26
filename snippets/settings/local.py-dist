@@ -66,3 +66,13 @@ ENGAGE_ROBOTS = True
 # Uncomment this line if you are running a local development install without
 # HTTPS to disable HTTPS-only cookies.
 # SESSION_COOKIE_SECURE = False
+
+# Uncomment to use django-cache-machine local cache for development.
+#CACHES = {
+#    'default': {
+#        'BACKEND': 'caching.backends.locmem.CacheClass',
+#    },
+#}
+
+# Snippets-specific caching
+SNIPPET_HTTP_MAX_AGE = 75  # Time to cache HTTP responses for snippets.
