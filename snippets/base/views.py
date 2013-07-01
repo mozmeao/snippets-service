@@ -61,6 +61,7 @@ def fetch_snippets(request, **kwargs):
     client = Client(**kwargs)
 
     matching_snippets = (Snippet.objects.match_client(client)
+                         .filter(disabled=False)
                          .order_by('priority'))
 
     passed_rules, failed_rules = (ClientMatchRule.objects
