@@ -49,6 +49,6 @@ class SnippetManager(Manager):
         # Only filter by locale if they pass a valid locale.
         locale = first(LANGUAGE_VALUES, client.locale.lower().startswith)
         if locale:
-            filters.update(locale_set__locale=client.locale)
+            filters.update(locale_set__locale=locale)
 
         return self.filter(**filters)

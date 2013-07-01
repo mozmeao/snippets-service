@@ -52,7 +52,7 @@ class SnippetManagerTests(TestCase):
             'on_startpage_4': True,
             'on_release': True,
             'on_firefox': True,
-            'locale_set__locale': 'en-US'
+            'locale_set__locale': 'en-us'
         }
         self._assert_client_passes_filters(params, filters)
 
@@ -61,7 +61,7 @@ class SnippetManagerTests(TestCase):
         filters = {
             'on_startpage_4': True,
             'on_firefox': True,
-            'locale_set__locale': 'en-US'
+            'locale_set__locale': 'en-us'
         }
         self._assert_client_passes_filters(params, filters)
 
@@ -70,7 +70,7 @@ class SnippetManagerTests(TestCase):
         filters = {
             'on_release': True,
             'on_firefox': True,
-            'locale_set__locale': 'en-US'
+            'locale_set__locale': 'en-us'
         }
         self._assert_client_passes_filters(params, filters)
 
@@ -79,7 +79,7 @@ class SnippetManagerTests(TestCase):
         filters = {
             'on_startpage_4': True,
             'on_release': True,
-            'locale_set__locale': 'en-US'
+            'locale_set__locale': 'en-us'
         }
         self._assert_client_passes_filters(params, filters)
 
