@@ -3,7 +3,8 @@ import json
 from cronjobs import register
 from django.db import transaction
 
-from snippets.base.models import (ClientMatchRule, Snippet,
+from snippets.base import ENGLISH_LANGUAGE_CHOICES
+from snippets.base.models import (ClientMatchRule, Snippet, SnippetLocale,
                                   SnippetTemplate, SnippetTemplateVariable)
 
 
@@ -97,6 +98,11 @@ def import_v1_data(filename):
                 cmr_description = find_client_match_rule(old_data, rule)
                 cmr = ClientMatchRule.objects.get(description=cmr_description)
                 snippet.client_match_rules.add(cmr)
+
+            # Allow all locales. Will be filtered using Client Match
+            # Rules.
+            for locale_code, locale_name in ENGLISH_LANGUAGE_CHOICES:
+                SnippetLocale.objects.create(snippet=snippet, locale=locale_code)
 
             # Force created and modified timestamps.
             (Snippet.objects.filter(pk=snippet.pk).update(modified=modified,
