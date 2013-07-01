@@ -94,10 +94,16 @@ def import_v1_data(filename):
             snippet = Snippet.objects.create(**data)
 
             # Link Match Rules.
-            for rule in entry['fields']['client_match_rules']:
-                cmr_description = find_client_match_rule(old_data, rule)
-                cmr = ClientMatchRule.objects.get(description=cmr_description)
-                snippet.client_match_rules.add(cmr)
+            client_match_rules = entry['fields']['client_match_rules']
+            if not client_match_rules:
+                snippet.disabled = True
+                snippet.save()
+            else:
+                for rule in client_match_rules:
+                    cmr_description = find_client_match_rule(old_data, rule)
+                    cmr = ClientMatchRule.objects.get(description=cmr_description)
+                    snippet.client_match_rules.add(cmr)
+
 
             # Allow all locales. Will be filtered using Client Match
             # Rules.
