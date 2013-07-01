@@ -60,7 +60,7 @@ def import_v1_data(filename):
             modified = data.pop('modified')
 
             # Delete legacy fields.
-            for key in ['country', 'preview', 'client_match_rules']:
+            for key in ['preview', 'client_match_rules']:
                 del data[key]
 
             data.update({
@@ -86,6 +86,9 @@ def import_v1_data(filename):
             # Generate a unique name if needed.
             if Snippet.objects.filter(name=data['name']).exists():
                 data['name'] = 'Renamed [{0}]: {1}'.format(index, data['name'])
+
+            # Force id.
+            data['id'] = entry['pk']
 
             snippet = Snippet.objects.create(**data)
 
