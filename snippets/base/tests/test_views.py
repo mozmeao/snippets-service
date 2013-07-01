@@ -111,7 +111,8 @@ class FetchSnippetsTests(TestCase):
         Ensure that the client object is constructed correctly from the URL
         arguments.
         """
-        evaluate = mock_objects.filter.return_value.evaluate
+        evaluate = (mock_objects.filter.return_value
+                    .distinct.return_value.evaluate)
         evaluate.return_value = ([], [])
 
         params = ('4', 'Firefox', '23.0a1', '20130510041606',

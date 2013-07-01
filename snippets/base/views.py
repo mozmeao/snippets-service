@@ -66,6 +66,7 @@ def fetch_snippets(request, **kwargs):
 
     passed_rules, failed_rules = (ClientMatchRule.objects
                                   .filter(snippet__in=matching_snippets)
+                                  .distinct()
                                   .evaluate(client))
     matching_snippets = (matching_snippets
                          .exclude(client_match_rules__in=failed_rules))
