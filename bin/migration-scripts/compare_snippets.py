@@ -5,7 +5,7 @@ Compare snippets returned from two snippets servers.
 
 Extract all urls from apache access logs:
 
-  cat ~/Downloads/access_2013-06-26__* | awk '{ print $7 }' > urls
+  cat access.log | awk '{ print $7 }' > urls
 
 Sort urls by number of occurences:
 
@@ -47,10 +47,12 @@ IGNORE_IDS = [2249, 2250, 3727]
 
 
 def extract_snippet_ids(document):
-    return [
-        int(snippet.attrib['data-snippet-id'])
-        for snippet in document('div.snippet_set').find('[data-snippet-id]')
-    ]
+    ids = []
+    for snippet in document('div.snippet_set').find('[data-snippet-id]'):
+        snippet_id = int(snippet.attrib['data-snippet-id'])
+        if snippet_id not in IGNORE_IDS:
+            ids.append(snippet_id)
+    return ids
 
 
 def main():
