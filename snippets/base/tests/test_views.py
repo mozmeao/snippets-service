@@ -9,7 +9,7 @@ from mock import patch
 from nose.tools import eq_
 
 import snippets.base.models
-from snippets.base.models import ClientMatchRule
+from snippets.base.models import Client, ClientMatchRule
 from snippets.base.tests import (ClientMatchRuleFactory, SnippetFactory,
                                  SnippetTemplateFactory, TestCase)
 
@@ -26,10 +26,13 @@ class FetchSnippetsTests(TestCase):
         client_match_rule_fail = ClientMatchRuleFactory(
             name='Firefox', channel='release', startpage_version='4')
 
-        # Matching snippets
+        # Matching snippets.
         snippet_pass_1 = SnippetFactory.create(on_nightly=True)
         snippet_pass_2 = SnippetFactory.create(
             on_nightly=True, client_match_rules=[client_match_rule_pass])
+
+        # Matching but disabled snippet.
+        SnippetFactory.create(on_nightly=True, disabled=True)
 
         # Snippets that do not match.
         SnippetFactory.create(on_nightly=False),
@@ -105,32 +108,27 @@ class FetchSnippetsTests(TestCase):
                        snippet_before_end_date, snippet_within_range])
         eq_(expected, set(response.context['snippets']))
 
-    @patch('snippets.base.views.ClientMatchRule.objects')
-    def test_client_construction(self, mock_objects):
+    @patch('snippets.base.views.Client', wraps=Client)
+    def test_client_construction(self, ClientMock):
         """
         Ensure that the client object is constructed correctly from the URL
         arguments.
         """
-        evaluate = (mock_objects.filter.return_value
-                    .distinct.return_value.evaluate)
-        evaluate.return_value = ([], [])
-
         params = ('4', 'Firefox', '23.0a1', '20130510041606',
                   'Darwin_Universal-gcc3', 'en-US', 'nightly',
                   'Darwin%2010.8.0', 'default', 'default_version')
         self.client.get('/{0}/'.format('/'.join(params)))
 
-        client = evaluate.call_args[0][0]
-        eq_('4', client.startpage_version)
-        eq_('Firefox', client.name)
-        eq_('23.0a1', client.version)
-        eq_('20130510041606', client.appbuildid)
-        eq_('Darwin_Universal-gcc3', client.build_target)
-        eq_('en-US', client.locale)
-        eq_('nightly', client.channel)
-        eq_('Darwin 10.8.0', client.os_version)
-        eq_('default', client.distribution)
-        eq_('default_version', client.distribution_version)
+        ClientMock.assert_called_with(startpage_version='4',
+                                      name='Firefox',
+                                      version='23.0a1',
+                                      appbuildid='20130510041606',
+                                      build_target='Darwin_Universal-gcc3',
+                                      locale='en-US',
+                                      channel='nightly',
+                                      os_version='Darwin 10.8.0',
+                                      distribution='default',
+                                      distribution_version='default_version')
 
 
 class PreviewSnippetTests(TestCase):
