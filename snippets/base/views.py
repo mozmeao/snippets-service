@@ -35,7 +35,7 @@ class SnippetFilter(django_filters.FilterSet):
 
 
 def index(request):
-    snippets = Snippet.objects.all()
+    snippets = Snippet.objects.filter(disabled=False)
     snippetsfilter = SnippetFilter(request.GET, snippets)
     paginator = Paginator(snippetsfilter.qs, SNIPPETS_PER_PAGE)
 

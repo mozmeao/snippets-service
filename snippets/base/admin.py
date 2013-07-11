@@ -69,10 +69,13 @@ class SnippetAdmin(BaseModelAdmin):
         """Save locale changes as well as the snippet itself."""
         super(SnippetAdmin, self).save_model(request, obj, form, change)
 
-        locales = form.cleaned_data['locales']
-        obj.locale_set.all().delete()
-        for locale in locales:
-            models.SnippetLocale.objects.create(snippet=obj, locale=locale)
+        try:
+            locales = form.cleaned_data['locales']
+            obj.locale_set.all().delete()
+            for locale in locales:
+                models.SnippetLocale.objects.create(snippet=obj, locale=locale)
+        except KeyError:
+            pass  # If the locales weren't even specified, do nothing.
 admin.site.register(models.Snippet, SnippetAdmin)
 
 

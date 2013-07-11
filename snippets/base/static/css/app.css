@@ -6,3 +6,7 @@ body {
     padding-top: 10px;
 }
 
+.snippet-table th:first-child,
+.snippet-table td:first-child {
+    width: 20%;
+}
