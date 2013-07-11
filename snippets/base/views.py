@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
+from django.utils.functional import lazy
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 
@@ -20,7 +21,8 @@ from snippets.base.models import (Client, ClientMatchRule, Snippet,
 from snippets.base.util import get_object_or_none
 
 
-HTTP_MAX_AGE = getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 1)
+_http_max_age = lambda: getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 90)
+HTTP_MAX_AGE = lazy(_http_max_age, str)()
 SNIPPETS_PER_PAGE = 50
 
 
