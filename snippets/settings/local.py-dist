@@ -75,4 +75,4 @@ ENGAGE_ROBOTS = True
 #}
 
 # Snippets-specific caching
-SNIPPET_HTTP_MAX_AGE = 75  # Time to cache HTTP responses for snippets.
+SNIPPET_HTTP_MAX_AGE = 90  # Time to cache HTTP responses for snippets.

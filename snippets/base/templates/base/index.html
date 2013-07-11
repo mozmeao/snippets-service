@@ -27,7 +27,7 @@
     <div class="span12">
       <h1>Snippets</h1>
       {% if snippets.paginator.count %}
-        <table class="table table-hover">
+        <table class="table table-hover snippet-table">
           <thead>
             <tr>
               <th>Name</th>
@@ -38,30 +38,29 @@
               <th>Publish Start</th>
               <th>Publish End</th>
             </tr>
-          </thread>
+          </thead>
           {% for snippet in snippets %}
-            <tbody>
-              <tr>
-                <td>
-                  <a href="{{ url('base.show', snippet.id) }}" title="{{snippet.name }}">
-                    {{ snippet.name|truncate(30, end='...') }}
-                  </a>
-                </td>
-                <td>{{ snippet.products|join(', ')|title }}</td>
-                <td>{{ snippet.channels|join(', ')|title }}</td>
-                <td>
-                  <select multiple="multiple">
-                    {% for locale in snippet.locale_set.all() %}
-                      <option>{{ locale.get_locale_display() }}</option>
-                    {% endfor %}
-                  </select>
-                </td>
-                <td>{{ snippet.get_country_display() }}</td>
-                <td>{{ snippet.publish_start|humanize }}</td>
-                <td>{{ snippet.publish_end|humanize }}</td>
-              </tr>
-            </tbody>
+            <tr>
+              <td>
+                <a href="{{ url('base.show', snippet.id) }}" title="{{ snippet.name }}">
+                  {{ snippet.name }}
+                </a>
+              </td>
+              <td>{{ snippet.products|join(', ')|title }}</td>
+              <td>{{ snippet.channels|join(', ')|title }}</td>
+              <td>
+                <select multiple="multiple">
+                  {% for locale in snippet.locale_set.all() %}
+                    <option>{{ locale.get_locale_display() }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>{{ snippet.get_country_display() }}</td>
+              <td>{{ snippet.publish_start|humanize }}</td>
+              <td>{{ snippet.publish_end|humanize }}</td>
+            </tr>
           {% endfor %}
+          </tbody>
         </table>
       {% else %}
         No snippets! Maybe try
