@@ -2,11 +2,11 @@ from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.test.utils import override_settings
 
 from funfactory.helpers import urlparams
-
 from mock import patch
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 
 import snippets.base.models
 from snippets.base.models import Client, ClientMatchRule
@@ -129,6 +129,20 @@ class FetchSnippetsTests(TestCase):
                                       os_version='Darwin 10.8.0',
                                       distribution='default',
                                       distribution_version='default_version')
+
+    @override_settings(SNIPPET_HTTP_MAX_AGE=75)
+    def test_cache_headers(self):
+        """
+        view_snippets should always have Cache-control set to
+        'public, max-age={settings.SNIPPET_HTTP_MAX_AGE}' and no Vary header,
+        even after middleware is executed.
+        """
+        params = ('4', 'Firefox', '23.0a1', '20130510041606',
+                  'Darwin_Universal-gcc3', 'en-US', 'nightly',
+                  'Darwin%2010.8.0', 'default', 'default_version')
+        response = self.client.get('/{0}/'.format('/'.join(params)))
+        eq_(response['Cache-control'], 'public, max-age=75')
+        ok_('Vary' not in response)
 
 
 class PreviewSnippetTests(TestCase):
