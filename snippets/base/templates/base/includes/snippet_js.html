@@ -26,8 +26,12 @@
 
     var snippets = (document.getElementById('snippetContainer')
                     .getElementsByClassName('snippet'));
+    var show_snippet = null;
     if (snippets.length > 0) {
-        var show_snippet = chooseSnippet(snippets);
+        show_snippet = chooseSnippet(snippets);
+    }
+
+    if (show_snippet) {
         show_snippet.style.display = 'block';
 
         try {
@@ -52,10 +56,6 @@
         modifyLinks(show_snippet.getElementsByTagName('a'), parameters);
 
         // Fetch user country if we don't have it.
-        // We have to do this at the end because I couldn't find a JavaScript
-        // loader that doesn't block the JS that triggered loading, and don't
-        // have the time to implement it myself. Guess "async loader" doesn't
-        // mean what I thought it meant.
         if (!haveUserCountry()) {
             downloadUserCountry();
         }
@@ -70,13 +70,13 @@
         var snippetsFor = {};
         for (var k = 0; k < snippets.length; k++) {
             var snippet = snippets[k];
-            var snippetCountry = snippet.parentNode.dataset.country || 'none';
+            var country = snippet.parentNode.dataset.country || 'none';
 
             // Create a new entry in the object if it doesn't exist.
-            if (snippetsFor.hasOwnProperty(snippetCountry)) {
-                snippetsFor[snippetCountry].push(snippet);
+            if (snippetsFor.hasOwnProperty(country)) {
+                snippetsFor[country].push(snippet);
             } else {
-                snippetsFor[snippetCountry] = [snippet];
+                snippetsFor[country] = [snippet];
             }
         }
 
@@ -88,7 +88,12 @@
         } else {
             snippets = snippetsFor.none;
         }
-        return snippets[Math.floor(Math.random() * snippets.length)];
+
+        if (snippets && snippets.length) {
+            return snippets[Math.floor(Math.random() * snippets.length)];
+        } else {
+            return null;
+        }
     }
 
     // Check whether we have the user's country stored and if it is still valid.
