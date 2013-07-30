@@ -136,5 +136,6 @@ class SnippetTemplateAdmin(BaseModelAdmin):
 
         # Create variables that don't exist.
         for variable in new_vars:
-            var_manager.get_or_create(name=variable)
+            models.SnippetTemplateVariable.objects.no_cache().get_or_create(
+                template=form.instance, name=variable)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
