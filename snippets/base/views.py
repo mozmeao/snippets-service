@@ -100,7 +100,11 @@ def preview_snippet(request):
     Build a snippet using info from the POST parameters, and preview that
     snippet on a mock about:home page.
     """
-    template_id = request.POST.get('template_id', None)
+    try:
+        template_id = int(request.POST.get('template_id', None))
+    except (TypeError, ValueError):
+        return HttpResponseBadRequest()
+
     template = get_object_or_none(SnippetTemplate, id=template_id)
     data = request.POST.get('data', None)
 

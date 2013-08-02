@@ -108,7 +108,6 @@ class SnippetAdmin(BaseModelAdmin):
         if key == 'template__name':
             return True
         return super(SnippetAdmin, self).lookup_allowed(key, value)
-admin.site.register(models.Snippet, SnippetAdmin)
 
 
 class ClientMatchRuleAdmin(BaseModelAdmin):
@@ -120,7 +119,6 @@ class ClientMatchRuleAdmin(BaseModelAdmin):
                    'channel', 'distribution', 'locale')
     save_on_top = True
     search_fields = ('description',)
-admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 
 
 class SnippetTemplateVariableInline(admin.TabularInline):
@@ -170,4 +168,8 @@ class SnippetTemplateAdmin(BaseModelAdmin):
         for variable in new_vars:
             models.SnippetTemplateVariable.objects.no_cache().get_or_create(
                 template=form.instance, name=variable)
+
+
+admin.site.register(models.Snippet, SnippetAdmin)
+admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
