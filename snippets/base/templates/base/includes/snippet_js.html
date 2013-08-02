@@ -63,6 +63,12 @@
         showDefaultSnippets();
     }
 
+    {# In preview mode, ignore geolocation. #}
+    {% if preview %}
+    function chooseSnippet(snippets) {
+        return snippets[Math.floor(Math.random() * snippets.length)];
+    }
+    {% else %}
     // Choose which snippet to display to the user based on various factors,
     // such as which country they are in.
     function chooseSnippet(snippets) {
@@ -95,6 +101,7 @@
             return null;
         }
     }
+    {% endif %}
 
     // Check whether we have the user's country stored and if it is still valid.
     function haveUserCountry() {

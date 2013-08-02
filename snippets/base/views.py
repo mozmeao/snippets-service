@@ -122,7 +122,8 @@ def preview_snippet(request):
     snippet = Snippet(template=template, data=data)
     return render(request, 'base/preview.html', {
         'snippet': snippet,
-        'client': PREVIEW_CLIENT
+        'client': PREVIEW_CLIENT,
+        'preview': True
     })
 
 
@@ -130,5 +131,6 @@ def show_snippet(request, snippet_id):
     snippet = get_object_or_404(Snippet, pk=snippet_id, disabled=False)
     return render(request, 'base/preview.html', {
         'snippet': snippet,
-        'client': PREVIEW_CLIENT
-        })
+        'client': PREVIEW_CLIENT,
+        'preview': True
+    })
