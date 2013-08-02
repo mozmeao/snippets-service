@@ -14,6 +14,8 @@
         nunjucks.env = new nunjucks.Environment(loader, {
             autoescape: true
         });
+    } else {
+        nunjucks.env.autoesc = true;
     }
     var nj = nunjucks.env;
 
