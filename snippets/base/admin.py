@@ -8,6 +8,12 @@ from jinja2.meta import find_undeclared_variables
 from snippets.base import forms, models
 
 
+class TemplateNameFilter(admin.AllValuesFieldListFilter):
+    def __init__(self, *args, **kwargs):
+        super(TemplateNameFilter, self).__init__(*args, **kwargs)
+        self.title = 'template'
+
+
 class BaseModelAdmin(admin.ModelAdmin):
     """Holds customizations shared by every ModelAdmin in the site."""
     change_list_template = 'smuggler/change_list.html'
@@ -16,11 +22,32 @@ class BaseModelAdmin(admin.ModelAdmin):
 class SnippetAdmin(BaseModelAdmin):
     form = forms.SnippetAdminForm
 
-    list_display = ('name', 'priority', 'disabled', 'publish_start',
-                    'publish_end', 'modified')
-    list_filter = ('disabled', 'client_match_rules', 'on_release', 'on_beta',
-                   'on_aurora', 'on_nightly', 'on_firefox', 'on_fennec')
-    list_editable = ('disabled', 'priority', 'publish_start', 'publish_end')
+    list_display = (
+        'name',
+        'priority',
+        'disabled',
+        'publish_start',
+        'publish_end',
+        'modified',
+    )
+    list_filter = (
+        'disabled',
+        'on_release',
+        'on_beta',
+        'on_aurora',
+        'on_nightly',
+        'on_firefox',
+        'on_fennec',
+        ('template__name', TemplateNameFilter),
+        'locale_set__locale',
+        'client_match_rules',
+    )
+    list_editable = (
+        'disabled',
+        'priority',
+        'publish_start',
+        'publish_end'
+    )
 
     readonly_fields = ('created', 'modified')
     save_on_top = True
@@ -76,6 +103,11 @@ class SnippetAdmin(BaseModelAdmin):
                 models.SnippetLocale.objects.create(snippet=obj, locale=locale)
         except KeyError:
             pass  # If the locales weren't even specified, do nothing.
+
+    def lookup_allowed(self, key, value):
+        if key == 'template__name':
+            return True
+        return super(SnippetAdmin, self).lookup_allowed(key, value)
 admin.site.register(models.Snippet, SnippetAdmin)
 
 
