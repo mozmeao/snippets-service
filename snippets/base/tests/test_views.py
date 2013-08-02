@@ -161,6 +161,9 @@ class PreviewSnippetTests(TestCase):
         response = self._preview_snippet(template_id=99999999999999999999)
         eq_(response.status_code, 400)
 
+        response = self._preview_snippet(template_id='')
+        eq_(response.status_code, 400)
+
     def test_invalid_data(self):
         """If data is missing or invalid, return a 400 Bad Request."""
         template = SnippetTemplateFactory.create()
