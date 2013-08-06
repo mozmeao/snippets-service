@@ -70,7 +70,8 @@ class SnippetTemplate(CachingMixin, models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    objects = CachingManager()
+    objects = models.Manager()
+    cached_objects = CachingManager()
 
     def render(self, ctx):
         return env.from_string(self.code).render(ctx)
@@ -92,7 +93,8 @@ class SnippetTemplateVariable(CachingMixin, models.Model):
     name = models.CharField(max_length=255)
     type = models.IntegerField(choices=TYPE_CHOICES, default=TEXT)
 
-    objects = CachingManager()
+    objects = models.Manager()
+    cached_objects = CachingManager()
 
     def __unicode__(self):
         return u'{0}: {1}'.format(self.template.name, self.name)
@@ -117,7 +119,8 @@ class ClientMatchRule(CachingMixin, models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    objects = ClientMatchRuleManager()
+    objects = models.Manager()
+    cached_objects = ClientMatchRuleManager()
 
     class Meta:
         ordering = ('-modified',)
@@ -178,7 +181,8 @@ class Snippet(CachingMixin, models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    objects = SnippetManager()
+    objects = models.Manager()
+    cached_objects = SnippetManager()
 
     class Meta:
         ordering = ('-modified',)
@@ -224,7 +228,8 @@ class SnippetLocale(CachingMixin, models.Model):
     snippet = models.ForeignKey(Snippet, related_name='locale_set')
     locale = LocaleField()
 
-    objects = CachingManager()
+    objects = models.Manager()
+    cached_objects = CachingManager()
 
 
 from south.modelsinspector import add_introspection_rules
