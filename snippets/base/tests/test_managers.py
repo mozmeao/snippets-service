@@ -7,7 +7,7 @@ from snippets.base.tests import ClientMatchRuleFactory, TestCase
 
 
 class ClientMatchRuleQuerySetTests(TestCase):
-    manager = ClientMatchRule.objects
+    manager = ClientMatchRule.cached_objects
 
     @patch.object(ClientMatchRule, 'matches')
     def test_basic(self, match):
@@ -43,7 +43,7 @@ class SnippetManagerTests(TestCase):
         client = Client(**params)
 
         with patch.object(SnippetManager, 'filter') as mock_filter:
-            Snippet.objects.match_client(client)
+            Snippet.cached_objects.match_client(client)
             mock_filter.assert_called_with(**filters)
 
     def test_match_client(self):

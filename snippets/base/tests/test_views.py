@@ -56,7 +56,7 @@ class FetchSnippetsTests(TestCase):
         response = self.client.get('/{0}/'.format('/'.join(params)))
 
         eq_(set(snippets_ok), set(response.context['snippets']))
-        call_args = (ClientMatchRuleMock.objects
+        call_args = (ClientMatchRuleMock.cached_objects
                      .filter.call_args[1]['snippet__in'])
         eq_(set(snippets_pass_match_client), set(call_args))
 

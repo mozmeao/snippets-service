@@ -62,11 +62,12 @@ def index(request):
 def fetch_snippets(request, **kwargs):
     client = Client(**kwargs)
 
-    matching_snippets = (Snippet.objects.match_client(client)
+    matching_snippets = (Snippet.cached_objects.match_client(client)
                          .filter(disabled=False)
-                         .order_by('priority'))
+                         .order_by('priority')
+                         .select_related('template'))
 
-    passed_rules, failed_rules = (ClientMatchRule.objects
+    passed_rules, failed_rules = (ClientMatchRule.cached_objects
                                   .filter(snippet__in=matching_snippets)
                                   .distinct()
                                   .evaluate(client))
