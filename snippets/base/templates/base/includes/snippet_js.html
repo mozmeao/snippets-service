@@ -24,6 +24,25 @@
         };
     }
 
+    // gSnippetsMap polyfill, available in Firefox 22 and above.
+    var gSnippetsMap = null;
+    try {
+        if (supportsLocalStorage()) {
+            // localStorage is available, so we wrap it with gSnippetsMap.
+            gSnippetsMap = {
+                set: function(key, value) {
+                    localStorage[key] = value;
+                },
+                get: function(key) {
+                    return localStorage[key];
+                }
+            };
+        }
+    } catch (e) {
+        // localStorage isn't available, use gSnippetsMap (backed by IndexedDB).
+        gSnippetsMap = window.gSnippetsMap;
+    }
+
     var snippets = (document.getElementById('snippetContainer')
                     .getElementsByClassName('snippet'));
     var show_snippet = null;
@@ -106,9 +125,9 @@
     // Check whether we have the user's country stored and if it is still valid.
     function haveUserCountry() {
         // Check if there's an existing country code to use.
-        if (localStorage.geoCountry) {
+        if (gSnippetsMap.get('geoCountry')) {
             // Make sure we have a valid lastUpdated date.
-            var lastUpdated = Date.parse(localStorage.geoLastUpdated);
+            var lastUpdated = Date.parse(gSnippetsMap.get('geoLastUpdated'));
             if (lastUpdated) {
                 // Make sure that it is past the lastUpdated date.
                 var now = new Date();
@@ -123,7 +142,7 @@
 
     function getUserCountry() {
         if (haveUserCountry()) {
-            return localStorage.geoCountry.toLowerCase();
+            return gSnippetsMap.get('geoCountry').toLowerCase();
         } else {
             return null;
         }
@@ -134,8 +153,8 @@
         $script(GEO_URL, 'geo');
         $script.ready('geo', function() {
             try {
-                localStorage.geoCountry = geoip_country_code();
-                localStorage.geoLastUpdated = new Date();
+                gSnippetsMap.set('geoCountry', geoip_country_code());
+                gSnippetsMap.set('geoLastUpdated', new Date());
             } catch (e) {
                 // Most likely failed to load JS file. Continue on without us,
                 // we'll try again next time.
@@ -170,6 +189,18 @@
             var fragment = link.href.substring(fragment_position);
 
             link.href = href + delimeter + parameters + fragment;
+        }
+    }
+
+    // Check for localStorage support. Copied from Modernizr.
+    function supportsLocalStorage() {
+        var s = 'snippets-test';
+        try {
+            localStorage.setItem(s, s);
+            localStorage.removeItem(s);
+            return true;
+        } catch(e) {
+            return false;
         }
     }
 
