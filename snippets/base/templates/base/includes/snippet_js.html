@@ -26,19 +26,17 @@
 
     // gSnippetsMap polyfill, available in Firefox 22 and above.
     var gSnippetsMap = null;
-    try {
-        if (supportsLocalStorage()) {
-            // localStorage is available, so we wrap it with gSnippetsMap.
-            gSnippetsMap = {
-                set: function(key, value) {
-                    localStorage[key] = value;
-                },
-                get: function(key) {
-                    return localStorage[key];
-                }
-            };
-        }
-    } catch (e) {
+    if (supportsLocalStorage()) {
+        // localStorage is available, so we wrap it with gSnippetsMap.
+        gSnippetsMap = {
+            set: function(key, value) {
+                localStorage[key] = value;
+            },
+            get: function(key) {
+                return localStorage[key];
+            }
+        };
+    } else {
         // localStorage isn't available, use gSnippetsMap (backed by IndexedDB).
         gSnippetsMap = window.gSnippetsMap;
     }
