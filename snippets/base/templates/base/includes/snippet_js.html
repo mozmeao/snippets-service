@@ -107,7 +107,10 @@
         // including snippets for the user's country if it is available.
         var country = getUserCountry();
         if (country && snippetsFor.hasOwnProperty(country)) {
-            snippets = snippetsFor[country].concat(snippetsFor.none);
+            snippets = snippetsFor[country];
+            if (snippetsFor.none) {
+                snippets = snippets.concat(snippetsFor.none);
+            }
         } else {
             snippets = snippetsFor.none;
         }
