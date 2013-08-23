@@ -71,13 +71,13 @@
         var parameters = ('sample_rate=' + SAMPLE_RATE + '&snippet_name=' +
                           show_snippet_id);
         modifyLinks(show_snippet.getElementsByTagName('a'), parameters);
-
-        // Fetch user country if we don't have it.
-        if (!haveUserCountry()) {
-            downloadUserCountry();
-        }
     } else {
         showDefaultSnippets();
+    }
+
+    // Fetch user country if we don't have it.
+    if (!haveUserCountry()) {
+        downloadUserCountry();
     }
 
     {# In preview mode, ignore geolocation. #}
