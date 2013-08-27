@@ -2,8 +2,8 @@ from mock import patch
 from nose.tools import eq_
 
 from snippets.base.managers import SnippetManager
-from snippets.base.models import Client, ClientMatchRule, Snippet
-from snippets.base.tests import ClientMatchRuleFactory, TestCase
+from snippets.base.models import Client, ClientMatchRule, Snippet, SnippetLocale
+from snippets.base.tests import ClientMatchRuleFactory, SnippetFactory, TestCase
 
 
 class ClientMatchRuleQuerySetTests(TestCase):
@@ -27,7 +27,7 @@ class ClientMatchRuleQuerySetTests(TestCase):
 
 
 class SnippetManagerTests(TestCase):
-    def _assert_client_passes_filters(self, client_attrs, filters):
+    def _build_client(self, **client_attrs):
         params = {'startpage_version': '4',
                   'name': 'Firefox',
                   'version': '23.0a1',
@@ -39,8 +39,10 @@ class SnippetManagerTests(TestCase):
                   'distribution': 'default',
                   'distribution_version': 'default_version'}
         params.update(client_attrs)
-        client = Client(**params)
+        return Client(**params)
 
+    def _assert_client_passes_filters(self, client_attrs, filters):
+        client = self._build_client(**client_attrs)
         with patch.object(SnippetManager, 'filter') as mock_filter:
             Snippet.cached_objects.match_client(client)
             mock_filter.assert_called_with(**filters)
@@ -109,3 +111,19 @@ class SnippetManagerTests(TestCase):
             'locale_set__locale__in': ['es-mx', 'es']
         }
         self._assert_client_passes_filters(params, filters)
+
+    @patch('snippets.base.managers.LANGUAGE_VALUES', ['es-mx', 'es', 'fr'])
+    def test_match_client_multiple_locale_matches(self):
+        """
+        If a snippet has multiple locales and a client matches more than one of them, the snippet
+        should only be included in the queryset once.
+        """
+        es_mx = SnippetLocale(locale='es-mx')
+        es = SnippetLocale(locale='es')
+        snippet = SnippetFactory.create(locale_set=[es_mx, es])
+
+        client = self._build_client(locale='es-MX')
+        snippets = Snippet.cached_objects.match_client(client)
+
+        # Filter out any snippets that aren't the one we made, and ensure there's only one.
+        eq_(len([s for s in snippets if s.pk == snippet.pk]), 1)

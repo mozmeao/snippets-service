@@ -50,4 +50,4 @@ class SnippetManager(CachingManager):
         if locales:
             filters.update(locale_set__locale__in=locales)
 
-        return self.filter(**filters)
+        return self.filter(**filters).distinct()
