@@ -76,6 +76,11 @@ class SnippetTemplateTests(TestCase):
         template = SnippetTemplateFactory(code='<p>{{myvar}}</p>')
         eq_(template.render({'myvar': 'foo'}), '<p>foo</p>')
 
+    def test_render_snippet_id(self):
+        """If the template context doesn't have a snippet_id entry, add one set to 0."""
+        template = SnippetTemplateFactory(code='<p>{{ snippet_id }}</p>')
+        eq_(template.render({'myvar': 'foo'}), '<p>0</p>')
+
 
 class SnippetTests(TestCase):
     def test_render(self):
@@ -90,7 +95,11 @@ class SnippetTests(TestCase):
         expected = ('<div data-snippet-id="{0}" data-country="us">'
                     '<a href="asdf">qwer</a></div>'.format(snippet.id))
         eq_(snippet.render().strip(), expected)
-        template.render.assert_called_with({'url': 'asdf', 'text': 'qwer'})
+        template.render.assert_called_with({
+            'url': 'asdf',
+            'text': 'qwer',
+            'snippet_id': snippet.id
+        })
 
     def test_render_no_country(self):
         """
@@ -116,3 +125,20 @@ class SnippetTests(TestCase):
                                  data='{"data": "\u03c6\u03bf\u03bf"}')
         output = snippet.render()
         eq_(pq(output)[0].text, u'\u03c6\u03bf\u03bf')
+
+    def test_render_snippet_id(self):
+        """Include the snippet ID in the template context when rendering."""
+        snippet = SnippetFactory.create(template__code='<p>{{ snippet_id }}</p>')
+        snippet.template.render = Mock()
+        snippet.render()
+        snippet.template.render.assert_called_with({'snippet_id': snippet.id})
+
+    def test_render_no_snippet_id(self):
+        """
+        If a snippet that hasn't been saved to the database yet is rendered, the snippet ID
+        shouldn't be included in the template context.
+        """
+        snippet = SnippetFactory.build(template__code='<p>{{ snippet_id }}</p>')
+        snippet.template.render = Mock()
+        snippet.render()
+        snippet.template.render.assert_called_with({})

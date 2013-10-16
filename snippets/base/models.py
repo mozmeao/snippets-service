@@ -74,6 +74,7 @@ class SnippetTemplate(CachingMixin, models.Model):
     cached_objects = CachingManager()
 
     def render(self, ctx):
+        ctx.setdefault('snippet_id', 0)
         return env.from_string(self.code).render(ctx)
 
     def __unicode__(self):
@@ -189,6 +190,8 @@ class Snippet(CachingMixin, models.Model):
 
     def render(self):
         data = json.loads(self.data)
+        if self.id:
+            data.setdefault('snippet_id', self.id)
 
         # Use a list for attrs to make the output order predictable.
         attrs = [('data-snippet-id', self.id)]

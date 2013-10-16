@@ -129,7 +129,7 @@ class SnippetTemplateVariableInline(admin.TabularInline):
     fields = ('name', 'type',)
 
 
-RESERVED_VARIABLES = ('_',)
+RESERVED_VARIABLES = ('_', 'snippet_id')
 
 
 class SnippetTemplateAdmin(BaseModelAdmin):
