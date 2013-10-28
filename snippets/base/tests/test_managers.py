@@ -9,17 +9,22 @@ from snippets.base.tests import ClientMatchRuleFactory, SnippetFactory, TestCase
 class ClientMatchRuleQuerySetTests(TestCase):
     manager = ClientMatchRule.cached_objects
 
-    @patch.object(ClientMatchRule, 'matches')
-    def test_basic(self, match):
+    @patch.object(ClientMatchRule, 'matches', autospec=True)
+    def test_basic(self, matches):
         rule1_pass = ClientMatchRuleFactory.create()
         rule2_pass = ClientMatchRuleFactory.create()
         rule3_fail = ClientMatchRuleFactory.create()
         rule4_pass = ClientMatchRuleFactory.create()
         rule5_fail = ClientMatchRuleFactory.create()
 
-        # Return the specified return values in sequence.
-        return_values = [True, True, False, True, False]
-        match.side_effect = lambda client: return_values.pop(0)
+        return_values = {
+            rule1_pass.id: True,
+            rule2_pass.id: True,
+            rule3_fail.id: False,
+            rule4_pass.id: True,
+            rule5_fail.id: False,
+        }
+        matches.side_effect = lambda self, client: return_values.get(self.id, False)
 
         passed, failed = self.manager.all().evaluate('asdf')
         eq_([rule1_pass, rule2_pass, rule4_pass], passed)
