@@ -1,11 +1,55 @@
+import re
+
 from django.contrib import admin
+from django.db import transaction
 from django.db.models import TextField, Q
 
 from django_ace import AceWidget
 from jingo import env, load_helpers
 from jinja2.meta import find_undeclared_variables
 
-from snippets.base import forms, models
+from snippets.base import LANGUAGE_VALUES, forms, models
+
+
+MATCH_LOCALE_REGEX = re.compile('(\w+(?:-\w+)*)')
+
+
+@transaction.commit_on_success
+def cmr_to_locales_action(modeladmin, request, queryset):
+    """Convert Locale ClientMatchRules to the new Locale format.
+
+    If the ClientMatchRule only defines Locale and we successfully
+    migrate that value to the new Locale format, we remove the rule
+    from the snippet.
+
+    """
+    for snippet in queryset:
+        snippet.locale_set.all().delete()
+        for cmr in snippet.client_match_rules.exclude(locale=''):
+            if cmr.is_exclusion:
+                for locale in LANGUAGE_VALUES:
+                    models.SnippetLocale.objects.create(snippet=snippet,
+                                                        locale=locale)
+
+            for locale in re.findall(MATCH_LOCALE_REGEX, cmr.locale):
+                locale = locale.lower()
+                if locale not in LANGUAGE_VALUES:
+                    continue
+                if cmr.is_exclusion:
+                    snippet.locale_set.filter(locale=locale).delete()
+                else:
+                    models.SnippetLocale.objects.create(snippet=snippet,
+                                                        locale=locale)
+
+            cmr.locale = ''
+            for field in models.Client._fields:
+                if getattr(cmr, field, False):
+                    break
+            else:
+                snippet.client_match_rules.remove(cmr)
+
+cmr_to_locales_action.short_description = ('Convert ClientMatchRules '
+                                           'to Locale Rules')
 
 
 class TemplateNameFilter(admin.AllValuesFieldListFilter):
@@ -91,6 +135,8 @@ class SnippetAdmin(BaseModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    actions = (cmr_to_locales_action,)
 
     def save_model(self, request, obj, form, change):
         """Save locale changes as well as the snippet itself."""

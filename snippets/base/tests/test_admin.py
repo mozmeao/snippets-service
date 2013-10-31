@@ -4,11 +4,14 @@ from django.test.client import RequestFactory
 from mock import Mock, patch
 from nose.tools import eq_, ok_
 
-from snippets.base.admin import SnippetAdmin, SnippetTemplateAdmin
+from snippets.base import LANGUAGE_VALUES
+from snippets.base.admin import (SnippetAdmin, SnippetTemplateAdmin,
+                                 cmr_to_locales_action)
 from snippets.base.forms import SnippetAdminForm
 from snippets.base.models import (Snippet, SnippetLocale, SnippetTemplate,
                                   SnippetTemplateVariable)
-from snippets.base.tests import (SnippetFactory, SnippetTemplateFactory,
+from snippets.base.tests import (ClientMatchRuleFactory, SnippetFactory,
+                                 SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase)
 
 
@@ -72,6 +75,33 @@ class SnippetAdminTests(TestCase):
         snippet = Snippet.objects.get(pk=snippet.pk)
         locales = (l.locale for l in snippet.locale_set.all())
         eq_(set(locales), set(('en-us', 'fr')))
+
+    def test_cmr_to_locales_action_base(self):
+        cmr_el = ClientMatchRuleFactory(locale='/^el/')
+        cmr_ast = ClientMatchRuleFactory(locale='ast|ja-JP-mac',
+                                         channel='aurora')
+        cmr_es = ClientMatchRuleFactory(locale='/(es-MX)|(es-AR)/')
+        cmr_bogus = ClientMatchRuleFactory(locale='/foo/')
+        snippet = SnippetFactory(client_match_rules=[cmr_el, cmr_ast, cmr_es,
+                                                     cmr_bogus],
+                                 locale_set=[SnippetLocale(locale='pl'),
+                                             SnippetLocale(locale='en')])
+        cmr_to_locales_action(None, None, [snippet])
+        eq_(snippet.locale_set.count(), 5)
+        eq_(set(snippet.locale_set.values_list('locale', flat=True)),
+            set(['el', 'ast', 'ja-jp-mac', 'es-mx', 'es-ar']))
+        eq_(snippet.client_match_rules.count(), 1)
+        eq_(snippet.client_match_rules.all()[0], cmr_ast)
+
+    def test_cmr_to_locales_action_exclusion_cmr(self):
+        cmr_el = ClientMatchRuleFactory(locale='/^el/', is_exclusion=True)
+        snippet = SnippetFactory(client_match_rules=[cmr_el],
+                                 locale_set=[SnippetLocale(locale='pl'),
+                                             SnippetLocale(locale='en')])
+        cmr_to_locales_action(None, None, [snippet])
+        eq_(snippet.locale_set.count(), len(LANGUAGE_VALUES)-1)
+        ok_(not snippet.locale_set.filter(locale='el').exists())
+        eq_(snippet.client_match_rules.count(), 0)
 
 
 class SnippetTemplateAdminTests(TestCase):
