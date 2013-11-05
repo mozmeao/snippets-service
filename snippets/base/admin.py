@@ -138,6 +138,11 @@ class SnippetAdmin(BaseModelAdmin):
 
     actions = (cmr_to_locales_action,)
 
+    class Media:
+        css = {
+            'all': ('css/admin.css',)
+        }
+
     def save_model(self, request, obj, form, change):
         """Save locale changes as well as the snippet itself."""
         super(SnippetAdmin, self).save_model(request, obj, form, change)

@@ -2,3 +2,9 @@
     width: 100em;
     height: 50em;
 }
+
+tr.variable input.smalltext {
+    width: 500px;
+    border: 1px solid rgb(204, 204, 204);
+    display: block;
+}

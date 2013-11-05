@@ -4,7 +4,8 @@
 
     var VARIABLE_TYPES = {
         text: 0,
-        image: 1
+        image: 1,
+        smalltext: 2
     };
 
     // Setup Nunjucks
@@ -90,6 +91,10 @@
             this.$container.on('input', 'textarea', function() {
                 self.triggerDataChange();
             });
+
+            this.$container.on('input', 'input', function() {
+                self.triggerDataChange();
+            });
         },
 
         /**
@@ -166,6 +171,9 @@
                         break;
                     case VARIABLE_TYPES.image:
                         data[variable] = $item.find('img').attr('src');
+                        break;
+                    case VARIABLE_TYPES.smalltext:
+                        data[variable] = $item.find('input').val();
                         break;
                 }
             });

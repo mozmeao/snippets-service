@@ -88,7 +88,8 @@ class SnippetTemplateVariable(CachingMixin, models.Model):
     """
     TEXT = 0
     IMAGE = 1
-    TYPE_CHOICES = ((TEXT, 'Text'), (IMAGE, 'Image'))
+    SMALLTEXT = 2
+    TYPE_CHOICES = ((TEXT, 'Text'), (IMAGE, 'Image'), (SMALLTEXT, 'Small Text'))
 
     template = models.ForeignKey(SnippetTemplate, related_name='variable_set')
     name = models.CharField(max_length=255)
