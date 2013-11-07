@@ -40,7 +40,8 @@ class SnippetAdminTests(TestCase):
             'data': '{}',
             'template': snippet.template.id,
             'locales': ['en-us', 'de'],
-            'priority': 0
+            'priority': 0,
+            'weight': 100,
         }
 
         form = SnippetAdminForm(data, instance=snippet)
@@ -62,7 +63,8 @@ class SnippetAdminTests(TestCase):
             'name': 'test',
             'data': '{}',
             'template': snippet.template.id,
-            'priority': 0
+            'priority': 0,
+            'weight': 100,
         }
 
         # FormClass has no locale field.

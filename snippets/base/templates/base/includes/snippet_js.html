@@ -91,6 +91,7 @@
     function chooseSnippet(snippets) {
         // Build an object that maps countries to snippets.
         var snippetsFor = {};
+
         for (var k = 0; k < snippets.length; k++) {
             var snippet = snippets[k];
             var country = snippet.parentNode.dataset.country || 'none';
@@ -116,7 +117,17 @@
         }
 
         if (snippets && snippets.length) {
-            return snippets[Math.floor(Math.random() * snippets.length)];
+            var sum = 0;
+            for (var k = 0; k < snippets.length; k++) {
+                sum += parseInt(snippets[k].parentNode.dataset.weight, 10) || 100;
+                snippets[k].parentNode.dataset.weight = sum;
+            }
+            var random_number = Math.random() * sum;
+            for (var k = 0; k < snippets.length; k++) {
+                if (random_number < snippets[k].parentNode.dataset.weight) {
+                    return snippets[k];
+                }
+            }
         } else {
             return null;
         }

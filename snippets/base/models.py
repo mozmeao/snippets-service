@@ -19,6 +19,13 @@ from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 CHANNELS = ('release', 'beta', 'aurora', 'nightly')
 STARTPAGE_VERSIONS = ('1', '2', '3', '4')
 CLIENT_NAMES = {'Firefox': 'firefox', 'fennec': 'fennec'}
+SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
+                   (50, 'Appear half as often as an average snippet'),
+                   (66, 'Appear 2/3rds as often as an average snippet'),
+                   (100, 'Appear as often as an average snippet'),
+                   (150, 'Appear 1.5 times as often as an average snippet'),
+                   (200, 'Appear twice as often as an average snippet'),
+                   (300, 'Appear three times as often as an average snippet'))
 
 
 def validate_xml(data):
@@ -178,6 +185,10 @@ class Snippet(CachingMixin, models.Model):
     on_startpage_3 = models.BooleanField(default=True, verbose_name='Version 3')
     on_startpage_4 = models.BooleanField(default=True, verbose_name='Version 4')
 
+    weight = models.IntegerField(
+        'Prevalence', choices=SNIPPET_WEIGHTS, default=100,
+        help_text='How often should this snippet be shown to users?')
+
     client_match_rules = models.ManyToManyField(
         ClientMatchRule, blank=True, verbose_name='Client Match Rules')
 
@@ -196,7 +207,8 @@ class Snippet(CachingMixin, models.Model):
             data.setdefault('snippet_id', self.id)
 
         # Use a list for attrs to make the output order predictable.
-        attrs = [('data-snippet-id', self.id)]
+        attrs = [('data-snippet-id', self.id),
+                 ('data-weight', self.weight)]
         if self.country:
             attrs.append(('data-country', self.country))
         attr_string = ' '.join('{0}="{1}"'.format(key, value) for key, value in
