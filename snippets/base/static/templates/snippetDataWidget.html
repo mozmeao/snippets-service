@@ -9,13 +9,14 @@
       <td>
         {% if variable.type == types.text %}
           <textarea>{{ originalData[variable.name] }}</textarea>
-          <small>HTML is allowed.</small>
         {% elif variable.type == types.image %}
-          <input type="file" class="image-input">
           <img src="{{ originalData[variable.name] }}">
+          <input type="file" class="image-input">
         {% elif variable.type == types.smalltext %}
           <input class="smalltext" value="{{ originalData[variable.name] }}">
-          <small>HTML is allowed.</small>
+        {% endif %}
+        {% if variable.description %}
+          <small>{{ variable.description }}</small>
         {% endif %}
       </td>
     </tr>

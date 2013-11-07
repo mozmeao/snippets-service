@@ -30,13 +30,16 @@ class TemplateSelectTests(TestCase):
         option1 = d('option:contains("t1")')
         variables = json.loads(option1.attr('data-variables'))
         eq_(len(variables), 2)
-        ok_({'name': variable1.name, 'type': variable1.type} in variables)
-        ok_({'name': variable2.name, 'type': variable2.type} in variables)
+        ok_({'name': variable1.name, 'type': variable1.type,
+             'description': variable1.description} in variables)
+        ok_({'name': variable2.name, 'type': variable2.type,
+             'description': variable1.description} in variables)
 
         # Option 2 should have just one variable.
         option2 = d('option:contains("t2")')
         variables = json.loads(option2.attr('data-variables'))
-        eq_(variables, [{'name': variable3.name, 'type': variable3.type}])
+        eq_(variables, [{'name': variable3.name, 'type': variable3.type,
+                         'description': variable3.description}])
 
 
 class TemplateDataWidgetTests(TestCase):

@@ -27,6 +27,7 @@ class TemplateSelect(forms.Select):
             self.variables_for[variable.template.id].append({
                 'name': variable.name,
                 'type': variable.type,
+                'description': variable.description,
             })
 
         return super(TemplateSelect, self).render(*args, **kwargs)

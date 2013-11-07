@@ -4,6 +4,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from south.modelsinspector import add_introspection_rules
+
 from snippets.base import ENGLISH_COUNTRY_CHOICES, ENGLISH_LANGUAGE_CHOICES
 
 
@@ -51,3 +53,8 @@ def validate_regex(regex_str):
         except re.error, exp:
             raise ValidationError(str(exp))
     return regex_str
+
+
+add_introspection_rules([], ['^snippets\.base\.fields\.LocaleField'])
+add_introspection_rules([], ['^snippets\.base\.fields\.CountryField'])
+add_introspection_rules([], ["^snippets\.base\.fields\.RegexField"])
