@@ -177,7 +177,7 @@ class SnippetTemplateVariableInline(admin.TabularInline):
     max_num = 0
     can_delete = False
     readonly_fields = ('name',)
-    fields = ('name', 'type',)
+    fields = ('name', 'type', 'description')
 
 
 RESERVED_VARIABLES = ('_', 'snippet_id')

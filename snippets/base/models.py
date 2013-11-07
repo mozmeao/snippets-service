@@ -94,6 +94,7 @@ class SnippetTemplateVariable(CachingMixin, models.Model):
     template = models.ForeignKey(SnippetTemplate, related_name='variable_set')
     name = models.CharField(max_length=255)
     type = models.IntegerField(choices=TYPE_CHOICES, default=TEXT)
+    description = models.TextField(blank=True, default='')
 
     objects = models.Manager()
     cached_objects = CachingManager()
@@ -234,9 +235,3 @@ class SnippetLocale(CachingMixin, models.Model):
 
     objects = models.Manager()
     cached_objects = CachingManager()
-
-
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ['^snippets\.base\.models\.LocaleField'])
-add_introspection_rules([], ['^snippets\.base\.models\.CountryField'])
-add_introspection_rules([], ["^snippets\.base\.models\.RegexField"])
