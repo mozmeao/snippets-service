@@ -113,6 +113,9 @@ class SnippetAdmin(BaseModelAdmin):
                             'Click here to see the current time in UTC</a>.'),
             'fields': ('publish_start', 'publish_end'),
         }),
+        ('Prevalence', {
+            'fields': ('weight',)
+        }),
         ('Products', {
             'fields': (('on_firefox', 'on_fennec'),)
         }),
