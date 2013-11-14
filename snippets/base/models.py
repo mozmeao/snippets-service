@@ -19,8 +19,8 @@ from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly')
-STARTPAGE_VERSIONS = ('1', '2', '3', '4')
-CLIENT_NAMES = {'Firefox': 'firefox', 'fennec': 'fennec'}
+FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4')
+FENNEC_STARTPAGE_VERSIONS = ('1',)
 SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
                    (50, 'Appear half as often as an average snippet'),
                    (66, 'Appear 2/3rds as often as an average snippet'),
@@ -187,9 +187,6 @@ class Snippet(CachingMixin, models.Model):
     publish_start = models.DateTimeField(blank=True, null=True)
     publish_end = models.DateTimeField(blank=True, null=True)
 
-    on_firefox = models.BooleanField(default=True, verbose_name='Firefox')
-    on_fennec = models.BooleanField(default=False, verbose_name='Fennec')
-
     on_release = models.BooleanField(default=True, verbose_name='Release')
     on_beta = models.BooleanField(default=False, verbose_name='Beta')
     on_aurora = models.BooleanField(default=False, verbose_name='Aurora')
@@ -237,14 +234,6 @@ class Snippet(CachingMixin, models.Model):
         return Markup(rendered_snippet)
 
     @property
-    def products(self):
-        products = []
-        for key, value in CLIENT_NAMES.items():
-            if getattr(self, 'on_{0}'.format(value), False):
-                products.append(key)
-        return products
-
-    @property
     def channels(self):
         channels = []
         for channel in CHANNELS:
@@ -258,6 +247,53 @@ class Snippet(CachingMixin, models.Model):
 
 class SnippetLocale(CachingMixin, models.Model):
     snippet = models.ForeignKey(Snippet, related_name='locale_set')
+    locale = LocaleField()
+
+    objects = models.Manager()
+    cached_objects = CachingManager()
+
+
+class JSONSnippet(CachingMixin, models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    priority = models.IntegerField(default=0, blank=True)
+    disabled = models.BooleanField(default=True)
+
+    icon = models.TextField()
+    text = models.CharField(max_length=140,
+                            help_text='Maximum length 140 characters.')
+    url = models.CharField(max_length=500)
+
+    country = CountryField('Geolocation Country', blank=True, default='')
+
+    publish_start = models.DateTimeField(blank=True, null=True)
+    publish_end = models.DateTimeField(blank=True, null=True)
+
+    on_release = models.BooleanField(default=True, verbose_name='Release')
+    on_beta = models.BooleanField(default=False, verbose_name='Beta')
+    on_aurora = models.BooleanField(default=False, verbose_name='Aurora')
+    on_nightly = models.BooleanField(default=False, verbose_name='Nightly')
+
+    on_startpage_1 = models.BooleanField(default=True, verbose_name='Version 1')
+
+    client_match_rules = models.ManyToManyField(
+        ClientMatchRule, blank=True, verbose_name='Client Match Rules')
+
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    cached_objects = SnippetManager()
+
+    class Meta:
+        ordering = ('-modified',)
+        verbose_name = 'JSON Snippet'
+
+    def __unicode__(self):
+        return self.name
+
+
+class JSONSnippetLocale(CachingMixin, models.Model):
+    snippet = models.ForeignKey(JSONSnippet, related_name='locale_set')
     locale = LocaleField()
 
     objects = models.Manager()

@@ -28,10 +28,9 @@ class SnippetTemplateVariableFactory(factory.DjangoModelFactory):
     template = factory.SubFactory(SnippetTemplateFactory)
 
 
-class SnippetFactory(factory.DjangoModelFactory):
+class BaseSnippetFactory(factory.DjangoModelFactory):
     FACTORY_FOR = models.Snippet
     name = factory.Sequence(lambda n: 'Test Snippet {0}'.format(n))
-    template = factory.SubFactory(SnippetTemplateFactory)
     disabled = False
 
     @factory.post_generation
@@ -51,6 +50,15 @@ class SnippetFactory(factory.DjangoModelFactory):
             self.locale_set.add(*extracted)
         else:
             self.locale_set.create(locale='en-us')
+
+
+class SnippetFactory(BaseSnippetFactory):
+    FACTORY_FOR = models.Snippet
+    template = factory.SubFactory(SnippetTemplateFactory)
+
+
+class JSONSnippetFactory(BaseSnippetFactory):
+    FACTORY_FOR = models.JSONSnippet
 
 
 class ClientMatchRuleFactory(factory.DjangoModelFactory):

@@ -80,8 +80,6 @@ def import_v1_data(filename):
                 'on_startpage_2': True,
                 'on_startpage_3': True,
                 'on_startpage_4': True,
-                'on_firefox': True,
-                'on_fennec': True
                 })
 
             # Generate a unique name if needed.

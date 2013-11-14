@@ -10,7 +10,7 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from snippets.base import ENGLISH_LANGUAGE_CHOICES
-from snippets.base.models import Snippet, SnippetTemplateVariable
+from snippets.base.models import JSONSnippet, Snippet, SnippetTemplateVariable
 
 
 class TemplateSelect(forms.Select):
@@ -88,12 +88,42 @@ class TemplateDataWidget(forms.TextInput):
         ])
 
 
-class SnippetAdminForm(forms.ModelForm):
+class IconWidget(forms.TextInput):
+    def render(self, name, value, attrs=None):
+        if not attrs:
+            attrs = {}
+        attrs['style'] = 'display:none'
+        original_widget_code = super(IconWidget, self).render(name, value, attrs)
+        widget_code = u"""
+        <div id="{name}-container">
+          <img src="{value}">
+          <input type="file" class="image-input">
+          {original_widget_code}
+        </div>
+        """.format(name=name, value=value,
+                   original_widget_code=original_widget_code)
+        return mark_safe(widget_code)
+
+    class Media:
+        js = ('js/lib/jquery-2.0.0.js',
+              'js/iconWidget.js')
+
+
+class BaseSnippetAdminForm(forms.ModelForm):
     locales = forms.MultipleChoiceField(
         required=False,
         choices=ENGLISH_LANGUAGE_CHOICES,
         widget=FilteredSelectMultiple('locales', is_stacked=False))
 
+    def __init__(self, *args, **kwargs):
+        super(BaseSnippetAdminForm, self).__init__(*args, **kwargs)
+
+        # Populates the list of locales from the snippet's existing values.
+        locales = self.instance.locale_set.all()
+        self.fields['locales'].initial = [l.locale for l in locales]
+
+
+class SnippetAdminForm(BaseSnippetAdminForm):
     class Meta:
         model = Snippet
         widgets = {
@@ -101,9 +131,11 @@ class SnippetAdminForm(forms.ModelForm):
             'data': TemplateDataWidget('template'),
         }
 
-    def __init__(self, *args, **kwargs):
-        super(SnippetAdminForm, self).__init__(*args, **kwargs)
 
-        # Populates the list of locales from the snippet's existing values.
-        locales = self.instance.locale_set.all()
-        self.fields['locales'].initial = [l.locale for l in locales]
+class JSONSnippetAdminForm(BaseSnippetAdminForm):
+    class Meta:
+        model = JSONSnippet
+        widgets = {
+            'text': forms.Textarea,
+            'icon': IconWidget,
+        }

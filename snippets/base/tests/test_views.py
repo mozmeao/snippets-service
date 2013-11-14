@@ -1,4 +1,4 @@
-from datetime import datetime
+import json
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -9,104 +9,32 @@ from mock import patch
 from nose.tools import eq_, ok_
 
 import snippets.base.models
-from snippets.base.models import Client, ClientMatchRule
-from snippets.base.tests import (ClientMatchRuleFactory, SnippetFactory,
+from snippets.base.models import Client
+from snippets.base.tests import (JSONSnippetFactory, SnippetFactory,
                                  SnippetTemplateFactory, TestCase)
 
 snippets.base.models.CHANNELS = ('release', 'beta', 'aurora', 'nightly')
-snippets.base.models.STARTPAGE_VERSIONS = ('1', '2', '3', '4')
-snippets.base.models.CLIENT_NAMES = {'Firefox': 'firefox', 'fennec': 'fennec'}
+snippets.base.models.FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4')
 
 
 class FetchSnippetsTests(TestCase):
-    @patch('snippets.base.views.ClientMatchRule', wraps=ClientMatchRule)
-    def test_base(self, ClientMatchRuleMock):
-        client_match_rule_pass = ClientMatchRuleFactory(
-            name='Firefox', channel='nightly', startpage_version='4')
-        client_match_rule_fail = ClientMatchRuleFactory(
-            name='Firefox', channel='release', startpage_version='4')
-
+    def test_base(self):
         # Matching snippets.
-        snippet_pass_1 = SnippetFactory.create(on_nightly=True)
-        snippet_pass_2 = SnippetFactory.create(
-            on_nightly=True, client_match_rules=[client_match_rule_pass])
+        snippet_1 = SnippetFactory.create(on_nightly=True)
 
         # Matching but disabled snippet.
         SnippetFactory.create(on_nightly=True, disabled=True)
 
-        # Snippets that do not match.
+        # Snippet that doesn't match.
         SnippetFactory.create(on_nightly=False),
-        SnippetFactory.create(on_nightly=False,
-                              client_match_rules=[client_match_rule_pass])
-        SnippetFactory.create(on_nightly=False,
-                              client_match_rules=[client_match_rule_fail])
-        snippet_fail_3 = SnippetFactory.create(
-            on_nightly=True, client_match_rules=[client_match_rule_fail])
-        snippet_fail_4 = SnippetFactory.create(
-            on_nightly=True, client_match_rules=[client_match_rule_fail,
-                                                 client_match_rule_pass])
 
-        snippets_ok = [snippet_pass_1, snippet_pass_2]
-        snippets_pass_match_client = (snippets_ok +
-                                      [snippet_fail_3, snippet_fail_4])
-
+        snippets_ok = [snippet_1]
         params = ('4', 'Firefox', '23.0a1', '20130510041606',
                   'Darwin_Universal-gcc3', 'en-US', 'nightly',
                   'Darwin%2010.8.0', 'default', 'default_version')
         response = self.client.get('/{0}/'.format('/'.join(params)))
 
         eq_(set(snippets_ok), set(response.context['snippets']))
-        call_args = (ClientMatchRuleMock.cached_objects
-                     .filter.call_args[1]['snippet__in'])
-        eq_(set(snippets_pass_match_client), set(call_args))
-
-    @patch('snippets.base.views.datetime')
-    def test_publish_date_filters(self, mock_datetime):
-        """
-        If it is currently outside of the publish times for a snippet, it
-        should not be included in the response.
-        """
-        mock_datetime.utcnow.return_value = datetime(2013, 4, 5)
-
-        # Passing snippets.
-        snippet_no_dates = SnippetFactory.create(on_release=True)
-        snippet_after_start_date = SnippetFactory.create(
-            on_release=True,
-            publish_start=datetime(2013, 3, 6)
-        )
-        snippet_before_end_date = SnippetFactory.create(
-            on_release=True,
-            publish_end=datetime(2013, 6, 6)
-        )
-        snippet_within_range = SnippetFactory.create(
-            on_release=True,
-            publish_start=datetime(2013, 3, 6),
-            publish_end=datetime(2013, 6, 6)
-        )
-
-        # Failing snippets.
-        SnippetFactory.create(  # Before start date.
-            on_release=True,
-            publish_start=datetime(2013, 5, 6)
-        )
-        SnippetFactory.create(  # After end date.
-            on_release=True,
-            publish_end=datetime(2013, 3, 6)
-        )
-        SnippetFactory.create(  # Outside range.
-            on_release=True,
-            publish_start=datetime(2013, 6, 6),
-            publish_end=datetime(2013, 7, 6)
-        )
-
-        params = ('4', 'Firefox', '23.0a1', '20130510041606',
-                  'Darwin_Universal-gcc3', 'en-US', 'release',
-                  'Darwin%2010.8.0', 'default', 'default_version')
-        response = self.client.get('/{0}/'.format('/'.join(params)))
-
-        expected = set([snippet_no_dates, snippet_after_start_date,
-                       snippet_before_end_date, snippet_within_range])
-        eq_(expected, set(response.context['snippets']))
 
     @patch('snippets.base.views.Client', wraps=Client)
     def test_client_construction(self, ClientMock):
@@ -143,6 +71,69 @@ class FetchSnippetsTests(TestCase):
         response = self.client.get('/{0}/'.format('/'.join(params)))
         eq_(response['Cache-control'], 'public, max-age=75')
         ok_('Vary' not in response)
+
+
+class JSONSnippetsTests(TestCase):
+    def test_base(self):
+        # Matching snippets.
+        snippet_1 = JSONSnippetFactory.create(on_nightly=True)
+
+        # Matching but disabled snippet.
+        JSONSnippetFactory.create(on_nightly=True, disabled=True)
+
+        # Snippet that doesn't match.
+        JSONSnippetFactory.create(on_nightly=False),
+
+        params = ('4', 'Fennec', '23.0a1', '20130510041606',
+                  'Darwin_Universal-gcc3', 'en-US', 'nightly',
+                  'Darwin%2010.8.0', 'default', 'default_version')
+        response = self.client.get('/json/{0}/'.format('/'.join(params)))
+        data = json.loads(response.content)
+        eq_(len(data), 1)
+        eq_(data[0]['id'], snippet_1.id)
+
+    @patch('snippets.base.views.Client', wraps=Client)
+    def test_client_construction(self, ClientMock):
+        """
+        Ensure that the client object is constructed correctly from the URL
+        arguments.
+        """
+        params = ('4', 'Fennec', '23.0a1', '20130510041606',
+                  'Darwin_Universal-gcc3', 'en-US', 'nightly',
+                  'Darwin%2010.8.0', 'default', 'default_version')
+        self.client.get('/json/{0}/'.format('/'.join(params)))
+
+        ClientMock.assert_called_with(startpage_version='4',
+                                      name='Fennec',
+                                      version='23.0a1',
+                                      appbuildid='20130510041606',
+                                      build_target='Darwin_Universal-gcc3',
+                                      locale='en-US',
+                                      channel='nightly',
+                                      os_version='Darwin 10.8.0',
+                                      distribution='default',
+                                      distribution_version='default_version')
+
+    @override_settings(SNIPPET_HTTP_MAX_AGE=75)
+    def test_cache_headers(self):
+        """
+        view_snippets should always have Cache-control set to
+        'public, max-age={settings.SNIPPET_HTTP_MAX_AGE}' and no Vary header,
+        even after middleware is executed.
+        """
+        params = ('1', 'Fennec', '23.0a1', '20130510041606',
+                  'Darwin_Universal-gcc3', 'en-US', 'nightly',
+                  'Darwin%2010.8.0', 'default', 'default_version')
+        response = self.client.get('/json/{0}/'.format('/'.join(params)))
+        eq_(response['Cache-control'], 'public, max-age=75')
+        ok_('Vary' not in response)
+
+    def test_response(self):
+        params = ('1', 'Fennec', '23.0a1', '20130510041606',
+                  'Darwin_Universal-gcc3', 'en-US', 'nightly',
+                  'Darwin%2010.8.0', 'default', 'default_version')
+        response = self.client.get('/json/{0}/'.format('/'.join(params)))
+        eq_(response['Content-Type'], 'application/json')
 
 
 class PreviewSnippetTests(TestCase):

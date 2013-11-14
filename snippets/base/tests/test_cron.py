@@ -115,8 +115,6 @@ class ImportTests(TestCase):
         eq_(snippet.on_startpage_2, True)
         eq_(snippet.on_startpage_3, True)
         eq_(snippet.on_startpage_4, True)
-        eq_(snippet.on_firefox, True)
-        eq_(snippet.on_fennec, True)
         eq_(snippet.id, 4045)
         eq_(snippet.country, '2')
 

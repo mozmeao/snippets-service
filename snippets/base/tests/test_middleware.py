@@ -11,7 +11,7 @@ class FetchSnippetsMiddlewareTests(TestCase):
 
     @patch('snippets.base.middleware.resolve')
     @patch('snippets.base.middleware.fetch_snippets')
-    def test_resolve_match(self, fetch_snippets, resolve):
+    def test_resolve_fetch_snippets_match(self, fetch_snippets, resolve):
         """
         If resolve returns a match to the fetch_snippets view, return the
         result of the view.
@@ -25,6 +25,23 @@ class FetchSnippetsMiddlewareTests(TestCase):
         eq_(self.middleware.process_request(request),
             fetch_snippets.return_value)
         fetch_snippets.assert_called_with(request, 1, 'asdf', blah=5)
+
+    @patch('snippets.base.middleware.resolve')
+    @patch('snippets.base.middleware.fetch_json_snippets')
+    def test_resolve_fetch_json_snippets_match(self, fetch_json_snippets, resolve):
+        """
+        If resolve returns a match to the fetch_json_snippets view,
+        return the result of the view.
+        """
+        request = Mock()
+        result = resolve.return_value
+        result.func = fetch_json_snippets
+        result.args = (1, 'asdf')
+        result.kwargs = {'blah': 5}
+
+        eq_(self.middleware.process_request(request),
+            fetch_json_snippets.return_value)
+        fetch_json_snippets.assert_called_with(request, 1, 'asdf', blah=5)
 
     @patch('snippets.base.middleware.resolve')
     @patch('snippets.base.middleware.fetch_snippets')
