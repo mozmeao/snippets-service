@@ -99,7 +99,8 @@ class SnippetManagerTests(TestCase):
         filters = {
             'on_startpage_4': True,
             'on_release': True,
-            'on_firefox': True
+            'on_firefox': True,
+            'locale_set__isnull': True,
         }
         self._assert_client_passes_filters(params, filters)
 

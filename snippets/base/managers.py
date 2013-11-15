@@ -49,5 +49,9 @@ class SnippetManager(CachingManager):
         locales = filter(client.locale.lower().startswith, LANGUAGE_VALUES)
         if locales:
             filters.update(locale_set__locale__in=locales)
+        else:
+            # If the locale is invalid, only match snippets with no
+            # locales specified.
+            filters.update(locale_set__isnull=True)
 
         return self.filter(**filters).distinct()
