@@ -27,8 +27,8 @@ class ClientMatchRuleQuerySetTests(TestCase):
         matches.side_effect = lambda self, client: return_values.get(self.id, False)
 
         passed, failed = self.manager.all().evaluate('asdf')
-        eq_([rule1_pass, rule2_pass, rule4_pass], passed)
-        eq_([rule3_fail, rule5_fail], failed)
+        eq_(set([rule1_pass, rule2_pass, rule4_pass]), set(passed))
+        eq_(set([rule3_fail, rule5_fail]), set(failed))
 
 
 class SnippetManagerTests(TestCase):
