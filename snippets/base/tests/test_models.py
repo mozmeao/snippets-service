@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 
-from mock import Mock
+from mock import Mock, patch
 from nose.tools import assert_raises, eq_, ok_
 from pyquery import PyQuery as pq
 
@@ -80,6 +80,46 @@ class SnippetTemplateTests(TestCase):
         """If the template context doesn't have a snippet_id entry, add one set to 0."""
         template = SnippetTemplateFactory(code='<p>{{ snippet_id }}</p>')
         eq_(template.render({'myvar': 'foo'}), '<p>0</p>')
+
+    @patch('snippets.base.models.hashlib.sha1')
+    @patch('snippets.base.models.jingo.env.from_string')
+    def test_render_not_cached(self, mock_from_string, mock_sha1):
+        """If the template isn't in the cache, add it."""
+        template = SnippetTemplateFactory(code='asdf')
+        mock_cache = {}
+
+        with patch('snippets.base.models.template_cache', mock_cache):
+            result = template.render({})
+
+        jinja_template = mock_from_string.return_value
+        cache_key = mock_sha1.return_value.hexdigest.return_value
+        eq_(mock_cache, {cache_key: jinja_template})
+
+        mock_sha1.assert_called_with('asdf')
+        mock_from_string.assert_called_with('asdf')
+        jinja_template.render.assert_called_with({'snippet_id': 0})
+        eq_(result, jinja_template.render.return_value)
+
+
+    @patch('snippets.base.models.hashlib.sha1')
+    @patch('snippets.base.models.jingo.env.from_string')
+    def test_render_cached(self, mock_from_string, mock_sha1):
+        """
+        If the template is in the cache, use the cached version instead
+        of bothering to compile it.
+        """
+        template = SnippetTemplateFactory(code='asdf')
+        cache_key = mock_sha1.return_value.hexdigest.return_value
+        jinja_template = Mock()
+        mock_cache = {cache_key: jinja_template}
+
+        with patch('snippets.base.models.template_cache', mock_cache):
+            result = template.render({})
+
+        mock_sha1.assert_called_with('asdf')
+        ok_(not mock_from_string.called)
+        jinja_template.render.assert_called_with({'snippet_id': 0})
+        eq_(result, jinja_template.render.return_value)
 
 
 class SnippetTests(TestCase):
