@@ -1,3 +1,4 @@
+import hashlib
 import json
 import re
 import xml.sax
@@ -8,9 +9,10 @@ from xml.sax import ContentHandler
 from django.core.exceptions import ValidationError
 from django.db import models
 
+import jingo
 from caching.base import CachingManager, CachingMixin
-from jingo import env
 from jinja2 import Markup
+from jinja2.utils import LRUCache
 
 from snippets.base.fields import CountryField, LocaleField, RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
@@ -66,6 +68,12 @@ Client = namedtuple('Client', (
 ))
 
 
+# Cache for compiled snippet templates. Using jinja's built in cache
+# requires either an extra trip to the database/cache or jumping through
+# hoops.
+template_cache = LRUCache(100)
+
+
 class SnippetTemplate(CachingMixin, models.Model):
     """
     A template for the body of a snippet. Can have multiple variables that the
@@ -82,7 +90,14 @@ class SnippetTemplate(CachingMixin, models.Model):
 
     def render(self, ctx):
         ctx.setdefault('snippet_id', 0)
-        return env.from_string(self.code).render(ctx)
+
+        # Check if template is in cache, and cache it if it's not.
+        cache_key = hashlib.sha1(self.code).hexdigest()
+        template = template_cache.get(cache_key)
+        if not template:
+            template = jingo.env.from_string(self.code)
+            template_cache[cache_key] = template
+        return template.render(ctx)
 
     def __unicode__(self):
         return self.name
