@@ -1,6 +1,6 @@
 from django.core.urlresolvers import resolve
 
-from snippets.base.views import fetch_snippets
+from snippets.base.views import fetch_json_snippets, fetch_snippets
 
 
 class FetchSnippetsMiddleware(object):
@@ -16,5 +16,5 @@ class FetchSnippetsMiddleware(object):
     """
     def process_request(self, request):
         result = resolve(request.path)
-        if result.func == fetch_snippets:
-            return fetch_snippets(request, *result.args, **result.kwargs)
+        if result.func in (fetch_snippets, fetch_json_snippets):
+            return result.func(request, *result.args, **result.kwargs)

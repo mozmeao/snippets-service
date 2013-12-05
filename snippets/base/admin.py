@@ -63,8 +63,7 @@ class BaseModelAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
 
 
-class SnippetAdmin(BaseModelAdmin):
-    form = forms.SnippetAdminForm
+class BaseSnippetAdmin(BaseModelAdmin):
 
     list_display = (
         'name',
@@ -80,9 +79,6 @@ class SnippetAdmin(BaseModelAdmin):
         'on_beta',
         'on_aurora',
         'on_nightly',
-        'on_firefox',
-        'on_fennec',
-        ('template__name', TemplateNameFilter),
         'locale_set__locale',
         'client_match_rules',
     )
@@ -95,10 +91,27 @@ class SnippetAdmin(BaseModelAdmin):
 
     readonly_fields = ('created', 'modified')
     save_on_top = True
-    search_fields = ('name', 'client_match_rules__description',
-                     'template__name')
 
     filter_horizontal = ('client_match_rules',)
+
+    def save_model(self, request, obj, form, change):
+        """Save locale changes as well as the snippet itself."""
+        super(BaseSnippetAdmin, self).save_model(request, obj, form, change)
+
+        try:
+            locales = form.cleaned_data['locales']
+            obj.locale_set.all().delete()
+            for locale in locales:
+                obj.locale_set.create(locale=locale)
+        except KeyError:
+            pass  # If the locales weren't even specified, do nothing.
+
+
+class SnippetAdmin(BaseSnippetAdmin):
+    form = forms.SnippetAdminForm
+
+    search_fields = ('name', 'client_match_rules__description',
+                     'template__name')
 
     fieldsets = (
         (None, {'fields': ('name', 'priority', 'disabled',
@@ -115,9 +128,6 @@ class SnippetAdmin(BaseModelAdmin):
         }),
         ('Prevalence', {
             'fields': ('weight',)
-        }),
-        ('Products', {
-            'fields': (('on_firefox', 'on_fennec'),)
         }),
         ('Product channels', {
             'description': 'What channels will this snippet be available in?',
@@ -146,18 +156,6 @@ class SnippetAdmin(BaseModelAdmin):
             'all': ('css/admin.css',)
         }
 
-    def save_model(self, request, obj, form, change):
-        """Save locale changes as well as the snippet itself."""
-        super(SnippetAdmin, self).save_model(request, obj, form, change)
-
-        try:
-            locales = form.cleaned_data['locales']
-            obj.locale_set.all().delete()
-            for locale in locales:
-                models.SnippetLocale.objects.create(snippet=obj, locale=locale)
-        except KeyError:
-            pass  # If the locales weren't even specified, do nothing.
-
     def lookup_allowed(self, key, value):
         if key == 'template__name':
             return True
@@ -167,10 +165,10 @@ class SnippetAdmin(BaseModelAdmin):
 class ClientMatchRuleAdmin(BaseModelAdmin):
     list_display = ('description', 'startpage_version', 'name',
                     'version', 'locale', 'appbuildid', 'build_target',
-                    'channel', 'os_version', 'distribution', 'distribution_version',
-                    'modified')
-    list_filter = ('name', 'version', 'os_version', 'appbuildid', 'build_target',
-                   'channel', 'distribution', 'locale')
+                    'channel', 'os_version', 'distribution',
+                    'distribution_version', 'modified')
+    list_filter = ('name', 'version', 'os_version', 'appbuildid',
+                   'build_target', 'channel', 'distribution', 'locale')
     save_on_top = True
     search_fields = ('description',)
 
@@ -224,6 +222,44 @@ class SnippetTemplateAdmin(BaseModelAdmin):
                 template=form.instance, name=variable)
 
 
+class JSONSnippetAdmin(BaseSnippetAdmin):
+    form = forms.JSONSnippetAdminForm
+    search_fields = ('name', 'client_match_rules__description')
+
+    fieldsets = (
+        (None, {'fields': ('name', 'priority', 'disabled',
+                           'created', 'modified')}),
+        ('Content', {
+            'fields': ('icon', 'text', 'url'),
+        }),
+        ('Publish Duration', {
+            'description': ('When will this snippet be available? (Optional)'
+                            '<br>Publish times are in UTC. '
+                            '<a href="http://time.is/UTC" target="_blank">'
+                            'Click here to see the current time in UTC</a>.'),
+            'fields': ('publish_start', 'publish_end'),
+        }),
+        ('Product channels', {
+            'description': 'What channels will this snippet be available in?',
+            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
+        }),
+        ('Country and Locale', {
+            'description': ('What country and locales will this snippet be '
+                            'available in?'),
+            'fields': (('country', 'locales'))
+        }),
+        ('Client Match Rules', {
+            'fields': ('client_match_rules',),
+            'classes': ('collapse',)
+        }),
+        ('Startpage Versions', {
+            'fields': (('on_startpage_1',),),
+            'classes': ('collapse',)
+        }),
+    )
+
+
 admin.site.register(models.Snippet, SnippetAdmin)
 admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
+admin.site.register(models.JSONSnippet, JSONSnippetAdmin)

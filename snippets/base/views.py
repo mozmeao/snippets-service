@@ -5,7 +5,7 @@ from time import gmtime, strftime
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
 from django.utils.functional import lazy
 from django.views.decorators.cache import cache_control
@@ -16,8 +16,9 @@ from commonware.response.decorators import xframe_allow
 import django_filters
 
 from snippets.base.decorators import access_control
-from snippets.base.models import (Client, ClientMatchRule, Snippet,
-                                  SnippetTemplate)
+from snippets.base.encoders import SnippetEncoder
+from snippets.base.models import (Client, ClientMatchRule, JSONSnippet,
+                                  Snippet, SnippetTemplate)
 from snippets.base.util import get_object_or_none
 
 
@@ -31,7 +32,7 @@ class SnippetFilter(django_filters.FilterSet):
     class Meta:
         model = Snippet
         fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly',
-                  'on_firefox', 'on_fennec', 'template']
+                  'template']
 
 
 def index(request):
@@ -61,32 +62,31 @@ def index(request):
 @access_control(max_age=HTTP_MAX_AGE)
 def fetch_snippets(request, **kwargs):
     client = Client(**kwargs)
-
-    matching_snippets = (Snippet.cached_objects.match_client(client)
+    matching_snippets = (Snippet.cached_objects
                          .filter(disabled=False)
+                         .match_client(client)
                          .order_by('priority')
-                         .select_related('template'))
-
-    passed_rules, failed_rules = (ClientMatchRule.cached_objects
-                                  .filter(snippet__in=matching_snippets)
-                                  .distinct()
-                                  .evaluate(client))
-    matching_snippets = (matching_snippets
-                         .exclude(client_match_rules__in=failed_rules))
-
-    # Filter by date in python to avoid caching based on the passing of time.
-    now = datetime.utcnow()
-    matching_snippets = [
-        snippet for snippet in matching_snippets if
-        (not snippet.publish_start or snippet.publish_start <= now) and
-        (not snippet.publish_end or snippet.publish_end >= now)
-    ]
+                         .select_related('template')
+                         .filter_by_available())
 
     return render(request, 'base/fetch_snippets.html', {
         'snippets': matching_snippets,
         'client': client,
         'current_time': strftime('%Y-%m-%dT%H:%M:%SZ', gmtime())
     })
+
+
+@cache_control(public=True, max_age=HTTP_MAX_AGE)
+@access_control(max_age=HTTP_MAX_AGE)
+def fetch_json_snippets(request, **kwargs):
+    client = Client(**kwargs)
+    matching_snippets = (JSONSnippet.cached_objects
+                         .filter(disabled=False)
+                         .match_client(client)
+                         .order_by('priority')
+                         .filter_by_available())
+    return HttpResponse(json.dumps(matching_snippets, cls=SnippetEncoder),
+                        mimetype='application/json')
 
 
 PREVIEW_CLIENT = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',

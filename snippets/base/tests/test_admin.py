@@ -78,7 +78,9 @@ class SnippetAdminTests(TestCase):
         locales = (l.locale for l in snippet.locale_set.all())
         eq_(set(locales), set(('en-us', 'fr')))
 
-    def test_cmr_to_locales_action_base(self):
+
+class CMRToLocalesActionTests(TestCase):
+    def test_base(self):
         cmr_el = ClientMatchRuleFactory(locale='/^el/')
         cmr_ast = ClientMatchRuleFactory(locale='ast|ja-JP-mac',
                                          channel='aurora')
@@ -95,7 +97,7 @@ class SnippetAdminTests(TestCase):
         eq_(snippet.client_match_rules.count(), 1)
         eq_(snippet.client_match_rules.all()[0], cmr_ast)
 
-    def test_cmr_to_locales_action_exclusion_cmr(self):
+    def test_exclusion_cmr(self):
         cmr_el = ClientMatchRuleFactory(locale='/^el/', is_exclusion=True)
         snippet = SnippetFactory(client_match_rules=[cmr_el],
                                  locale_set=[SnippetLocale(locale='pl'),

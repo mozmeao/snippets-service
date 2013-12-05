@@ -1,11 +1,24 @@
 import json
 
+from mock import patch
 from nose.tools import eq_, ok_
 from pyquery import PyQuery as pq
 
-from snippets.base.forms import TemplateDataWidget, TemplateSelect
+from snippets.base.forms import IconWidget, TemplateDataWidget, TemplateSelect
 from snippets.base.tests import (SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase)
+
+
+class IconWidgetTests(TestCase):
+    def test_basic(self):
+        with patch('snippets.base.forms.forms.TextInput.render') as render_mock:
+            render_mock.return_value = 'original widget code'
+            widget = IconWidget()
+            rendered_widget = widget.render('iconname', 'iconvalue')
+        ok_('original widget code' in rendered_widget)
+        d = pq(rendered_widget)
+        eq_(d.find('img').attr('src'), 'iconvalue')
+        ok_(d.attr('id'), 'iconname')
 
 
 class TemplateSelectTests(TestCase):
