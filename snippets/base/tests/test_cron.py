@@ -9,6 +9,7 @@ from snippets.base.models import (ClientMatchRule, Snippet,
                                   SnippetLocale, SnippetTemplate)
 from snippets.base.tests import TestCase
 
+
 class ImportTests(TestCase):
     def test_import_v1(self):
         import_data = """
@@ -123,7 +124,6 @@ class ImportTests(TestCase):
         for locale_code, locale_name in ENGLISH_LANGUAGE_CHOICES:
             ok_(SnippetLocale.objects
                 .filter(snippet=snippet, locale=locale_code).exists())
-
 
     def test_invalid_import(self):
         import_data = """

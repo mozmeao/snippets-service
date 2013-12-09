@@ -100,7 +100,6 @@ class SnippetTemplateTests(TestCase):
         jinja_template.render.assert_called_with({'snippet_id': 0})
         eq_(result, jinja_template.render.return_value)
 
-
     @patch('snippets.base.models.hashlib.sha1')
     @patch('snippets.base.models.jingo.env.from_string')
     def test_render_cached(self, mock_from_string, mock_sha1):

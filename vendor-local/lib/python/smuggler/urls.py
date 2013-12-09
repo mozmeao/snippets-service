@@ -6,7 +6,11 @@
 # General Public License version 3 (LGPLv3) as published by the Free
 # Software Foundation. See the file README for copying conditions.
 
-from django.conf.urls.defaults import *
+try:
+    from django.conf.urls import url, patterns
+except ImportError:  # Django < 1.4
+    from django.conf.urls.defaults import url, patterns
+                            
 from smuggler.views import (dump_data, dump_app_data, dump_model_data,
                             load_data)
 

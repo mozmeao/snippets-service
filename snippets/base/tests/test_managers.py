@@ -3,7 +3,7 @@ from datetime import datetime
 from mock import patch
 from nose.tools import eq_
 
-from snippets.base.managers import SnippetManager, SnippetQuerySet
+from snippets.base.managers import SnippetQuerySet
 from snippets.base.models import Client, ClientMatchRule, Snippet, SnippetLocale
 from snippets.base.tests import ClientMatchRuleFactory, SnippetFactory, TestCase
 
@@ -71,6 +71,7 @@ class SnippetManagerTests(TestCase):
     def _assert_client_passes_filters(self, client_attrs, filters):
         client = self._build_client(**client_attrs)
         with patch.object(SnippetQuerySet, 'filter') as mock_filter:
+            mock_filter().distinct().return_value = []
             Snippet.cached_objects.match_client(client)
             mock_filter.assert_called_with(**filters)
 
