@@ -1,3 +1,5 @@
+from django.test.client import Client
+
 import factory
 from test_utils import TestCase as BaseTestCase
 
@@ -5,7 +7,9 @@ from snippets.base import models
 
 
 class TestCase(BaseTestCase):
-    pass  # Will be filled in when we need this, which we usually do.
+    def __init__(self, *args, **kwargs):
+        self.client = Client()
+        super(TestCase, self).__init__(*args, **kwargs)
 
 
 class SnippetTemplateFactory(factory.DjangoModelFactory):

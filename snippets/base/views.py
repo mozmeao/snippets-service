@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 from time import gmtime, strftime
 
 from django.conf import settings
@@ -17,8 +16,7 @@ import django_filters
 
 from snippets.base.decorators import access_control
 from snippets.base.encoders import SnippetEncoder
-from snippets.base.models import (Client, ClientMatchRule, JSONSnippet,
-                                  Snippet, SnippetTemplate)
+from snippets.base.models import Client, JSONSnippet, Snippet, SnippetTemplate
 from snippets.base.util import get_object_or_none
 
 

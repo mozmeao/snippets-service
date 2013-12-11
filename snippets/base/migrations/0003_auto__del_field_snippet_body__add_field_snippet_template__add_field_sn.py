@@ -13,7 +13,7 @@ class Migration(SchemaMigration):
 
         # Adding field 'Snippet.template'
         db.add_column('base_snippet', 'template',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['base.SnippetTemplate']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['base.SnippetTemplate']),
                       keep_default=False)
 
         # Adding field 'Snippet.data'

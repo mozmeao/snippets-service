@@ -15,8 +15,7 @@ class DoesNotExist(Exception):
 def find_client_match_rule(data, id):
     """Search data for ClientMatchRule with  id and return description."""
     for entry in data:
-        if (entry['model'] == 'homesnippets.clientmatchrule'
-            and entry['pk'] == id):
+        if entry['model'] == 'homesnippets.clientmatchrule' and entry['pk'] == id:
             return entry['fields']['description']
     raise DoesNotExist('Cannot find ClientMatchRule {0}'.format(id))
 
@@ -101,7 +100,6 @@ def import_v1_data(filename):
                     cmr_description = find_client_match_rule(old_data, rule)
                     cmr = ClientMatchRule.objects.get(description=cmr_description)
                     snippet.client_match_rules.add(cmr)
-
 
             # Allow all locales. Will be filtered using Client Match
             # Rules.
