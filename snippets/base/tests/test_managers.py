@@ -6,6 +6,7 @@ from nose.tools import eq_
 from snippets.base.managers import SnippetQuerySet
 from snippets.base.models import Client, ClientMatchRule, Snippet, SnippetLocale
 from snippets.base.tests import ClientMatchRuleFactory, SnippetFactory, TestCase
+from snippets.base.util import first
 
 
 class ClientMatchRuleQuerySetTests(TestCase):
@@ -68,14 +69,12 @@ class SnippetManagerTests(TestCase):
         params.update(client_attrs)
         return Client(**params)
 
-    def _assert_client_passes_filters(self, client_attrs, filters):
+    def _assert_client_matches_snippets(self, client_attrs, snippets):
         client = self._build_client(**client_attrs)
-        with patch.object(SnippetQuerySet, 'filter') as mock_filter:
-            mock_filter().distinct().return_value = []
-            Snippet.cached_objects.match_client(client)
-            mock_filter.assert_called_with(**filters)
+        matched_snippets = Snippet.cached_objects.match_client(client)
+        eq_(set(matched_snippets), set(snippets))
 
-    def test_base(self):
+    def test_match_client_base(self):
         client_match_rule_pass_1 = ClientMatchRuleFactory(channel='nightly')
         client_match_rule_pass_2 = ClientMatchRuleFactory(channel='/(beta|nightly)/')
         client_match_rule_fail = ClientMatchRuleFactory(channel='release')
@@ -101,50 +100,59 @@ class SnippetManagerTests(TestCase):
     @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
     def test_match_client(self):
         params = {}
-        filters = {
-            'on_startpage_4': True,
-            'on_release': True,
-            'locale_set__locale__in': ['en-us']
-        }
-        self._assert_client_passes_filters(params, filters)
+        snippet = SnippetFactory.create(on_release=True, on_startpage_4=True,
+                                        locale_set=[SnippetLocale(locale='en-US')])
+        SnippetFactory.create(on_release=False, on_startpage_4=True,
+                              locale_set=[SnippetLocale(locale='en-US')])
+        self._assert_client_matches_snippets(params, [snippet])
 
     @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
     def test_match_client_not_matching_channel(self):
         params = {'channel': 'phantom'}
-        filters = {
-            'on_startpage_4': True,
-            'locale_set__locale__in': ['en-us']
-        }
-        self._assert_client_passes_filters(params, filters)
+        snippet = SnippetFactory.create(on_release=True, on_startpage_4=True,
+                                        locale_set=[SnippetLocale(locale='en-US')])
+        self._assert_client_matches_snippets(params, [snippet])
+
+    @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
+    def test_match_client_match_channel_partially(self):
+        """
+        Client channels like "release-cck-mozilla14" should match
+        "release".
+        """
+        params = {'channel': 'release-cck-mozilla14'}
+        snippet = SnippetFactory.create(on_release=True, on_startpage_4=True,
+                                        locale_set=[SnippetLocale(locale='en-US')])
+        SnippetFactory.create(on_release=False, on_startpage_4=True,
+                              locale_set=[SnippetLocale(locale='en-US')])
+        self._assert_client_matches_snippets(params, [snippet])
 
     @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
     def test_match_client_not_matching_startpage(self):
         params = {'startpage_version': '0'}
-        filters = {
-            'on_release': True,
-            'locale_set__locale__in': ['en-us']
-        }
-        self._assert_client_passes_filters(params, filters)
+        snippet = SnippetFactory.create(on_release=True, on_startpage_4=True,
+                                        locale_set=[SnippetLocale(locale='en-US')])
+        self._assert_client_matches_snippets(params, [snippet])
 
     @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
     def test_match_client_not_matching_name(self):
         params = {'name': 'unicorn'}
-        filters = {
-            'on_startpage_4': True,
-            'on_release': True,
-            'locale_set__locale__in': ['en-us']
-        }
-        self._assert_client_passes_filters(params, filters)
+        snippet = SnippetFactory.create()
+        self._assert_client_matches_snippets(params, [snippet])
 
     @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
     def test_match_client_not_matching_locale(self):
-        params = {'locale': 'de'}
-        filters = {
-            'on_startpage_4': True,
-            'on_release': True,
-            'locale_set__isnull': True,
-        }
-        self._assert_client_passes_filters(params, filters)
+        params = {'locale': 'en-US'}
+        SnippetFactory.create(on_release=True, on_startpage_4=True, locale_set=[])
+        self._assert_client_matches_snippets(params, [])
+
+    @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
+    def test_match_client_match_locale(self):
+        params = {}
+        snippet = SnippetFactory.create(on_release=True, on_startpage_4=True,
+                                        locale_set=[SnippetLocale(locale='en-US')])
+        SnippetFactory.create(on_release=True, on_startpage_4=True,
+                              locale_set=[SnippetLocale(locale='fr')])
+        self._assert_client_matches_snippets(params, [snippet])
 
     @patch('snippets.base.managers.LANGUAGE_VALUES', ['es-mx', 'es', 'fr'])
     def test_match_client_multiple_locales(self):
@@ -152,55 +160,58 @@ class SnippetManagerTests(TestCase):
         If there are multiple locales that should match the client's
         locale, include all of them.
         """
-        params = {'locale': 'es-MX'}
-        filters = {
-            'on_startpage_4': True,
-            'on_release': True,
-            'locale_set__locale__in': ['es-mx', 'es']
-        }
-        self._assert_client_passes_filters(params, filters)
+        params = {'locale': 'es-mx'}
+        snippet_1 = SnippetFactory.create(on_release=True, on_startpage_4=True,
+                                          locale_set=[SnippetLocale(locale='es')])
+        snippet_2 = SnippetFactory.create(on_release=True, on_startpage_4=True,
+                                          locale_set=[SnippetLocale(locale='es-mx')])
+        self._assert_client_matches_snippets(params, [snippet_1, snippet_2])
 
     @patch('snippets.base.managers.LANGUAGE_VALUES', ['es-mx', 'es', 'fr'])
-    def test_match_client_multiple_locale_matches(self):
+    def test_match_client_multiple_locales_distinct(self):
         """
         If a snippet has multiple locales and a client matches more
         than one of them, the snippet should only be included in the
         queryset once.
         """
-        es_mx = SnippetLocale(locale='es-mx')
-        es = SnippetLocale(locale='es')
-        snippet = SnippetFactory.create(locale_set=[es_mx, es])
+        params = {'locale': 'es-mx'}
+        snippet = SnippetFactory.create(on_release=True, on_startpage_4=True,
+                                        locale_set=[SnippetLocale(locale='es'),
+                                                    SnippetLocale(locale='es-mx')])
+        self._assert_client_matches_snippets(params, [snippet])
 
-        client = self._build_client(locale='es-MX')
-        snippets = Snippet.cached_objects.match_client(client)
+    @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
+    def test_match_client_invalid_locale(self):
+        """
+        If client sends invalid locale return snippets with no locales
+        specified.
+        """
+        params = {'locale': 'foo'}
+        snippet = SnippetFactory.create(on_release=True, on_startpage_4=True, locale_set=[])
+        SnippetFactory.create(on_release=True, on_startpage_4=True,
+                              locale_set=[SnippetLocale(locale='en-us')])
+        self._assert_client_matches_snippets(params, [snippet])
 
-        # Filter out any snippets that aren't the one we made, and ensure there's only one.
-        eq_(len([s for s in snippets if s.pk == snippet.pk]), 1)
+    @patch('snippets.base.models.FIREFOX_STARTPAGE_VERSIONS', ['test-firefox'])
+    def test_match_client_startpage_firefox(self):
 
-    @patch('snippets.base.models.FIREFOX_STARTPAGE_VERSIONS', ['test'])
-    def test_startpage_firefox(self):
         """
         Test that FIREFOX_STARTPAGE_VERSIONS gets selected when client is
         Firefox.
         """
-        params = {'name': 'FirefoX', 'startpage_version': 'test'}
-        filters = {
-            'on_startpage_test': True,
-            'on_release': True,
-            'locale_set__locale__in': ['en-us']
-        }
-        self._assert_client_passes_filters(params, filters)
+        client = self._build_client()
+        with patch('snippets.base.managers.first', wraps=first) as first_mock:
+            Snippet.cached_objects.match_client(client)
+        first_mock.assert_called_with(['test-firefox'], client.startpage_version.startswith)
 
-    @patch('snippets.base.models.FENNEC_STARTPAGE_VERSIONS', ['test'])
-    def test_startpage_fennec(self):
+
+    @patch('snippets.base.models.FENNEC_STARTPAGE_VERSIONS', ['test-fennec'])
+    def test_match_client_startpage_fennec(self):
         """
         Test that FENNEC_STARTPAGE_VERSIONS gets selected when client is
         Fennec.
         """
-        params = {'name': 'fennec', 'startpage_version': 'test'}
-        filters = {
-            'on_startpage_test': True,
-            'on_release': True,
-            'locale_set__locale__in': ['en-us']
-        }
-        self._assert_client_passes_filters(params, filters)
+        client = self._build_client(name='fennec')
+        with patch('snippets.base.managers.first', wraps=first) as first_mock:
+            Snippet.cached_objects.match_client(client)
+        first_mock.assert_called_with(['test-fennec'], client.startpage_version.startswith)
