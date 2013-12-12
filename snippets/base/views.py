@@ -70,7 +70,8 @@ def fetch_snippets(request, **kwargs):
     return render(request, 'base/fetch_snippets.html', {
         'snippets': matching_snippets,
         'client': client,
-        'current_time': strftime('%Y-%m-%dT%H:%M:%SZ', gmtime())
+        'current_time': strftime('%Y-%m-%dT%H:%M:%SZ', gmtime()),
+        'locale': client.locale,
     })
 
 

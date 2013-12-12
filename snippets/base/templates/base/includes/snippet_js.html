@@ -179,12 +179,13 @@
     // is sent.
     function send_impression(id) {
         if (Math.random() <= SAMPLE_RATE) {
+            var locale = document.getElementById('snippet_set').getAttribute('data-locale');
+            var url = STATS_URL + '?snippet_name=' + id + '&locale=' + locale;
             var r = new XMLHttpRequest();
-            r.open('GET', STATS_URL + '?snippet_name=' + id);
+            r.open('GET', url);
             r.send();
         }
     }
-
     // Modifies the given links to include the specified GET parameters.
     function modifyLinks(links, parameters) {
         for (var k = 0, len = links.length; k < len; k++) {
