@@ -35,6 +35,7 @@ class FetchSnippetsTests(TestCase):
         response = self.client.get('/{0}/'.format('/'.join(params)))
 
         eq_(set(snippets_ok), set(response.context['snippets']))
+        eq_(response.context['locale'], 'en-US')
 
     @patch('snippets.base.views.Client', wraps=Client)
     def test_client_construction(self, ClientMock):
