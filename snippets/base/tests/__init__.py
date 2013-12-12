@@ -50,7 +50,7 @@ class BaseSnippetFactory(factory.DjangoModelFactory):
         if not create:
             return
 
-        if extracted:
+        if extracted is not None:
             self.locale_set.add(*extracted)
         else:
             self.locale_set.create(locale='en-us')
