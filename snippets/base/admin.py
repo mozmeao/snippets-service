@@ -163,7 +163,7 @@ class SnippetAdmin(BaseSnippetAdmin):
 
 
 class ClientMatchRuleAdmin(BaseModelAdmin):
-    list_display = ('description', 'startpage_version', 'name',
+    list_display = ('description', 'is_exclusion', 'startpage_version', 'name',
                     'version', 'locale', 'appbuildid', 'build_target',
                     'channel', 'os_version', 'distribution',
                     'distribution_version', 'modified')
