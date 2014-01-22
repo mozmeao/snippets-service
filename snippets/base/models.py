@@ -7,6 +7,7 @@ from collections import namedtuple
 from xml.sax import ContentHandler
 
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import models
 
 import jingo
@@ -243,6 +244,9 @@ class Snippet(CachingMixin, models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('base.show', kwargs={'snippet_id': self.id})
 
 
 class SnippetLocale(CachingMixin, models.Model):
