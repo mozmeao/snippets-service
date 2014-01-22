@@ -4,7 +4,7 @@ from time import gmtime, strftime
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import Http404,HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
 from django.utils.functional import lazy
 from django.views.decorators.cache import cache_control
@@ -128,7 +128,10 @@ def preview_snippet(request):
 
 
 def show_snippet(request, snippet_id):
-    snippet = get_object_or_404(Snippet, pk=snippet_id, disabled=False)
+    snippet = get_object_or_404(Snippet, pk=snippet_id)
+    if snippet.disabled and not request.user.is_authenticated():
+        raise Http404()
+
     return render(request, 'base/preview.html', {
         'snippet': snippet,
         'client': PREVIEW_CLIENT,

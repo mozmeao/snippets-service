@@ -139,7 +139,7 @@ class JSONSnippetsTests(TestCase):
 
 class PreviewSnippetTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_superuser('admin', 'a@b.com', 'asdf')
+        self.user = User.objects.create_superuser('admin', 'admin@example.com', 'asdf')
         self.client.login(username='admin', password='asdf')
 
     def _preview_snippet(self, **kwargs):
@@ -183,22 +183,27 @@ class ShowSnippetTests(TestCase):
     def test_valid_snippet(self):
         """Test show of snippet."""
         snippet = SnippetFactory.create()
-        response = self.client.get(
-            reverse('base.show', kwargs={'snippet_id': snippet.id}))
+        response = self.client.get(reverse('base.show', kwargs={'snippet_id': snippet.id}))
         eq_(response.status_code, 200)
 
     def test_invalid_snippet(self):
         """Test invalid snippet returns 404."""
-        response = self.client.get(
-            reverse('base.show', kwargs={'snippet_id': '100'}))
+        response = self.client.get(reverse('base.show', kwargs={'snippet_id': '100'}))
         eq_(response.status_code, 404)
 
-    def test_valid_disabled_snippet(self):
-        """Test disabled snippet returns 404."""
+    def test_valid_disabled_snippet_unauthenticated(self):
+        """Test disabled snippet returns 404 to unauthenticated users."""
         snippet = SnippetFactory.create(disabled=True)
-        response = self.client.get(
-            reverse('base.show', kwargs={'snippet_id': snippet.id}))
+        response = self.client.get(reverse('base.show', kwargs={'snippet_id': snippet.id}))
         eq_(response.status_code, 404)
+
+    def test_valid_disabled_snippet_authenticated(self):
+        """Test disabled snippet returns 200 to authenticated users."""
+        snippet = SnippetFactory.create(disabled=True)
+        User.objects.create_superuser('admin', 'admin@example.com', 'asdf')
+        self.client.login(username='admin', password='asdf')
+        response = self.client.get(reverse('base.show', kwargs={'snippet_id': snippet.id}))
+        eq_(response.status_code, 200)
 
 
 @patch('snippets.base.views.SNIPPETS_PER_PAGE', 1)
