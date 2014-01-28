@@ -10,10 +10,18 @@ class SnippetEncoderTests(TestCase):
         encoder = SnippetEncoder()
         data = {'id': 99, 'text': 'test-text',
                 'icon': 'test-icon', 'url': 'test-url',
-                'country': 'US'}
+                'country': 'us'}
         snippet = JSONSnippetFactory.build(**data)
         result = encoder.default(snippet)
-        data['target_geo'] = data.pop('country')
+        data['target_geo'] = data.pop('country').upper()
+        eq_(result, data)
+
+    def test_encode_without_country(self):
+        encoder = SnippetEncoder()
+        data = {'id': 99, 'text': 'test-text',
+                'icon': 'test-icon', 'url': 'test-url'}
+        snippet = JSONSnippetFactory.build(**data)
+        result = encoder.default(snippet)
         eq_(result, data)
 
     @patch('snippets.base.encoders.json.JSONEncoder.default')
