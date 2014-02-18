@@ -203,11 +203,12 @@
         this.dataWidget = dataWidget;
 
         this.$container = $(elem);
-        this.$container.html(nj.render('snippetPreview.html', {
+        this.$container.html(nj.render('snippetPreviewFrame.html'));
+
+        this.$form = $(nj.render('snippetPreviewForm.html', {
             preview_url: this.$container.data('previewUrl')
         }));
-
-        this.$form = this.$container.find('form');
+        $(document.body).append(this.$form);
         this.$dataInput = this.$form.find('input[name="data"]');
         this.$templateIdInput = this.$form.find('input[name="template_id"]');
 

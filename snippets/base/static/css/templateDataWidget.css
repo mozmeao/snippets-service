@@ -50,11 +50,15 @@
 .snippet-preview-container {
     border-top: 1px solid #DDD;
     height: 480px;
-    width: 640px;
+    width: 100%;
 }
 
 .snippet-preview-container iframe {
     border: none;
     height: 100%;
     width: 100%;
+}
+
+.snippet-preview-form {
+    display: none;
 }
