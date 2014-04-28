@@ -239,6 +239,9 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
                             'Click here to see the current time in UTC</a>.'),
             'fields': ('publish_start', 'publish_end'),
         }),
+        ('Prevalence', {
+            'fields': ('weight',)
+        }),
         ('Product channels', {
             'description': 'What channels will this snippet be available in?',
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)

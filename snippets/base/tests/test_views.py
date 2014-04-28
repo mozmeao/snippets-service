@@ -77,7 +77,7 @@ class FetchSnippetsTests(TestCase):
 class JSONSnippetsTests(TestCase):
     def test_base(self):
         # Matching snippets.
-        snippet_1 = JSONSnippetFactory.create(on_nightly=True)
+        snippet_1 = JSONSnippetFactory.create(on_nightly=True, weight=66)
 
         # Matching but disabled snippet.
         JSONSnippetFactory.create(on_nightly=True, disabled=True)
@@ -92,6 +92,7 @@ class JSONSnippetsTests(TestCase):
         data = json.loads(response.content)
         eq_(len(data), 1)
         eq_(data[0]['id'], snippet_1.id)
+        eq_(data[0]['weight'], 66)
 
     @patch('snippets.base.views.Client', wraps=Client)
     def test_client_construction(self, ClientMock):
