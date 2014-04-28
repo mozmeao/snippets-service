@@ -279,6 +279,10 @@ class JSONSnippet(CachingMixin, models.Model):
 
     on_startpage_1 = models.BooleanField(default=True, verbose_name='Version 1')
 
+    weight = models.IntegerField(
+        'Prevalence', choices=SNIPPET_WEIGHTS, default=100,
+        help_text='How often should this snippet be shown to users?')
+
     client_match_rules = models.ManyToManyField(
         ClientMatchRule, blank=True, verbose_name='Client Match Rules')
 
