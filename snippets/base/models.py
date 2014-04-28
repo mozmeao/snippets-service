@@ -262,7 +262,7 @@ class JSONSnippet(CachingMixin, models.Model):
     priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)
 
-    icon = models.TextField(help_text='Icon should be a 128x128px PNG.')
+    icon = models.TextField(help_text='Icon should be a 96x96px PNG.')
     text = models.CharField(max_length=140,
                             help_text='Maximum length 140 characters.')
     url = models.CharField(max_length=500)
