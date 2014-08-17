@@ -61,7 +61,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'snippets.base.middleware.FetchSnippetsMiddleware',
+    'snippets.base.middleware.SkipMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -83,3 +83,7 @@ def _allowed_hosts():
     host = host.rsplit(':', 1)[0]  # Remove port
     return [host]
 ALLOWED_HOSTS = lazy(_allowed_hosts, list)()
+
+
+# Cache timeout for storing Client -> ETag mappings in the database.
+ETAG_CACHE_TIMEOUT = 60 * 15  # 15 minutes

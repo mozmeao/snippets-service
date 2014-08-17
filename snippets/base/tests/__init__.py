@@ -64,3 +64,27 @@ class JSONSnippetFactory(BaseSnippetFactory):
 class ClientMatchRuleFactory(factory.DjangoModelFactory):
     FACTORY_FOR = models.ClientMatchRule
     description = factory.Sequence(lambda n: 'Client Match Rule {0}'.format(n))
+
+
+class CONTAINS(object):
+    """
+    Helper object that is equal to any object that contains a specific
+    value.
+
+    If exclusive=True is passed to the constructor, sets will be used
+    for comparison, meaning that an iterable is equal to this object
+    only if it contains the same values given in the constructor,
+    ignoring the order of values.
+    """
+    def __init__(self, *values, **kwargs):
+        self.values = values
+        self.exclusive = kwargs.get('exclusive', False)
+
+    def __eq__(self, other):
+        if self.exclusive:
+            return set(v for v in other) == set(self.values)
+        else:
+            return all(v in other for v in self.values)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)

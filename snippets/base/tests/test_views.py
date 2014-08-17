@@ -2,23 +2,45 @@ import json
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.http import HttpResponse
+from django.test.client import RequestFactory
 from django.test.utils import override_settings
 
 from funfactory.helpers import urlparams
-from mock import patch
+from mock import ANY, patch
 from nose.tools import eq_, ok_
 
-import snippets.base.models
+from snippets.base import views
 from snippets.base.models import Client
-from snippets.base.tests import (JSONSnippetFactory, SnippetFactory,
+from snippets.base.tests import (CONTAINS, JSONSnippetFactory, SnippetFactory,
                                  SnippetTemplateFactory, TestCase)
 
-snippets.base.models.CHANNELS = ('release', 'beta', 'aurora', 'nightly')
-snippets.base.models.FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4')
 
-
+@override_settings(ETAG_CACHE_TIMEOUT=90)
 class FetchSnippetsTests(TestCase):
-    def test_base(self):
+    def setUp(self):
+        self.view = views.FetchSnippets()
+        self.view.get_client_cache_key = lambda *args: 'client_key'
+
+        self.mock_response = HttpResponse('')
+
+        self.factory = RequestFactory()
+        self.mock_request = self.factory.get('/')
+
+        self.view_kwargs = {
+            'startpage_version': '4',
+            'name': 'Firefox',
+            'version': '23.0a1',
+            'appbuildid': '20130510041606',
+            'build_target': 'Darwin_Universal-gcc3',
+            'locale': 'en-US',
+            'channel': 'nightly',
+            'os_version': 'Darwin 10.8.0',
+            'distribution': 'default',
+            'distribution_version': 'default_version'
+        }
+
+    def test_generate_response(self):
         # Matching snippets.
         snippet_1 = SnippetFactory.create(on_nightly=True)
 
@@ -28,14 +50,112 @@ class FetchSnippetsTests(TestCase):
         # Snippet that doesn't match.
         SnippetFactory.create(on_nightly=False),
 
-        snippets_ok = [snippet_1]
-        params = ('4', 'Firefox', '23.0a1', '20130510041606',
-                  'Darwin_Universal-gcc3', 'en-US', 'nightly',
-                  'Darwin%2010.8.0', 'default', 'default_version')
-        response = self.client.get('/{0}/'.format('/'.join(params)))
+        client = Client('4', 'Firefox', '23.0a1', '20130510041606', 'Darwin_Universal-gcc3',
+                        'en-US', 'nightly', 'Darwin%2010.8.0', 'default', 'default_version')
+        request = self.factory.get('/')
 
-        eq_(set(snippets_ok), set(response.context['snippets']))
-        eq_(response.context['locale'], 'en-US')
+        with patch.object(views, 'render') as render:
+            render.return_value = HttpResponse('asdf')
+
+            response = self.view.generate_response(request, client)
+            render.assert_called_with(request, ANY, {
+                'snippets': CONTAINS(snippet_1, exclusive=True),
+                'client': client,
+                'locale': 'en-US',
+            })
+
+            eq_(response, render.return_value)
+            asdf_sha256 = 'f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b'
+            eq_(response['ETag'], asdf_sha256)
+            eq_(response['Vary'], 'If-None-Match')
+
+    def test_get_request_match_cache(self):
+        """
+        If the request has an ETag and it matches the cached ETag,
+        return a 304.
+        """
+        self.view.generate_response = lambda *args: self.mock_response
+        self.mock_request.META['HTTP_IF_NONE_MATCH'] = 'etag'
+
+        with patch('snippets.base.views.cache') as cache:
+            cache.get.return_value = 'etag'
+            response = self.view.get(self.mock_request, **self.view_kwargs)
+
+        ok_(not cache.set.called)
+        eq_(response.status_code, 304)
+
+    def test_get_cache_doesnt_match_response(self):
+        """
+        If the request ETag and cached ETag don't match, and the
+        resulting response's ETag doesn't match the cache, the cache
+        should be updated.
+        """
+        self.view.generate_response = lambda *args: self.mock_response
+        self.mock_response['ETag'] = 'etag'
+
+        with patch('snippets.base.views.cache') as cache:
+            cache.get.return_value = 'other_etag'
+            self.view.get(self.mock_request, **self.view_kwargs)
+
+        cache.set.assert_called_with('client_key', 'etag', 90)
+
+    def test_get_cache_empty(self):
+        """
+        If the cache is empty, it should be updated with the response's
+        ETag.
+        """
+        self.view.generate_response = lambda *args: self.mock_response
+        self.mock_response['ETag'] = 'etag'
+
+        with patch('snippets.base.views.cache') as cache:
+            cache.get.return_value = None
+            self.view.get(self.mock_request, **self.view_kwargs)
+
+        cache.set.assert_called_with('client_key', 'etag', 90)
+
+    def test_get_request_doesnt_match_cache_matches_response(self):
+        """
+        If the request's ETag doesn't match the cache but it matches
+        the response's ETag, return a 304.
+        """
+        self.view.generate_response = lambda *args: self.mock_response
+        self.mock_request.META['HTTP_IF_NONE_MATCH'] = 'etag'
+        self.mock_response['ETag'] = 'etag'
+
+        with patch('snippets.base.views.cache') as cache:
+            cache.get.return_value = 'other_etag'
+            response = self.view.get(self.mock_request, **self.view_kwargs)
+
+        cache.set.assert_called_with('client_key', 'etag', 90)
+        eq_(response.status_code, 304)
+
+    def test_get_request_doesnt_match_cache_or_response(self):
+        """
+        If the request's ETag doesn't match the cache or the response's
+        ETag, send the full response.
+        """
+        self.view.generate_response = lambda *args: self.mock_response
+        self.mock_request.META['HTTP_IF_NONE_MATCH'] = 'etag'
+        self.mock_response['ETag'] = 'other_etag'
+
+        with patch('snippets.base.views.cache') as cache:
+            cache.get.return_value = 'other_etag'
+            response = self.view.get(self.mock_request, **self.view_kwargs)
+
+        ok_(not cache.set.called)
+        eq_(response, self.mock_response)
+
+    def test_get_request_no_etag(self):
+        """If the request has no ETag, send the full response."""
+        self.view.generate_response = lambda *args: self.mock_response
+        self.mock_response['ETag'] = 'etag'
+
+        with patch('snippets.base.views.cache') as cache:
+            cache.get.return_value = 'etag'
+            response = self.view.get(self.mock_request, **self.view_kwargs)
+
+        ok_(not cache.set.called)
+        eq_(response, self.mock_response)
 
     @patch('snippets.base.views.Client', wraps=Client)
     def test_client_construction(self, ClientMock):
@@ -63,15 +183,15 @@ class FetchSnippetsTests(TestCase):
     def test_cache_headers(self):
         """
         view_snippets should always have Cache-control set to
-        'public, max-age={settings.SNIPPET_HTTP_MAX_AGE}' and no Vary header,
-        even after middleware is executed.
+        'public, max-age={settings.SNIPPET_HTTP_MAX_AGE}' and only Vary
+        on If-None-Match, even after middleware is executed.
         """
         params = ('4', 'Firefox', '23.0a1', '20130510041606',
                   'Darwin_Universal-gcc3', 'en-US', 'nightly',
                   'Darwin%2010.8.0', 'default', 'default_version')
         response = self.client.get('/{0}/'.format('/'.join(params)))
         eq_(response['Cache-control'], 'public, max-age=75')
-        ok_('Vary' not in response)
+        eq_(response['Vary'], 'If-None-Match')
 
 
 class JSONSnippetsTests(TestCase):

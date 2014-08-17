@@ -1,20 +1,16 @@
 from django.core.urlresolvers import resolve
 
-from snippets.base.views import fetch_json_snippets, fetch_snippets
 
-
-class FetchSnippetsMiddleware(object):
+class SkipMiddleware(object):
     """
-    If the incoming request is for the fetch_snippets view, execute the view
-    and return it before other middleware can run.
+    If the incoming request is for a view that has the skip_middleware
+    kwarg, execute the view and return the response before other
+    middleware can run.
 
-    fetch_snippets is a very very basic view that doesn't need any of the
-    middleware that the rest of the site needs, such as the session or csrf
-    middlewares. To avoid unintended issues (such as headers we don't want
-    being added to the response) this middleware detects requests to that view
-    and executes the view early, bypassing the rest of the middleware.
+    Allows views like the FetchSnippets view to bypass unnecessary
+    middleware.
     """
     def process_request(self, request):
         result = resolve(request.path)
-        if result.func in (fetch_snippets, fetch_json_snippets):
+        if result.kwargs.pop('skip_middleware', False):
             return result.func(request, *result.args, **result.kwargs)
