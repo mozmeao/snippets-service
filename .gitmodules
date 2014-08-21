@@ -7,3 +7,6 @@
 [submodule "vendor-local/src/django-sha2"]
 	path = vendor-local/src/django-sha2
 	url = https://github.com/fwenzel/django-sha2.git
+[submodule "vendor-local/src/django"]
+	path = vendor-local/src/django
+	url = https://github.com/django/django.git
