@@ -109,7 +109,7 @@ class FetchSnippets(View):
 
     def get_client_cache_key(self, client):
         """Generate a cache key for storing the given client's ETag."""
-        return repr(client) + '_etag'  # Namedtuples have a decent repr.
+        return 'client_etag_' + hashlib.sha256(repr(client)).hexdigest()
 
     def generate_response(self, request, client):
         """
