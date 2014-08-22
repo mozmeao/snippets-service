@@ -83,6 +83,7 @@ class FetchSnippetsTests(TestCase):
 
         ok_(not cache.set.called)
         eq_(response.status_code, 304)
+        eq_(response['ETag'], 'etag')
 
     def test_get_cache_doesnt_match_response(self):
         """
@@ -128,6 +129,7 @@ class FetchSnippetsTests(TestCase):
 
         cache.set.assert_called_with('client_key', 'etag', 90)
         eq_(response.status_code, 304)
+        eq_(response['ETag'], 'etag')
 
     def test_get_request_doesnt_match_cache_or_response(self):
         """

@@ -89,7 +89,7 @@ class FetchSnippets(View):
 
         # If the request's ETag matches the cached one, we're done!
         if request_etag and request_etag == cached_etag:
-            return HttpResponseNotModified()
+            return self.generate_not_modified(cached_etag)
 
         # Otherwise, we'll need the response.
         response = self.generate_response(request, client)
@@ -102,7 +102,7 @@ class FetchSnippets(View):
         # If the request's ETag matches the response's ETag, we can
         # send a 304 and save some bandwidth.
         if request_etag == response['ETag']:
-            return HttpResponseNotModified()
+            return self.generate_not_modified(response['ETag'])
 
         # Otherwise, we need to send the user new snippets.
         return response
@@ -110,6 +110,11 @@ class FetchSnippets(View):
     def get_client_cache_key(self, client):
         """Generate a cache key for storing the given client's ETag."""
         return 'client_etag_' + hashlib.sha256(repr(client)).hexdigest()
+
+    def generate_not_modified(self, etag):
+        response = HttpResponseNotModified()
+        response['ETag'] = etag
+        return response
 
     def generate_response(self, request, client):
         """
