@@ -1,11 +1,12 @@
+import hashlib
 import json
-from time import gmtime, strftime
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import Http404,HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
+from django.utils.cache import patch_vary_headers
 from django.utils.functional import lazy
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
@@ -67,12 +68,17 @@ def fetch_snippets(request, **kwargs):
                          .select_related('template')
                          .filter_by_available())
 
-    return render(request, 'base/fetch_snippets.html', {
+    response = render(request, 'base/fetch_snippets.html', {
         'snippets': matching_snippets,
         'client': client,
-        'current_time': strftime('%Y-%m-%dT%H:%M:%SZ', gmtime()),
         'locale': client.locale,
     })
+
+    # ETag will be a hash of the response content.
+    response['ETag'] = hashlib.sha256(response.content).hexdigest()
+    patch_vary_headers(response, ['If-None-Match'])
+
+    return response
 
 
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
