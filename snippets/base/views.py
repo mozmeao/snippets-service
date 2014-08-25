@@ -1,18 +1,14 @@
 import json
-import hashlib
+from time import gmtime, strftime
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
-from django.core.cache import cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseNotModified
+from django.http import Http404,HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
-from django.utils.cache import patch_vary_headers
-from django.utils.decorators import method_decorator
 from django.utils.functional import lazy
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import View
 
 from commonware.response.decorators import xframe_allow
 
@@ -60,80 +56,23 @@ def index(request):
     return render(request, 'base/index.html', data)
 
 
-class FetchSnippets(View):
-    @method_decorator(cache_control(public=True, max_age=HTTP_MAX_AGE))
-    @method_decorator(access_control(max_age=HTTP_MAX_AGE))
-    def dispatch(self, *args, **kwargs):
-        return super(FetchSnippets, self).dispatch(*args, **kwargs)
+@cache_control(public=True, max_age=HTTP_MAX_AGE)
+@access_control(max_age=HTTP_MAX_AGE)
+def fetch_snippets(request, **kwargs):
+    client = Client(**kwargs)
+    matching_snippets = (Snippet.cached_objects
+                         .filter(disabled=False)
+                         .match_client(client)
+                         .order_by('priority')
+                         .select_related('template')
+                         .filter_by_available())
 
-    def get(self, request, *args, **kwargs):
-        """
-        Fetch snippets matching the user's client and return them in
-        rendered format. If the client has already cached the snippets
-        we're going to send them, return a 304.
-
-        When we send a response, we cache the ETag of the response
-        (which is a hash of the response content) under a key generated
-        from the client.
-
-        When a client requests snippets, we compare the incoming ETag
-        with the ETag stored in the cache. If they match, we know the
-        user already has a cached copy of the snippets we'd be sending
-        them and can return a 304 instead of making them re-download.
-        """
-        client = Client(**kwargs)
-
-        request_etag = request.META.get('HTTP_IF_NONE_MATCH')
-        key = self.get_client_cache_key(client)
-        cached_etag = cache.get(key)
-
-        # If the request's ETag matches the cached one, we're done!
-        if request_etag and request_etag == cached_etag:
-            return HttpResponseNotModified()
-
-        # Otherwise, we'll need the response.
-        response = self.generate_response(request, client)
-
-        # If the cache is empty or doesn't match the response we just
-        # generated, we need to update the cache
-        if cached_etag is None or cached_etag != response['ETag']:
-            cache.set(key, response['ETag'], settings.ETAG_CACHE_TIMEOUT)
-
-        # If the request's ETag matches the response's ETag, we can
-        # send a 304 and save some bandwidth.
-        if request_etag == response['ETag']:
-            return HttpResponseNotModified()
-
-        # Otherwise, we need to send the user new snippets.
-        return response
-
-    def get_client_cache_key(self, client):
-        """Generate a cache key for storing the given client's ETag."""
-        return repr(client) + '_etag'  # Namedtuples have a decent repr.
-
-    def generate_response(self, request, client):
-        """
-        Fetch snippets matching the given client and generate an
-        HttpResponse containing the rendered snippets.
-        """
-        matching_snippets = (Snippet.cached_objects
-                             .filter(disabled=False)
-                             .match_client(client)
-                             .order_by('priority')
-                             .select_related('template')
-                             .filter_by_available())
-
-        response = render(request, 'base/fetch_snippets.html', {
-            'snippets': matching_snippets,
-            'client': client,
-            'locale': client.locale,
-        })
-
-        # ETag will be a hash of the response content.
-        response['ETag'] = hashlib.sha256(response.content).hexdigest()
-        patch_vary_headers(response, ['If-None-Match'])
-
-        return response
+    return render(request, 'base/fetch_snippets.html', {
+        'snippets': matching_snippets,
+        'client': client,
+        'current_time': strftime('%Y-%m-%dT%H:%M:%SZ', gmtime()),
+        'locale': client.locale,
+    })
 
 
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
