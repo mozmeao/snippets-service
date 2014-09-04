@@ -58,8 +58,17 @@
             // activateSnippetsButtonClick
         }
 
-        // Send impression to the snippets stats server.
-        var show_snippet_id = show_snippet.parentNode.dataset.snippetId;
+        // Determine snippet ID.
+        var metaParent = show_snippet.parentNode;
+        while (metaParent && metaParent.classList &&
+               metaParent.classList.contains('snippet-metadata')) {
+            metaParent = metaParent.parentNode;
+        }
+
+        var show_snippet_id = 'unknown';
+        if (metaParent) {
+            show_snippet_id = metaParent.dataset.snippetId || 'unknown';
+        }
         send_impression(show_snippet_id);
 
         // Trigger show_snippet event on snippet node.

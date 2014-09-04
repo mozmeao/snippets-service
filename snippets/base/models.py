@@ -221,7 +221,8 @@ class Snippet(CachingMixin, models.Model):
 
         # Use a list for attrs to make the output order predictable.
         attrs = [('data-snippet-id', self.id),
-                 ('data-weight', self.weight)]
+                 ('data-weight', self.weight),
+                 ('class', 'snippet-metadata')]
         if self.country:
             attrs.append(('data-country', self.country))
         attr_string = ' '.join('{0}="{1}"'.format(key, value) for key, value in

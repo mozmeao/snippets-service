@@ -131,8 +131,8 @@ class SnippetTests(TestCase):
         snippet = SnippetFactory.create(template=template, data=data,
                                         country='us', weight=60)
 
-        expected = ('<div data-snippet-id="{0}" data-weight="60" data-country="us">'
-                    '<a href="asdf">qwer</a></div>'.format(snippet.id))
+        expected = ('<div data-snippet-id="{0}" data-weight="60" class="snippet-metadata" '
+                    'data-country="us"><a href="asdf">qwer</a></div>'.format(snippet.id))
         eq_(snippet.render().strip(), expected)
         template.render.assert_called_with({
             'url': 'asdf',
@@ -152,7 +152,7 @@ class SnippetTests(TestCase):
         data = '{"url": "asdf", "text": "qwer"}'
         snippet = SnippetFactory.create(template=template, data=data)
 
-        expected = ('<div data-snippet-id="{0}" data-weight="100">'
+        expected = ('<div data-snippet-id="{0}" data-weight="100" class="snippet-metadata">'
                     '<a href="asdf">qwer</a></div>'
                     .format(snippet.id))
         eq_(snippet.render().strip(), expected)
