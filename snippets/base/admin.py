@@ -91,6 +91,7 @@ class BaseSnippetAdmin(BaseModelAdmin):
 
     readonly_fields = ('created', 'modified')
     save_on_top = True
+    save_as = True
 
     filter_horizontal = ('client_match_rules',)
 
@@ -105,6 +106,12 @@ class BaseSnippetAdmin(BaseModelAdmin):
                 obj.locale_set.create(locale=locale)
         except KeyError:
             pass  # If the locales weren't even specified, do nothing.
+
+    def change_view(self, request, *args, **kwargs):
+        if request.method == 'POST' and '_saveasnew' in request.POST:
+            # Always saved cloned snippets as disabled.
+            request.POST['disabled'] = u'on'
+        return super(BaseSnippetAdmin, self).change_view(request, *args, **kwargs)
 
 
 class SnippetAdmin(BaseSnippetAdmin):

@@ -78,6 +78,34 @@ class SnippetAdminTests(TestCase):
         locales = (l.locale for l in snippet.locale_set.all())
         eq_(set(locales), set(('en-us', 'fr')))
 
+    def test_save_as_disabled(self):
+        request = self.factory.post('/', data={
+            'name': 'test',
+            'template': 'foo',
+            'disabled': u'off',
+            '_saveasnew': True
+        })
+        
+        with patch('snippets.base.admin.BaseModelAdmin.change_view') as change_view_mock:
+            self.model_admin.change_view(request, 999)
+            change_view_mock.assert_called_with(request, 999)
+            request = change_view_mock.call_args[0][0]
+            eq_(request.POST['disabled'], u'on')
+
+    def test_normal_save_disabled(self):
+        """Test that normal save doesn't alter 'disabled' attribute."""
+        request = self.factory.post('/', data={
+            'name': 'test',
+            'template': 'foo',
+            'disabled': u'foo'
+        })
+
+        with patch('snippets.base.admin.BaseModelAdmin.change_view') as change_view_mock:
+            self.model_admin.change_view(request, 999)
+            change_view_mock.assert_called_with(request, 999)
+            request = change_view_mock.call_args[0][0]
+            eq_(request.POST['disabled'], u'foo')
+
 
 class CMRToLocalesActionTests(TestCase):
     def test_base(self):
