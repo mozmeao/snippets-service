@@ -61,7 +61,7 @@
         // Determine snippet ID.
         var metaParent = show_snippet.parentNode;
         while (metaParent && metaParent.classList &&
-               metaParent.classList.contains('snippet-metadata')) {
+               !metaParent.classList.contains('snippet-metadata')) {
             metaParent = metaParent.parentNode;
         }
 
