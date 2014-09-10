@@ -217,6 +217,22 @@
         }
     }
 
+    // Listen for clicks on links that point to 'about:accounts' and
+    // convert them showFirefoxAccounts Events.
+    document.addEventListener('click', function(event) {
+        var target = event.target;
+        while (target && target.tagName !== 'a') {
+            target = target.parentNode;
+        }
+        if (target && target.href.indexOf('about:accounts') === 0) {
+            var event = new CustomEvent(
+                'mozUITour',
+                { bubbles: true, detail: { action:'showFirefoxAccounts', data: {}}}
+            );
+            document.dispatchEvent(event);
+        }
+    }, false);
+
 })(window.showDefaultSnippets);
 //]]>
 </script>
