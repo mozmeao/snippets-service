@@ -7,6 +7,7 @@
 
 # Documentation
 Sphinx>=1.0.7
+sphinx_rtd_theme
 
 # Testing
 factory_boy==2.0.2
