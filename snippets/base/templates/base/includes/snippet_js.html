@@ -230,7 +230,7 @@
     // convert them showFirefoxAccounts Events.
     document.addEventListener('click', function(event) {
         var target = event.target;
-        while (target && target.tagName !== 'a') {
+        while (target && target.tagName.toLowerCase() !== 'a') {
             target = target.parentNode;
         }
         if (target && target.href.indexOf('about:accounts') === 0) {
