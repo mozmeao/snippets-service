@@ -84,6 +84,9 @@
         showDefaultSnippets();
     }
 
+    // Update FxAccount Status
+    updateFxAccountStatus();
+
     // Fetch user country if we don't have it.
     if (!haveUserCountry()) {
         downloadUserCountry();
@@ -100,6 +103,7 @@
     function chooseSnippet(snippets) {
         // Build an object that maps countries to snippets.
         var snippetsFor = {};
+        var countrySnippets = {};
 
         for (var k = 0; k < snippets.length; k++) {
             var snippet = snippets[k];
@@ -117,12 +121,26 @@
         // including snippets for the user's country if it is available.
         var country = getUserCountry();
         if (country && snippetsFor.hasOwnProperty(country)) {
-            snippets = snippetsFor[country];
+            countrySnippets = snippetsFor[country];
             if (snippetsFor.none) {
-                snippets = snippets.concat(snippetsFor.none);
+                countrySnippets = snippets.concat(snippetsFor.none);
             }
         } else {
-            snippets = snippetsFor.none;
+            countrySnippets = snippetsFor.none;
+        }
+
+        // FxAccount is already setup skip snippets that link to
+        // about:accounts
+        if (isFxAccountSetup()) {
+            snippets = [];
+            for (var k = 0; k < countrySnippets.length; k++) {
+                var snippet = countrySnippets[k];
+                if (!hasAboutAccountsLink(snippet)) {
+                    snippets.push(snippet);
+                }
+            }
+        } else {
+            snippets = countrySnippets;
         }
 
         if (snippets && snippets.length) {
@@ -142,6 +160,48 @@
         }
     }
     {% endif %}
+
+    // Check whether snippet links to about:accounts.
+    function hasAboutAccountsLink(snippet) {
+        var links = snippet.getElementsByTagName('a')
+        for (var i = 0; i < links.length; i++) {
+            if (links[i].href.indexOf('about:accounts') === 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function isFxAccountSetup() {
+        var fxaccount = gSnippetsMap.get('fxaccount');
+        if (fxaccount !== undefined) {
+            return fxaccount;
+        }
+        // If fxaccount === undefined pretend that sync is already
+        // setup, to avoid showing about:accounts snippets to browsers
+        // that do not support mozUITour signal or have accounts
+        // already setup.
+        return true;
+    }
+
+    function updateFxAccountStatus() {
+        var callback = function(result) {
+            gSnippetsMap.set('fxaccount', result.setup);
+        }
+        var event = new CustomEvent(
+            'mozUITour', {
+                bubbles: true,
+                detail: {
+                    action:'getConfiguration',
+                    data: {
+                        configuration: 'sync',
+                        callbackID: _waitForCallback(callback)
+                    }
+                }
+            }
+        );
+        document.dispatchEvent(event);
+    }
 
     // Check whether we have the user's country stored and if it is still valid.
     function haveUserCountry() {
@@ -230,10 +290,10 @@
     // convert them showFirefoxAccounts Events.
     document.addEventListener('click', function(event) {
         var target = event.target;
-        while (target && target.tagName.toLowerCase() !== 'a') {
+        while (target && target.tagName && target.tagName.toLowerCase() !== 'a') {
             target = target.parentNode;
         }
-        if (target && target.href.indexOf('about:accounts') === 0) {
+        if (target && target.href && target.href.indexOf('about:accounts') === 0) {
             var event = new CustomEvent(
                 'mozUITour',
                 { bubbles: true, detail: { action:'showFirefoxAccounts', data: {}}}
@@ -241,6 +301,31 @@
             document.dispatchEvent(event);
         }
     }, false);
+
+    // UITour Helper. Exact copy from
+    // https://raw.githubusercontent.com/Unfocused/mozilla-uitour/master/src/mozilla-uitour.js
+    function _generateCallbackID() {
+        return Math.random().toString(36).replace(/[^a-z]+/g, '');
+    }
+
+    // UITour Helper. Exact copy from
+    // https://raw.githubusercontent.com/Unfocused/mozilla-uitour/master/src/mozilla-uitour.js
+    function _waitForCallback(callback) {
+        var id = _generateCallbackID();
+
+        function listener(event) {
+            if (typeof event.detail != "object")
+                return;
+            if (event.detail.callbackID != id)
+                return;
+
+            document.removeEventListener("mozUITourResponse", listener);
+            callback(event.detail.data);
+        }
+        document.addEventListener("mozUITourResponse", listener);
+
+        return id;
+    }
 
 })(window.showDefaultSnippets);
 //]]>
