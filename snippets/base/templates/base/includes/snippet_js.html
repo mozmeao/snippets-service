@@ -123,7 +123,7 @@
         if (country && snippetsFor.hasOwnProperty(country)) {
             countrySnippets = snippetsFor[country];
             if (snippetsFor.none) {
-                countrySnippets = snippets.concat(snippetsFor.none);
+                countrySnippets = countrySnippets.concat(snippetsFor.none);
             }
         } else {
             countrySnippets = snippetsFor.none;
