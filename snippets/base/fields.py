@@ -39,7 +39,7 @@ class CountryField(models.CharField):
 
 class RegexField(models.CharField):
     def __init__(self, *args, **kwargs):
-        myargs = {'max_length': 64,
+        myargs = {'max_length': 255,
                   'blank': True,
                   'validators': [validate_regex]}
         myargs.update(kwargs)
