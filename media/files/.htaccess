@@ -1,0 +1,3 @@
+ExpiresActive on
+ExpiresDefault "access plus 15 minutes"
+FileETag MTime

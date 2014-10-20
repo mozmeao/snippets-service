@@ -83,3 +83,5 @@ def _allowed_hosts():
     host = host.rsplit(':', 1)[0]  # Remove port
     return [host]
 ALLOWED_HOSTS = lazy(_allowed_hosts, list)()
+
+# CDN_URL = 'https://snippets.cdn.mozilla.net/'

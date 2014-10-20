@@ -270,7 +270,26 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
     )
 
 
+class UploadedFileAdmin(admin.ModelAdmin):
+    readonly_fields = ('url', 'preview', 'snippets')
+    list_display = ('name', 'url', 'preview', 'modified')
+    prepopulated_fields = {'name': ('file',)}
+    form = forms.UploadedFileAdminForm
+
+    def preview(self, obj):
+        template = env.get_template('base/uploadedfile_preview.html')
+        return template.render({'file': obj})
+    preview.allow_tags = True
+
+    def snippets(self, obj):
+        """Snippets using this file."""
+        template = env.get_template('base/uploadedfile_snippets.html')
+        return template.render({'snippets': obj.snippets})
+    snippets.allow_tags = True
+
+
 admin.site.register(models.Snippet, SnippetAdmin)
 admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
 admin.site.register(models.JSONSnippet, JSONSnippetAdmin)
+admin.site.register(models.UploadedFile, UploadedFileAdmin)

@@ -64,3 +64,12 @@ class JSONSnippetFactory(BaseSnippetFactory):
 class ClientMatchRuleFactory(factory.DjangoModelFactory):
     FACTORY_FOR = models.ClientMatchRule
     description = factory.Sequence(lambda n: 'Client Match Rule {0}'.format(n))
+
+
+class UploadedFileFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = models.UploadedFile
+    name = factory.Sequence(lambda n: 'Uploaded File {0}'.format(n))
+    # factory.django.FileField is broken and doesn't save filename. We
+    # set file to None to prevent factory from taking any action and mock
+    # it as needed in the tests.
+    file = None
