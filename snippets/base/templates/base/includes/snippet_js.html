@@ -15,6 +15,7 @@
     var STATS_URL = 'https://snippets-stats.mozilla.org/foo.html';
     var GEO_URL = 'https://geo.mozilla.org/country.js';
     var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
+    var SNIPPET_ID = null;
 
     // showDefaultSnippets polyfill, available in about:home v4
     if (typeof showDefaultSnippets !== 'function') {
@@ -69,7 +70,8 @@
         if (metaParent) {
             show_snippet_id = metaParent.dataset.snippetId || 'unknown';
         }
-        send_impression(show_snippet_id);
+        SNIPPET_ID = show_snippet_id;
+        sendImpression();
 
         // Trigger show_snippet event on snippet node.
         var evt = document.createEvent('Event');
@@ -246,15 +248,35 @@
     // Notifies stats server that the given snippet ID
     // was shown. No personally-identifiable information
     // is sent.
-    function send_impression(id) {
+    function sendImpression() {
         if (Math.random() <= SAMPLE_RATE) {
-            var locale = document.getElementById('snippet_set').getAttribute('data-locale');
-            var url = STATS_URL + '?snippet_name=' + id + '&locale=' + locale;
-            var r = new XMLHttpRequest();
-            r.open('GET', url);
-            r.send();
+            sendMetric('impression')
         }
     }
+
+    function sendMetric(metric) {
+        var locale = document.getElementById('snippet_set').getAttribute('data-locale');
+        var url = STATS_URL + '?snippet_name=' + SNIPPET_ID + '&locale=' + locale + '&metric=' + metric;
+        var r = new XMLHttpRequest();
+        r.open('GET', url);
+        r.send();
+    }
+
+    // Listen for clicks or CustomEvent('metric') and send metrics.
+    document.addEventListener('metric', function(event) {
+        sendMetric(event.detail);
+    });
+    document.addEventListener('click', function(event) {
+        var target = event.target;
+        while (target && target.dataset && target.dataset['metric'] == undefined) {
+            target = target.parentNode;
+        }
+        if (target && target.dataset && target.dataset['metric']) {
+            sendMetric(target.dataset['metric']);
+        }
+    }, false);
+
+
     // Modifies the given links to include the specified GET parameters.
     function modifyLinks(links, parameters) {
         for (var k = 0, len = links.length; k < len; k++) {
