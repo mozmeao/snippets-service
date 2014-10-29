@@ -24,7 +24,7 @@
       <div id="snippetContainer">
         <div id="snippets">
           {% block snippets %}
-            <div class="snippet-set">
+            <div class="snippet_set" id="snippet_set">
               {% include 'base/includes/snippet_css.html' %}
               {{ snippet.render() }}
               {% include 'base/includes/snippet_js.html' %}
