@@ -1,4 +1,5 @@
 # Snippets Service
+![build status](https://travis-ci.org/mozilla/snippets-service.svg?branch=master)
 
 The Snippets Service hosts small chunks of HTML, CSS, and JavaScript that are
 displayed on [about:home](about:home) in Firefox, among other places.
