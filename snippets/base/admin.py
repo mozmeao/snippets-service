@@ -119,6 +119,9 @@ class SnippetAdmin(BaseSnippetAdmin):
 
     search_fields = ('name', 'client_match_rules__description',
                      'template__name')
+    list_filter = BaseSnippetAdmin.list_filter + (
+        'template',
+    )
 
     fieldsets = (
         (None, {'fields': ('name', 'priority', 'disabled',
