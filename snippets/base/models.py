@@ -222,8 +222,13 @@ class Snippet(CachingMixin, models.Model):
 
     def render(self):
         data = json.loads(self.data)
-        if self.id:
-            data.setdefault('snippet_id', self.id)
+        snippet_id = self.id or 0
+        data.setdefault('snippet_id', snippet_id)
+
+        # Add snippet ID to template variables.
+        for key, value in data.items():
+            if isinstance(value, basestring):
+                data[key] = value.replace(u'<snippet_id>', unicode(snippet_id))
 
         # Use a list for attrs to make the output order predictable.
         attrs = [('data-snippet-id', self.id),

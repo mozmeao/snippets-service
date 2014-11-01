@@ -182,10 +182,22 @@ class SnippetTests(TestCase):
 
     def test_render_no_snippet_id(self):
         """
-        If a snippet that hasn't been saved to the database yet is rendered, the snippet ID
-        shouldn't be included in the template context.
+        If a snippet that hasn't been saved to the database yet is
+        rendered, the snippet ID should be set to 0.
         """
         snippet = SnippetFactory.build(template__code='<p>{{ snippet_id }}</p>')
         snippet.template.render = Mock()
         snippet.render()
-        snippet.template.render.assert_called_with({})
+        snippet.template.render.assert_called_with({'snippet_id': 0})
+
+    def test_render_data_with_snippet_id(self):
+        """
+        Any strings included in the template context should have the
+        substring "<snippet_id>" replaced with the ID of the snippet.
+        """
+        snippet = SnippetFactory.build(template__code='<p>{{ code }}</p>',
+                                       data='{"code": "snippet id <snippet_id>", "foo": true}')
+        snippet.template.render = Mock()
+        snippet.render()
+        snippet.template.render.assert_called_with({'code': 'snippet id 0', 'snippet_id': 0,
+                                                    'foo': True})
