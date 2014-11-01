@@ -70,6 +70,13 @@ class XMLValidatorTests(TestCase):
         unicode_xml = '{"foo": "<b>\u03c6\u03bf\u03bf</b>"}'
         eq_(validate_xml(unicode_xml), unicode_xml)
 
+    def test_non_string_values(self):
+        """
+        If a value isn't a string, skip over it and continue validating.
+        """
+        valid_xml = '{"foo": "<b>Bar</b>", "baz": true}'
+        eq_(validate_xml(valid_xml), valid_xml)
+
 
 class SnippetTemplateTests(TestCase):
     def test_render(self):

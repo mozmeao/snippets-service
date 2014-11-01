@@ -5,7 +5,8 @@
     var VARIABLE_TYPES = {
         text: 0,
         image: 1,
-        smalltext: 2
+        smalltext: 2,
+        checkbox: 3,
     };
 
     // Setup Nunjucks
@@ -95,6 +96,10 @@
             this.$container.on('input', 'input', function() {
                 self.triggerDataChange();
             });
+
+            this.$container.on('change', 'input[type="checkbox"]', function() {
+                self.triggerDataChange();
+            });
         },
 
         /**
@@ -174,6 +179,9 @@
                         break;
                     case VARIABLE_TYPES.smalltext:
                         data[variable] = $item.find('input').val();
+                        break;
+                    case VARIABLE_TYPES.checkbox:
+                        data[variable] = $item.find('input[type="checkbox"]').is(':checked');
                         break;
                 }
             });

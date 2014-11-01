@@ -41,6 +41,10 @@ def validate_xml(data):
     parser.setFeature(xml.sax.handler.feature_external_ges, 0)
 
     for name, value in data_dict.items():
+        # Skip over values that aren't strings.
+        if not isinstance(value, basestring):
+            continue
+
         value = value.encode('utf-8')
         xml_str = '<div>{0}</div>'.format(value)
         try:
@@ -112,7 +116,9 @@ class SnippetTemplateVariable(CachingMixin, models.Model):
     TEXT = 0
     IMAGE = 1
     SMALLTEXT = 2
-    TYPE_CHOICES = ((TEXT, 'Text'), (IMAGE, 'Image'), (SMALLTEXT, 'Small Text'))
+    CHECKBOX = 3
+    TYPE_CHOICES = ((TEXT, 'Text'), (IMAGE, 'Image'), (SMALLTEXT, 'Small Text'),
+                    (CHECKBOX, 'Checkbox'))
 
     template = models.ForeignKey(SnippetTemplate, related_name='variable_set')
     name = models.CharField(max_length=255)
