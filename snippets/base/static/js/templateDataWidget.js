@@ -211,27 +211,24 @@
         this.dataWidget = dataWidget;
 
         this.$container = $(elem);
-        this.$container.html(nj.render('snippetPreviewFrame.html'));
-
         this.$form = $(nj.render('snippetPreviewForm.html', {
             preview_url: this.$container.data('previewUrl')
         }));
-        $(document.body).append(this.$form);
+        this.$container.append(this.$form);
+
         this.$dataInput = this.$form.find('input[name="data"]');
         this.$templateIdInput = this.$form.find('input[name="template_id"]');
 
-        dataWidget.onDataChange(function() {
-            self.onDataChange();
+        this.$form.submit(function() {
+            self.onFormSubmit();
         });
-        self.onDataChange(); // Trigger initial preview.
     }
 
     SnippetPreview.prototype = {
-        onDataChange: function() {
+        onFormSubmit: function() {
             var data = JSON.stringify(this.dataWidget.generateData());
             this.$dataInput.val(data);
             this.$templateIdInput.val(this.dataWidget.getTemplateId());
-            this.$form.submit();
         }
     };
 
