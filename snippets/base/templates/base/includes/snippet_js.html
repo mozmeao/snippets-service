@@ -8,9 +8,12 @@
   */
 (function(a,b,c){typeof c["module"]!="undefined"&&c.module.exports?c.module.exports=b():typeof c["define"]!="undefined"&&c["define"]=="function"&&c.define.amd?define(a,b):c[a]=b()})("$script",function(){function p(a,b){for(var c=0,d=a.length;c<d;++c)if(!b(a[c]))return j;return 1}function q(a,b){p(a,function(a){return!b(a)})}function r(a,b,i){function o(a){return a.call?a():d[a]}function t(){if(!--n){d[m]=1,l&&l();for(var a in f)p(a.split("|"),o)&&!q(f[a],o)&&(f[a]=[])}}a=a[k]?a:[a];var j=b&&b.call,l=j?b:i,m=j?a.join(""):b,n=a.length;return setTimeout(function(){q(a,function(a){if(h[a])return m&&(e[m]=1),h[a]==2&&t();h[a]=1,m&&(e[m]=1),s(!c.test(a)&&g?g+a+".js":a,t)})},0),r}function s(c,d){var e=a.createElement("script"),f=j;e.onload=e.onerror=e[o]=function(){if(e[m]&&!/^c|loade/.test(e[m])||f)return;e.onload=e[o]=null,f=1,h[c]=2,d()},e.async=1,e.src=c,b.insertBefore(e,b.firstChild)}var a=document,b=a.getElementsByTagName("head")[0],c=/^https?:\/\//,d={},e={},f={},g,h={},i="string",j=!1,k="push",l="DOMContentLoaded",m="readyState",n="addEventListener",o="onreadystatechange";return!a[m]&&a[n]&&(a[n](l,function t(){a.removeEventListener(l,t,j),a[m]="complete"},j),a[m]="loading"),r.get=s,r.order=function(a,b,c){(function d(e){e=a.shift(),a.length?r(e,d):r(e,b,c)})()},r.path=function(a){g=a},r.ready=function(a,b,c){a=a[k]?a:[a];var e=[];return!q(a,function(a){d[a]||e[k](a)})&&p(a,function(a){return d[a]})?b():!function(a){f[a]=f[a]||[],f[a][k](b),c&&c(e)}(a.join("|")),r},r},this);
 
+
 'use strict';
 var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
 var SNIPPET_METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html';
+var ABOUTHOME_SHOWN_SNIPPET = null;
+
 
 // Start MozUITour
 // Copy from https://hg.mozilla.org/mozilla-central/file/tip/browser/components/uitour/UITour-lib.js
@@ -98,8 +101,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 };
 // End MozUITour
 
-
-
 (function(showDefaultSnippets) {
     'use strict';
 
@@ -132,16 +133,26 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         gSnippetsMap = window.gSnippetsMap;
     }
 
-    var snippets = (document.getElementById('snippetContainer')
-                    .querySelectorAll('.snippet'));
     var show_snippet = null;
-    if (snippets.length > 0) {
-        show_snippet = chooseSnippet(snippets);
+    if (ABOUTHOME_SNIPPETS.length > 0) {
+        show_snippet = chooseSnippet(ABOUTHOME_SNIPPETS);
     }
 
     if (show_snippet) {
-        var snippet_set = document.getElementById('snippet_set');
-        show_snippet.style.display = 'block';
+        ABOUTHOME_SHOWN_SNIPPET = show_snippet;
+
+        // Inject the snippet onto the page.
+        var snippetContainer = document.createElement('div');
+        snippetContainer.innerHTML = show_snippet.code;
+        document.getElementById('snippets').appendChild(snippetContainer);
+        activateScriptTags(snippetContainer);
+
+        // Find the snippet div if it is present.
+        var snippetElement = null;
+        var elems = snippetContainer.getElementsByClassName('snippet');
+        if (elems.length > 0) {
+            snippetElement = elems[0];
+        }
 
         try {
             activateSnippetsButtonClick(show_snippet);
@@ -156,6 +167,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                !metaParent.classList.contains('snippet-metadata')) {
             metaParent = metaParent.parentNode;
         }
+
 
         var show_snippet_id = 'unknown';
         var show_snippet_campaign = '';
@@ -183,6 +195,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             addSnippetBlockLinks(topSection.querySelectorAll('.block-snippet-button'));
         });
         show_snippet.dispatchEvent(evt);
+
     } else {
         showDefaultSnippets();
     }
@@ -207,9 +220,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     // Choose which snippet to display to the user based on various factors,
     // such as which country they are in.
     function chooseSnippet(snippets) {
-        // Convert HTMLCollection to Array.
-        snippets = [].slice.call(snippets);
-
         var userCountry = getUserCountry();
         if (userCountry) {
             document.getElementById('snippet_set').dataset.userCountry = userCountry;
@@ -275,12 +285,12 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         if (snippets && snippets.length) {
             var sum = 0;
             for (var k = 0; k < snippets.length; k++) {
-                sum += parseInt(snippets[k].parentNode.dataset.weight, 10) || 100;
-                snippets[k].parentNode.dataset.weight = sum;
+                sum += snippets[k].weight;
+                snippets[k].weight = sum;
             }
             var random_number = Math.random() * sum;
             for (var k = 0; k < snippets.length; k++) {
-                if (random_number < snippets[k].parentNode.dataset.weight) {
+                if (random_number < snippets[k].weight) {
                     return snippets[k];
                 }
             }
@@ -292,13 +302,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 
     // Check whether snippet links to about:accounts.
     function hasAboutAccountsLink(snippet) {
-        var links = snippet.getElementsByTagName('a')
-        for (var i = 0; i < links.length; i++) {
-            if (links[i].href.indexOf('about:accounts') === 0) {
-                return true;
-            }
-        }
-        return false;
+        return snippet.code.indexOf('href="about:accounts"') !== -1;
     }
 
     function isFxAccountSetup() {
@@ -444,6 +448,18 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         }
     }
 
+    // Scripts injected by innerHTML are inactive, so we have to relocate them
+    // through DOM manipulation to activate their contents.
+    // (Adapted from http://mxr.mozilla.org/mozilla-central/source/browser/base/content/abouthome/aboutHome.js)
+    function activateScriptTags(element) {
+       Array.forEach(element.getElementsByTagName('script'), function(elt) {
+           var relocatedScript = document.createElement('script');
+           relocatedScript.type = 'text/javascript;version=1.8';
+           relocatedScript.text = elt.text;
+           elt.parentNode.replaceChild(relocatedScript, elt);
+       });
+    }
+
     // Listen for clicks on links, send metrics and handle
     // about:account custom links.
     var topSection = document.getElementById('topSection');
@@ -510,10 +526,11 @@ function sendMetric(metric, callback) {
     }
 
     var snippet_set = document.getElementById('snippet_set');
-    var locale = snippet_set.getAttribute('data-locale');
+    var locale = '{{ locale }}';
     var userCountry = snippet_set.getAttribute('data-user-country') || '';
     var campaign = snippet_set.getAttribute('data-campaign') || '';
-    var snippet_id = snippet_set.getAttribute('data-snippet-id');
+    var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
+
     var url = (SNIPPET_METRICS_URL + '?snippet_name=' + snippet_id +
                '&locale=' + locale + '&country=' + userCountry + '&metric=' + metric + '&campaign=' + campaign);
     var r = new XMLHttpRequest();

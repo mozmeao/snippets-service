@@ -116,9 +116,15 @@ def fetch_render_snippets(request, **kwargs):
                          .order_by('priority')
                          .select_related('template')
                          .filter_by_available())
+    matching_snippets_json = json.dumps([{
+        'id': snippet.id,
+        'code': snippet.render(),
+        'country': snippet.country,
+        'weight': snippet.weight,
+    } for snippet in matching_snippets])
 
     response = render(request, 'base/fetch_snippets.html', {
-        'snippets': matching_snippets,
+        'snippets_json': matching_snippets_json,
         'client': client,
         'locale': client.locale,
     })
