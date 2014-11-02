@@ -147,7 +147,6 @@ class SnippetAdmin(BaseSnippetAdmin):
         }),
         ('Client Match Rules', {
             'fields': ('client_match_rules',),
-            'classes': ('collapse',)
         }),
         ('Startpage Versions', {
             'fields': (('on_startpage_1', 'on_startpage_2', 'on_startpage_3',
@@ -260,7 +259,6 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
         }),
         ('Client Match Rules', {
             'fields': ('client_match_rules',),
-            'classes': ('collapse',)
         }),
         ('Startpage Versions', {
             'fields': (('on_startpage_1',),),
