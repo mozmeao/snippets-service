@@ -20,6 +20,11 @@
            <a class="brand" href="{{ url('base.index') }}">
              Snippets Service
            </a>
+           <ul class="nav navbar-nav pull-right">
+              <li>
+                {% block snippet_index_url %}{% endblock %}
+              </li>
+           </ul>
         </div>
       </div>
     </div>
