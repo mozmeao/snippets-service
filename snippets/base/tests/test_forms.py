@@ -1,10 +1,12 @@
 import json
 
-from mock import patch
-from nose.tools import eq_, ok_
+from django.forms import ValidationError
+
+from mock import MagicMock, patch
+from nose.tools import assert_raises, eq_, ok_
 from pyquery import PyQuery as pq
 
-from snippets.base.forms import IconWidget, TemplateDataWidget, TemplateSelect
+from snippets.base.forms import IconWidget, TemplateDataWidget, TemplateSelect, UploadedFileAdminForm
 from snippets.base.tests import (SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase)
 
@@ -63,3 +65,23 @@ class TemplateDataWidgetTests(TestCase):
 
         eq_(data_widget.attr('data-select-name'), 'somename')
         eq_(data_widget.attr('data-input-name'), 'anothername')
+
+
+class UploadedFileAdminFormTests(TestCase):
+    def test_clean_file(self):
+        instance = MagicMock()
+        instance.file.name = 'foo.png'
+        form = UploadedFileAdminForm(instance=instance)
+        file_mock = MagicMock()
+        file_mock.name = 'bar.png'
+        form.cleaned_data = {'file': file_mock}
+        eq_(form.clean_file(), file_mock)
+
+    def test_clean_file_different_extension(self):
+        instance = MagicMock()
+        instance.file.name = 'foo.png'
+        form = UploadedFileAdminForm(instance=instance)
+        file_mock = MagicMock()
+        file_mock.name = 'bar.pdf'
+        form.cleaned_data = {'file': file_mock}
+        assert_raises(ValidationError, form.clean_file)

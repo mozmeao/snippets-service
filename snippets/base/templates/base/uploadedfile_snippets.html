@@ -1,0 +1,7 @@
+<ul>
+  {%- for snippet in snippets -%}
+    <li><a href="{{ url('admin:base_snippet_change', snippet.id) }}">{{ snippet.name }}</a></li>
+  {%- else -%}
+    <li>No snippets using this file.</li>
+  {%- endfor -%}
+</ul>
