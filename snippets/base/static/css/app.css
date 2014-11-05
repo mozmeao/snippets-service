@@ -6,7 +6,13 @@ body {
     padding-top: 10px;
 }
 
+.json-snippet-table th:first-child,
+.json-snippet-table td:first-child,
 .snippet-table th:first-child,
 .snippet-table td:first-child {
     width: 20%;
+}
+
+.json-snippet-table td {
+    vertical-align: middle;
 }

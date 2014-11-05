@@ -3,7 +3,6 @@ from datetime import datetime
 from mock import patch
 from nose.tools import eq_
 
-from snippets.base.managers import SnippetQuerySet
 from snippets.base.models import Client, ClientMatchRule, Snippet, SnippetLocale
 from snippets.base.tests import ClientMatchRuleFactory, SnippetFactory, TestCase
 from snippets.base.util import first
@@ -27,7 +26,8 @@ class ClientMatchRuleQuerySetTests(TestCase):
             rule4_pass.id: True,
             rule5_fail.id: False,
         }
-        matches.side_effect = lambda self, client: return_values.get(self.id, False)
+        matches.side_effect = lambda self, client: return_values.get(
+            self.id, False)
 
         passed, failed = self.manager.all().evaluate('asdf')
         eq_(set([rule1_pass, rule2_pass, rule4_pass]), set(passed))

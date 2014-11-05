@@ -313,6 +313,13 @@ class JSONSnippet(CachingMixin, models.Model):
         ordering = ('-modified',)
         verbose_name = 'JSON Snippet'
 
+    @property
+    def channels(self):
+        channels = []
+        for channel in CHANNELS:
+            if getattr(self, 'on_{0}'.format(channel), False):
+                channels.append(channel)
+        return channels
     def __unicode__(self):
         return self.name
 

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="row">
+    <div class="span12 well">
+      <div class="row">
+        <form>
+          <fieldset>
+            {% for column in snippetsfilter.form|slice(3) %}
+              {% if not loop.last %}
+                {% for field in column %}
+                  <div class="span6">
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+            <div class='span12'>   
+              <input type="submit" class="btn btn-primary span2" value="Filter!">
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div class="span12">
+      <h1>JSON Snippets</h1>
+      {% if snippets.paginator.count %}
+        <table class="table table-hover json-snippet-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Text</th>
+              <th>URL</th>
+              <th>Icon</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for snippet in snippets %}
+            <tr>
+              <td>{{ snippet.name }}</td>
+              <td>{{ snippet.text }}</td>
+              <td><a href='{{ snippet.url }}' target="_blank">{{ snippet.url }}</a></td>
+              <td><img src='{{ snippet.icon }}' /></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        No snippets! Maybe try
+        <a href="{{ url('base.json') }}">without filters</a>?
+      {% endif %}
+      <div class="row text-right">
+        Total snippets: <em>{{ snippets.paginator.count }}</em>
+      </div>
+
+      {% from 'base/includes/pagination.html' import pagination %}
+      {{ pagination(snippets, pagination_range, request.get_full_path()) }}
+    </div>
+  </div>
+{% endblock %}
