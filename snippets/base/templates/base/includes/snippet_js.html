@@ -247,9 +247,7 @@
     // was shown. No personally-identifiable information
     // is sent.
     function sendImpression() {
-        if (Math.random() <= SAMPLE_RATE) {
-            sendMetric('impression');
-        }
+        sendMetric('impression');
     }
 
     // Modifies the given links to include the specified GET parameters.
@@ -326,10 +324,17 @@
 
 })(window.showDefaultSnippets);
 
+// Send impressions and other interactions to the service
+// If no parameter is entered, quit function
 function sendMetric(metric) {
+    if (Math.random() > SAMPLE_RATE) {
+        return;
+    }
+
     if (!metric) {
         return;
     }
+
     var STATS_URL = 'https://snippets-stats.mozilla.org/foo.html';
     var snippet_set = document.getElementById('snippet_set');
     var locale = snippet_set.getAttribute('data-locale');
