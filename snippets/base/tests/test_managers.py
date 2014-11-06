@@ -218,10 +218,19 @@ class SnippetManagerTests(TestCase):
 
     def test_default_is_same_as_nightly(self):
         """ Make sure that default channel follows nightly. """
+        # Snippets matching nightly (and therefor should match default).
+        nightly_snippet = SnippetFactory.create(on_nightly=True)
+
+        # Snippets that don't match nightly
+        SnippetFactory.create(on_beta=True)
+
         nightly_client = self._build_client(channel='nightly')
         nightly_snippets = Snippet.cached_objects.match_client(nightly_client)
 
         default_client = self._build_client(channel='default')
         default_snippets = Snippet.cached_objects.match_client(default_client)
 
-        eq_(set(nightly_snippets), set(default_snippets))
+        # Assert that both the snippets returned from nightly and from default
+        # are the same snippets. Just `nightly_snippet` in this case.
+        eq_(set([nightly_snippet]), set(nightly_snippets))
+        eq_(set([nightly_snippet]), set(default_snippets))
