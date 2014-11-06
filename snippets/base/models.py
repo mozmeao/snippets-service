@@ -171,8 +171,6 @@ class ClientMatchRule(CachingMixin, models.Model):
                 continue
 
             client_field_value = getattr(client, field)
-            if field == 'channel' and client_field_value == 'default':
-                client_field_value = 'nightly'
             if field_value.startswith('/'):  # Match field as a regex.
                 if re.match(field_value[1:-1], client_field_value) is None:
                     match = False

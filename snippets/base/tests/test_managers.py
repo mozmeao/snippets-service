@@ -218,27 +218,6 @@ class SnippetManagerTests(TestCase):
 
     def test_default_is_same_as_nightly(self):
         """ Make sure that default channel follows nightly. """
-        client_match_rule_pass_1 = ClientMatchRuleFactory(channel='nightly')
-        client_match_rule_pass_2 = ClientMatchRuleFactory(
-            channel='/(beta|nightly)/')
-        client_match_rule_fail = ClientMatchRuleFactory(channel='release')
-
-        # Matching snippets.
-        SnippetFactory.create(
-            on_nightly=True, client_match_rules=[client_match_rule_pass_1])
-        SnippetFactory.create(
-            on_beta=True, on_nightly=True,
-            client_match_rules=[client_match_rule_pass_2])
-        SnippetFactory.create(on_nightly=True)
-
-        # Not matching snippets.
-        SnippetFactory.create(on_beta=True)
-        SnippetFactory.create(
-            on_nightly=True, client_match_rules=[client_match_rule_fail])
-        SnippetFactory.create(
-            on_nightly=True, client_match_rules=[client_match_rule_fail,
-                                                 client_match_rule_pass_2])
-
         nightly_client = self._build_client(channel='nightly')
         nightly_snippets = Snippet.cached_objects.match_client(nightly_client)
 
