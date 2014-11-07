@@ -20,66 +20,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-__version__ = '2.4.1'
-__author__ = 'Raphaël Barrois <raphael.barrois+fboy@polytechnique.org>'
+
+from __future__ import unicode_literals
 
 
-from .base import (
-    Factory,
-    BaseDictFactory,
-    DictFactory,
-    BaseListFactory,
-    ListFactory,
-    StubFactory,
+"""factory_boy extensions for use with the mogo library (pymongo wrapper)."""
 
-    FactoryError,
 
-    BUILD_STRATEGY,
-    CREATE_STRATEGY,
-    STUB_STRATEGY,
-    use_strategy,
-)
+from . import base
 
-# Backward compatibility; this should be removed soon.
-from .mogo import MogoFactory
-from .django import DjangoModelFactory
 
-from .declarations import (
-    LazyAttribute,
-    Iterator,
-    Sequence,
-    LazyAttributeSequence,
-    SelfAttribute,
-    ContainerAttribute,
-    SubFactory,
-    Dict,
-    List,
-    PostGeneration,
-    PostGenerationMethodCall,
-    RelatedFactory,
-)
+class MogoFactory(base.Factory):
+    """Factory for mogo objects."""
+    class Meta:
+        abstract = True
 
-from .helpers import (
-    debug,
+    @classmethod
+    def _build(cls, model_class, *args, **kwargs):
+        return model_class.new(*args, **kwargs)
 
-    build,
-    create,
-    stub,
-    generate,
-    simple_generate,
-    make_factory,
-
-    build_batch,
-    create_batch,
-    stub_batch,
-    generate_batch,
-    simple_generate_batch,
-
-    lazy_attribute,
-    iterator,
-    sequence,
-    lazy_attribute_sequence,
-    container_attribute,
-    post_generation,
-)
-
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        instance = model_class.new(*args, **kwargs)
+        instance.save()
+        return instance

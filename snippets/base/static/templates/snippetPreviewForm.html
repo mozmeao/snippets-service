@@ -1,4 +1,5 @@
-<form class="snippet-preview-form" target="snippet-preview" method="post" action="{{ preview_url }}">
-  <input type="text" name="data">
-  <input type="text" name="template_id">
+<form class="snippet-preview-form" target="_blank" method="post" action="{{ preview_url }}">
+  <input type="hidden" name="data">
+  <input type="hidden" name="template_id">
+  <button type="submit">Preview Snippet</button>
 </form>

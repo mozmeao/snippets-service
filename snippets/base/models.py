@@ -1,11 +1,15 @@
 import hashlib
 import json
+import os
 import re
+import uuid
 import xml.sax
 from StringIO import StringIO
 from collections import namedtuple
+from urlparse import urljoin
 from xml.sax import ContentHandler
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -17,6 +21,7 @@ from jinja2.utils import LRUCache
 
 from snippets.base.fields import CountryField, LocaleField, RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
+from snippets.base.storage import OverwriteStorage
 
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly')
@@ -41,6 +46,10 @@ def validate_xml(data):
     parser.setFeature(xml.sax.handler.feature_external_ges, 0)
 
     for name, value in data_dict.items():
+        # Skip over values that aren't strings.
+        if not isinstance(value, basestring):
+            continue
+
         value = value.encode('utf-8')
         xml_str = '<div>{0}</div>'.format(value)
         try:
@@ -112,7 +121,9 @@ class SnippetTemplateVariable(CachingMixin, models.Model):
     TEXT = 0
     IMAGE = 1
     SMALLTEXT = 2
-    TYPE_CHOICES = ((TEXT, 'Text'), (IMAGE, 'Image'), (SMALLTEXT, 'Small Text'))
+    CHECKBOX = 3
+    TYPE_CHOICES = ((TEXT, 'Text'), (IMAGE, 'Image'), (SMALLTEXT, 'Small Text'),
+                    (CHECKBOX, 'Checkbox'))
 
     template = models.ForeignKey(SnippetTemplate, related_name='variable_set')
     name = models.CharField(max_length=255)
@@ -216,8 +227,13 @@ class Snippet(CachingMixin, models.Model):
 
     def render(self):
         data = json.loads(self.data)
-        if self.id:
-            data.setdefault('snippet_id', self.id)
+        snippet_id = self.id or 0
+        data.setdefault('snippet_id', snippet_id)
+
+        # Add snippet ID to template variables.
+        for key, value in data.items():
+            if isinstance(value, basestring):
+                data[key] = value.replace(u'<snippet_id>', unicode(snippet_id))
 
         # Use a list for attrs to make the output order predictable.
         attrs = [('data-snippet-id', self.id),
@@ -307,3 +323,44 @@ class JSONSnippetLocale(CachingMixin, models.Model):
 
     objects = models.Manager()
     cached_objects = CachingManager()
+
+
+class UploadedFile(models.Model):
+    FILES_ROOT = 'files'  # Directory name inside MEDIA_ROOT
+
+    def _generate_filename(instance, filename):
+        """Generate a new unique filename while preserving the original
+        filename extension. If an existing UploadedFile gets updated
+        do not generate a new filename.
+        """
+
+        # Instance is new UploadedFile, generate a filename
+        if not instance.id:
+            ext = os.path.splitext(filename)[1]
+            filename = str(uuid.uuid4()) + ext
+            return os.path.join(UploadedFile.FILES_ROOT, filename)
+
+        # Use existing filename.
+        obj = UploadedFile.objects.get(id=instance.id)
+        return obj.file.name
+
+    file = models.FileField(storage=OverwriteStorage(), upload_to=_generate_filename)
+    name = models.CharField(max_length=255)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return self.name
+
+    @property
+    def url(self):
+        site_url = getattr(settings, 'CDN_URL', settings.SITE_URL)
+        full_url = urljoin(site_url, self.file.url)
+        return full_url
+
+    @property
+    def snippets(self):
+        return Snippet.objects.filter(
+            models.Q(data__contains=self.file.url) |
+            models.Q(template__code__contains=self.file.url)
+        )

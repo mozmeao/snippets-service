@@ -20,6 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 from . import declarations
 from . import utils
@@ -44,25 +47,27 @@ class LazyStub(object):
         __containers (LazyStub list): "parents" of the LazyStub being built.
             This allows to have the field of a field depend on the value of
             another field
-        __target_class (type): the target class to build.
+        __model_class (type): the model class to build.
     """
 
     __initialized = False
 
-    def __init__(self, attrs, containers=(), target_class=object):
+    def __init__(self, attrs, containers=(), model_class=object, log_ctx=None):
         self.__attrs = attrs
         self.__values = {}
         self.__pending = []
         self.__containers = containers
-        self.__target_class = target_class
+        self.__model_class = model_class
+        self.__log_ctx = log_ctx or '%s.%s' % (model_class.__module__, model_class.__name__)
+        self.factory_parent = containers[0] if containers else None
         self.__initialized = True
 
     def __repr__(self):
-        return '<LazyStub for %s>' % self.__target_class.__name__
+        return '<LazyStub for %s.%s>' % (self.__model_class.__module__, self.__model_class.__name__)
 
     def __str__(self):
         return '<LazyStub for %s with %s>' % (
-            self.__target_class.__name__, list(self.__attrs.keys()))
+            self.__model_class.__name__, list(self.__attrs.keys()))
 
     def __fill__(self):
         """Fill this LazyStub, computing values of all defined attributes.
@@ -71,8 +76,14 @@ class LazyStub(object):
             dict: map of attribute name => computed value
         """
         res = {}
+        logger.debug("LazyStub: Computing values for %s(%s)",
+            self.__log_ctx, utils.log_pprint(kwargs=self.__attrs),
+        )
         for attr in self.__attrs:
             res[attr] = getattr(self, attr)
+        logger.debug("LazyStub: Computed values, got %s(%s)",
+            self.__log_ctx, utils.log_pprint(kwargs=res),
+        )
         return res
 
     def __getattr__(self, name):
@@ -92,7 +103,8 @@ class LazyStub(object):
             if isinstance(val, LazyValue):
                 self.__pending.append(name)
                 val = val.evaluate(self, self.__containers)
-                assert name == self.__pending.pop()
+                last = self.__pending.pop()
+                assert name == last
             self.__values[name] = val
             return val
         else:
@@ -107,61 +119,6 @@ class LazyStub(object):
             return super(LazyStub, self).__setattr__(name, value)
         else:
             raise AttributeError('Setting of object attributes is not allowed')
-
-
-class DeclarationDict(dict):
-    """Slightly extended dict to work with OrderedDeclaration."""
-
-    def is_declaration(self, name, value):
-        """Determines if a class attribute is a field value declaration.
-
-        Based on the name and value of the class attribute, return ``True`` if
-        it looks like a declaration of a default field value, ``False`` if it
-        is private (name starts with '_') or a classmethod or staticmethod.
-
-        """
-        if isinstance(value, (classmethod, staticmethod)):
-            return False
-        elif isinstance(value, declarations.OrderedDeclaration):
-            return True
-        return (not name.startswith("_") and not name.startswith("FACTORY_"))
-
-    def update_with_public(self, d):
-        """Updates the DeclarationDict from a class definition dict.
-
-        Takes into account all public attributes and OrderedDeclaration
-        instances; ignores all class/staticmethods and private attributes
-        (starting with '_').
-
-        Returns a dict containing all remaining elements.
-        """
-        remaining = {}
-        for k, v in d.items():
-            if self.is_declaration(k, v):
-                self[k] = v
-            else:
-                remaining[k] = v
-        return remaining
-
-    def copy(self, extra=None):
-        """Copy this DeclarationDict into another one, including extra values.
-
-        Args:
-            extra (dict): additional attributes to include in the copy.
-        """
-        new = self.__class__()
-        new.update(self)
-        if extra:
-            new.update(extra)
-        return new
-
-
-class PostGenerationDeclarationDict(DeclarationDict):
-    """Alternate DeclarationDict for PostGenerationDeclaration."""
-
-    def is_declaration(self, name, value):
-        """Captures instances of PostGenerationDeclaration."""
-        return isinstance(value, declarations.PostGenerationDeclaration)
 
 
 class LazyValue(object):
@@ -218,8 +175,8 @@ class AttributeBuilder(object):
             overridden default values for the related SubFactory.
     """
 
-    def __init__(self, factory, extra=None, *args, **kwargs):
-        super(AttributeBuilder, self).__init__(*args, **kwargs)
+    def __init__(self, factory, extra=None, log_ctx=None, **kwargs):
+        super(AttributeBuilder, self).__init__(**kwargs)
 
         if not extra:
             extra = {}
@@ -227,13 +184,15 @@ class AttributeBuilder(object):
         self.factory = factory
         self._containers = extra.pop('__containers', ())
         self._attrs = factory.declarations(extra)
+        self._log_ctx = log_ctx
 
+        initial_declarations = factory.declarations({})
         attrs_with_subfields = [
-            k for k, v in self._attrs.items()
+            k for k, v in initial_declarations.items()
             if self.has_subfields(v)]
 
         self._subfields = utils.multi_extract_dict(
-                attrs_with_subfields, self._attrs)
+            attrs_with_subfields, self._attrs)
 
     def has_subfields(self, value):
         return isinstance(value, declarations.ParameteredAttribute)
@@ -258,14 +217,14 @@ class AttributeBuilder(object):
         for k, v in self._attrs.items():
             if isinstance(v, declarations.OrderedDeclaration):
                 v = OrderedDeclarationWrapper(v,
-                        sequence=sequence,
-                        create=create,
-                        extra=self._subfields.get(k, {}),
+                    sequence=sequence,
+                    create=create,
+                    extra=self._subfields.get(k, {}),
                 )
             wrapped_attrs[k] = v
 
         stub = LazyStub(wrapped_attrs, containers=self._containers,
-            target_class=self.factory)
+            model_class=self.factory, log_ctx=self._log_ctx)
         return stub.__fill__()
 
 

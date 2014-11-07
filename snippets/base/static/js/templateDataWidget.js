@@ -5,7 +5,8 @@
     var VARIABLE_TYPES = {
         text: 0,
         image: 1,
-        smalltext: 2
+        smalltext: 2,
+        checkbox: 3,
     };
 
     // Setup Nunjucks
@@ -95,6 +96,10 @@
             this.$container.on('input', 'input', function() {
                 self.triggerDataChange();
             });
+
+            this.$container.on('change', 'input[type="checkbox"]', function() {
+                self.triggerDataChange();
+            });
         },
 
         /**
@@ -175,6 +180,9 @@
                     case VARIABLE_TYPES.smalltext:
                         data[variable] = $item.find('input').val();
                         break;
+                    case VARIABLE_TYPES.checkbox:
+                        data[variable] = $item.find('input[type="checkbox"]').is(':checked');
+                        break;
                 }
             });
             return data;
@@ -203,27 +211,24 @@
         this.dataWidget = dataWidget;
 
         this.$container = $(elem);
-        this.$container.html(nj.render('snippetPreviewFrame.html'));
-
         this.$form = $(nj.render('snippetPreviewForm.html', {
             preview_url: this.$container.data('previewUrl')
         }));
-        $(document.body).append(this.$form);
+        this.$container.append(this.$form);
+
         this.$dataInput = this.$form.find('input[name="data"]');
         this.$templateIdInput = this.$form.find('input[name="template_id"]');
 
-        dataWidget.onDataChange(function() {
-            self.onDataChange();
+        this.$form.submit(function() {
+            self.onFormSubmit();
         });
-        self.onDataChange(); // Trigger initial preview.
     }
 
     SnippetPreview.prototype = {
-        onDataChange: function() {
+        onFormSubmit: function() {
             var data = JSON.stringify(this.dataWidget.generateData());
             this.$dataInput.val(data);
             this.$templateIdInput.val(this.dataWidget.getTemplateId());
-            this.$form.submit();
         }
     };
 

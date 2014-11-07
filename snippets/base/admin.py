@@ -119,6 +119,9 @@ class SnippetAdmin(BaseSnippetAdmin):
 
     search_fields = ('name', 'client_match_rules__description',
                      'template__name')
+    list_filter = BaseSnippetAdmin.list_filter + (
+        'template',
+    )
 
     fieldsets = (
         (None, {'fields': ('name', 'priority', 'disabled',
@@ -147,7 +150,6 @@ class SnippetAdmin(BaseSnippetAdmin):
         }),
         ('Client Match Rules', {
             'fields': ('client_match_rules',),
-            'classes': ('collapse',)
         }),
         ('Startpage Versions', {
             'fields': (('on_startpage_1', 'on_startpage_2', 'on_startpage_3',
@@ -260,7 +262,6 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
         }),
         ('Client Match Rules', {
             'fields': ('client_match_rules',),
-            'classes': ('collapse',)
         }),
         ('Startpage Versions', {
             'fields': (('on_startpage_1',),),
@@ -269,7 +270,26 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
     )
 
 
+class UploadedFileAdmin(admin.ModelAdmin):
+    readonly_fields = ('url', 'preview', 'snippets')
+    list_display = ('name', 'url', 'preview', 'modified')
+    prepopulated_fields = {'name': ('file',)}
+    form = forms.UploadedFileAdminForm
+
+    def preview(self, obj):
+        template = env.get_template('base/uploadedfile_preview.html')
+        return template.render({'file': obj})
+    preview.allow_tags = True
+
+    def snippets(self, obj):
+        """Snippets using this file."""
+        template = env.get_template('base/uploadedfile_snippets.html')
+        return template.render({'snippets': obj.snippets})
+    snippets.allow_tags = True
+
+
 admin.site.register(models.Snippet, SnippetAdmin)
 admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
 admin.site.register(models.JSONSnippet, JSONSnippetAdmin)
+admin.site.register(models.UploadedFile, UploadedFileAdmin)

@@ -1,6 +1,7 @@
 .widget-container {
     float: left;
     border: 1px solid #DDD;
+    width: 600px;
 }
 
 .template-data-widget table {
@@ -49,16 +50,11 @@
 
 .snippet-preview-container {
     border-top: 1px solid #DDD;
-    height: 480px;
     width: 100%;
 }
 
-.snippet-preview-container iframe {
-    border: none;
-    height: 100%;
-    width: 100%;
-}
-
-.snippet-preview-form {
-    display: none;
+.snippet-preview-form button {
+    margin: 5px auto;
+    display: block;
+    width: 200px;
 }

@@ -14,6 +14,8 @@
           <input type="file" class="image-input">
         {% elif variable.type == types.smalltext %}
           <input class="smalltext" value="{{ originalData[variable.name] }}">
+        {% elif variable.type == types.checkbox %}
+          <input type="checkbox" {{ 'checked' if originalData[variable.name] else '' }}>
         {% endif %}
         {% if variable.description %}
           <small>{{ variable.description }}</small>

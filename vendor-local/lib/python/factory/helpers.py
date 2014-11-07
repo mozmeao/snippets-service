@@ -23,15 +23,36 @@
 
 """Simple wrappers around Factory class definition."""
 
+import contextlib
+import logging
 
 from . import base
 from . import declarations
+from . import django
+
+
+@contextlib.contextmanager
+def debug(logger='factory', stream=None):
+    logger_obj = logging.getLogger(logger)
+    old_level = logger_obj.level
+
+    handler = logging.StreamHandler(stream)
+    handler.setLevel(logging.DEBUG)
+    logger_obj.addHandler(handler)
+    logger_obj.setLevel(logging.DEBUG)
+
+    yield
+
+    logger_obj.setLevel(old_level)
+    logger_obj.removeHandler(handler)
 
 
 def make_factory(klass, **kwargs):
     """Create a new, simple factory for the given class."""
     factory_name = '%sFactory' % klass.__name__
-    kwargs[base.FACTORY_CLASS_DECLARATION] = klass
+    class Meta:
+        model = klass
+    kwargs['Meta'] = Meta
     base_class = kwargs.pop('FACTORY_CLASS', base.Factory)
 
     factory_class = type(base.Factory).__new__(
