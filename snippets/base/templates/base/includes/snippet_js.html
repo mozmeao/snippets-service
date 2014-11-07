@@ -101,6 +101,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 };
 // End MozUITour
 
+
 (function(showDefaultSnippets) {
     'use strict';
 
@@ -190,7 +191,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             var topSection = document.getElementById('topSection');
             // Add sample rate and snippet ID to currently displayed links.
             var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
-                              show_snippet_id);
+                              ABOUTHOME_SHOWN_SNIPPET.id);
             modifyLinks(topSection.querySelectorAll('a'), parameters);
             addSnippetBlockLinks(topSection.querySelectorAll('.block-snippet-button'));
         });

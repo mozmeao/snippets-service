@@ -56,7 +56,14 @@ class FetchRenderSnippetsTests(TestCase):
         params = self.client_params
         response = self.client.get('/{0}/'.format('/'.join(params)))
 
-        eq_(set(snippets_ok), set(response.context['snippets']))
+        snippets_json = json.dumps([{
+            'id': snippet.id,
+            'code': snippet.render(),
+            'country': snippet.country,
+            'weight': snippet.weight,
+        } for snippet in snippets_ok])
+
+        eq_(set(snippets_json), set(response.context['snippets_json']))
         eq_(response.context['locale'], 'en-US')
 
     @patch('snippets.base.views.Client', wraps=Client)
