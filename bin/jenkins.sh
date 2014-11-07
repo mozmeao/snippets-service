@@ -63,6 +63,7 @@ SESSION_COOKIE_SECURE = True
 HMAC_KEYS = {
     '2012-06-06': 'some secret',
 }
+SITE_URL = 'http://localhost:8000'
 SETTINGS
 
 echo "Creating database if we need it..."
