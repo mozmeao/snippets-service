@@ -5,7 +5,7 @@ from snippets.base import views
 
 urlpatterns = patterns(
     '',
-    url(r'^$', views.index, name='base.index'),
+    url(r'^$', views.SnippetIndexView.as_view(), name='base.index'),
     url(r'^(?P<startpage_version>[^/]+)/(?P<name>[^/]+)/(?P<version>[^/]+)/'
         '(?P<appbuildid>[^/]+)/(?P<build_target>[^/]+)/(?P<locale>[^/]+)/'
         '(?P<channel>[^/]+)/(?P<os_version>[^/]+)/(?P<distribution>[^/]+)/'
@@ -18,5 +18,5 @@ urlpatterns = patterns(
         views.fetch_json_snippets, name='base.fetch_json_snippets'),
     url(r'^preview/$', views.preview_snippet, name='base.preview'),
     url(r'^show/(?P<snippet_id>\d+)/$', views.show_snippet, name='base.show'),
-    url(r'^json-snippets/', views.json_snippets, name='base.json'),
+    url(r'^json-snippets/', views.JSONSnippetIndexView.as_view(), name='base.index_json'),
 )

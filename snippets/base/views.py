@@ -8,6 +8,7 @@ from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
 from django.utils.cache import patch_vary_headers
 from django.utils.functional import lazy
+from django.views.generic import TemplateView
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 
@@ -34,27 +35,51 @@ class SnippetFilter(django_filters.FilterSet):
                   'template']
 
 
-def index(request):
-    snippets = Snippet.objects.filter(disabled=False)
-    snippetsfilter = SnippetFilter(request.GET, snippets)
-    paginator = Paginator(snippetsfilter.qs, SNIPPETS_PER_PAGE)
+class JSONSnippetFilter(django_filters.FilterSet):
 
-    page = request.GET.get('page', 1)
-    try:
-        snippets = paginator.page(page)
-    except PageNotAnInteger:
-        snippets = paginator.page(1)
-    except EmptyPage:
-        snippets = paginator.page(paginator.num_pages)
+    class Meta:
+        model = JSONSnippet
+        fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly']
 
-    # Display links to the page before and after the current page when
-    # applicable.
-    pagination_range = range(max(1, snippets.number-2),
-                             min(snippets.number+3, paginator.num_pages+1))
-    data = {'snippets': snippets,
-            'pagination_range': pagination_range,
-            'snippetsfilter': snippetsfilter}
-    return render(request, 'base/index.html', data)
+
+class IndexView(TemplateView):
+    def render(self, request, *args, **kwargs):
+        paginator = Paginator(self.snippetsfilter.qs, SNIPPETS_PER_PAGE)
+
+        page = request.GET.get('page', 1)
+        try:
+            snippets = paginator.page(page)
+        except PageNotAnInteger:
+            snippets = paginator.page(1)
+        except EmptyPage:
+            snippets = paginator.page(paginator.num_pages)
+
+        # Display links to the page before and after the current page when
+        # applicable.
+        pagination_range = range(max(1, snippets.number-2),
+                                 min(snippets.number+3, paginator.num_pages+1))
+        data = {'snippets': snippets,
+                'pagination_range': pagination_range,
+                'snippetsfilter': self.snippetsfilter}
+        return render(request, self.template_name, data)
+
+
+class SnippetIndexView(IndexView):
+    template_name = 'base/index.html'
+
+    def get(self, request, *args, **kwargs):
+        self.snippets = Snippet.objects.filter(disabled=False)
+        self.snippetsfilter = SnippetFilter(request.GET, self.snippets)
+        return self.render(request, *args, **kwargs)
+
+
+class JSONSnippetIndexView(IndexView):
+    template_name = 'base/index-json.html'
+
+    def get(self, request, *args, **kwargs):
+        self.snippets = JSONSnippet.objects.filter(disabled=False)
+        self.snippetsfilter = JSONSnippetFilter(request.GET, self.snippets)
+        return self.render(request, *args, **kwargs)
 
 
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
@@ -143,26 +168,3 @@ def show_snippet(request, snippet_id):
         'client': PREVIEW_CLIENT,
         'preview': True
     })
-
-
-def json_snippets(request):
-    snippets = JSONSnippet.objects.filter(disabled=False)
-    snippetsfilter = SnippetFilter(request.GET, snippets)
-    paginator = Paginator(snippetsfilter.qs, SNIPPETS_PER_PAGE)
-
-    page = request.GET.get('page', 1)
-    try:
-        snippets = paginator.page(page)
-    except PageNotAnInteger:
-        snippets = paginator.page(1)
-    except EmptyPage:
-        snippets = paginator.page(paginator.num_pages)
-
-    # Display links to the page before and after the current page when
-    # applicable.
-    pagination_range = range(max(1, snippets.number-2),
-                             min(snippets.number+3, paginator.num_pages+1))
-    data = {'snippets': snippets,
-            'pagination_range': pagination_range,
-            'snippetsfilter': snippetsfilter}
-    return render(request, 'base/json.html', data)

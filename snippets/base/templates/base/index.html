@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% block snippet_index_url %}<a href="{{ url('base.index_json') }}">JSON Snippets</a>{% endblock%}
+
 {% block content %}
   <div class="row">
     <div class="span12 well">
@@ -13,11 +15,11 @@
                   <label>{{ field.label }}</label>
                   {{ field }}
                 {% endfor %}
-                {% if parent_loop.last %}
-                  <input type="submit" class="btn btn-primary span2" value="Filter!">
-               {% endif %}
               </div>
             {% endfor %}
+            <div class='span12'>
+              <input type="submit" class="btn btn-primary span2 pull-right" value="Filter!">
+            </div>
           </fieldset>
         </form>
       </div>

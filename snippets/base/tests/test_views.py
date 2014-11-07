@@ -228,6 +228,65 @@ class ShowSnippetTests(TestCase):
 
 
 @patch('snippets.base.views.SNIPPETS_PER_PAGE', 1)
+class JSONIndexSnippetsTests(TestCase):
+    def setUp(self):
+        for i in range(10):
+            JSONSnippetFactory.create()
+
+    def test_base(self):
+        response = self.client.get(reverse('base.index_json'))
+        eq_(response.status_code, 200)
+        eq_(response.context['snippets'].number, 1)
+
+    def test_second_page(self):
+        response = self.client.get(urlparams(reverse('base.index_json'), page=2))
+        eq_(response.status_code, 200)
+        eq_(response.context['snippets'].number, 2)
+        eq_(response.context['snippets'].paginator.num_pages, 10)
+
+    def test_empty_page_number(self):
+        """Test that empty page number returns the last page."""
+        response = self.client.get(urlparams(reverse('base.index_json'), page=20))
+        eq_(response.status_code, 200)
+        eq_(response.context['snippets'].number, 10)
+        eq_(response.context['snippets'].paginator.num_pages, 10)
+
+    def test_non_integer_page_number(self):
+        """Test that a non integer page number returns the first page."""
+        response = self.client.get(urlparams(reverse('base.index_json'), page='k'))
+        eq_(response.status_code, 200)
+        eq_(response.context['snippets'].number, 1)
+        eq_(response.context['snippets'].paginator.num_pages, 10)
+
+    def test_filter(self):
+        JSONSnippetFactory.create(on_nightly=True)
+        response = self.client.get(urlparams(reverse('base.index_json'), on_nightly=2))
+        eq_(response.status_code, 200)
+        eq_(response.context['snippets'].paginator.count, 1)
+
+    def test_pagination_range_first_page(self):
+        response = self.client.get(reverse('base.index_json'))
+        pagination_range = response.context['pagination_range']
+        eq_(pagination_range[0], 1)
+        eq_(pagination_range[-1], 3)
+        eq_(len(pagination_range), 3)
+
+    def test_pagination_range_last_page(self):
+        response = self.client.get(urlparams(reverse('base.index_json'), page=10))
+        pagination_range = response.context['pagination_range']
+        eq_(pagination_range[0], 8)
+        eq_(pagination_range[-1], 10)
+        eq_(len(pagination_range), 3)
+
+    def test_pagination_range_middle_page(self):
+        response = self.client.get(urlparams(reverse('base.index_json'), page=5))
+        pagination_range = response.context['pagination_range']
+        eq_(pagination_range[0], 3)
+        eq_(pagination_range[-1], 7)
+        eq_(len(pagination_range), 5)
+
+
+@patch('snippets.base.views.SNIPPETS_PER_PAGE', 1)
 class IndexSnippetsTests(TestCase):
     def setUp(self):
         for i in range(10):

@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% block snippet_index_url %}<a href="{{ url('base.index') }}">Snippets</a>{% endblock%}
+
 {% block content %}
   <div class="row">
     <div class="span12 well">
@@ -7,17 +9,15 @@
         <form>
           <fieldset>
             {% for column in snippetsfilter.form|slice(3) %}
-              {% if not loop.last %}
-                {% for field in column %}
-                  <div class="span6">
-                    <label>{{ field.label }}</label>
-                    {{ field }}
-                  </div>
-                {% endfor %}
-              {% endif %}
+              {% for field in column %}
+                <div class="span3">
+                  <label>{{ field.label }}</label>
+                  {{ field }}
+                </div>
+              {% endfor %}
             {% endfor %}
             <div class='span12'>   
-              <input type="submit" class="btn btn-primary span2" value="Filter!">
+              <input type="submit" class="btn btn-primary span2 pull-right" value="Filter!">
             </div>
           </fieldset>
         </form>
@@ -50,7 +50,7 @@
         </table>
       {% else %}
         No snippets! Maybe try
-        <a href="{{ url('base.json') }}">without filters</a>?
+        <a href="{{ url('base.index_json') }}">without filters</a>?
       {% endif %}
       <div class="row text-right">
         Total snippets: <em>{{ snippets.paginator.count }}</em>

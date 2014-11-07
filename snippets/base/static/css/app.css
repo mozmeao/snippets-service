@@ -16,3 +16,7 @@ body {
 .json-snippet-table td {
     vertical-align: middle;
 }
+
+select {
+    width: 100%;
+}
