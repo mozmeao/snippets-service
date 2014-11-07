@@ -11,6 +11,7 @@
 var ABOUTHOME_SHOWN_SNIPPET = null;
 var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
 
+
 (function(showDefaultSnippets) {
     'use strict';
 
@@ -79,10 +80,11 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
             snippetElement.dispatchEvent(evt);
         }
 
+
         // Add sample rate and snippet ID to currently displayed links.
         var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
-                          show_snippet_id);
-        modifyLinks(show_snippet.getElementsByTagName('a'), parameters);
+                ABOUTHOME_SHOWN_SNIPPET.id);
+        modifyLinks(snippetElement.getElementsByTagName('a'), parameters);
     } else {
         showDefaultSnippets();
     }
