@@ -12,6 +12,7 @@
         {% elif variable.type == types.image %}
           <img src="{{ originalData[variable.name] }}">
           <input type="file" class="image-input">
+          <div class='fileSize'></div>
         {% elif variable.type == types.smalltext %}
           <input class="smalltext" value="{{ originalData[variable.name] }}">
         {% elif variable.type == types.checkbox %}

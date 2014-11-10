@@ -1,9 +1,10 @@
-import hashlib
-import json
 import os
 import re
+import json
 import uuid
 import xml.sax
+import hashlib
+
 from StringIO import StringIO
 from collections import namedtuple
 from urlparse import urljoin
@@ -13,7 +14,6 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
-
 import jingo
 from caching.base import CachingManager, CachingMixin
 from jinja2 import Markup
@@ -264,6 +264,13 @@ class Snippet(CachingMixin, models.Model):
 
     def get_absolute_url(self):
         return reverse('base.show', kwargs={'snippet_id': self.id})
+
+    def clean(self):
+        file_size = len(self.render())
+        if file_size > 500000:  # 500kb
+            msg = 'This snippet is larger than 500kb ({size} kb).'.format(
+                size=file_size/1000)
+            raise ValidationError(msg)
 
 
 class SnippetLocale(CachingMixin, models.Model):

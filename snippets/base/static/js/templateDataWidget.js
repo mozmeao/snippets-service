@@ -151,6 +151,14 @@
                 return;
             }
 
+            var file_size_in_kb = file.size / 1000;
+            
+            if (file_size_in_kb > 300) {
+                var msg = 'Icon file too large. Consider using a smaller ' + 
+                          'icon. (Under 300kb)';
+                $(input).siblings('.fileSize').html(msg).css('color', 'red');
+            }
+
             // Load file.
             var preview = $(input).siblings('img')[0];
             var reader = new FileReader();
