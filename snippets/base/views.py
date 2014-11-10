@@ -1,6 +1,8 @@
 import hashlib
 import json
 
+from distutils.util import strtobool
+
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -151,7 +153,13 @@ def preview_snippet(request):
 
     # Build a snippet that isn't saved so we can render it.
     snippet = Snippet(template=template, data=data)
-    return render(request, 'base/preview.html', {
+
+    skip_boilerplate = request.POST.get('skip_boilerplate', 'false')
+    skip_boilerplate = strtobool(skip_boilerplate)
+
+    template_name = 'base/preview_without_shell.html' if skip_boilerplate else 'base/preview.html'
+
+    return render(request, template_name, {
         'snippet': snippet,
         'client': PREVIEW_CLIENT,
         'preview': True

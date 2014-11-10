@@ -41,6 +41,9 @@
         this.$templateSelect = $('select[name="' + selectName + '"]');
         this.$dataInput = $('input[name="' + inputName + '"]');
 
+        this.snippetSizeThreshold = this.$container.data('snippetSizeLimit')
+        this.snippetImgSizeThreshold = this.$container.data('snippetImgSizeLimit');
+
         // Throw an error if we can't find the elements we need.
         if (!(this.$templateSelect.exists() && this.$dataInput.exists())) {
             throw ('Snippet data widget error: Template select or data ' +
@@ -76,13 +79,29 @@
     SnippetDataWidget.prototype = {
         bindEvents: function() {
             var self = this;
+            
+            $(document).ready(function() {
+                self.$container.find('img').each(function(_, img) {
+                    if (!img.src) return;
+                    var data = img.src.split(',')[1];
+                    var binary = atob(data.replace(/\s/g, ''));
+
+                    if (binary.length / 1024 > self.snippetImgSizeThreshold) {
+                        var msg = 'Icon file too large. Consider using a smaller ' + 
+                                  'icon. (Under ' + self.snippetImgSizeThreshold + 'kb)';
+                        $(img).siblings('.fileSize').html(msg).css('color', 'red');
+                    } else {
+                        $(img).siblings('.fileSize').html('');
+                    }
+                });
+            });
 
             this.$templateSelect.change(function() {
                 self.onTemplateChange();
             });
 
             this.$container.parents('form').submit(function() {
-                self.onFormSubmit();
+                return self.onFormSubmit();
             });
 
             this.$container.on('change', '.image-input', function() {
@@ -151,6 +170,14 @@
                 return;
             }
 
+            if (file.size / 1024 > self.snippetImgSizeThreshold) {
+                var msg = 'Icon file too large. Consider using a smaller ' + 
+                          'icon. (Under ' + self.snippetImgSizeThreshold + 'kb)';
+                $(input).siblings('.fileSize').html(msg).css('color', 'red');
+            } else {
+                $(input).siblings('.fileSize').html('');
+            }
+
             // Load file.
             var preview = $(input).siblings('img')[0];
             var reader = new FileReader();
@@ -197,7 +224,25 @@
          * the original data input.
          */
         onFormSubmit: function() {
+            var confirmed;
+            var self = this;
             this.$dataInput.val(JSON.stringify(this.generateData()));
+            var data = this.$dataInput.serialize() + '&template_id=' + this.$templateSelect.val() + '&skip_boilerplate=true';
+            $.ajax({
+                type: 'POST',
+                url:'/preview/',
+                data: data,
+                async: false,
+                success: function(data, textStatus, request) {
+                    var size = new Blob([data], {type: 'text/html'}).size / 1024;
+                    if (size > self.snippetSizeThreshold) {
+                        var msg = "This snippet is over " + self.snippetSizeThreshold + "kb threshold! (" +
+                            size.toFixed() + "kb) Are you sure you want to save it?";
+                        confirmed = confirm(msg);
+                    }
+                }
+            });
+            return confirmed;
         }
     };
 
