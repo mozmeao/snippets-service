@@ -126,11 +126,13 @@ def preview_snippet(request):
 
     # Build a snippet that isn't saved so we can render it.
     snippet = Snippet(template=template, data=data)
-    return render(request, 'base/preview.html', {
+    response = render(request, 'base/preview.html', {
         'snippet': snippet,
         'client': PREVIEW_CLIENT,
         'preview': True
     })
+    response['Content-Length'] = len(response.content)
+    return response
 
 
 def show_snippet(request, snippet_id):

@@ -265,13 +265,6 @@ class Snippet(CachingMixin, models.Model):
     def get_absolute_url(self):
         return reverse('base.show', kwargs={'snippet_id': self.id})
 
-    def clean(self):
-        file_size = len(self.render())
-        if file_size > getattr(settings, 'SNIPPET_SIZE_WARNING_THRESHOLD'):
-            msg = 'This snippet is larger than 500kb ({size} kb).'.format(
-                size=file_size/1000)
-            raise ValidationError(msg)
-
 
 class SnippetLocale(CachingMixin, models.Model):
     snippet = models.ForeignKey(Snippet, related_name='locale_set')
