@@ -41,6 +41,9 @@
         this.$templateSelect = $('select[name="' + selectName + '"]');
         this.$dataInput = $('input[name="' + inputName + '"]');
 
+        this.snippetSizeThreshold = 200;
+        this.snippetImgSizeThreshold = 100;
+
         // Throw an error if we can't find the elements we need.
         if (!(this.$templateSelect.exists() && this.$dataInput.exists())) {
             throw ('Snippet data widget error: Template select or data ' +
@@ -151,9 +154,9 @@
                 return;
             }
 
-            if (file.size / 1000 > 100) {  // If the file size is larger than 300kb.
+            if (file.size / 1024 > self.snippetImgSizeThreshold) {
                 var msg = 'Icon file too large. Consider using a smaller ' + 
-                          'icon. (Under 100kb)';
+                          'icon. (Under ' + self.snippetImgSizeThreshold + 'kb)';
                 $(input).siblings('.fileSize').html(msg).css('color', 'red');
             }
 
@@ -203,24 +206,22 @@
          * the original data input.
          */
         onFormSubmit: function() {
+            var confirmed;
+            var self = this;
             this.$dataInput.val(JSON.stringify(this.generateData()));
             var data = this.$dataInput.serialize() + '&template_id=' + this.$templateSelect.val();
-            var confirmed;
             $.ajax({
                 type: 'POST',
                 url:'/preview/',
                 data: data,
                 async: false,
                 success: function(data, textStatus, request) {
-                    var size = request.getResponseHeader('Content-Length') / 1000;
-                    if (size > 100) {
-                        var msg = "This snippet is over the 100kb! (" + 
-                            size + "kb) Are you sure you want to add it?";
+                    var size = new Blob([data], {type: 'text/html'}).size / 1024;
+                    if (size > self.snippetSizeThreshold) {
+                        var msg = "This snippet is over the " + self.snippetSizeThreshold + "kb threshold! (" +
+                            size.toFixed() + "kb) Are you sure you want to add it?";
                         confirmed = confirm(msg);
                     }
-                },
-                error: function (request, textStatus, errorThrown) {
-                     alert(request.getResponseHeader('Content-Length'));
                 }
             });
             return confirmed;

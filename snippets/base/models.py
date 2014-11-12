@@ -1,10 +1,9 @@
+import hashlib
+import json
 import os
 import re
-import json
 import uuid
 import xml.sax
-import hashlib
-
 from StringIO import StringIO
 from collections import namedtuple
 from urlparse import urljoin
@@ -14,6 +13,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
+
 import jingo
 from caching.base import CachingManager, CachingMixin
 from jinja2 import Markup
