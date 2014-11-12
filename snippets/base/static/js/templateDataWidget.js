@@ -218,8 +218,8 @@
                 success: function(data, textStatus, request) {
                     var size = new Blob([data], {type: 'text/html'}).size / 1024;
                     if (size > self.snippetSizeThreshold) {
-                        var msg = "This snippet is over the " + self.snippetSizeThreshold + "kb threshold! (" +
-                            size.toFixed() + "kb) Are you sure you want to add it?";
+                        var msg = "This snippet is over " + self.snippetSizeThreshold + "kb threshold! (" +
+                            size.toFixed() + "kb) Are you sure you want to save it?";
                         confirmed = confirm(msg);
                     }
                 }
