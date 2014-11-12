@@ -151,11 +151,9 @@
                 return;
             }
 
-            var file_size_in_kb = file.size / 1000;
-            
-            if (file_size_in_kb > 300) {
+            if (file.size / 1000 > 100) {  // If the file size is larger than 300kb.
                 var msg = 'Icon file too large. Consider using a smaller ' + 
-                          'icon. (Under 300kb)';
+                          'icon. (Under 100kb)';
                 $(input).siblings('.fileSize').html(msg).css('color', 'red');
             }
 

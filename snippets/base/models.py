@@ -267,7 +267,7 @@ class Snippet(CachingMixin, models.Model):
 
     def clean(self):
         file_size = len(self.render())
-        if file_size > 500000:  # 500kb
+        if file_size > getattr(settings, 'SNIPPET_SIZE_WARNING_THRESHOLD'):
             msg = 'This snippet is larger than 500kb ({size} kb).'.format(
                 size=file_size/1000)
             raise ValidationError(msg)

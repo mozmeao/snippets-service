@@ -85,3 +85,5 @@ def _allowed_hosts():
 ALLOWED_HOSTS = lazy(_allowed_hosts, list)()
 
 # CDN_URL = 'https://snippets.cdn.mozilla.net/'
+
+SNIPPET_SIZE_WARNING_THRESHOLD = 200000  # 200kb
