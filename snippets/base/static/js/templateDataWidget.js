@@ -41,8 +41,8 @@
         this.$templateSelect = $('select[name="' + selectName + '"]');
         this.$dataInput = $('input[name="' + inputName + '"]');
 
-        this.snippetSizeThreshold = 200;
-        this.snippetImgSizeThreshold = 100;
+        this.snippetSizeThreshold = this.$container.data('snippetSizeLimit')
+        this.snippetImgSizeThreshold = this.$container.data('snippetImgSizeLimit');
 
         // Throw an error if we can't find the elements we need.
         if (!(this.$templateSelect.exists() && this.$dataInput.exists())) {
