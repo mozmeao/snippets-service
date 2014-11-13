@@ -209,7 +209,7 @@
             var confirmed;
             var self = this;
             this.$dataInput.val(JSON.stringify(this.generateData()));
-            var data = this.$dataInput.serialize() + '&template_id=' + this.$templateSelect.val();
+            var data = this.$dataInput.serialize() + '&template_id=' + this.$templateSelect.val() + '&skip_boilerplate=true'
             $.ajax({
                 type: 'POST',
                 url:'/preview/',
