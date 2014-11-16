@@ -113,7 +113,7 @@ def preview_snippet(request):
     except (TypeError, ValueError):
         return HttpResponseBadRequest()
 
-    skip_boilerplate = request.POST.get('skip_boilerplate', False)
+    skip_boilerplate = request.POST.get('skip_boilerplate', 'false')
     skip_boilerplate = strtobool(skip_boilerplate)
 
     template = get_object_or_none(SnippetTemplate, id=template_id)
