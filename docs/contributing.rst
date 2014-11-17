@@ -1,8 +1,8 @@
-Installing Snippets
-===================
+Contributing
+============
 
-Installation
-------------
+Developer Setup
+---------------
 
 These instructions assume you have ``git`` and ``pip`` installed. If you don't
 have ``pip`` installed, you can install it with ``easy_install pip``.
