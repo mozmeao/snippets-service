@@ -1,7 +1,6 @@
 .widget-container {
     float: left;
     border: 1px solid #DDD;
-    width: 600px;
 }
 
 .template-data-widget table {
