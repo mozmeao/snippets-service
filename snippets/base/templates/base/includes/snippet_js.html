@@ -328,6 +328,12 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
 // Send impressions and other interactions to the service
 // If no parameter is entered, quit function
 function sendMetric(metric) {
+    {# In preview mode, disable sampling, log metric, but do not send to service #}
+    {% if preview %}
+    console.log("[preview mode] Sending metric: " + metric);
+    return;
+    {% endif %}
+
     if (Math.random() > SNIPPET_METRICS_SAMPLE_RATE) {
         return;
     }
