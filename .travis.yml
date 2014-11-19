@@ -11,4 +11,4 @@ install:
   - pip install -r requirements/dev.txt
 script: 
   - python manage.py test
-  - flake8 snippets --exclude=*/migrations/* --exit-zero
+  - flake8 snippets --exclude=*/migrations/* --exit-zero --max-line-length=100
