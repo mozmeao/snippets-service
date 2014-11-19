@@ -209,6 +209,9 @@ class Snippet(CachingMixin, models.Model):
     on_startpage_3 = models.BooleanField(default=True, verbose_name='Version 3')
     on_startpage_4 = models.BooleanField(default=True, verbose_name='Version 4')
 
+    firefox_version_lower_bound = models.CharField(max_length=100, blank=True, null=True)
+    firefox_version_upper_bound = models.CharField(max_length=100, blank=True, null=True)
+
     weight = models.IntegerField(
         'Prevalence', choices=SNIPPET_WEIGHTS, default=100,
         help_text='How often should this snippet be shown to users?')
