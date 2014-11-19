@@ -14,7 +14,7 @@ Using the staging server
 In order to develop a snippet properly, you must add your snippet to a test
 instance of the snippet service. You may either user the staging instance of
 snippets at https://snippets.allizom.org, or you may set up a local instance of
-the snippets service using the :ref:`installation documentation <install>`.
+the snippets service using the :doc:`installation documentation <install>`.
 
 To get access to the staging server, ask the snippets team via the bug you've
 filed in Bugzilla.
@@ -33,7 +33,7 @@ you will find a section for creating templates and creating snippets. If you
 intend to create a single snippet instead of a reusable template, you will have
 to create a "Raw" template for your code that contains a single variable:
 
-.. code-block:: jinja2
+.. code-block:: jinja
 
    {{ code|safe }}
 
