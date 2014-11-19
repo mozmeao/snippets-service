@@ -5,6 +5,8 @@ before_script:
   - mysql -e 'create database snippets character set utf8;'
 before_install:
   - git submodule update --init --recursive
+  - pip install flake8
+  - flake8 snippets --exclude=*/migrations/*
 install:
   - pip install -r requirements/compiled.txt
   - pip install -r requirements/dev.txt
