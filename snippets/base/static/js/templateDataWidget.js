@@ -79,6 +79,22 @@
     SnippetDataWidget.prototype = {
         bindEvents: function() {
             var self = this;
+            
+            $(document).ready(function() {
+                self.$container.find('img').each(function(_, img) {
+                    if (!img.src) return;
+                    var data = img.src.split(',')[1];
+                    var binary = atob(data.replace(/\s/g, ''));
+
+                    if (binary.length / 1024 > self.snippetImgSizeThreshold) {
+                        var msg = 'Icon file too large. Consider using a smaller ' + 
+                                  'icon. (Under ' + self.snippetImgSizeThreshold + 'kb)';
+                        $(img).siblings('.fileSize').html(msg).css('color', 'red');
+                    } else {
+                        $(img).siblings('.fileSize').html('');
+                    }
+                });
+            });
 
             this.$templateSelect.change(function() {
                 self.onTemplateChange();
@@ -158,6 +174,8 @@
                 var msg = 'Icon file too large. Consider using a smaller ' + 
                           'icon. (Under ' + self.snippetImgSizeThreshold + 'kb)';
                 $(input).siblings('.fileSize').html(msg).css('color', 'red');
+            } else {
+                $(input).siblings('.fileSize').html('');
             }
 
             // Load file.
@@ -209,7 +227,7 @@
             var confirmed;
             var self = this;
             this.$dataInput.val(JSON.stringify(this.generateData()));
-            var data = this.$dataInput.serialize() + '&template_id=' + this.$templateSelect.val() + '&skip_boilerplate=true'
+            var data = this.$dataInput.serialize() + '&template_id=' + this.$templateSelect.val() + '&skip_boilerplate=true';
             $.ajax({
                 type: 'POST',
                 url:'/preview/',
