@@ -113,9 +113,6 @@ def preview_snippet(request):
     except (TypeError, ValueError):
         return HttpResponseBadRequest()
 
-    skip_boilerplate = request.POST.get('skip_boilerplate', 'false')
-    skip_boilerplate = strtobool(skip_boilerplate)
-
     template = get_object_or_none(SnippetTemplate, id=template_id)
     data = request.POST.get('data', None)
 
@@ -131,6 +128,9 @@ def preview_snippet(request):
 
     # Build a snippet that isn't saved so we can render it.
     snippet = Snippet(template=template, data=data)
+
+    skip_boilerplate = request.POST.get('skip_boilerplate', 'false')
+    skip_boilerplate = strtobool(skip_boilerplate)
 
     template_name = 'base/preview_without_shell.html' if skip_boilerplate else 'base/preview.html'
 
