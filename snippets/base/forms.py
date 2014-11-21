@@ -133,6 +133,12 @@ class SnippetAdminForm(BaseSnippetAdminForm):
             'data': TemplateDataWidget('template'),
         }
 
+    class Media:
+        css = {
+            'all': ('css/select2.min.css',)
+        }
+        js = ('js/lib/select2.min.js', 'js/snippets-admin.js',)
+
 
 class JSONSnippetAdminForm(BaseSnippetAdminForm):
     class Meta:

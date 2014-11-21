@@ -216,7 +216,7 @@ class Snippet(CachingMixin, models.Model):
     on_startpage_4 = models.BooleanField(default=True, verbose_name='Version 4')
 
     firefox_version_lower_bound = models.CharField(
-        max_length=100, blank=True, null=True, choices=VERSIONS, initial='26.0b1')
+        max_length=100, blank=True, null=True, choices=VERSIONS, default='26.0b1')
     firefox_version_upper_bound = models.CharField(
         max_length=100, blank=True, null=True, choices=VERSIONS)
 
