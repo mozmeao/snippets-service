@@ -10,11 +10,9 @@ from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from product_details import product_details
-from product_details.version_compare import Version, version_list
-
 from snippets.base import ENGLISH_LANGUAGE_CHOICES
-from snippets.base.models import JSONSnippet, Snippet, SnippetTemplateVariable, UploadedFile
+from snippets.base.models import (
+    JSONSnippet, Snippet, SnippetTemplateVariable, UploadedFile)
 
 
 class TemplateSelect(forms.Select):
@@ -128,30 +126,12 @@ class BaseSnippetAdminForm(forms.ModelForm):
 
 
 class SnippetAdminForm(BaseSnippetAdminForm):
-    versions = version_list(
-        product_details.firefox_history_development_releases)
-    firefox_version_lower_bound = forms.ChoiceField(
-        choices=zip(reversed(versions), reversed(versions)))
-    firefox_version_upper_bound = forms.ChoiceField(
-        choices=zip(versions, versions))
-
     class Meta:
         model = Snippet
         widgets = {
             'template': TemplateSelect,
             'data': TemplateDataWidget('template'),
         }
-
-    def clean(self):
-        data = super(SnippetAdminForm, self).clean()
-        lower = data.get('firefox_version_lower_bound')
-        upper = data.get('firefox_version_upper_bound')
-        if lower and upper:
-            if Version(lower) > Version(upper):
-                raise forms.ValidationError(
-                    'The lower bound firefox version cannot be higher than the '
-                    'upper bound')
-        return data
 
 
 class JSONSnippetAdminForm(BaseSnippetAdminForm):
