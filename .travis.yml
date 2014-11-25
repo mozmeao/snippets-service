@@ -6,8 +6,7 @@ before_script:
 before_install:
 - git submodule update --init --recursive
 - pip install flake8 requests
-- flake8 snippets --exclude='*/migrations/*' --exit-zero --max-line-length=100 | python
-  bin/flake8.py
+- flake8 snippets --exclude='*/migrations/*' --exit-zero --max-line-length=100 | python bin/comment-on-pr.py
 install:
 - pip install -r requirements/compiled.txt
 - pip install -r requirements/dev.txt
@@ -15,4 +14,4 @@ script:
 - python manage.py test
 env:
   global:
-    - GITHUB_TOKEN=032783628529705aa6c4a3c79610b0fa593fed21
+    - TRAVIS_BOT_GITHUB_TOKEN=032783628529705aa6c4a3c79610b0fa593fed21
