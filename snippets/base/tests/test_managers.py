@@ -204,7 +204,6 @@ class SnippetManagerTests(TestCase):
             Snippet.cached_objects.match_client(client)
         first_mock.assert_called_with(['test-firefox'], client.startpage_version.startswith)
 
-
     @patch('snippets.base.models.FENNEC_STARTPAGE_VERSIONS', ['test-fennec'])
     def test_match_client_startpage_fennec(self):
         """

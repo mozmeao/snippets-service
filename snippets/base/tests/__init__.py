@@ -73,3 +73,9 @@ class UploadedFileFactory(factory.DjangoModelFactory):
     # set file to None to prevent factory from taking any action and mock
     # it as needed in the tests.
     file = None
+
+
+class SearchProviderFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = models.SearchProvider
+    name = factory.Sequence(lambda n: 'Search Provider {0}'.format(n))
+    identifier = factory.Sequence(lambda n: 'search-provider-{0}'.format(n))

@@ -7,11 +7,13 @@ from nose.tools import assert_raises, eq_, ok_
 from pyquery import PyQuery as pq
 
 from snippets.base.models import Client, UploadedFile, validate_xml
-from snippets.base.tests import (ClientMatchRuleFactory, UploadedFileFactory,
+from snippets.base.tests import (ClientMatchRuleFactory,
+                                 SearchProviderFactory,
                                  SnippetFactory,
                                  SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory,
-                                 TestCase)
+                                 TestCase,
+                                 UploadedFileFactory)
 
 
 class ClientMatchRuleTests(TestCase):
@@ -141,8 +143,8 @@ class SnippetTests(TestCase):
         snippet = SnippetFactory.create(template=template, data=data,
                                         country='us', weight=60)
 
-        expected = ('<div data-snippet-id="{0}" data-weight="60" class="snippet-metadata" '
-                    'data-country="us"><a href="asdf">qwer</a></div>'.format(snippet.id))
+        expected = ('<div data-snippet-id="{id}" data-weight="60" class="snippet-metadata" '
+                    'data-country="us"><a href="asdf">qwer</a></div>'.format(id=snippet.id))
         eq_(snippet.render().strip(), expected)
         template.render.assert_called_with({
             'url': 'asdf',
@@ -166,6 +168,29 @@ class SnippetTests(TestCase):
                     '<a href="asdf">qwer</a></div>'
                     .format(snippet.id))
         eq_(snippet.render().strip(), expected)
+
+    def test_render_exclude_search_engines(self):
+        """
+        If the snippet must get excluded from search engines,
+        include the data-exclude-from-search-engines attribute.
+        """
+        template = SnippetTemplateFactory.create()
+        template.render = Mock()
+        template.render.return_value = '<a href="asdf">qwer</a>'
+
+        data = '{"url": "asdf", "text": "qwer"}'
+        snippet = SnippetFactory.create(template=template, data=data)
+        search_providers = SearchProviderFactory.create_batch(2)
+        snippet.exclude_from_search_providers.add(*search_providers)
+
+        expected = ('<div data-snippet-id="{id}" data-weight="100" '
+                    'class="snippet-metadata" data-exclude-from-search-engines="{engines}">'
+                    '<a href="asdf">qwer</a></div>'.format(
+                        id=snippet.id,
+                        engines=','.join(map(lambda x: x.identifier, search_providers))
+                    ))
+        eq_(snippet.render().strip(), expected)
+
 
     def test_render_unicode(self):
         variable = SnippetTemplateVariableFactory(name='data')
@@ -248,4 +273,3 @@ class UploadedFileTests(TestCase):
         template = SnippetTemplateFactory.create(code='<foo>{0}</foo>'.format(instance.url))
         more_snippets = SnippetFactory.create_batch(3, template=template)
         eq_(set(instance.snippets), set(list(snippets) + list(more_snippets)))
-

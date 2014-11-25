@@ -85,7 +85,7 @@ class SnippetAdminTests(TestCase):
             'disabled': u'off',
             '_saveasnew': True
         })
-        
+
         with patch('snippets.base.admin.BaseModelAdmin.change_view') as change_view_mock:
             self.model_admin.change_view(request, 999)
             change_view_mock.assert_called_with(request, 999)

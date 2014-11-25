@@ -88,6 +88,9 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
     // Update FxAccount Status
     updateFxAccountStatus();
 
+    // Update Selected Search Engine
+    updateSelectedSearchEngine();
+
     // Fetch user country if we don't have it.
     if (!haveUserCountry()) {
         downloadUserCountry();
@@ -118,8 +121,8 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
             }
         }
 
-        // Choose a random snippet from the set of non-geolocated snippets,
-        // including snippets for the user's country if it is available.
+        // Concatenate non-geolocated snippets with snippets for the
+        // user's country.
         var country = getUserCountry();
         if (country && snippetsFor.hasOwnProperty(country)) {
             countrySnippets = snippetsFor[country];
@@ -144,6 +147,21 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
             snippets = countrySnippets;
         }
 
+        // Exclude snippets from search providers.
+        var searchProviderFilteredSnippets = [];
+        var searchProvider = gSnippetsMap.get('selectedSearchEngine');
+        if (searchProvider !== undefined) {
+            for (var k = 0; k < snippets.length; k++) {
+                var excludeFromSearchEngines = snippets[k].parentNode.getAttribute('data-exclude-from-search-engines');
+                if (excludeFromSearchEngines && excludeFromSearchEngines.split(',').indexOf(searchProvider) !== -1) {
+                    continue;
+                }
+                searchProviderFilteredSnippets.push(snippets[k]);
+            }
+            snippets = searchProviderFilteredSnippets;
+        }
+
+        // Choose a random snippet from the snippets list.
         if (snippets && snippets.length) {
             var sum = 0;
             for (var k = 0; k < snippets.length; k++) {
@@ -196,6 +214,25 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
                     action:'getConfiguration',
                     data: {
                         configuration: 'sync',
+                        callbackID: _waitForCallback(callback)
+                    }
+                }
+            }
+        );
+        document.dispatchEvent(event);
+    }
+
+    function updateSelectedSearchEngine() {
+        var callback = function(result) {
+            gSnippetsMap.set('selectedSearchEngine', result.searchEngineIdentifier);
+        }
+        var event = new CustomEvent(
+            'mozUITour', {
+                bubbles: true,
+                detail: {
+                    action:'getConfiguration',
+                    data: {
+                        configuration: 'selectedSearchEngine',
                         callbackID: _waitForCallback(callback)
                     }
                 }
