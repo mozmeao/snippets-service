@@ -143,6 +143,10 @@ class SnippetAdmin(BaseSnippetAdmin):
             'description': 'What channels will this snippet be available in?',
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
         }),
+        ('Search Providers', {
+            'description': 'Would you like to <strong>exclude</strong> any search providers from this snippet?',
+            'fields': (('exclude_from_yahoo', 'exclude_from_google', 'exclude_from_bing'),)
+        }),
         ('Country and Locale', {
             'description': ('What country and locales will this snippet be '
                             'available in?'),
