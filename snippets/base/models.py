@@ -204,6 +204,10 @@ class Snippet(CachingMixin, models.Model):
     on_aurora = models.BooleanField(default=False, verbose_name='Aurora')
     on_nightly = models.BooleanField(default=False, verbose_name='Nightly')
 
+    exclude_from_yahoo = models.BooleanField(default=False, verbose_name='Yahoo!')
+    exclude_from_google = models.BooleanField(default=False, verbose_name='Google')
+    exclude_from_bing = models.BooleanField(default=False, verbose_name='Bing')
+
     on_startpage_1 = models.BooleanField(default=False, verbose_name='Version 1')
     on_startpage_2 = models.BooleanField(default=True, verbose_name='Version 2')
     on_startpage_3 = models.BooleanField(default=True, verbose_name='Version 3')
@@ -241,6 +245,11 @@ class Snippet(CachingMixin, models.Model):
                  ('class', 'snippet-metadata')]
         if self.country:
             attrs.append(('data-country', self.country))
+
+        for provider in ['yahoo', 'google', 'bing']:
+            if getattr(self, 'exclude_from_{provider}'.format(provider=provider), False):
+                attrs.append(('data-exclude-from-{provider}'.format(provider=provider), 'True'))
+
         attr_string = ' '.join('{0}="{1}"'.format(key, value) for key, value in
                                attrs)
 

@@ -118,8 +118,8 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
             }
         }
 
-        // Choose a random snippet from the set of non-geolocated snippets,
-        // including snippets for the user's country if it is available.
+        // Concatenate non-geolocated snippets with snippets for the
+        // user's country.
         var country = getUserCountry();
         if (country && snippetsFor.hasOwnProperty(country)) {
             countrySnippets = snippetsFor[country];
@@ -144,6 +144,19 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
             snippets = countrySnippets;
         }
 
+        // Exclude snippets from search providers.
+        var searchProviderFilteredSnippets = [];
+        var searchProvider = document.documentElement.getAttribute('searchEngineName');
+        searchProvider = searchProvider.toLowerCase();
+        for (var k = 0; k < snippets.length; k++) {
+            if (snippets[k].parentNode.getAttribute('data-exclude-from-' + searchProvider) == 'True') {
+                continue;
+            }
+            searchProviderFilteredSnippets.push(snippets[k]);
+        }
+        snippets = searchProviderFilteredSnippets;
+
+        // Choose a random snippet from the snippets list.
         if (snippets && snippets.length) {
             var sum = 0;
             for (var k = 0; k < snippets.length; k++) {
