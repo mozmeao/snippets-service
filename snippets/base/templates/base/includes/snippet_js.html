@@ -105,60 +105,44 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
     // Choose which snippet to display to the user based on various factors,
     // such as which country they are in.
     function chooseSnippet(snippets) {
-        // Build an object that maps countries to snippets.
-        var snippetsFor = {};
-        var countrySnippets = {};
+        // Convert HTMLCollection to Array.
+        snippets = [].slice.call(snippets);
 
-        for (var k = 0; k < snippets.length; k++) {
-            var snippet = snippets[k];
-            var country = snippet.parentNode.dataset.country || 'none';
-
-            // Create a new entry in the object if it doesn't exist.
-            if (snippetsFor.hasOwnProperty(country)) {
-                snippetsFor[country].push(snippet);
-            } else {
-                snippetsFor[country] = [snippet];
-            }
-        }
-
-        // Concatenate non-geolocated snippets with snippets for the
-        // user's country.
-        var country = getUserCountry();
-        if (country && snippetsFor.hasOwnProperty(country)) {
-            countrySnippets = snippetsFor[country];
-            if (snippetsFor.none) {
-                countrySnippets = countrySnippets.concat(snippetsFor.none);
-            }
-        } else {
-            countrySnippets = snippetsFor.none;
+        var userCountry = getUserCountry();
+        if (userCountry) {
+            snippets = snippets.filter(
+                function(snippet) {
+                    var country = snippet.parentNode.dataset.country;
+                    if (country && country !== userCountry) {
+                        return false;
+                    }
+                    return true;
+                }
+            );
         }
 
         // FxAccount is already setup skip snippets that link to
         // about:accounts
         if (isFxAccountSetup()) {
-            snippets = [];
-            for (var k = 0; k < countrySnippets.length; k++) {
-                var snippet = countrySnippets[k];
-                if (!hasAboutAccountsLink(snippet)) {
-                    snippets.push(snippet);
+            snippets = snippets.filter(
+                function(snippet) {
+                    return !hasAboutAccountsLink(snippet);
                 }
-            }
-        } else {
-            snippets = countrySnippets;
+            );
         }
 
         // Exclude snippets from search providers.
-        var searchProviderFilteredSnippets = [];
         var searchProvider = gSnippetsMap.get('selectedSearchEngine');
-        if (searchProvider !== undefined) {
-            for (var k = 0; k < snippets.length; k++) {
-                var excludeFromSearchEngines = snippets[k].parentNode.getAttribute('data-exclude-from-search-engines');
-                if (excludeFromSearchEngines && excludeFromSearchEngines.split(',').indexOf(searchProvider) !== -1) {
-                    continue;
+        if (searchProvider) {
+            snippets = snippets.filter(
+                function(snippet) {
+                    var excludeFromSearchEngines = snippet.parentNode.getAttribute('data-exclude-from-search-engines');
+                    if (excludeFromSearchEngines && excludeFromSearchEngines.split(',').indexOf(searchProvider) !== -1) {
+                        return false;
+                    }
+                    return true;
                 }
-                searchProviderFilteredSnippets.push(snippets[k]);
-            }
-            snippets = searchProviderFilteredSnippets;
+            );
         }
 
         // Choose a random snippet from the snippets list.
