@@ -1,7 +1,5 @@
-<div class="snippet_set" id="snippet_set" data-locale="{{ locale }}">
-  {% include 'base/includes/snippet_css.html' %}
-  {% for snippet in snippets %}
-    {{ snippet.render() }}
-  {% endfor %}
-  {% include 'base/includes/snippet_js.html' %}
-</div>
+{% include 'base/includes/snippet_css.html' %}
+<script type="text/javascript">
+  var ABOUTHOME_SNIPPETS = {{ snippets_json }};
+</script>
+{% include 'base/includes/snippet_js.html' %}

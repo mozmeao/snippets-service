@@ -8,7 +8,9 @@
   */
 (function(a,b,c){typeof c["module"]!="undefined"&&c.module.exports?c.module.exports=b():typeof c["define"]!="undefined"&&c["define"]=="function"&&c.define.amd?define(a,b):c[a]=b()})("$script",function(){function p(a,b){for(var c=0,d=a.length;c<d;++c)if(!b(a[c]))return j;return 1}function q(a,b){p(a,function(a){return!b(a)})}function r(a,b,i){function o(a){return a.call?a():d[a]}function t(){if(!--n){d[m]=1,l&&l();for(var a in f)p(a.split("|"),o)&&!q(f[a],o)&&(f[a]=[])}}a=a[k]?a:[a];var j=b&&b.call,l=j?b:i,m=j?a.join(""):b,n=a.length;return setTimeout(function(){q(a,function(a){if(h[a])return m&&(e[m]=1),h[a]==2&&t();h[a]=1,m&&(e[m]=1),s(!c.test(a)&&g?g+a+".js":a,t)})},0),r}function s(c,d){var e=a.createElement("script"),f=j;e.onload=e.onerror=e[o]=function(){if(e[m]&&!/^c|loade/.test(e[m])||f)return;e.onload=e[o]=null,f=1,h[c]=2,d()},e.async=1,e.src=c,b.insertBefore(e,b.firstChild)}var a=document,b=a.getElementsByTagName("head")[0],c=/^https?:\/\//,d={},e={},f={},g,h={},i="string",j=!1,k="push",l="DOMContentLoaded",m="readyState",n="addEventListener",o="onreadystatechange";return!a[m]&&a[n]&&(a[n](l,function t(){a.removeEventListener(l,t,j),a[m]="complete"},j),a[m]="loading"),r.get=s,r.order=function(a,b,c){(function d(e){e=a.shift(),a.length?r(e,d):r(e,b,c)})()},r.path=function(a){g=a},r.ready=function(a,b,c){a=a[k]?a:[a];var e=[];return!q(a,function(a){d[a]||e[k](a)})&&p(a,function(a){return d[a]})?b():!function(a){f[a]=f[a]||[],f[a][k](b),c&&c(e)}(a.join("|")),r},r},this);
 
+var ABOUTHOME_SHOWN_SNIPPET = null;
 var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
+
 
 (function(showDefaultSnippets) {
     'use strict';
@@ -41,15 +43,26 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
         gSnippetsMap = window.gSnippetsMap;
     }
 
-    var snippets = (document.getElementById('snippetContainer')
-                    .getElementsByClassName('snippet'));
     var show_snippet = null;
-    if (snippets.length > 0) {
-        show_snippet = chooseSnippet(snippets);
+    if (ABOUTHOME_SNIPPETS.length > 0) {
+        show_snippet = chooseSnippet(ABOUTHOME_SNIPPETS);
     }
 
     if (show_snippet) {
-        show_snippet.style.display = 'block';
+        ABOUTHOME_SHOWN_SNIPPET = show_snippet;
+
+        // Inject the snippet onto the page.
+        var snippetContainer = document.createElement('div');
+        snippetContainer.innerHTML = show_snippet.code;
+        document.getElementById('snippets').appendChild(snippetContainer);
+        activateScriptTags(snippetContainer);
+
+        // Find the snippet div if it is present.
+        var snippetElement = null;
+        var elems = snippetContainer.getElementsByClassName('snippet');
+        if (elems.length > 0) {
+            snippetElement = elems[0];
+        }
 
         try {
             activateSnippetsButtonClick(show_snippet);
@@ -58,29 +71,20 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
             // activateSnippetsButtonClick
         }
 
-        // Determine snippet ID.
-        var metaParent = show_snippet.parentNode;
-        while (metaParent && metaParent.classList &&
-               !metaParent.classList.contains('snippet-metadata')) {
-            metaParent = metaParent.parentNode;
-        }
-
-        var show_snippet_id = 'unknown';
-        if (metaParent) {
-            show_snippet_id = metaParent.dataset.snippetId || 'unknown';
-        }
-        document.getElementById('snippet_set').setAttribute('data-snippet-id', show_snippet_id);
         sendImpression();
 
         // Trigger show_snippet event on snippet node.
-        var evt = document.createEvent('Event');
-        evt.initEvent('show_snippet', true, true);
-        show_snippet.dispatchEvent(evt);
+        if (snippetElement) {
+            var evt = document.createEvent('Event');
+            evt.initEvent('show_snippet', true, true);
+            snippetElement.dispatchEvent(evt);
+        }
+
 
         // Add sample rate and snippet ID to currently displayed links.
         var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
-                          show_snippet_id);
-        modifyLinks(show_snippet.getElementsByTagName('a'), parameters);
+                ABOUTHOME_SHOWN_SNIPPET.id);
+        modifyLinks(snippetElement.getElementsByTagName('a'), parameters);
     } else {
         showDefaultSnippets();
     }
@@ -103,12 +107,12 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
     // such as which country they are in.
     function chooseSnippet(snippets) {
         // Build an object that maps countries to snippets.
-        var snippetsFor = {};
+        var snippetsFor = {none: []};
         var countrySnippets = {};
 
         for (var k = 0; k < snippets.length; k++) {
             var snippet = snippets[k];
-            var country = snippet.parentNode.dataset.country || 'none';
+            var country = snippet.country || 'none';
 
             // Create a new entry in the object if it doesn't exist.
             if (snippetsFor.hasOwnProperty(country)) {
@@ -147,12 +151,12 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
         if (snippets && snippets.length) {
             var sum = 0;
             for (var k = 0; k < snippets.length; k++) {
-                sum += parseInt(snippets[k].parentNode.dataset.weight, 10) || 100;
-                snippets[k].parentNode.dataset.weight = sum;
+                sum += snippets[k].weight;
+                snippets[k].weight = sum;
             }
             var random_number = Math.random() * sum;
             for (var k = 0; k < snippets.length; k++) {
-                if (random_number < snippets[k].parentNode.dataset.weight) {
+                if (random_number < snippets[k].weight) {
                     return snippets[k];
                 }
             }
@@ -164,13 +168,7 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
 
     // Check whether snippet links to about:accounts.
     function hasAboutAccountsLink(snippet) {
-        var links = snippet.getElementsByTagName('a')
-        for (var i = 0; i < links.length; i++) {
-            if (links[i].href.indexOf('about:accounts') === 0) {
-                return true;
-            }
-        }
-        return false;
+        return snippet.code.indexOf('href="about:accounts"') !== -1;
     }
 
     function isFxAccountSetup() {
@@ -282,6 +280,18 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
         }
     }
 
+    // Scripts injected by innerHTML are inactive, so we have to relocate them
+    // through DOM manipulation to activate their contents.
+    // (Adapted from http://mxr.mozilla.org/mozilla-central/source/browser/base/content/abouthome/aboutHome.js)
+    function activateScriptTags(element) {
+       Array.forEach(element.getElementsByTagName('script'), function(elt) {
+           var relocatedScript = document.createElement('script');
+           relocatedScript.type = 'text/javascript;version=1.8';
+           relocatedScript.text = elt.text;
+           elt.parentNode.replaceChild(relocatedScript, elt);
+       });
+    }
+
     // Listen for clicks on links that point to 'about:accounts' and
     // convert them showFirefoxAccounts Events.
     document.addEventListener('click', function(event) {
@@ -343,9 +353,8 @@ function sendMetric(metric) {
     }
 
     var STATS_URL = 'https://snippets-stats.mozilla.org/foo.html';
-    var snippet_set = document.getElementById('snippet_set');
-    var locale = snippet_set.getAttribute('data-locale');
-    var snippet_id = snippet_set.getAttribute('data-snippet-id');
+    var locale = '{{ locale }}';
+    var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
     var url = STATS_URL + '?snippet_name=' + snippet_id + '&locale=' + locale + '&metric=' + metric;
     var r = new XMLHttpRequest();
     r.open('GET', url);
