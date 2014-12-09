@@ -121,7 +121,9 @@ class SnippetAdmin(BaseSnippetAdmin):
                      'template__name')
     list_filter = BaseSnippetAdmin.list_filter + (
         'template',
+        'exclude_from_search_providers',
     )
+    filter_horizontal = ('exclude_from_search_providers', 'client_match_rules',)
 
     fieldsets = (
         (None, {'fields': ('name', 'priority', 'disabled',
@@ -142,6 +144,10 @@ class SnippetAdmin(BaseSnippetAdmin):
         ('Product channels', {
             'description': 'What channels will this snippet be available in?',
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
+        }),
+        ('Search Providers', {
+            'description': 'Would you like to <strong>exclude</strong> any search providers from this snippet?',
+            'fields': (('exclude_from_search_providers',),)
         }),
         ('Country and Locale', {
             'description': ('What country and locales will this snippet be '
@@ -288,8 +294,13 @@ class UploadedFileAdmin(admin.ModelAdmin):
     snippets.allow_tags = True
 
 
+class SearchProviderAdmin(admin.ModelAdmin):
+    list_display = ('name', 'identifier')
+
+
 admin.site.register(models.Snippet, SnippetAdmin)
 admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
 admin.site.register(models.JSONSnippet, JSONSnippetAdmin)
 admin.site.register(models.UploadedFile, UploadedFileAdmin)
+admin.site.register(models.SearchProvider, SearchProviderAdmin)

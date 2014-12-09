@@ -216,6 +216,9 @@ class Snippet(CachingMixin, models.Model):
     client_match_rules = models.ManyToManyField(
         ClientMatchRule, blank=True, verbose_name='Client Match Rules')
 
+    exclude_from_search_providers = models.ManyToManyField(
+        'SearchProvider', blank=True, verbose_name='Excluded Search Providers')
+
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -241,6 +244,12 @@ class Snippet(CachingMixin, models.Model):
                  ('class', 'snippet-metadata')]
         if self.country:
             attrs.append(('data-country', self.country))
+
+        if self.id:
+            search_engine_identifiers = self.exclude_from_search_providers.values_list('identifier', flat=True)
+            if search_engine_identifiers:
+                attrs.append(('data-exclude-from-search-engines', ','.join(search_engine_identifiers)))
+
         attr_string = ' '.join('{0}="{1}"'.format(key, value) for key, value in
                                attrs)
 
@@ -364,3 +373,16 @@ class UploadedFile(models.Model):
             models.Q(data__contains=self.file.url) |
             models.Q(template__code__contains=self.file.url)
         )
+
+
+class SearchProvider(CachingMixin, models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    identifier = models.CharField(max_length=255)
+
+    objects = CachingManager()
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('id',)
