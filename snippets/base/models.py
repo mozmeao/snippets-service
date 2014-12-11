@@ -246,7 +246,11 @@ class Snippet(CachingMixin, models.Model):
             attrs.append(('data-country', self.country))
 
         if self.id:
-            search_engine_identifiers = self.exclude_from_search_providers.values_list('identifier', flat=True)
+            # Avoid using values_list() because django-cache-machine
+            # does not support it.
+            search_engine_identifiers = [
+                provider.identifier for provider in self.exclude_from_search_providers.all()
+            ]
             if search_engine_identifiers:
                 attrs.append(('data-exclude-from-search-engines', ','.join(search_engine_identifiers)))
 
