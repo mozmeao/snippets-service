@@ -18,6 +18,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django_filters',
     'smuggler',
     'south',
+    'waffle',
 ]
 
 # Because Jinja2 is the default template loader, add any non-Jinja templated
@@ -88,3 +89,7 @@ ALLOWED_HOSTS = lazy(_allowed_hosts, list)()
 
 SNIPPET_SIZE_LIMIT = 200
 SNIPPET_IMAGE_SIZE_LIMIT = 100
+
+SOUTH_MIGRATION_MODULES = {
+    'waffle': 'waffle.south_migrations',
+}
