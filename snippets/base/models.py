@@ -10,9 +10,12 @@ from urlparse import urljoin
 from xml.sax import ContentHandler
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.template.loader import render_to_string
 
 import jingo
 from caching.base import CachingManager, CachingMixin
@@ -82,6 +85,75 @@ Client = namedtuple('Client', (
 # requires either an extra trip to the database/cache or jumping through
 # hoops.
 template_cache = LRUCache(100)
+
+
+class SnippetBundle(object):
+    """
+    Group of snippets to be sent to a particular client configuration.
+    """
+    def __init__(self, client):
+        self.client = client
+        self.storage = OverwriteStorage()
+
+        self._snippets = None
+
+    @property
+    def key(self):
+        """A unique key for this bundle as a sha1 hexdigest."""
+        # Key should consist of snippets that are in the bundle plus any
+        # properties of the client that may change the snippet code
+        # being sent.
+        key_properties = [snippet.id for snippet in self.snippets]
+        key_properties.extend([
+            self.client.startpage_version,
+            self.client.locale,
+        ])
+
+        key_string = '_'.join(unicode(prop) for prop in key_properties)
+        return hashlib.sha1(key_string).hexdigest()
+
+    @property
+    def cache_key(self):
+        return 'bundle_' + self.key
+
+    @property
+    def expired(self):
+        """
+        If True, the code for this bundle should be re-generated before
+        use.
+        """
+        return not cache.get(self.cache_key)
+
+    @property
+    def filename(self):
+        return 'bundles/{0}.html'.format(self.key)
+
+    @property
+    def url(self):
+        return self.storage.url(self.filename)
+
+    @property
+    def snippets(self):
+        # Lazy-load snippets on first access.
+        if self._snippets is None:
+            self._snippets = (Snippet.cached_objects
+                              .filter(disabled=False)
+                              .match_client(self.client)
+                              .order_by('priority')
+                              .select_related('template')
+                              .filter_by_available())
+        return self._snippets
+
+    def generate(self):
+        """Generate and save the code for this snippet bundle."""
+        bundle_content = render_to_string('base/fetch_snippets.html', {
+            'snippets': self.snippets,
+            'client': self.client,
+            'locale': self.client.locale,
+        })
+
+        self.storage.save(self.filename, ContentFile(bundle_content))
+        cache.set(self.cache_key, True, settings.SNIPPET_BUNDLE_TIMEOUT)
 
 
 class SnippetTemplate(CachingMixin, models.Model):

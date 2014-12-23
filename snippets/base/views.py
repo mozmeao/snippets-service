@@ -6,7 +6,7 @@ from distutils.util import strtobool
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import Http404, HttpResponse, HttpResponseBadRequest
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.cache import patch_vary_headers
 from django.utils.functional import lazy
@@ -14,13 +14,13 @@ from django.views.generic import TemplateView
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 
-from commonware.response.decorators import xframe_allow
-
 import django_filters
+import waffle
+from commonware.response.decorators import xframe_allow
 
 from snippets.base.decorators import access_control
 from snippets.base.encoders import SnippetEncoder
-from snippets.base.models import Client, JSONSnippet, Snippet, SnippetTemplate
+from snippets.base.models import Client, JSONSnippet, Snippet, SnippetBundle, SnippetTemplate
 from snippets.base.util import get_object_or_none
 
 
@@ -84,9 +84,25 @@ class JSONSnippetIndexView(IndexView):
         return self.render(request, *args, **kwargs)
 
 
+@cache_control(public=True, max_age=settings.SNIPPET_BUNDLE_TIMEOUT)
+@access_control(max_age=settings.SNIPPET_BUNDLE_TIMEOUT)
+def fetch_pregenerated_snippets(request, **kwargs):
+    """
+    Return a redirect to a pre-generated bundle of snippets for the
+    client. If the bundle in question is expired, re-generate it.
+    """
+    client = Client(**kwargs)
+    bundle = SnippetBundle(client)
+    if bundle.expired:
+        bundle.generate()
+
+    return HttpResponseRedirect(bundle.url)
+
+
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
 @access_control(max_age=HTTP_MAX_AGE)
-def fetch_snippets(request, **kwargs):
+def fetch_render_snippets(request, **kwargs):
+    """Fetch snippets for the client and render them immediately."""
     client = Client(**kwargs)
     matching_snippets = (Snippet.cached_objects
                          .filter(disabled=False)
@@ -106,6 +122,14 @@ def fetch_snippets(request, **kwargs):
     patch_vary_headers(response, ['If-None-Match'])
 
     return response
+
+
+def fetch_snippets(request, **kwargs):
+    """Determine which snippet-fetching method to use."""
+    if waffle.flag_is_active(request, 'serve_pregenerated_snippets'):
+        return fetch_pregenerated_snippets(request, **kwargs)
+    else:
+        return fetch_render_snippets(request, **kwargs)
 
 
 @cache_control(public=True, max_age=HTTP_MAX_AGE)

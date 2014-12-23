@@ -93,3 +93,5 @@ SNIPPET_IMAGE_SIZE_LIMIT = 100
 SOUTH_MIGRATION_MODULES = {
     'waffle': 'waffle.south_migrations',
 }
+
+SNIPPET_BUNDLE_TIMEOUT = 15 * 60  # 15 minutes
