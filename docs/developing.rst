@@ -176,7 +176,7 @@ roughly every other version from that up until the latest released Firefox, and
 probably Nightly as well.
 
 So, for example, if you wanted to support Firefox 26 and up, and the latest
-version was Firefox 30, you'd test Firefo 26, 28, 30, and Nightly.
+version was Firefox 30, you'd test Firefox 26, 28, 30, and Nightly.
 
 What should I test for?
 ^^^^^^^^^^^^^^^^^^^^^^^
