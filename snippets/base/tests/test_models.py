@@ -2,11 +2,11 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test.utils import override_settings
 
-from mock import MagicMock, Mock, patch
-from nose.tools import assert_raises, eq_, ok_
+from mock import ANY, MagicMock, Mock, patch
+from nose.tools import assert_not_equal, assert_raises, eq_, ok_
 from pyquery import PyQuery as pq
 
-from snippets.base.models import Client, UploadedFile, validate_xml
+from snippets.base.models import Client, SnippetBundle, UploadedFile, validate_xml
 from snippets.base.tests import (ClientMatchRuleFactory,
                                  SearchProviderFactory,
                                  SnippetFactory,
@@ -191,7 +191,6 @@ class SnippetTests(TestCase):
                     ))
         eq_(snippet.render().strip(), expected)
 
-
     def test_render_unicode(self):
         variable = SnippetTemplateVariableFactory(name='data')
         template = SnippetTemplateFactory.create(code='{{ data }}',
@@ -273,3 +272,87 @@ class UploadedFileTests(TestCase):
         template = SnippetTemplateFactory.create(code='<foo>{0}</foo>'.format(instance.url))
         more_snippets = SnippetFactory.create_batch(3, template=template)
         eq_(set(instance.snippets), set(list(snippets) + list(more_snippets)))
+
+
+class SnippetBundleTests(TestCase):
+    def setUp(self):
+        self.snippet1, self.snippet2 = SnippetFactory.create_batch(2)
+
+    def _client(self, **kwargs):
+        client_kwargs = dict((key, '') for key in Client._fields)
+        client_kwargs.update(kwargs)
+        return Client(**client_kwargs)
+
+    def test_key_snippets(self):
+        """
+        bundle.key must be different between bundles if they have
+        different snippets.
+        """
+        client = self._client()
+        bundle1 = SnippetBundle(client)
+        bundle1._snippets = [self.snippet1, self.snippet2]
+        bundle2 = SnippetBundle(client)
+        bundle2._snippets = [self.snippet2]
+
+        assert_not_equal(bundle1.key, bundle2.key)
+
+    def test_key_startpage_version(self):
+        """
+        bundle.key must be different between bundles if they have
+        different startpage versions.
+        """
+        client1 = self._client(startpage_version='1')
+        client2 = self._client(startpage_version='2')
+        bundle1 = SnippetBundle(client1)
+        bundle2 = SnippetBundle(client2)
+
+        assert_not_equal(bundle1.key, bundle2.key)
+
+    def test_key_locale(self):
+        """
+        bundle.key must be different between bundles if they have
+        different locales.
+        """
+        client1 = self._client(locale='en-US')
+        client2 = self._client(locale='fr')
+        bundle1 = SnippetBundle(client1)
+        bundle2 = SnippetBundle(client2)
+
+        assert_not_equal(bundle1.key, bundle2.key)
+
+    def test_key_equal(self):
+        client1 = self._client(locale='en-US', startpage_version='4')
+        client2 = self._client(locale='en-US', startpage_version='4')
+        bundle1 = SnippetBundle(client1)
+        bundle1._snippets = [self.snippet1, self.snippet2]
+        bundle2 = SnippetBundle(client2)
+        bundle2._snippets = [self.snippet1, self.snippet2]
+
+        eq_(bundle1.key, bundle2.key)
+
+    def test_generate(self):
+        """
+        bundle.generate should render the snippets, save them to the
+        filesystem, and mark the bundle as not-expired in the cache.
+        """
+        bundle = SnippetBundle(self._client(locale='fr'))
+        bundle.storage = Mock()
+        bundle._snippets = [self.snippet1, self.snippet2]
+
+        with patch('snippets.base.models.cache') as cache:
+            with patch('snippets.base.models.render_to_string') as render_to_string:
+                with self.settings(SNIPPET_BUNDLE_TIMEOUT=10):
+                    render_to_string.return_value = 'rendered snippet'
+                    bundle.generate()
+
+        render_to_string.assert_called_with('base/fetch_snippets.html', {
+            'snippets': [self.snippet1, self.snippet2],
+            'client': bundle.client,
+            'locale': 'fr',
+        })
+        bundle.storage.save.assert_called_with(bundle.filename, ANY)
+        cache.set.assert_called_with(bundle.cache_key, True, 10)
+
+        # Check content of saved file.
+        content_file = bundle.storage.save.call_args[0][1]
+        eq_(content_file.read(), 'rendered snippet')

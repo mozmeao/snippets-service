@@ -109,12 +109,12 @@ class SnippetBundle(object):
             self.client.locale,
         ])
 
-        key_string = '_'.join(unicode(prop) for prop in key_properties)
+        key_string = u'_'.join(unicode(prop) for prop in key_properties)
         return hashlib.sha1(key_string).hexdigest()
 
     @property
     def cache_key(self):
-        return 'bundle_' + self.key
+        return u'bundle_' + self.key
 
     @property
     def expired(self):
@@ -126,7 +126,7 @@ class SnippetBundle(object):
 
     @property
     def filename(self):
-        return 'bundles/{0}.html'.format(self.key)
+        return u'bundles/{0}.html'.format(self.key)
 
     @property
     def url(self):

@@ -9,6 +9,7 @@ from django.test.utils import override_settings
 from funfactory.helpers import urlparams
 from mock import patch
 from nose.tools import eq_, ok_
+from waffle.models import Flag
 
 import snippets.base.models
 from snippets.base import views
@@ -20,7 +21,7 @@ snippets.base.models.CHANNELS = ('release', 'beta', 'aurora', 'nightly')
 snippets.base.models.FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4')
 
 
-class FetchSnippetsTests(TestCase):
+class FetchRenderSnippetsTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.client_items = [
@@ -37,6 +38,9 @@ class FetchSnippetsTests(TestCase):
         ]
         self.client_params = [v[1] for v in self.client_items]
         self.client_kwargs = dict(self.client_items)
+
+        # Ensure the render-immediately view is used.
+        Flag.objects.create(name='serve_pregenerated_snippets', everyone=False)
 
     def test_base(self):
         # Matching snippets.
@@ -343,3 +347,72 @@ class IndexSnippetsTests(TestCase):
         eq_(pagination_range[0], 3)
         eq_(pagination_range[-1], 7)
         eq_(len(pagination_range), 5)
+
+
+class FetchPregeneratedSnippetsTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.request = self.factory.get('/')
+        self.client_kwargs = {
+            'startpage_version': '4',
+            'name': 'Firefox',
+            'version': '23.0a1',
+            'appbuildid': '20130510041606',
+            'build_target': 'Darwin_Universal-gcc3',
+            'locale': 'en-US',
+            'channel': 'nightly',
+            'os_version': 'Darwin 10.8.0',
+            'distribution': 'default',
+            'distribution_version': 'default_version',
+        }
+
+    def test_normal(self):
+        with patch.object(views, 'SnippetBundle') as SnippetBundle:
+            bundle = SnippetBundle.return_value
+            bundle.url = '/foo/bar'
+            bundle.expired = False
+            response = views.fetch_pregenerated_snippets(self.request, **self.client_kwargs)
+
+        eq_(response.status_code, 302)
+        eq_(response['Location'], '/foo/bar')
+
+        # Check for correct client.
+        eq_(SnippetBundle.call_args[0][0].locale, 'en-US')
+
+        # Do not generate bundle when not expired.
+        ok_(not SnippetBundle.return_value.generate.called)
+
+    def test_regenerate(self):
+        """If the bundle has expired, re-generate it."""
+        with patch.object(views, 'SnippetBundle') as SnippetBundle:
+            bundle = SnippetBundle.return_value
+            bundle.url = '/foo/bar'
+            bundle.expired = True
+            response = views.fetch_pregenerated_snippets(self.request, **self.client_kwargs)
+
+        eq_(response.status_code, 302)
+        eq_(response['Location'], '/foo/bar')
+
+        # Since the bundle was expired, ensure it was re-generated.
+        ok_(SnippetBundle.return_value.generate.called)
+
+
+class FetchSnippetsTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.request = self.factory.get('/')
+
+    def test_flag_off(self):
+        Flag.objects.create(name='serve_pregenerated_snippets', everyone=False)
+
+        with patch.object(views, 'fetch_render_snippets') as fetch_render_snippets:
+            eq_(views.fetch_snippets(self.request, foo='bar'), fetch_render_snippets.return_value)
+            fetch_render_snippets.assert_called_with(self.request, foo='bar')
+
+    def test_flag_on(self):
+        Flag.objects.create(name='serve_pregenerated_snippets', everyone=True)
+
+        with patch.object(views, 'fetch_pregenerated_snippets') as fetch_pregenerated_snippets:
+            eq_(views.fetch_snippets(self.request, foo='bar'),
+                fetch_pregenerated_snippets.return_value)
+            fetch_pregenerated_snippets.assert_called_with(self.request, foo='bar')
