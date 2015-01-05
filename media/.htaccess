@@ -1,3 +1,4 @@
 ExpiresActive on
 ExpiresDefault "access plus 15 minutes"
 FileETag MTime
+Header set Access-Control-Allow-Origin "*"
