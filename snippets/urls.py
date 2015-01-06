@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
+from django.views.static import serve as static_serve
 
 from funfactory.monkeypatches import patch
 
@@ -29,8 +30,14 @@ urlpatterns = patterns('',
 
 ## In DEBUG mode, serve media files through Django.
 if settings.DEBUG:
+    # Use custom serve function that adds necessary headers.
+    def serve_media(*args, **kwargs):
+        response = static_serve(*args, **kwargs)
+        response['Access-Control-Allow-Origin'] = '*'
+        return response
+
     urlpatterns += patterns('',
-        url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {
+        url(r'^media/(?P<path>.*)$', serve_media, {
             'document_root': settings.MEDIA_ROOT,
         }),
     ) + staticfiles_urlpatterns()
