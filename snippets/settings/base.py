@@ -87,8 +87,8 @@ ALLOWED_HOSTS = lazy(_allowed_hosts, list)()
 
 # CDN_URL = 'https://snippets.cdn.mozilla.net/'
 
-SNIPPET_SIZE_LIMIT = 200
-SNIPPET_IMAGE_SIZE_LIMIT = 100
+SNIPPET_SIZE_LIMIT = 500
+SNIPPET_IMAGE_SIZE_LIMIT = 250
 
 SOUTH_MIGRATION_MODULES = {
     'waffle': 'waffle.south_migrations',
