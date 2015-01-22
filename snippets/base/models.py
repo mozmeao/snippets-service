@@ -1,3 +1,4 @@
+import copy
 import hashlib
 import json
 import os
@@ -6,6 +7,7 @@ import uuid
 import xml.sax
 from StringIO import StringIO
 from collections import namedtuple
+from datetime import datetime
 from urlparse import urljoin
 from xml.sax import ContentHandler
 
@@ -15,6 +17,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models.manager import Manager
 from django.template.loader import render_to_string
 
 import jingo
@@ -156,6 +159,7 @@ class SnippetBundle(object):
         cache.set(self.cache_key, True, settings.SNIPPET_BUNDLE_TIMEOUT)
 
 
+
 class SnippetTemplate(CachingMixin, models.Model):
     """
     A template for the body of a snippet. Can have multiple variables that the
@@ -258,7 +262,35 @@ class ClientMatchRule(CachingMixin, models.Model):
         return self.description
 
 
-class Snippet(CachingMixin, models.Model):
+class SnippetBaseModel(models.Model):
+    def duplicate(self):
+        snippet_copy = copy.copy(self)
+        snippet_copy.id = None
+        snippet_copy.disabled = True
+        snippet_copy.name = '{0} - {1}'.format(
+            self.name,
+            datetime.strftime(datetime.now(), '%Y.%m.%d %H:%M:%S'))
+        snippet_copy.save()
+
+        for field in self._meta.get_all_field_names():
+            if isinstance(getattr(self, field), Manager):
+                manager = getattr(self, field)
+                if manager.__class__.__name__ == 'RelatedManager':
+                    for itm in manager.all():
+                        itm_copy = copy.copy(itm)
+                        itm_copy.id = None
+                        getattr(snippet_copy, field).add(itm_copy)
+                elif manager.__class__.__name__ == 'ManyRelatedManager':
+                    for snippet in manager.all():
+                        getattr(snippet_copy, field).add(snippet)
+
+        return snippet_copy
+
+    class Meta:
+        abstract = True
+
+
+class Snippet(CachingMixin, SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
     template = models.ForeignKey(SnippetTemplate)
     data = models.TextField(default='{}', validators=[validate_xml])
@@ -359,7 +391,7 @@ class SnippetLocale(CachingMixin, models.Model):
     cached_objects = CachingManager()
 
 
-class JSONSnippet(CachingMixin, models.Model):
+class JSONSnippet(CachingMixin, SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
     priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)

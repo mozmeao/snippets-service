@@ -8,12 +8,31 @@ from pyquery import PyQuery as pq
 
 from snippets.base.models import Client, SnippetBundle, UploadedFile, validate_xml
 from snippets.base.tests import (ClientMatchRuleFactory,
+                                 JSONSnippetFactory,
                                  SearchProviderFactory,
                                  SnippetFactory,
                                  SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory,
                                  TestCase,
                                  UploadedFileFactory)
+
+class DuplicateSnippetMixInTests(TestCase):
+    def _dup_test(self, snippet):
+        snippet.client_match_rules.add(*ClientMatchRuleFactory.create_batch(3))
+        snippet_copy = snippet.duplicate()
+        eq_(snippet_copy.disabled, True)
+        ok_(snippet_copy.id != snippet.id)
+        eq_(snippet_copy.locale_set.count(), 1)
+        ok_(snippet_copy.locale_set.all()[0] != snippet.locale_set.all()[0])
+        eq_(set(snippet_copy.client_match_rules.all()), set(snippet.client_match_rules.all()))
+
+    def test_snippet(self):
+        snippet = SnippetFactory.create()
+        self._dup_test(snippet)
+
+    def test_json_snippet(self):
+        snippet = JSONSnippetFactory.create()
+        self._dup_test(snippet)
 
 
 class ClientMatchRuleTests(TestCase):

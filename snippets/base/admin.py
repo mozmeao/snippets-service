@@ -53,6 +53,15 @@ cmr_to_locales_action.short_description = ('Convert ClientMatchRules '
                                            'to Locale Rules')
 
 
+
+@transaction.commit_on_success
+def duplicate_snippets_action(modeladmin, request, queryset):
+    for snippet in queryset:
+        snippet.duplicate()
+duplicate_snippets_action.short_description = 'Duplicate selected snippets'
+
+
+
 class TemplateNameFilter(admin.AllValuesFieldListFilter):
     def __init__(self, *args, **kwargs):
         super(TemplateNameFilter, self).__init__(*args, **kwargs)
@@ -96,6 +105,7 @@ class BaseSnippetAdmin(BaseModelAdmin):
     save_as = True
 
     filter_horizontal = ('client_match_rules',)
+    actions = (duplicate_snippets_action,)
 
     def save_model(self, request, obj, form, change):
         """Save locale changes as well as the snippet itself."""
@@ -169,7 +179,7 @@ class SnippetAdmin(BaseSnippetAdmin):
         }),
     )
 
-    actions = (cmr_to_locales_action,)
+    actions = (cmr_to_locales_action, duplicate_snippets_action)
 
     class Media:
         css = {
