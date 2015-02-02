@@ -1,3 +1,4 @@
+import json
 import re
 
 from django.contrib import admin
@@ -52,6 +53,15 @@ cmr_to_locales_action.short_description = ('Convert ClientMatchRules '
                                            'to Locale Rules')
 
 
+
+@transaction.commit_on_success
+def duplicate_snippets_action(modeladmin, request, queryset):
+    for snippet in queryset:
+        snippet.duplicate()
+duplicate_snippets_action.short_description = 'Duplicate selected snippets'
+
+
+
 class TemplateNameFilter(admin.AllValuesFieldListFilter):
     def __init__(self, *args, **kwargs):
         super(TemplateNameFilter, self).__init__(*args, **kwargs)
@@ -67,8 +77,10 @@ class BaseSnippetAdmin(BaseModelAdmin):
 
     list_display = (
         'name',
-        'priority',
+        'id',
         'disabled',
+        'text',
+        'locales',
         'publish_start',
         'publish_end',
         'modified',
@@ -84,7 +96,6 @@ class BaseSnippetAdmin(BaseModelAdmin):
     )
     list_editable = (
         'disabled',
-        'priority',
         'publish_start',
         'publish_end'
     )
@@ -94,6 +105,7 @@ class BaseSnippetAdmin(BaseModelAdmin):
     save_as = True
 
     filter_horizontal = ('client_match_rules',)
+    actions = (duplicate_snippets_action,)
 
     def save_model(self, request, obj, form, change):
         """Save locale changes as well as the snippet itself."""
@@ -112,6 +124,9 @@ class BaseSnippetAdmin(BaseModelAdmin):
             # Always saved cloned snippets as disabled.
             request.POST['disabled'] = u'on'
         return super(BaseSnippetAdmin, self).change_view(request, *args, **kwargs)
+
+    def locales(self, obj):
+        return ', '.join([locale.get_locale_display() for locale in obj.locale_set.all()])
 
 
 class SnippetAdmin(BaseSnippetAdmin):
@@ -164,7 +179,7 @@ class SnippetAdmin(BaseSnippetAdmin):
         }),
     )
 
-    actions = (cmr_to_locales_action,)
+    actions = (cmr_to_locales_action, duplicate_snippets_action)
 
     class Media:
         css = {
@@ -175,6 +190,14 @@ class SnippetAdmin(BaseSnippetAdmin):
         if key == 'template__name':
             return True
         return super(SnippetAdmin, self).lookup_allowed(key, value)
+
+    def text(self, obj):
+        text = []
+        data = json.loads(obj.data)
+        text_keys = (obj.template.variable_set
+                        .filter(type=models.SnippetTemplateVariable.TEXT)
+                        .values_list('name', flat=True))
+        return '\n'.join([data[key] for key in text_keys if data[key]])
 
 
 class ClientMatchRuleAdmin(BaseModelAdmin):
