@@ -1,11 +1,54 @@
 Contributing
 ============
 
-Developer Setup
----------------
+Docker Setup
+------------
 
-These instructions assume you have ``git`` and ``pip`` installed. If you don't
-have ``pip`` installed, you can install it with ``easy_install pip``.
+These instructions help you set up a copy of the site using `Docker`_ and
+`fig`_.
+
+1. `Install Docker <https://docs.docker.com/installation/#installation>`_.
+
+2. `Install fig <http://www.fig.sh/install.html>`_.
+
+3. Grab the source code using git::
+
+    $ git clone --recursive git://github.com/mozilla/snippets-service.git
+    $ cd snippets-service
+
+.. note:: Make sure you use ``--recursive`` when checking the repo out! If you
+   didn't, you can load all the submodules with ``git submodule update --init
+   --recursive``.
+
+4. Build the Docker containers using fig::
+
+    $ fig build
+
+5. Run the database migrations to set up the database::
+
+    $ fig run web ./bin/run-migrations.sh
+
+Once you've finished these steps, you should be able to start the site by
+running::
+
+    $ fig up
+
+If you're running Docker directly (via Linux), the site should be available at
+http://localhost:8000. If you're running `boot2docker`_, the site should be
+available on port 8000 at the IP output by running::
+
+    $ boot2docker ip
+
+.. _Docker: https://docs.docker.com/
+.. _fig: http://www.fig.sh/
+.. _boot2docker: http://boot2docker.io/
+
+Local Instance Setup
+--------------------
+
+These instructions will set up an instance of the website running on your
+computer directly, and assume you have ``git`` and ``pip`` installed. If you
+don't have ``pip`` installed, you can install it with ``easy_install pip``.
 
 1. Start by getting the source::
 
@@ -47,9 +90,7 @@ have ``pip`` installed, you can install it with ``easy_install pip``.
 .. _MySQL Installation Documentation: http://dev.mysql.com/doc/refman/5.6/en/installing.html
 
 
-Running the Development Server
-------------------------------
-
-You can launch the development server like so::
+Once you've followed the steps above, you can launch the development server
+like so::
 
     $ python manage.py runserver

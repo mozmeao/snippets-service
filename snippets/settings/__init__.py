@@ -6,6 +6,8 @@ from .base import *
 # Load special settings for CI.
 if os.environ.get('TRAVIS'):
     from .travis import *
+elif os.environ.get('DOCKER'):
+    from .docker import *
 else:
     try:
         from .local import *
