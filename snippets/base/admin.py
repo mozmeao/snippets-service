@@ -197,7 +197,7 @@ class SnippetAdmin(BaseSnippetAdmin):
         text_keys = (obj.template.variable_set
                         .filter(type=models.SnippetTemplateVariable.TEXT)
                         .values_list('name', flat=True))
-        return '\n'.join([data[key] for key in text_keys if data[key]])
+        return '\n'.join([data[key] for key in text_keys if data.get(key)])
 
 
 class ClientMatchRuleAdmin(BaseModelAdmin):
