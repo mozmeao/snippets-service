@@ -144,8 +144,8 @@ Snippet requirements
 - Avoid loading remote resources if possible. For images and other media that
   you must include, use data URIs to include them directly in your snippet
   code.
-- Due to performance concerns, avoid going over 200 kilobytes in filesize for
-  a snippet. Snippets over 200 kilobytes large must be cleared with the
+- Due to performance concerns, avoid going over 500 kilobytes in filesize for
+  a snippet. Snippets over 500 kilobytes large must be cleared with the
   development team first.
 
 .. _testing:
