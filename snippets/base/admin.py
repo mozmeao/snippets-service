@@ -193,10 +193,9 @@ class SnippetAdmin(BaseSnippetAdmin):
         return super(SnippetAdmin, self).lookup_allowed(key, value)
 
     def text(self, obj):
-        text = []
         data = json.loads(obj.data)
         text_keys = (obj.template.variable_set
-                        .filter(type=models.SnippetTemplateVariable.TEXT)
+                        .filter(type=models.SnippetTemplateVariable.BODY)
                         .values_list('name', flat=True))
 
         return ' '.join(wrap('\n'.join([data[key][:500] for key in text_keys if data.get(key)])))
