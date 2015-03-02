@@ -4,7 +4,7 @@
 from . import base
 
 # To extend any settings from settings/base.py here's an example:
-#INSTALLED_APPS = base.INSTALLED_APPS + ['debug_toolbar']
+# INSTALLED_APPS = base.INSTALLED_APPS + ['debug_toolbar']
 
 DATABASES = {
     'default': {
@@ -54,7 +54,7 @@ HMAC_KEYS = {
     #'2012-06-06': 'some secret',
 }
 
-from django_sha2 import get_password_hashers
+from django_sha2 import get_password_hashers  # NOQA
 PASSWORD_HASHERS = get_password_hashers(base.BASE_PASSWORD_HASHERS, HMAC_KEYS)
 
 # Make this unique, and don't share it with anybody.  It cannot be blank.

@@ -159,7 +159,6 @@ class SnippetBundle(object):
         cache.set(self.cache_key, True, settings.SNIPPET_BUNDLE_TIMEOUT)
 
 
-
 class SnippetTemplate(CachingMixin, models.Model):
     """
     A template for the body of a snippet. Can have multiple variables that the
@@ -356,7 +355,8 @@ class Snippet(CachingMixin, SnippetBaseModel):
                 provider.identifier for provider in self.exclude_from_search_providers.all()
             ]
             if search_engine_identifiers:
-                attrs.append(('data-exclude-from-search-engines', ','.join(search_engine_identifiers)))
+                attrs.append(('data-exclude-from-search-engines',
+                              ','.join(search_engine_identifiers)))
 
         attr_string = ' '.join('{0}="{1}"'.format(key, value) for key, value in
                                attrs)

@@ -10,8 +10,8 @@ DATABASES = {
         'PORT': '',
         'OPTIONS': {
             'init_command': 'SET default_storage_engine=InnoDB',
-            'charset' : 'utf8',
-            'use_unicode' : True,
+            'charset': 'utf8',
+            'use_unicode': True,
         },
         'TEST_CHARSET': 'utf8',
         'TEST_COLLATION': 'utf8_general_ci',
@@ -24,7 +24,7 @@ HMAC_KEYS = {
     '2012-06-06': 'some secret',
 }
 
-from django_sha2 import get_password_hashers
+from django_sha2 import get_password_hashers  # NOQA
 PASSWORD_HASHERS = get_password_hashers(base.BASE_PASSWORD_HASHERS, HMAC_KEYS)
 
 # Make this unique, and don't share it with anybody.  It cannot be blank.

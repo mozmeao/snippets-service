@@ -6,7 +6,8 @@ from mock import MagicMock, patch
 from nose.tools import assert_raises, eq_, ok_
 from pyquery import PyQuery as pq
 
-from snippets.base.forms import IconWidget, TemplateDataWidget, TemplateSelect, UploadedFileAdminForm
+from snippets.base.forms import (IconWidget, TemplateDataWidget,
+                                 TemplateSelect, UploadedFileAdminForm)
 from snippets.base.tests import (SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase)
 
