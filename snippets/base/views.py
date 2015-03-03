@@ -10,7 +10,7 @@ from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpRespo
 from django.shortcuts import get_object_or_404, render
 from django.utils.cache import patch_vary_headers
 from django.utils.functional import lazy
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 
@@ -19,7 +19,7 @@ import waffle
 from commonware.response.decorators import xframe_allow
 
 from snippets.base.decorators import access_control
-from snippets.base.encoders import SnippetEncoder
+from snippets.base.encoders import ActiveSnippetsEncoder, JSONSnippetEncoder
 from snippets.base.models import Client, JSONSnippet, Snippet, SnippetBundle, SnippetTemplate
 from snippets.base.util import get_object_or_none
 
@@ -142,7 +142,7 @@ def fetch_json_snippets(request, **kwargs):
                          .match_client(client)
                          .order_by('priority')
                          .filter_by_available())
-    return HttpResponse(json.dumps(matching_snippets, cls=SnippetEncoder),
+    return HttpResponse(json.dumps(matching_snippets, cls=JSONSnippetEncoder),
                         mimetype='application/json')
 
 
@@ -201,3 +201,11 @@ def show_snippet(request, snippet_id):
         'client': PREVIEW_CLIENT,
         'preview': True
     })
+
+
+class ActiveSnippetsView(View):
+    def get(self, request):
+        snippets = (list(Snippet.cached_objects.filter(disabled=False)) +
+                    list(JSONSnippet.cached_objects.filter(disabled=False)))
+        return HttpResponse(json.dumps(snippets, cls=ActiveSnippetsEncoder),
+                            mimetype='application/json')
