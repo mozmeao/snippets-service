@@ -16,6 +16,7 @@ from snippets.base.tests import (ClientMatchRuleFactory,
                                  TestCase,
                                  UploadedFileFactory)
 
+
 class DuplicateSnippetMixInTests(TestCase):
     def _dup_test(self, snippet):
         snippet.client_match_rules.add(*ClientMatchRuleFactory.create_batch(3))

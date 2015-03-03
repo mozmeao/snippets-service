@@ -24,7 +24,8 @@ from snippets.base.models import Client, JSONSnippet, Snippet, SnippetBundle, Sn
 from snippets.base.util import get_object_or_none
 
 
-_http_max_age = lambda: getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 90)
+def _http_max_age():
+    return getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 90)
 HTTP_MAX_AGE = lazy(_http_max_age, str)()
 SNIPPETS_PER_PAGE = 50
 

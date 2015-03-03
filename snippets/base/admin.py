@@ -54,13 +54,11 @@ cmr_to_locales_action.short_description = ('Convert ClientMatchRules '
                                            'to Locale Rules')
 
 
-
 @transaction.commit_on_success
 def duplicate_snippets_action(modeladmin, request, queryset):
     for snippet in queryset:
         snippet.duplicate()
 duplicate_snippets_action.short_description = 'Duplicate selected snippets'
-
 
 
 class TemplateNameFilter(admin.AllValuesFieldListFilter):
@@ -162,7 +160,8 @@ class SnippetAdmin(BaseSnippetAdmin):
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
         }),
         ('Search Providers', {
-            'description': 'Would you like to <strong>exclude</strong> any search providers from this snippet?',
+            'description': ('Would you like to <strong>exclude</strong> '
+                            'any search providers from this snippet?'),
             'fields': (('exclude_from_search_providers',),)
         }),
         ('Country and Locale', {
@@ -193,7 +192,6 @@ class SnippetAdmin(BaseSnippetAdmin):
         return super(SnippetAdmin, self).lookup_allowed(key, value)
 
     def text(self, obj):
-        text = []
         data = json.loads(obj.data)
         text_keys = (obj.template.variable_set
                         .filter(type=models.SnippetTemplateVariable.TEXT)
@@ -251,7 +249,7 @@ class SnippetTemplateAdmin(BaseModelAdmin):
         var_manager = form.instance.variable_set
 
         # Filter out reserved variable names.
-        new_vars = filter(lambda x: not x in RESERVED_VARIABLES, new_vars)
+        new_vars = filter(lambda x: x not in RESERVED_VARIABLES, new_vars)
 
         # Delete variables not in the new set.
         var_manager.filter(~Q(name__in=new_vars)).delete()
