@@ -19,4 +19,5 @@ urlpatterns = patterns(
     url(r'^preview/$', views.preview_snippet, name='base.preview'),
     url(r'^show/(?P<snippet_id>\d+)/$', views.show_snippet, name='base.show'),
     url(r'^json-snippets/', views.JSONSnippetIndexView.as_view(), name='base.index_json'),
+    url(r'^active-snippets.json', views.ActiveSnippetsView.as_view(), name='base.active_snippets'),
 )

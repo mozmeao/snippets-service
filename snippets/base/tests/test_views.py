@@ -416,3 +416,21 @@ class FetchSnippetsTests(TestCase):
             eq_(views.fetch_snippets(self.request, foo='bar'),
                 fetch_pregenerated_snippets.return_value)
             fetch_pregenerated_snippets.assert_called_with(self.request, foo='bar')
+
+
+class ActiveSnippetsViewTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.request = self.factory.get('/')
+
+    def test_base(self):
+        snippets = SnippetFactory.create_batch(2)
+        jsonsnippets = JSONSnippetFactory.create_batch(2)
+        SnippetFactory.create(disabled=True)
+        JSONSnippetFactory.create(disabled=True)
+        response = views.ActiveSnippetsView.as_view()(self.request)
+        eq_(response.get('content-type'), 'application/json')
+        data = json.loads(response.content)
+        eq_(set([snippets[0].id, snippets[1].id,
+                 jsonsnippets[0].id, jsonsnippets[1].id]),
+            set([x['id'] for x in data]))

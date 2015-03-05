@@ -1,13 +1,15 @@
+from datetime import datetime
+
 from mock import patch
 from nose.tools import eq_
 
-from snippets.base.encoders import SnippetEncoder
-from snippets.base.tests import JSONSnippetFactory, TestCase
+from snippets.base.encoders import ActiveSnippetsEncoder, JSONSnippetEncoder
+from snippets.base.tests import JSONSnippetFactory, SnippetFactory, TestCase
 
 
-class SnippetEncoderTests(TestCase):
+class JSONSnippetEncoderTests(TestCase):
     def test_encode_jsonsnippet(self):
-        encoder = SnippetEncoder()
+        encoder = JSONSnippetEncoder()
         data = {'id': 99, 'text': 'test-text',
                 'icon': 'test-icon', 'url': 'test-url',
                 'country': 'us', 'weight': 100}
@@ -17,7 +19,7 @@ class SnippetEncoderTests(TestCase):
         eq_(result, data)
 
     def test_encode_without_country(self):
-        encoder = SnippetEncoder()
+        encoder = JSONSnippetEncoder()
         data = {'id': 99, 'text': 'test-text',
                 'icon': 'test-icon', 'url': 'test-url',
                 'weight': 100}
@@ -27,7 +29,50 @@ class SnippetEncoderTests(TestCase):
 
     @patch('snippets.base.encoders.json.JSONEncoder.default')
     def test_encode_other(self, default_mock):
-        encoder = SnippetEncoder()
+        encoder = JSONSnippetEncoder()
+        data = {'id': 3}
+        encoder.default(data)
+        default_mock.assert_called_with(data)
+
+
+class ActiveSnippetsEncoderTests(TestCase):
+    def test_encode_jsonsnippet(self):
+        encoder = ActiveSnippetsEncoder()
+        now = datetime.now()
+        data = {'id': 99, 'text': 'test-text', 'publish_start': now}
+        snippet = JSONSnippetFactory.build(**data)
+        result = encoder.default(snippet)
+        eq_(result, {'id': 99,
+                     'type': 'JSON Snippet',
+                     'template': 'default',
+                     'publish_start': now,
+                     'publish_end': None,
+                     'on_release': True,
+                     'on_beta': False,
+                     'on_aurora': False,
+                     'on_nightly': False,
+                     })
+
+    def test_encode_snippet(self):
+        encoder = ActiveSnippetsEncoder()
+        now = datetime.now()
+        data = {'id': 99, 'publish_start': now}
+        snippet = SnippetFactory.create(**data)
+        result = encoder.default(snippet)
+        eq_(result, {'id': 99,
+                     'type': 'Desktop Snippet',
+                     'template': snippet.template.id,
+                     'publish_start': now,
+                     'publish_end': None,
+                     'on_release': True,
+                     'on_beta': False,
+                     'on_aurora': False,
+                     'on_nightly': False,
+                     })
+
+    @patch('snippets.base.encoders.json.JSONEncoder.default')
+    def test_encode_other(self, default_mock):
+        encoder = ActiveSnippetsEncoder()
         data = {'id': 3}
         encoder.default(data)
         default_mock.assert_called_with(data)
