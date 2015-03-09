@@ -1,0 +1,30 @@
+{
+    "name": "about:home Snippets Service",
+    "description": "The Snippets Service hosts small chunks of HTML, CSS, and JavaScript that are displayed on about:home in Firefox, among other places.",
+    "repository": {
+        "url": "https://github.com/mozilla/snippets-service/",
+        "license": "BSD 3-Clause",
+        "tests": "https://travis-ci.org/mozilla/snippets-service"
+    },
+    "participate": {
+        "home": "https://abouthome-snippets-service.readthedocs.org/en/latest/",
+        "docs": "https://abouthome-snippets-service.readthedocs.org/en/latest/contributing.html",
+        "irc": "irc://irc.mozilla.org/#snippets",
+        "irc-contacts": ["giorgos", "Osmose"]
+    },
+    "bugs": {
+        "list": "https://bugzilla.mozilla.org/buglist.cgi?resolution=---&product=Snippets",
+        "report": "https://bugzilla.mozilla.org/enter_bug.cgi?product=Snippets"
+    },
+    "urls": {
+        "prod": "https://snippets.mozilla.org/",
+        "stage": "https://snippets.allizom.org/",
+        "dev": "https://snippets-dev.allizom.org/"
+    },
+    "keywords": [
+        "django",
+        "python",
+        "html",
+        "javascript"
+    ]
+}
