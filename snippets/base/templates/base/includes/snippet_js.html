@@ -120,6 +120,16 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
                 }
             );
         }
+        else {
+            // If we don't have the user's country, remove all geolocated snippets.
+            // Bug 1140476
+            snippets = snippets.filter(
+                function(snippet) {
+                    return !snippet.parentNode.dataset.country;
+                }
+            )
+        }
+
 
         // FxAccount is already setup skip snippets that link to
         // about:accounts
