@@ -125,7 +125,12 @@ class BaseSnippetAdmin(BaseModelAdmin):
         return super(BaseSnippetAdmin, self).change_view(request, *args, **kwargs)
 
     def locales(self, obj):
-        return ', '.join([locale.get_locale_display() for locale in obj.locale_set.all()])
+        num_locales = obj.locale_set.count()
+        locale_set = obj.locale_set.all()[:3]
+        active_locales = ', '.join([locale.get_locale_display() for locale in locale_set])
+        if num_locales > 3:
+            active_locales += ' and {0} more.'.format(num_locales - 3)
+        return active_locales
 
 
 class SnippetAdmin(BaseSnippetAdmin):
