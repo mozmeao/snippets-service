@@ -7,6 +7,7 @@
         image: 1,
         smalltext: 2,
         checkbox: 3,
+        body: 4
     };
 
     // Setup Nunjucks
@@ -79,7 +80,7 @@
     SnippetDataWidget.prototype = {
         bindEvents: function() {
             var self = this;
-            
+
             $(document).ready(function() {
                 self.$container.find('img').each(function(_, img) {
                     if (!img.src) return;
@@ -87,7 +88,7 @@
                     var binary = atob(data.replace(/\s/g, ''));
 
                     if (binary.length / 1024 > self.snippetImgSizeThreshold) {
-                        var msg = 'Icon file too large. Consider using a smaller ' + 
+                        var msg = 'Icon file too large. Consider using a smaller ' +
                                   'icon. (Under ' + self.snippetImgSizeThreshold + 'kb)';
                         $(img).siblings('.fileSize').html(msg).css('color', 'red');
                     } else {
@@ -171,7 +172,7 @@
             }
 
             if (file.size / 1024 > self.snippetImgSizeThreshold) {
-                var msg = 'Icon file too large. Consider using a smaller ' + 
+                var msg = 'Icon file too large. Consider using a smaller ' +
                           'icon. (Under ' + self.snippetImgSizeThreshold + 'kb)';
                 $(input).siblings('.fileSize').html(msg).css('color', 'red');
             } else {
@@ -198,6 +199,7 @@
                 var variable = $item.data('variable');
 
                 switch ($item.data('type')) {
+                    case VARIABLE_TYPES.body:
                     case VARIABLE_TYPES.text:
                         data[variable] = $item.find('textarea').val();
                         break;

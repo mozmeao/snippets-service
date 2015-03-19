@@ -199,7 +199,7 @@ class SnippetAdmin(BaseSnippetAdmin):
     def text(self, obj):
         data = json.loads(obj.data)
         text_keys = (obj.template.variable_set
-                        .filter(type=models.SnippetTemplateVariable.TEXT)
+                        .filter(type=models.SnippetTemplateVariable.BODY)
                         .values_list('name', flat=True))
 
         return ' '.join(wrap('\n'.join([data[key][:500] for key in text_keys if data.get(key)])))
