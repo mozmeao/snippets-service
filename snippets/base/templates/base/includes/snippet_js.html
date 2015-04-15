@@ -112,8 +112,8 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
         if (userCountry) {
             snippets = snippets.filter(
                 function(snippet) {
-                    var country = snippet.parentNode.dataset.country;
-                    if (country && country !== userCountry) {
+                    var countries = snippet.parentNode.dataset.countries;
+                    if (countries && countries.split(',').indexOf(userCountry) === -1) {
                         return false;
                     }
                     return true;
@@ -125,7 +125,7 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
             // Bug 1140476
             snippets = snippets.filter(
                 function(snippet) {
-                    return !snippet.parentNode.dataset.country;
+                    return !snippet.parentNode.dataset.countries;
                 }
             )
         }

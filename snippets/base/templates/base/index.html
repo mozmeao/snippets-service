@@ -58,7 +58,7 @@
                   {% endfor %}
                 </select>
               </td>
-              <td>{{ snippet.get_country_display() }}</td>
+              <td>{{ snippet.countries.all()|join(', ') }}</td>
               <td>{{ snippet.publish_start|humanize }}</td>
               <td>{{ snippet.publish_end|humanize }}</td>
             </tr>

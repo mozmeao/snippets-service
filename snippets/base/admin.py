@@ -142,7 +142,7 @@ class SnippetAdmin(BaseSnippetAdmin):
         'template',
         'exclude_from_search_providers',
     )
-    filter_horizontal = ('exclude_from_search_providers', 'client_match_rules',)
+    filter_horizontal = ('exclude_from_search_providers', 'client_match_rules', 'countries')
 
     fieldsets = (
         (None, {'fields': ('name', 'priority', 'disabled',
@@ -170,9 +170,9 @@ class SnippetAdmin(BaseSnippetAdmin):
             'fields': (('exclude_from_search_providers',),)
         }),
         ('Country and Locale', {
-            'description': ('What country and locales will this snippet be '
+            'description': ('What countries and locales will this snippet be '
                             'available in?'),
-            'fields': (('country', 'locales'))
+            'fields': (('countries', 'locales'))
         }),
         ('Client Match Rules', {
             'fields': ('client_match_rules',),

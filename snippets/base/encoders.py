@@ -52,7 +52,7 @@ class ActiveSnippetsEncoder(json.JSONEncoder):
                 'on_aurora': obj.on_aurora,
                 'on_nightly': obj.on_nightly,
                 'locales': list(obj.locale_set.values_list('locale', flat=True)),
-                'countries': [obj.country],
+                'countries': list(obj.countries.values_list('code', flat=True)),
                 'weight': obj.weight,
             }
             return data
