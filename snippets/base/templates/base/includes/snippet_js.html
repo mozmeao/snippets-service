@@ -321,11 +321,16 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
             target = target.parentNode;
         }
         if (target && target.href && target.href.indexOf('about:accounts') === 0) {
-            var event = new CustomEvent(
-                'mozUITour',
-                { bubbles: true, detail: { action:'showFirefoxAccounts', data: {}}}
-            );
-            document.dispatchEvent(event);
+            var snippet_id = document.getElementById('snippet_set').getAttribute('data-snippet-id');
+            var metric = snippet_id + '-about-accounts-click';
+            var fire_event = function() {
+                var event = new CustomEvent(
+                    'mozUITour',
+                    { bubbles: true, detail: { action:'showFirefoxAccounts', data: {}}}
+                );
+                document.dispatchEvent(event);
+            };
+            sendMetric(metric, fire_event);
         }
     }, false);
 
