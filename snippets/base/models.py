@@ -340,7 +340,7 @@ class Snippet(CachingMixin, SnippetBaseModel):
         # Add snippet ID to template variables.
         for key, value in data.items():
             if isinstance(value, basestring):
-                data[key] = value.replace(u'<snippet_id>', unicode(snippet_id))
+                data[key] = value.replace(u'[[snippet_id]]', unicode(snippet_id))
 
         # Use a list for attrs to make the output order predictable.
         attrs = [('data-snippet-id', self.id),

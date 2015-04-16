@@ -240,10 +240,10 @@ class SnippetTests(TestCase):
     def test_render_data_with_snippet_id(self):
         """
         Any strings included in the template context should have the
-        substring "<snippet_id>" replaced with the ID of the snippet.
+        substring "[[snippet_id]]" replaced with the ID of the snippet.
         """
         snippet = SnippetFactory.build(template__code='<p>{{ code }}</p>',
-                                       data='{"code": "snippet id <snippet_id>", "foo": true}')
+                                       data='{"code": "snippet id [[snippet_id]]", "foo": true}')
         snippet.template.render = Mock()
         snippet.render()
         snippet.template.render.assert_called_with({'code': 'snippet id 0', 'snippet_id': 0,
