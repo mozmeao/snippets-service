@@ -172,6 +172,69 @@ The syntax in a snippet is slightly different and uses square brackets `[[snippe
   .. warning:: Beware that in this case spacing matters and `[[ snippet_id ]]` will not work.
 
 
+Custom Metric Pings
+^^^^^^^^^^^^^^^^^^^
+
+Snippet events can be captured and send to a metrics server. By default an `impression` ping gets triggered when a snippet is shown. Pings are sampled and only 10% of the total pings get send to the server.
+
+Snippet developers can send custom pings to capture interactions, clicks and other interesting actions using the `sendMetric` function like this:
+
+
+  .. code-block:: html
+
+     <!-- Use Raw Template to try this out -->
+     <div class="snippet" id="ping-snippet-[[ snippet_id ]]">
+       <p class="message">Foo!</p>
+     </div>
+     <script type="text/javascript">
+       //<![CDATA[
+       (function() {
+         var snippet = document.getElementById('ping-snippet-[[ snippet_id ]]');
+         snippet.addEventListener('show_snippet', function() {
+           (function () {
+             var callback = function() {
+               alert('Success!');
+             };
+             var metric_name = 'success-ping-[[ snippet_id ]]';
+             sendMetric(metric_name, callback);
+           })();
+         }, false);
+       })();
+     //]]>
+     </script>
+
+  .. note:: Callback function is optional.
+
+
+Snippet Block List
+^^^^^^^^^^^^^^^^^^
+
+Snippets can be prevented from showing using a block list. By default the block list is empty and the intention is to allow users to block specific snippets from showing by taking an action. For example a disruptive snippet can include a special `Do not display again` link that adds the snippet into the block list.
+
+
+  .. code-block:: html
+
+     <!-- Use Raw Template to try this out -->
+     <div class="snippet" id="block-snippet-[[snippet_id]]">
+       Foo! <a href="#" id="block-snippet-link">Do not show again</a>
+     </div>
+     <script type="text/javascript">
+       //<![CDATA[
+       (function() {
+         var snippet = document.getElementById('block-snippet-[[snippet_id]]');
+         snippet.addEventListener('show_snippet', function() {
+           (function () {
+             var link = document.getElementById('block-snippet-link');
+             link.onclick = function() {
+               addToBlockList([[snippet_id]]);
+               window.location.reload();
+             }
+           })();
+         }, false);
+       })();
+     //]]>
+     </script>
+
 .. _testing:
 
 Testing

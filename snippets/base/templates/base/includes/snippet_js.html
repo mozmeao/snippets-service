@@ -130,7 +130,6 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
             )
         }
 
-
         // FxAccount is already setup skip snippets that link to
         // about:accounts
         if (isFxAccountSetup()) {
@@ -154,6 +153,18 @@ var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
                 }
             );
         }
+
+        // Exclude snippets in block list.
+        var blockList = getBlockList();
+        snippets = snippets.filter(
+            function (snippet) {
+                var snippet_id = parseInt(snippet.parentNode.getAttribute('data-snippet-id'), 10);
+                if (blockList.indexOf(snippet_id) === -1) {
+                    return true;
+                }
+                return false;
+            }
+        );
 
         // Choose a random snippet from the snippets list.
         if (snippets && snippets.length) {
@@ -393,5 +404,29 @@ function sendMetric(metric, callback) {
     r.send();
     return r;
 }
+
+function popFromBlockList(snippetID) {
+    var blockList = getBlockList();
+    var item = blockList.pop(snippetID);
+    gSnippetsMap.set('blockList', blockList);
+    return item;
+}
+
+function addToBlockList(snippetID) {
+    var blockList = getBlockList();
+    snippetID = parseInt(snippetID, 10);
+    if (blockList.indexOf(snippetID) === -1) {
+        blockList.unshift(snippetID);
+        gSnippetsMap.set('blockList', blockList);
+    }
+}
+
+function getBlockList() {
+    if (gSnippetsMap.get('blockList') === undefined) {
+        gSnippetsMap.set('blockList', []);
+    }
+    return gSnippetsMap.get('blockList');
+}
+
 //]]>
 </script>
