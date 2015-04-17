@@ -19,3 +19,4 @@ tmp/*
 *.mo
 .DS_Store
 media/
+lib/product_details_json/

@@ -174,6 +174,10 @@ class SnippetAdmin(BaseSnippetAdmin):
                             'available in?'),
             'fields': (('country', 'locales'))
         }),
+        ('Firefox Match Rules', {
+            'fields': ('firefox_version_lower_bound',
+                       'firefox_version_upper_bound')
+        }),
         ('Client Match Rules', {
             'fields': ('client_match_rules',),
         }),

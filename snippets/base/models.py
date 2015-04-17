@@ -25,6 +25,9 @@ from caching.base import CachingManager, CachingMixin
 from jinja2 import Markup
 from jinja2.utils import LRUCache
 
+from product_details import product_details
+from product_details.version_compare import Version, version_list
+
 from snippets.base.fields import CountryField, LocaleField, RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 from snippets.base.storage import OverwriteStorage
@@ -40,6 +43,9 @@ SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
                    (150, 'Appear 1.5 times as often as an average snippet'),
                    (200, 'Appear twice as often as an average snippet'),
                    (300, 'Appear three times as often as an average snippet'))
+
+versions = version_list(product_details.firefox_history_development_releases)
+VERSIONS = zip(versions, versions)
 
 
 def validate_xml(data):
@@ -313,6 +319,11 @@ class Snippet(CachingMixin, SnippetBaseModel):
     on_startpage_3 = models.BooleanField(default=True, verbose_name='Version 3')
     on_startpage_4 = models.BooleanField(default=True, verbose_name='Version 4')
 
+    firefox_version_lower_bound = models.CharField(
+        max_length=100, blank=True, null=True, choices=VERSIONS, default='26.0b1')
+    firefox_version_upper_bound = models.CharField(
+        max_length=100, blank=True, null=True, choices=VERSIONS)
+
     weight = models.IntegerField(
         'Prevalence', choices=SNIPPET_WEIGHTS, default=100,
         help_text='How often should this snippet be shown to users?')
@@ -331,6 +342,15 @@ class Snippet(CachingMixin, SnippetBaseModel):
 
     class Meta:
         ordering = ('-modified',)
+
+    def clean(self):
+        lower = self.firefox_version_lower_bound
+        upper = self.firefox_version_upper_bound
+        if lower and upper:
+            if Version(lower) > Version(upper):
+                raise ValidationError(
+                    'The lower bound firefox version cannot be higher than the '
+                    'upper bound')
 
     def render(self):
         data = json.loads(self.data)
