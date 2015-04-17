@@ -61,7 +61,7 @@ class ActiveSnippetsEncoderTests(TestCase):
     def test_encode_snippet(self):
         encoder = ActiveSnippetsEncoder()
         now = datetime.now()
-        data = {'id': 99, 'publish_start': now, 'name': 'Foo bar', 'country': 'us'}
+        data = {'id': 99, 'publish_start': now, 'name': 'Foo bar', 'countries': ['us', 'gr']}
         snippet = SnippetFactory.create(**data)
         result = encoder.default(snippet)
         eq_(result, {'id': 99,
@@ -75,7 +75,7 @@ class ActiveSnippetsEncoderTests(TestCase):
                      'on_aurora': False,
                      'on_nightly': False,
                      'locales': ['en-us'],
-                     'countries': ['us'],
+                     'countries': ['gr', 'us'],
                      'weight': 100
                      })
 

@@ -12,3 +12,5 @@ ENGLISH_COUNTRY_CHOICES = sorted(
      product_details.get_regions('en-US').items()],
     cmp=lambda x, y: cmp(x[1], y[1])
 )
+
+ENGLISH_COUNTRIES = product_details.get_regions('en-US')

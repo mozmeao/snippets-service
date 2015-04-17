@@ -161,10 +161,10 @@ class SnippetTests(TestCase):
 
         data = '{"url": "asdf", "text": "qwer"}'
         snippet = SnippetFactory.create(template=template, data=data,
-                                        country='us', weight=60)
+                                        countries=['us'], weight=60)
 
         expected = ('<div data-snippet-id="{id}" data-weight="60" class="snippet-metadata" '
-                    'data-country="us"><a href="asdf">qwer</a></div>'.format(id=snippet.id))
+                    'data-countries="us"><a href="asdf">qwer</a></div>'.format(id=snippet.id))
         eq_(snippet.render().strip(), expected)
         template.render.assert_called_with({
             'url': 'asdf',
@@ -174,7 +174,7 @@ class SnippetTests(TestCase):
 
     def test_render_no_country(self):
         """
-        If the snippet isn't geolocated, don't include the data-country
+        If the snippet isn't geolocated, don't include the data-countries
         attribute.
         """
         template = SnippetTemplateFactory.create()
@@ -187,6 +187,23 @@ class SnippetTests(TestCase):
         expected = ('<div data-snippet-id="{0}" data-weight="100" class="snippet-metadata">'
                     '<a href="asdf">qwer</a></div>'
                     .format(snippet.id))
+        eq_(snippet.render().strip(), expected)
+
+    def test_render_multiple_countries(self):
+        """
+        Include multiple countries in data-countries
+        """
+        template = SnippetTemplateFactory.create()
+        template.render = Mock()
+        template.render.return_value = '<a href="asdf">qwer</a>'
+
+        data = '{"url": "asdf", "text": "qwer"}'
+        snippet = SnippetFactory.create(template=template, data=data, countries=['us', 'el'])
+
+        expected = (
+            '<div data-snippet-id="{0}" data-weight="100" '
+            'class="snippet-metadata" data-countries="us,el">'
+            '<a href="asdf">qwer</a></div>'.format(snippet.id))
         eq_(snippet.render().strip(), expected)
 
     def test_render_exclude_search_engines(self):
@@ -242,11 +259,13 @@ class SnippetTests(TestCase):
         Any strings included in the template context should have the
         substring "[[snippet_id]]" replaced with the ID of the snippet.
         """
-        snippet = SnippetFactory.build(template__code='<p>{{ code }}</p>',
-                                       data='{"code": "snippet id [[snippet_id]]", "foo": true}')
+        snippet = SnippetFactory.create(
+            template__code='<p>{{ code }}</p>',
+            data='{"code": "snippet id [[snippet_id]]", "foo": true}')
         snippet.template.render = Mock()
         snippet.render()
-        snippet.template.render.assert_called_with({'code': 'snippet id 0', 'snippet_id': 0,
+        snippet.template.render.assert_called_with({'code': 'snippet id {0}'.format(snippet.id),
+                                                    'snippet_id': snippet.id,
                                                     'foo': True})
 
 

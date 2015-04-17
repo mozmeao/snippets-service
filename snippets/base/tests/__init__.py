@@ -56,6 +56,16 @@ class SnippetFactory(BaseSnippetFactory):
     FACTORY_FOR = models.Snippet
     template = factory.SubFactory(SnippetTemplateFactory)
 
+    @factory.post_generation
+    def countries(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            countries = [models.TargetedCountry.objects.get_or_create(code=code)[0]
+                         for code in extracted]
+            self.countries.add(*countries)
+
 
 class JSONSnippetFactory(BaseSnippetFactory):
     FACTORY_FOR = models.JSONSnippet

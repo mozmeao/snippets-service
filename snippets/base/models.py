@@ -25,6 +25,7 @@ from caching.base import CachingManager, CachingMixin
 from jinja2 import Markup
 from jinja2.utils import LRUCache
 
+from snippets.base import ENGLISH_COUNTRIES
 from snippets.base.fields import CountryField, LocaleField, RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 from snippets.base.storage import OverwriteStorage
@@ -298,7 +299,8 @@ class Snippet(CachingMixin, SnippetBaseModel):
     priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)
 
-    country = CountryField('Geolocation Country', blank=True, default='')
+    countries = models.ManyToManyField(
+        'TargetedCountry', blank=True, verbose_name='Targeted Countries')
 
     publish_start = models.DateTimeField(blank=True, null=True)
     publish_end = models.DateTimeField(blank=True, null=True)
@@ -346,10 +348,12 @@ class Snippet(CachingMixin, SnippetBaseModel):
         attrs = [('data-snippet-id', self.id),
                  ('data-weight', self.weight),
                  ('class', 'snippet-metadata')]
-        if self.country:
-            attrs.append(('data-country', self.country))
 
         if self.id:
+            countries = ','.join([country.code for country in self.countries.all()])
+            if countries:
+                attrs.append(('data-countries', countries))
+
             # Avoid using values_list() because django-cache-machine
             # does not support it.
             search_engine_identifiers = [
@@ -492,6 +496,18 @@ class SearchProvider(CachingMixin, models.Model):
 
     def __unicode__(self):
         return self.name
+
+    class Meta:
+        ordering = ('id',)
+
+
+class TargetedCountry(CachingMixin, models.Model):
+    code = CountryField('Geolocation Country', unique=True)
+
+    objects = CachingManager()
+
+    def __unicode__(self):
+        return u'{0} ({1})'.format(ENGLISH_COUNTRIES.get(self.code), self.code)
 
     class Meta:
         ordering = ('id',)
