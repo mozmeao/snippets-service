@@ -199,7 +199,7 @@ class SnippetTemplateVariable(CachingMixin, models.Model):
     CHECKBOX = 3
     BODY = 4
     TYPE_CHOICES = ((BODY, 'Main Text'), (TEXT, 'Text'), (SMALLTEXT, 'Small Text'),
-                    (IMAGE, 'Image'), (CHECKBOX, 'Checkbox') )
+                    (IMAGE, 'Image'), (CHECKBOX, 'Checkbox'))
 
     template = models.ForeignKey(SnippetTemplate, related_name='variable_set')
     name = models.CharField(max_length=255)

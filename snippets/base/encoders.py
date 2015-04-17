@@ -25,6 +25,7 @@ class ActiveSnippetsEncoder(json.JSONEncoder):
         if isinstance(obj, JSONSnippet):
             data = {
                 'id': obj.id,
+                'name': obj.name,
                 'type': 'JSON Snippet',
                 'template': 'default',
                 'publish_start': obj.publish_start,
@@ -33,19 +34,26 @@ class ActiveSnippetsEncoder(json.JSONEncoder):
                 'on_beta': obj.on_beta,
                 'on_aurora': obj.on_aurora,
                 'on_nightly': obj.on_nightly,
+                'locales': list(obj.locale_set.values_list('locale', flat=True)),
+                'countries': [obj.country],
+                'weight': obj.weight,
             }
             return data
         elif isinstance(obj, Snippet):
             data = {
                 'id': obj.id,
+                'name': obj.name,
                 'type': 'Desktop Snippet',
-                'template': obj.template.id,
+                'template': obj.template.name,
                 'publish_start': obj.publish_start,
                 'publish_end': obj.publish_end,
                 'on_release': obj.on_release,
                 'on_beta': obj.on_beta,
                 'on_aurora': obj.on_aurora,
                 'on_nightly': obj.on_nightly,
+                'locales': list(obj.locale_set.values_list('locale', flat=True)),
+                'countries': [obj.country],
+                'weight': obj.weight,
             }
             return data
         elif isinstance(obj, datetime):
