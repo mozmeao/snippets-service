@@ -148,6 +148,30 @@ Snippet requirements
   a snippet. Snippets over 500 kilobytes large must be cleared with the
   development team first.
 
+Helpers
+-------
+
+Accessing snippet id
+^^^^^^^^^^^^^^^^^^^^
+To get the snippet id within a snippet template use `snippet_id` Jinja2 variable like this:
+
+  .. code-block:: html
+
+     <div class="snippet">
+       This is snippet id {{ snippet_id }}.
+     </div>
+
+The syntax in a snippet is slightly different and uses square brackets `[[snippet_id]]`.  Here is an example that uses the `Raw Template`:
+
+  .. code-block:: html
+
+     <div class="snippet">
+       This is snippet id [[snippet_id]].
+     </div>
+
+  .. warning:: Beware that in this case spacing matters and `[[ snippet_id ]]` will not work.
+
+
 .. _testing:
 
 Testing
