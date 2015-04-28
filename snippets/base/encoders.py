@@ -14,8 +14,10 @@ class JSONSnippetEncoder(json.JSONEncoder):
                 'url': obj.url,
                 'weight': obj.weight,
             }
-            if obj.country:
-                data['target_geo'] = obj.country.upper()
+            countries = [country.code.upper() for country in obj.countries.all()]
+            if countries:
+                data['target_geo'] = countries[0]
+                data['countries'] = countries
             return data
         return super(JSONSnippetEncoder, self).default(obj)
 
@@ -34,8 +36,8 @@ class ActiveSnippetsEncoder(json.JSONEncoder):
                 'on_beta': obj.on_beta,
                 'on_aurora': obj.on_aurora,
                 'on_nightly': obj.on_nightly,
-                'locales': list(obj.locale_set.values_list('locale', flat=True)),
-                'countries': [obj.country],
+                'locales': [locale.locale for locale in obj.locale_set.all()],
+                'countries': [country.code for country in obj.countries.all()],
                 'weight': obj.weight,
             }
             return data
@@ -51,8 +53,8 @@ class ActiveSnippetsEncoder(json.JSONEncoder):
                 'on_beta': obj.on_beta,
                 'on_aurora': obj.on_aurora,
                 'on_nightly': obj.on_nightly,
-                'locales': list(obj.locale_set.values_list('locale', flat=True)),
-                'countries': list(obj.countries.values_list('code', flat=True)),
+                'locales': [locale.locale for locale in obj.locale_set.all()],
+                'countries': [country.code for country in obj.countries.all()],
                 'weight': obj.weight,
             }
             return data

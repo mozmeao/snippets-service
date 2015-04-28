@@ -4,17 +4,18 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
-from snippets.base import ENGLISH_COUNTRY_CHOICES
-
 
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        for country_code, country_name in ENGLISH_COUNTRY_CHOICES:
-            orm['base.TargetedCountry'].objects.get_or_create(code=country_code)
+        for snippet in orm['base.JSONSnippet'].objects.exclude(country=''):
+            country = orm['base.TargetedCountry'].objects.get(code=snippet.country)
+            snippet.countries.add(country)
 
     def backwards(self, orm):
-        orm['base.TargetedCountry'].objects.all().delete()
+        for snippet in orm['base.JSONSnippet'].objects.filter(countries__isnull=False):
+            snippet.country = snippet.countries.all()[0].code
+            snippet.save()
 
     models = {
         u'base.clientmatchrule': {
@@ -38,6 +39,7 @@ class Migration(DataMigration):
         u'base.jsonsnippet': {
             'Meta': {'ordering': "('-modified',)", 'object_name': 'JSONSnippet'},
             'client_match_rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['base.ClientMatchRule']", 'symmetrical': 'False', 'blank': 'True'}),
+            'countries': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['base.TargetedCountry']", 'symmetrical': 'False', 'blank': 'True'}),
             'country': ('snippets.base.fields.CountryField', [], {'default': "''", 'max_length': '16', 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'disabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
@@ -73,7 +75,6 @@ class Migration(DataMigration):
             'Meta': {'ordering': "('-modified',)", 'object_name': 'Snippet'},
             'client_match_rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['base.ClientMatchRule']", 'symmetrical': 'False', 'blank': 'True'}),
             'countries': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['base.TargetedCountry']", 'symmetrical': 'False', 'blank': 'True'}),
-            'country': ('snippets.base.fields.CountryField', [], {'default': "''", 'max_length': '16', 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'data': ('django.db.models.fields.TextField', [], {'default': "'{}'"}),
             'disabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
@@ -118,8 +119,8 @@ class Migration(DataMigration):
             'type': ('django.db.models.fields.IntegerField', [], {'default': '0'})
         },
         u'base.targetedcountry': {
-            'Meta': {'object_name': 'TargetedCountry'},
-            'code': ('snippets.base.fields.CountryField', [], {'default': "u'us'", 'max_length': '16'}),
+            'Meta': {'ordering': "('id',)", 'object_name': 'TargetedCountry'},
+            'code': ('snippets.base.fields.CountryField', [], {'default': "u'us'", 'unique': 'True', 'max_length': '16'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'base.uploadedfile': {

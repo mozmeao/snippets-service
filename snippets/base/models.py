@@ -406,7 +406,8 @@ class JSONSnippet(CachingMixin, SnippetBaseModel):
                             help_text='Maximum length 140 characters.')
     url = models.CharField(max_length=500)
 
-    country = CountryField('Geolocation Country', blank=True, default='')
+    countries = models.ManyToManyField(
+        'TargetedCountry', blank=True, verbose_name='Targeted Countries')
 
     publish_start = models.DateTimeField(blank=True, null=True)
     publish_end = models.DateTimeField(blank=True, null=True)
