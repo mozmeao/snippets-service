@@ -34,7 +34,7 @@ How are snippets retrieved by Firefox?
    :caption: Flowchart illustrating the process of downloading a snippet.
 
    load_abouthome[label="User loads\nabout:home"];
-   check_cache_timeout[label="Has it been\n24 hours since\nsnippets were fetched?" shape=diamond];
+   check_cache_timeout[label="Has it been\n4 hours since\nsnippets were fetched?" shape=diamond];
    load_cached_snippets[label="Retrieve snippets from\nIndexedDB" shape=rectangle];
    fetch_snippets[label="Fetch snippets from\nsnippets.mozilla.com" shape=rectangle];
    store_snippets[label="Store new snippets in\nIndexedDB" shape=rectangle];
@@ -50,19 +50,21 @@ How are snippets retrieved by Firefox?
    load_cached_snippets -> insert_snippets;
 
 Firefox maintains a cache of snippet code downloaded from the Snippet Service
-for at least 24 hours since the last download. The cache (and a few other
+for at least 4 hours since the last download. The cache (and a few other
 useful pieces of information) are stored in IndexedDB, and can be accessed by
 code on about:home using a global JavaScript object named ``gSnippetsMap``.
 
 When a user visits about:home, Firefox checks to see when it last downloaded
-new snippet code. If it has been at least 24 hours, Firefox requests new
+new snippet code. If it has been at least 4 hours, Firefox requests new
 snippet code from the Snippet Service and stores it in the cache along with
-the current time. After this, or if it hasn't been 24 hours, Firefox loads the
+the current time. After this, or if it hasn't been 4 hours, Firefox loads the
 snippet code from the cache and injects it directly into about:home.
 
 .. note:: All Firefox does is download snippet code from the service and inject
    it into the page. The rest of the logic behind displaying snippets is
    determined by the snippet code itself, as explained in the next section.
+
+.. note:: Firefox for Android caches snippets for 24 hours.
 
 .. seealso::
 
@@ -112,4 +114,3 @@ Once the code is injected, the included JavaScript:
 
 If no snippets are available, the code falls back to showing default snippets
 included within Firefox itself.
-
