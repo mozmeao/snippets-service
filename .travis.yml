@@ -1,17 +1,20 @@
 language: python
 python:
-- '2.6'
+  - '2.6'
 before_script:
-- mysql -e 'create database snippets character set utf8;'
+  - mysql -e 'create database snippets character set utf8;'
 before_install:
-- git submodule update --init --recursive
-- pip install flake8 requests
-- flake8 snippets --exit-zero | python bin/comment-on-pr.py
+  - git submodule update --init --recursive
+  - pip install flake8 requests
+  - flake8 snippets --exit-zero | python bin/comment-on-pr.py
 install:
-- pip install -r requirements/compiled.txt
-- pip install -r requirements/dev.txt
+  - pip install -r requirements/compiled.txt
+  - pip install -r requirements/dev.txt
 script:
-- python manage.py test
+  - python manage.py test
 env:
   global:
     - TRAVIS_BOT_GITHUB_TOKEN=032783628529705aa6c4a3c79610b0fa593fed21
+cache:
+  directories:
+    - $HOME/.cache/pip
