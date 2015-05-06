@@ -268,6 +268,7 @@ class SnippetTemplateAdmin(BaseModelAdmin):
 class JSONSnippetAdmin(BaseSnippetAdmin):
     form = forms.JSONSnippetAdminForm
     search_fields = ('name', 'client_match_rules__description')
+    filter_horizontal = ('client_match_rules', 'countries')
 
     fieldsets = (
         (None, {'fields': ('name', 'priority', 'disabled',
@@ -292,7 +293,7 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
         ('Country and Locale', {
             'description': ('What country and locales will this snippet be '
                             'available in?'),
-            'fields': (('country', 'locales'))
+            'fields': (('countries', 'locales'))
         }),
         ('Client Match Rules', {
             'fields': ('client_match_rules',),

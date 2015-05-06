@@ -12,10 +12,11 @@ class JSONSnippetEncoderTests(TestCase):
         encoder = JSONSnippetEncoder()
         data = {'id': 99, 'text': 'test-text',
                 'icon': 'test-icon', 'url': 'test-url',
-                'country': 'us', 'weight': 100}
-        snippet = JSONSnippetFactory.build(**data)
+                'countries': ['US', 'GR'], 'weight': 100}
+        snippet = JSONSnippetFactory.create(**data)
         result = encoder.default(snippet)
-        data['target_geo'] = data.pop('country').upper()
+        eq_(result.pop('target_geo'), result.get('countries')[0])
+        eq_(set(result.pop('countries')), set(data.pop('countries')))
         eq_(result, data)
 
     def test_encode_without_country(self):
@@ -40,7 +41,7 @@ class ActiveSnippetsEncoderTests(TestCase):
         encoder = ActiveSnippetsEncoder()
         now = datetime.now()
         data = {'id': 99, 'text': 'test-text', 'publish_start': now,
-                'name': 'Foo bar', 'country': 'us'}
+                'name': 'Foo bar', 'countries': ['us']}
         snippet = JSONSnippetFactory.create(**data)
         result = encoder.default(snippet)
         eq_(result, {'id': 99,

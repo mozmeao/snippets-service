@@ -51,11 +51,6 @@ class BaseSnippetFactory(factory.DjangoModelFactory):
         else:
             self.locale_set.create(locale='en-us')
 
-
-class SnippetFactory(BaseSnippetFactory):
-    FACTORY_FOR = models.Snippet
-    template = factory.SubFactory(SnippetTemplateFactory)
-
     @factory.post_generation
     def countries(self, create, extracted, **kwargs):
         if not create:
@@ -65,6 +60,11 @@ class SnippetFactory(BaseSnippetFactory):
             countries = [models.TargetedCountry.objects.get_or_create(code=code)[0]
                          for code in extracted]
             self.countries.add(*countries)
+
+
+class SnippetFactory(BaseSnippetFactory):
+    FACTORY_FOR = models.Snippet
+    template = factory.SubFactory(SnippetTemplateFactory)
 
 
 class JSONSnippetFactory(BaseSnippetFactory):
