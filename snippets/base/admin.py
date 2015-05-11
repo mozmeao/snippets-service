@@ -137,7 +137,7 @@ class SnippetAdmin(BaseSnippetAdmin):
     form = forms.SnippetAdminForm
 
     search_fields = ('name', 'client_match_rules__description',
-                     'template__name')
+                     'template__name', 'campaign')
     list_filter = BaseSnippetAdmin.list_filter + (
         'template',
         'exclude_from_search_providers',
