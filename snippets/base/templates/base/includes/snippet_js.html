@@ -67,10 +67,13 @@ var SNIPPET_METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html';
         }
 
         var show_snippet_id = 'unknown';
+        var show_snippet_campaign = '';
         if (metaParent) {
             show_snippet_id = metaParent.dataset.snippetId || 'unknown';
+            show_snippet_campaign = metaParent.dataset.campaign || '';
         }
         document.getElementById('snippet_set').setAttribute('data-snippet-id', show_snippet_id);
+        document.getElementById('snippet_set').setAttribute('data-campaign', show_snippet_campaign);
         sendImpression();
 
         // Trigger show_snippet event on snippet node.
@@ -397,9 +400,11 @@ function sendMetric(metric, callback) {
 
     var snippet_set = document.getElementById('snippet_set');
     var locale = snippet_set.getAttribute('data-locale');
-    var userCountry = snippet_set.getAttribute('data-user-country');
+    var userCountry = snippet_set.getAttribute('data-user-country') || '';
+    var campaign = snippet_set.getAttribute('data-campaign') || '';
     var snippet_id = snippet_set.getAttribute('data-snippet-id');
-    var url = SNIPPET_METRICS_URL + '?snippet_name=' + snippet_id + '&locale=' + locale + '&country=' + userCountry + '&metric=' + metric;
+    var url = (SNIPPET_METRICS_URL + '?snippet_name=' + snippet_id +
+               '&locale=' + locale + '&country=' + userCountry + '&metric=' + metric + '&campaign=' + campaign);
     var r = new XMLHttpRequest();
     r.open('GET', url);
     if (callback) {

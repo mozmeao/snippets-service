@@ -145,7 +145,7 @@ class SnippetAdmin(BaseSnippetAdmin):
     filter_horizontal = ('exclude_from_search_providers', 'client_match_rules', 'countries')
 
     fieldsets = (
-        (None, {'fields': ('name', 'priority', 'disabled',
+        (None, {'fields': ('name', 'priority', 'disabled', 'campaign',
                            'created', 'modified')}),
         ('Content', {
             'fields': ('template', 'data'),
