@@ -1,36 +1,37 @@
 <style type="text/css">
-#snippetContainer div.snippet {
-  display: none;
-}
-
-#snippetContainer div.snippet img.icon {
-  margin: -0.75em 1em 0 0;
-  float: left;
-}
-
-{% if client and client.startpage_version > 1 %}
-  .snippet {
-    position: relative;
-  }
-
-  .snippet .icon {
-    position: absolute;
-    right: 400px;
-    top: 5px;
-  }
-
-  .snippet p {
-    display: table-cell;
-    height: 40px;
-    padding-left: 80px;
-    vertical-align: middle;
-    width: 400px;
-  }
-{% endif %}
-
-{% if preview %}
- #searchContainer form {
-     margin-bottom: 0px;
+ #snippetContainer div.snippet {
+     display: none;
  }
-{% endif %}
+
+ #snippetContainer div.snippet img.icon {
+     margin: -0.75em 1em 0 0;
+     float: left;
+ }
+
+ {% if client and client.startpage_version > 1 %}
+   .snippet {
+       position: relative;
+   }
+
+   .snippet .icon {
+       position: absolute;
+       right: 400px;
+       top: 5px;
+       height: 50px;
+   }
+
+   .snippet p {
+       display: table-cell;
+       height: 40px;
+       padding-left: 80px;
+       vertical-align: middle;
+       width: 400px;
+   }
+ {% endif %}
+
+ {% if preview %}
+   #searchContainer form {
+       margin-bottom: 0px;
+   }
+ {% endif %}
 </style>

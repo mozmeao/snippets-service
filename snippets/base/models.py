@@ -325,8 +325,9 @@ class Snippet(CachingMixin, SnippetBaseModel):
     exclude_from_search_providers = models.ManyToManyField(
         'SearchProvider', blank=True, verbose_name='Excluded Search Providers')
 
-    campaign = models.CharField(max_length=255, blank=True, default='',
-                                help_text='Optional campaign name. Will be added in the stats ping.')
+    campaign = models.CharField(
+        max_length=255, blank=True, default='',
+        help_text='Optional campaign name. Will be added in the stats ping.')
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
