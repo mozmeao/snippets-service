@@ -163,14 +163,28 @@ class SnippetTests(TestCase):
         snippet = SnippetFactory.create(template=template, data=data,
                                         countries=['us'], weight=60)
 
-        expected = ('<div data-snippet-id="{id}" data-weight="60" class="snippet-metadata" '
-                    'data-countries="us"><a href="asdf">qwer</a></div>'.format(id=snippet.id))
+        expected = ('<div data-snippet-id="{id}" data-weight="60" data-campaign="" '
+                    'class="snippet-metadata" data-countries="us">'
+                    '<a href="asdf">qwer</a></div>'.format(id=snippet.id))
         eq_(snippet.render().strip(), expected)
         template.render.assert_called_with({
             'url': 'asdf',
             'text': 'qwer',
             'snippet_id': snippet.id
         })
+
+    def test_render_campaign(self):
+        template = SnippetTemplateFactory.create()
+        template.render = Mock()
+        template.render.return_value = '<a href="asdf">qwer</a>'
+
+        data = '{"url": "asdf", "text": "qwer"}'
+        snippet = SnippetFactory.create(template=template, data=data, campaign='foo')
+
+        expected = ('<div data-snippet-id="{id}" data-weight="100" '
+                    'data-campaign="foo" class="snippet-metadata">'
+                    '<a href="asdf">qwer</a></div>'.format(id=snippet.id))
+        eq_(snippet.render().strip(), expected)
 
     def test_render_no_country(self):
         """
@@ -184,7 +198,8 @@ class SnippetTests(TestCase):
         data = '{"url": "asdf", "text": "qwer"}'
         snippet = SnippetFactory.create(template=template, data=data)
 
-        expected = ('<div data-snippet-id="{0}" data-weight="100" class="snippet-metadata">'
+        expected = ('<div data-snippet-id="{0}" data-weight="100" '
+                    'data-campaign="" class="snippet-metadata">'
                     '<a href="asdf">qwer</a></div>'
                     .format(snippet.id))
         eq_(snippet.render().strip(), expected)
@@ -201,7 +216,7 @@ class SnippetTests(TestCase):
         snippet = SnippetFactory.create(template=template, data=data, countries=['us', 'el'])
 
         expected = (
-            '<div data-snippet-id="{0}" data-weight="100" '
+            '<div data-snippet-id="{0}" data-weight="100" data-campaign="" '
             'class="snippet-metadata" data-countries="us,el">'
             '<a href="asdf">qwer</a></div>'.format(snippet.id))
         eq_(snippet.render().strip(), expected)
@@ -220,7 +235,7 @@ class SnippetTests(TestCase):
         search_providers = SearchProviderFactory.create_batch(2)
         snippet.exclude_from_search_providers.add(*search_providers)
 
-        expected = ('<div data-snippet-id="{id}" data-weight="100" '
+        expected = ('<div data-snippet-id="{id}" data-weight="100" data-campaign="" '
                     'class="snippet-metadata" data-exclude-from-search-engines="{engines}">'
                     '<a href="asdf">qwer</a></div>'.format(
                         id=snippet.id,
