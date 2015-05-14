@@ -45,6 +45,7 @@
 .template-data-widget img {
     display: inline-block;
     border: 1px solid #DDD;
+    height: 50px;
 }
 
 .snippet-preview-container {
