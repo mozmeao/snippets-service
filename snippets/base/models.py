@@ -107,7 +107,8 @@ class SnippetBundle(object):
         # Key should consist of snippets that are in the bundle plus any
         # properties of the client that may change the snippet code
         # being sent.
-        key_properties = [snippet.id for snippet in self.snippets]
+        key_properties = ['{id}-{date}'.format(id=snippet.id, date=snippet.modified.isoformat())
+                          for snippet in self.snippets]
         key_properties.extend([
             self.client.startpage_version,
             self.client.locale,
@@ -130,7 +131,7 @@ class SnippetBundle(object):
 
     @property
     def filename(self):
-        return u'bundles/{0}.html'.format(self.key)
+        return u'bundles/bundle_{0}.html'.format(self.key)
 
     @property
     def url(self):

@@ -1,4 +1,7 @@
 ExpiresActive on
-ExpiresDefault "access plus 15 minutes"
 FileETag MTime
+ExpiresDefault "access plus 15 minutes"
+<FilesMatch "^bundle_.+\.html$">
+ExpiresDefault "access plus 1 month"
+</FilesMatch>
 Header set Access-Control-Allow-Origin "*"
