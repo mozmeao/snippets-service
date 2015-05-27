@@ -1,0 +1,4 @@
+ExpiresActive on
+ExpiresDefault "access plus 1 month"
+FileETag MTime
+Header set Access-Control-Allow-Origin "*"
