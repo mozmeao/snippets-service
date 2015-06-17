@@ -214,6 +214,9 @@ class SnippetTemplateVariable(CachingMixin, models.Model):
     def __unicode__(self):
         return u'{0}: {1}'.format(self.template.name, self.name)
 
+    class Meta:
+        ordering = ('name',)
+
 
 class ClientMatchRule(CachingMixin, models.Model):
     """Defines a rule that matches a snippet to certain clients."""
