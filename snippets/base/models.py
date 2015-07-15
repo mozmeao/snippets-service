@@ -157,6 +157,8 @@ class SnippetBundle(object):
             'locale': self.client.locale,
         })
 
+        if isinstance(bundle_content, unicode):
+            bundle_content = bundle_content.encode('utf-8')
         self.storage.save(self.filename, ContentFile(bundle_content))
         cache.set(self.cache_key, True, settings.SNIPPET_BUNDLE_TIMEOUT)
 
