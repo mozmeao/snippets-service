@@ -22,3 +22,4 @@ Contents
    overview
    developing
    contributing
+   data_collection
