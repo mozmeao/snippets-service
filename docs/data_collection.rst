@@ -1,99 +1,146 @@
 Data Collection
 ===============
 
-This document describes how snippets data is collected, stored and used.
-
-Snippets follows Mozilla's established best practices for data collection
-and storage of personally identifiable information.
-
-Data Collection: Impressions
-----------------------------
-
-Immpression data is sampled at a rate of ~10%. For a tracked impression the following
-information is sent to the stats server.
-
-.. code-block:: json
-
-    snippet_name
-    locale
-    country
-    metric
-    campaign
+The Snippets Service and the code that it embeds onto about:home collect data
+about user interaction with snippets in order to help us determine the
+effectiveness of certain types of snippets and measure whether a specific
+snippet is successful. This document outlines the types of data we collect and
+how it is handled.
 
 
-This information is sent via ajax request to https://snippets-stats.mozilla.org/ . Metric for the above
-will always be `impression`.
+Retrieving Snippets
+-------------------
+
+The :doc:`overview` document describes how Firefox retrieves snippets. The
+actual URL that Firefox uses for fetching snippets can be found under the
+`about:config`_ preference ``browser.aboutHomeSnippets.updateUrl`` and defaults
+to::
+
+   https://snippets.cdn.mozilla.net/%STARTPAGE_VERSION%/%NAME%/%VERSION%/%APPBUILDID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%/%OS_VERSION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/
+
+The names surrounded by ``%`` symbols are special values that Firefox replaces
+with information about the user's browser.
+
+``STARTPAGE_VERSION``
+   A hard-coded number within Firefox specifying which version of about:home is
+   retrieving snippets. We sometimes increase this when about:home changes in a
+   way that may break certain snippets.
+
+   Example: ``1``
+``NAME``
+   The name of the product being used.
+
+   Example: ``Firefox``
+``VERSION``
+   The Firefox version number currently being used.
+
+   Example: ``29.0.1``
+``APPBUILDID``
+   A string uniquely identifying the build of Firefox in use, usually in the
+   form of the date the build occurred with a number appended.
+
+   Example: ``2007083015``
+``BUILD_TARGET``
+   A string describing the platform and configuration used when building
+   Firefox.
+
+   Example: ``Darwin_x86-gcc3``
+``LOCALE``
+   The locale that the current Firefox was built for. We use this for showing
+   snippets in different languages only to users who can read that language.
+
+   Example: ``en-US``
+``CHANNEL``
+   The release channel for the current Firefox. This is typically one of
+   ``release``, ``beta``, ``aurora``, or ``nightly``.
+
+   Example: ``aurora``
+``OS_VERSION``
+   A string describing the operating system that this Firefox was built for.
+
+   Example: ``Darwin%208.10.1``
+``DISTRIBUTION``
+   A string used to describe custom distributions of Firefox, such as when
+   providing custom builds with partners. This is set to ``default`` for most
+   instances of Firefox.
+
+   Example: ``default``
+``DISTRIBUTION_VERSION``
+   Version of the customized distribution. This is also ``default`` for most
+   instances of Firefox.
+
+   Example: ``default``
+
+.. _about:config: http://kb.mozillazine.org/About:config
 
 
-Data Collection: Clicks & Events
---------------------------------
+Metrics
+-------
 
-Snippets may contain a link to a Mozilla destination. When they do the link may be constructed
-with UTM parameters that are used in Google Analytics. The site they land on (example: mozilla.org)
-reports these parameters to Google.
+Snippet code, which is executed on about:home, sends HTTP requests to a server
+located at https://snippets-stats.mozilla.org whenever an event occurs that we
+would like to measure. These requests are sampled at a rate of 10%, meaning that
+only 10% of the time an event occurs will a request be made.
 
-This link when clicked sends the information to Google. An example links is:
+Requests sent to snippets-stats.mozilla.org contain the following data in
+addition to the normal data available from an HTTP request:
 
-.. code-block:: json
-
-    https://www.mozilla.org/firefox/sync/?utm_source=desktop-snippet&utm_medium=snippet&utm_content=sync&utm_term=5274&utm_campaign=desktop&sample_rate=0.1&snippet_name=5274
-
-Snippets may also send specific events to our data warehouse. An example use is capturing that a
-user clicked "play" on a video. The format of this request is the same as for impressions,
-the `metric` value being the custom event. This data is sampled at ~0.1% (confirm).
-
-
-.. note:: The following is proposed:
-
-All href's contained in a Snippet will automatically send tracking information
-to our data warehouse when cicked. This information is not sampled and will contain the
-following data:
-
-.. code-block:: json
-
-    snippet_name
-    locale
-    country
-    metric
-    campaign
+Snippet Name
+   Unique name referring to the snippet that was being viewed when the request
+   was sent.
+Locale
+   The locale of the current Firefox instance (the same locale value described
+   in the snippet URL from the previous section).
+Country
+   The country code corresponding to the country the user is currently located
+   in. This is determined via the user's IP address and is cached locally within
+   Firefox for 30 days. This value may be empty in cases where we can't retrieve
+   the user's country.
+Metric
+   A string describing the type of event being measured, such as a snippet
+   impression or a link click.
+Campaign
+   A string describing the snippet campaign this snippet is related to. We use
+   this to help group metrics across multiple snippets related to a single
+   campaign. This value may be empty.
 
 
-Metric for the above will always be `click`.
-
-.. note:: End of proposal.
-
-Data Storage & Processing
+Types of Metrics Gathered
 -------------------------
 
-Impression & Event data is stored in our "data warehouse". Tableau is used as a graphical front-end
-for the data, but it does not store the data.
+The following is a non-exhaustive list of the types of events that we collect
+data for as described in the previous section:
 
-The data warehouse stores the following:
+Impressions
+~~~~~~~~~~~
 
-.. code-block:: json
+An impression is whenever a user is shown a specific snippet.
 
-    date
-    user agent family
-    user agent major version
-    OS family
-    country code
-    snippet ID
-    locale
-    metric
-    user_country
-    impression count
+about:accounts Clicks
+~~~~~~~~~~~~~~~~~~~~~
 
-Impression count is the aggregated count of all the records that matched all the other fields.
+Whenever a link in a snippet points to about:accounts, we trigger an event when
+it is clicked.
 
-In addition to the above the logs from snippets-stats contain IP addresses. The PII
-for this data is stored according to the following rules:
+Video Plays, Pauses, Replays
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. IP address is kept for min 15 days max 60 days
-2. Daily IP address is anonymized to countries, this is kept for 60 days
+Some snippets allow users to view videos. Some of these snippets trigger events
+when the video is played or paused, when the end of the video is reached, or
+when the user replays the video after it finishes.
+
+Social Sharing
+~~~~~~~~~~~~~~
+
+Some snippets contain popup windows to share content on social networks, such as
+Facebook or Twitter. Most of these snippets trigger an event when the user
+launches the popup window.
 
 
 Google Analytics
 ----------------
 
-Snippets and about:home do not report to Google Analytics directly. No JS from Google Analytics
-is loaded.
+Some Mozilla websites use Google Analytics to collect data about user behavior
+so that we can improve our sites. Neither the Snippets Service nor the code on
+about:home use Google Analytics directly, and Google Analytics is never loaded
+within about:home.
