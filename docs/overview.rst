@@ -31,7 +31,6 @@ How are snippets retrieved by Firefox?
 --------------------------------------
 
 .. digraph:: snippet_download_flow
-   :caption: Flowchart illustrating the process of downloading a snippet.
 
    load_abouthome[label="User loads\nabout:home"];
    check_cache_timeout[label="Has it been\n4 hours since\nsnippets were fetched?" shape=diamond];
