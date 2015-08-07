@@ -117,11 +117,12 @@ Impressions
 
 An impression is whenever a user is shown a specific snippet.
 
-about:accounts Clicks
-~~~~~~~~~~~~~~~~~~~~~
+Snippet Clicks
+~~~~~~~~~~~~~~
 
-Whenever a link in a snippet points to about:accounts, we trigger an event when
-it is clicked.
+Whenever a link in a snippet is clicked, we trigger an event that notes which
+particular link was clicked. This includes links that may trigger an action
+besides opening up a new page, such as links that trigger browser menus.
 
 Video Plays, Pauses, Replays
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
