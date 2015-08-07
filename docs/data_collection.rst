@@ -83,8 +83,8 @@ would like to measure. These requests are sampled at a rate of 10%, meaning that
 only 10% of the time an event occurs will a request be made.
 
 Requests sent to snippets-stats.mozilla.org contain the following data (sent as
-JSON in the body of the request) in addition to the normal data available from
-an HTTP request:
+URL parameters in the query string) in addition to the normal data available
+from an HTTP request:
 
 Snippet Name
    Unique name referring to the snippet that was being viewed when the request
@@ -117,11 +117,12 @@ Impressions
 
 An impression is whenever a user is shown a specific snippet.
 
-about:accounts Clicks
-~~~~~~~~~~~~~~~~~~~~~
+Snippet Clicks
+~~~~~~~~~~~~~~
 
-Whenever a link in a snippet points to about:accounts, we trigger an event when
-it is clicked.
+Whenever a link in a snippet is clicked, we trigger an event that notes which
+particular link was clicked. This includes links that may trigger an action
+besides opening up a new page, such as links that trigger browser menus.
 
 Video Plays, Pauses, Replays
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
