@@ -85,6 +85,7 @@ var SNIPPET_METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html';
         var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
                           show_snippet_id);
         modifyLinks(show_snippet.getElementsByTagName('a'), parameters);
+        addSnippetBlockLinks(show_snippet.getElementsByClassName('block-snippet-button'));
     } else {
         showDefaultSnippets();
     }
@@ -316,6 +317,21 @@ var SNIPPET_METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html';
             var fragment = link.href.substring(fragment_position);
 
             link.href = href + delimeter + parameters + fragment;
+        }
+    }
+
+    // Add links to buttons that block snippets.
+    function addSnippetBlockLinks(elements) {
+        var snippet_id = document.getElementById('snippet_set').getAttribute('data-snippet-id');
+        var blockSnippet = function (event) {
+            event.preventDefault();
+            addToBlockList(snippet_id);
+            sendMetric('snippet-blocked', function() { window.location.reload(); })
+        };
+
+        for (var k = 0; k < elements.length; k++) {
+            var button = elements[k];
+            button.addEventListener('click', blockSnippet);
         }
     }
 
