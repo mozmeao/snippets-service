@@ -14,7 +14,7 @@ Using the staging server
 In order to develop a snippet properly, you must add your snippet to a test
 instance of the snippet service. You may either user the staging instance of
 snippets at https://snippets.allizom.org, or you may set up a local instance of
-the snippets service using the :doc:`installation documentation <install>`.
+the snippets service using the :doc:`installation documentation <contributing>`.
 
 To get access to the staging server, ask the snippets team via the bug you've
 filed in Bugzilla.
@@ -209,8 +209,17 @@ Snippet developers can send custom pings to capture interactions, clicks and oth
 Snippet Block List
 ^^^^^^^^^^^^^^^^^^
 
-Snippets can be prevented from showing using a block list. By default the block list is empty and the intention is to allow users to block specific snippets from showing by taking an action. For example a disruptive snippet can include a special `Do not display again` link that adds the snippet into the block list.
+Snippets can be prevented from showing using a block list. By default the block list is empty and the intention is to allow users to block specific snippets from showing by taking an action. Snippet service automatically assigns the block functionality to all elements of snippet with class `block-snippet-button`. For example a disruptive snippet can include a special `Do not display again` link that adds the snippet into the block list:
 
+  .. code-block:: html
+
+     <!-- Use Raw Template to try this out -->
+     <div class="snippet" id="block-snippet-[[snippet_id]]">
+       Foo! <a href="#" class="block-snippet-button">Do not show again</a>
+     </div>
+
+
+If you need more control you can directly access the low-level function `addToBlockList`:
 
   .. code-block:: html
 
@@ -234,6 +243,15 @@ Snippets can be prevented from showing using a block list. By default the block 
        })();
      //]]>
      </script>
+
+  .. note::
+     In this case we don't utilize the special `block-snippet-button` class.
+
+
+In bug `1172579`_ close button assets are provided to build a image
+button in your snippet. Refer to the `simple snippet`_ code on how to
+do this.
+
 
 .. _testing:
 
@@ -289,3 +307,5 @@ person for review. If your snippet is already on the staging server, include
 the URL for editing it to make it easier for the reviewer to test it.
 
 .. _snippets Github repo: https://github.com/mozilla/snippets
+.. _1172579: https://bugzilla.mozilla.org/show_bug.cgi?id=1172579
+.. _simple snippet: https://github.com/mozilla/snippets/blob/master/templates/simple-snippet.html
