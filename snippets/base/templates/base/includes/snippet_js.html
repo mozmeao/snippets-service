@@ -50,6 +50,7 @@ var SNIPPET_METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html';
     }
 
     if (show_snippet) {
+        var snippet_set = document.getElementById('snippet_set');
         show_snippet.style.display = 'block';
 
         try {
@@ -72,20 +73,26 @@ var SNIPPET_METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html';
             show_snippet_id = metaParent.dataset.snippetId || 'unknown';
             show_snippet_campaign = metaParent.dataset.campaign || '';
         }
-        document.getElementById('snippet_set').setAttribute('data-snippet-id', show_snippet_id);
-        document.getElementById('snippet_set').setAttribute('data-campaign', show_snippet_campaign);
+        snippet_set.setAttribute('data-snippet-id', show_snippet_id);
+        snippet_set.setAttribute('data-campaign', show_snippet_campaign);
         sendImpression();
 
         // Trigger show_snippet event on snippet node.
         var evt = document.createEvent('Event');
         evt.initEvent('show_snippet', true, true);
-        show_snippet.dispatchEvent(evt);
 
-        // Add sample rate and snippet ID to currently displayed links.
-        var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
-                          show_snippet_id);
-        modifyLinks(show_snippet.getElementsByTagName('a'), parameters);
-        addSnippetBlockLinks(show_snippet.getElementsByClassName('block-snippet-button'));
+        // By the time show_snippet event reaches snippet_set the snippet
+        // will have finished initializing and altering the DOM. It's the
+        // time to modifyLinks() and addSnippetBlockLinks().
+        snippet_set.addEventListener('show_snippet', function(event) {
+            var topSection = document.getElementById('topSection');
+            // Add sample rate and snippet ID to currently displayed links.
+            var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
+                              show_snippet_id);
+            modifyLinks(topSection.getElementsByTagName('a'), parameters);
+            addSnippetBlockLinks(topSection.getElementsByClassName('block-snippet-button'));
+        });
+        show_snippet.dispatchEvent(evt);
     } else {
         showDefaultSnippets();
     }
