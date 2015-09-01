@@ -183,19 +183,19 @@ Snippet developers can send custom pings to capture interactions, clicks and oth
   .. code-block:: html
 
      <!-- Use Raw Template to try this out -->
-     <div class="snippet" id="ping-snippet-[[ snippet_id ]]">
+     <div class="snippet" id="ping-snippet-[[snippet_id]]">
        <p class="message">Foo!</p>
      </div>
      <script type="text/javascript">
        //<![CDATA[
        (function() {
-         var snippet = document.getElementById('ping-snippet-[[ snippet_id ]]');
+         var snippet = document.getElementById('ping-snippet-[[snippet_id]]');
          snippet.addEventListener('show_snippet', function() {
            (function () {
              var callback = function() {
                alert('Success!');
              };
-             var metric_name = 'success-ping-[[ snippet_id ]]';
+             var metric_name = 'success-ping-[[snippet_id]]';
              sendMetric(metric_name, callback);
            })();
          }, false);
