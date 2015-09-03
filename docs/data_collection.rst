@@ -82,8 +82,9 @@ located at https://snippets-stats.mozilla.org whenever an event occurs that we
 would like to measure. These requests are sampled at a rate of 10%, meaning that
 only 10% of the time an event occurs will a request be made.
 
-Requests sent to snippets-stats.mozilla.org contain the following data in
-addition to the normal data available from an HTTP request:
+Requests sent to snippets-stats.mozilla.org contain the following data (sent as
+JSON in the body of the request) in addition to the normal data available from
+an HTTP request:
 
 Snippet Name
    Unique name referring to the snippet that was being viewed when the request
@@ -108,8 +109,8 @@ Campaign
 Types of Metrics Gathered
 -------------------------
 
-The following is a non-exhaustive list of the types of events that we collect
-data for as described in the previous section:
+The following is a list of the types of events that we collect data for as
+described in the previous section:
 
 Impressions
 ~~~~~~~~~~~
@@ -135,6 +136,24 @@ Social Sharing
 Some snippets contain popup windows to share content on social networks, such as
 Facebook or Twitter. Most of these snippets trigger an event when the user
 launches the popup window.
+
+Default Browser
+~~~~~~~~~~~~~~~
+
+Some snippets trigger an event that tracks whether Firefox is the default
+browser on the user's system. These snippets also trigger an event when the user
+makes Firefox their default browser by either clicking a link in the snippet or
+by setting the default outside of the browser.
+
+Browser UI Events
+~~~~~~~~~~~~~~~~~
+
+Some snippets trigger events when the user clicks specific buttons in the
+Firefox user interface (as opposed to the in-page snippet). Examples of the
+elements that can be tracked this way include:
+
+* The "Email", "Copy Link", and "Start Conversation" buttons within the Firefox
+  Hello dialog.
 
 
 Google Analytics
