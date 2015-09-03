@@ -247,10 +247,12 @@ If you need more control you can directly access the low-level function `addToBl
   .. note::
      In this case we don't utilize the special `block-snippet-button` class.
 
+More low level functions are `popFromBlockList` and `getBlockList`.
 
 In bug `1172579`_ close button assets are provided to build a image
 button in your snippet. Refer to the `simple snippet`_ code on how to
 do this.
+
 
 
 .. _testing:
