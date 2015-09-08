@@ -43,7 +43,7 @@ var SNIPPET_METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html';
     }
 
     var snippets = (document.getElementById('snippetContainer')
-                    .getElementsByClassName('snippet'));
+                    .querySelectorAll('.snippet'));
     var show_snippet = null;
     if (snippets.length > 0) {
         show_snippet = chooseSnippet(snippets);
@@ -89,8 +89,8 @@ var SNIPPET_METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html';
             // Add sample rate and snippet ID to currently displayed links.
             var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
                               show_snippet_id);
-            modifyLinks(topSection.getElementsByTagName('a'), parameters);
-            addSnippetBlockLinks(topSection.getElementsByClassName('block-snippet-button'));
+            modifyLinks(topSection.querySelectorAll('a'), parameters);
+            addSnippetBlockLinks(topSection.querySelectorAll('.block-snippet-button'));
         });
         show_snippet.dispatchEvent(evt);
     } else {
