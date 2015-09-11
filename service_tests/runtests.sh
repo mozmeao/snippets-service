@@ -7,3 +7,5 @@ virtualenv $TDIR
 cd service_tests
 pip install -r requirements.txt
 py.test
+
+rm -rf $TDIR
