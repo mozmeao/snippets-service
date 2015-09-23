@@ -361,6 +361,23 @@ var SNIPPET_METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html';
         while (target && target.tagName && target.tagName.toLowerCase() !== 'a') {
             target = target.parentNode;
         }
+
+        // Count snippet clicks.
+        if (target && target.href && target.dataset.eventCounted !== 'true') {
+            target.dataset.eventCounted = 'true';
+
+            // If user is not opening a new tab, preventDefault action.
+            if (event.button === 0 && !(event.metaKey || event.ctrlKey)) {
+                event.preventDefault();
+                var callback = function() {
+                    target.click();
+                }
+            }
+
+            sendMetric('click', callback);
+        }
+
+        // Handle about:accounts clicks.
         if (target && target.href && target.href.indexOf('about:accounts') === 0) {
             var snippet_id = document.getElementById('snippet_set').getAttribute('data-snippet-id');
             var metric = snippet_id + '-about-accounts-click';
