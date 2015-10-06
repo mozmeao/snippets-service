@@ -206,6 +206,52 @@ Snippet developers can send custom pings to capture interactions, clicks and oth
   .. note:: Callback function is optional.
 
 
+Using MozUITour
+^^^^^^^^^^^^^^^
+Snippets and snippet templates can use `MozUiTour`_ to interact with the browser. Developer can directly use the following MozUITour functions:
+
+* Mozilla.UITour.showHighlight
+* Mozilla.UITour.hideHighlight
+* Mozilla.UITour.showMenu
+* Mozilla.UITour.hideMenu
+* Mozilla.UITour.getConfiguration
+* Mozilla.UITour.setConfiguration
+
+For example to determine whether Firefox is the default browser can you use the following function in a snippet:
+
+  .. code-block:: javascript
+
+     function isDefault (yesDefault, noDefault) {
+         Mozilla.UITour.getConfiguration('appinfo', function(config) {
+             if (config && config.defaultBrowser === true) {
+                 firefoxIsDefault();
+             } else if (config && config.defaultBrowser === false) {
+                 firefoxIsNotDefault();
+             } else {
+                 firefoxIsDefault();
+             }
+         });
+     }
+
+You can even use the low level MozUITour functions:
+
+* _sendEvent
+* _generateCallbackID
+* _waitForCallback
+
+to trigger more events. For example to trigger Firefox Accounts:
+
+  .. code-block:: javascript
+
+     var fire_event = function() {
+         var event = new CustomEvent(
+             'mozUITour',
+             { bubbles: true, detail: { action:'showFirefoxAccounts', data: {}}}
+         );
+         document.dispatchEvent(event);
+     };
+
+
 Snippet Block List
 ^^^^^^^^^^^^^^^^^^
 
@@ -311,3 +357,4 @@ the URL for editing it to make it easier for the reviewer to test it.
 .. _snippets Github repo: https://github.com/mozilla/snippets
 .. _1172579: https://bugzilla.mozilla.org/show_bug.cgi?id=1172579
 .. _simple snippet: https://github.com/mozilla/snippets/blob/master/templates/simple-snippet.html
+.. _MozUITour: https://hg.mozilla.org/mozilla-central/file/tip/browser/components/uitour/UITour-lib.js
