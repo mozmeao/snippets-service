@@ -146,6 +146,7 @@ class SnippetBundle(object):
                               .match_client(self.client)
                               .order_by('priority')
                               .select_related('template')
+                              .prefetch_related('countries', 'exclude_from_search_providers')
                               .filter_by_available())
         return self._snippets
 

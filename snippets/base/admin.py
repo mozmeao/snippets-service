@@ -204,6 +204,10 @@ class SnippetAdmin(BaseSnippetAdmin):
 
         return ' '.join(wrap('\n'.join([data[key][:500] for key in text_keys if data.get(key)])))
 
+    def queryset(self, request):
+        return (super(SnippetAdmin, self)
+                .queryset(request).prefetch_related('locale_set').select_related('template'))
+
 
 class ClientMatchRuleAdmin(BaseModelAdmin):
     list_display = ('description', 'is_exclusion', 'startpage_version', 'name',
