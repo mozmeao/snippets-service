@@ -13,7 +13,7 @@
 var SNIPPET_METRICS_SAMPLE_RATE = {{ settings.METRICS_SAMPLE_RATE }};
 var SNIPPET_METRICS_URL = '{{ settings.METRICS_URL }}';
 var ABOUTHOME_SHOWN_SNIPPET = null;
-
+var USER_COUNTRY = null;
 
 // Start MozUITour
 // Copy from https://hg.mozilla.org/mozilla-central/file/tip/browser/components/uitour/UITour-lib.js
@@ -134,6 +134,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         gSnippetsMap = window.gSnippetsMap;
     }
 
+
     var show_snippet = null;
     if (ABOUTHOME_SNIPPETS.length > 0) {
         show_snippet = chooseSnippet(ABOUTHOME_SNIPPETS);
@@ -148,13 +149,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         document.getElementById('snippets').appendChild(snippetContainer);
         activateScriptTags(snippetContainer);
 
-        // Find the snippet div if it is present.
-        var snippetElement = null;
-        var elems = snippetContainer.getElementsByClassName('snippet');
-        if (elems.length > 0) {
-            snippetElement = elems[0];
-        }
-
         try {
             activateSnippetsButtonClick(show_snippet);
         } catch (err) {
@@ -162,41 +156,24 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             // activateSnippetsButtonClick
         }
 
-        // Determine snippet ID.
-        var metaParent = show_snippet.parentNode;
-        while (metaParent && metaParent.classList &&
-               !metaParent.classList.contains('snippet-metadata')) {
-            metaParent = metaParent.parentNode;
-        }
-
-
-        var show_snippet_id = 'unknown';
-        var show_snippet_campaign = '';
-        if (metaParent) {
-            show_snippet_id = metaParent.dataset.snippetId || 'unknown';
-            show_snippet_campaign = metaParent.dataset.campaign || '';
-        }
-        snippet_set.setAttribute('data-snippet-id', show_snippet_id);
-        snippet_set.setAttribute('data-campaign', show_snippet_campaign);
-        sendImpression();
-
-        // Trigger show_snippet event on snippet node.
-        var evt = document.createEvent('Event');
-        evt.initEvent('show_snippet', true, true);
-
-        // By the time show_snippet event reaches snippet_set the snippet
+        // By the time show_snippet event reaches #snippets the snippet
         // will have finished initializing and altering the DOM. It's the
         // time to modifyLinks() and addSnippetBlockLinks().
-        snippet_set.addEventListener('show_snippet', function(event) {
+        var snippets = document.getElementById('snippets');
+        snippets.addEventListener('show_snippet', function(event) {
             var topSection = document.getElementById('topSection');
             // Add sample rate and snippet ID to currently displayed links.
             var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
                               ABOUTHOME_SHOWN_SNIPPET.id);
             modifyLinks(topSection.querySelectorAll('a'), parameters);
             addSnippetBlockLinks(topSection.querySelectorAll('.block-snippet-button'));
+            sendImpression();
         });
-        show_snippet.dispatchEvent(evt);
 
+        // Trigger show_snippet event
+        var evt = document.createEvent('Event');
+        evt.initEvent('show_snippet', true, true);
+        snippetContainer.querySelector('.snippet').dispatchEvent(evt);
     } else {
         showDefaultSnippets();
     }
@@ -212,22 +189,20 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         downloadUserCountry();
     }
 
-    {# In preview mode, ignore geolocation. #}
     {% if preview %}
     function chooseSnippet(snippets) {
-        return snippets[Math.floor(Math.random() * snippets.length)];
+        return snippets[0];
     }
     {% else %}
     // Choose which snippet to display to the user based on various factors,
     // such as which country they are in.
     function chooseSnippet(snippets) {
-        var userCountry = getUserCountry();
-        if (userCountry) {
-            document.getElementById('snippet_set').dataset.userCountry = userCountry;
+        USER_COUNTRY = getUserCountry();
+        if (USER_COUNTRY) {
             snippets = snippets.filter(
                 function(snippet) {
-                    var countries = snippet.parentNode.dataset.countries;
-                    if (countries && countries.split(',').indexOf(userCountry) === -1) {
+                    var countries = snippet.countries;
+                    if (countries.length && countries.indexOf(USER_COUNTRY) === -1) {
                         return false;
                     }
                     return true;
@@ -235,13 +210,11 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             );
         }
         else {
-            document.getElementById('snippet_set').dataset.userCountry = '';
-
             // If we don't have the user's country, remove all geolocated snippets.
             // Bug 1140476
             snippets = snippets.filter(
                 function(snippet) {
-                    return !snippet.parentNode.dataset.countries;
+                    return snippet.countries.length === 0;
                 }
             )
         }
@@ -261,8 +234,8 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         if (searchProvider) {
             snippets = snippets.filter(
                 function(snippet) {
-                    var excludeFromSearchEngines = snippet.parentNode.getAttribute('data-exclude-from-search-engines');
-                    if (excludeFromSearchEngines && excludeFromSearchEngines.split(',').indexOf(searchProvider) !== -1) {
+                    var excludeFromSearchEngines = snippet.exclude_from_search_engines;
+                    if (excludeFromSearchEngines.length && excludeFromSearchEngines.indexOf(searchProvider) !== -1) {
                         return false;
                     }
                     return true;
@@ -274,8 +247,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         var blockList = getBlockList();
         snippets = snippets.filter(
             function (snippet) {
-                var snippet_id = parseInt(snippet.parentNode.getAttribute('data-snippet-id'), 10);
-                if (blockList.indexOf(snippet_id) === -1) {
+                if (blockList.indexOf(snippet.id) === -1) {
                     return true;
                 }
                 return false;
@@ -285,12 +257,13 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         // Choose a random snippet from the snippets list.
         if (snippets && snippets.length) {
             var sum = 0;
-            for (var k = 0; k < snippets.length; k++) {
+            var number_of_snippets = snippets.length;
+            for (var k = 0; k < number_of_snippets; k++) {
                 sum += snippets[k].weight;
                 snippets[k].weight = sum;
             }
             var random_number = Math.random() * sum;
-            for (var k = 0; k < snippets.length; k++) {
+            for (var k = 0; k < number_of_snippets; k++) {
                 if (random_number < snippets[k].weight) {
                     return snippets[k];
                 }
@@ -424,7 +397,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 
     // Add links to buttons that block snippets.
     function addSnippetBlockLinks(elements) {
-        var snippet_id = document.getElementById('snippet_set').getAttribute('data-snippet-id');
+        var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
         var blockSnippet = function (event) {
             event.preventDefault();
             addToBlockList(snippet_id);
@@ -491,7 +464,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 
         // Handle about:accounts clicks.
         if (target.href && target.href.indexOf('about:accounts') === 0) {
-            var snippet_id = document.getElementById('snippet_set').getAttribute('data-snippet-id');
+            var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
             var metric = snippet_id + '-about-accounts-click';
             var fire_event = function() {
                 var event = new CustomEvent(
@@ -512,35 +485,35 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 function sendMetric(metric, callback) {
     {# In preview mode, disable sampling, log metric, but do not send to service #}
     {% if preview %}
-    console.log("[preview mode] Sending metric: " + metric);
-    if (callback) {
-        callback();
-    }
-    return;
+      console.log("[preview mode] Sending metric: " + metric);
+      if (callback) {
+          callback();
+      }
+      return;
+    {% else %}
+      if ((Math.random() > SNIPPET_METRICS_SAMPLE_RATE) || (!metric)) {
+          if (callback) {
+              callback();
+          }
+          return;
+      }
+
+      var locale = '{{ locale }}';
+      var userCountry = USER_COUNTRY || '';
+      var campaign = ABOUTHOME_SHOWN_SNIPPET.campaign;
+      var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
+
+      var url = (SNIPPET_METRICS_URL + '?snippet_name=' + snippet_id +
+                 '&locale=' + locale + '&country=' + userCountry +
+                 '&metric=' + metric + '&campaign=' + campaign);
+      var request = new XMLHttpRequest();
+      request.open('GET', url);
+      if (callback) {
+          request.addEventListener('loadend', callback, false);
+      }
+      request.send();
+      return request;
     {% endif %}
-
-    if ((Math.random() > SNIPPET_METRICS_SAMPLE_RATE) || (!metric)) {
-        if (callback) {
-            callback();
-        }
-        return;
-    }
-
-    var snippet_set = document.getElementById('snippet_set');
-    var locale = '{{ locale }}';
-    var userCountry = snippet_set.getAttribute('data-user-country') || '';
-    var campaign = snippet_set.getAttribute('data-campaign') || '';
-    var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
-
-    var url = (SNIPPET_METRICS_URL + '?snippet_name=' + snippet_id +
-               '&locale=' + locale + '&country=' + userCountry + '&metric=' + metric + '&campaign=' + campaign);
-    var r = new XMLHttpRequest();
-    r.open('GET', url);
-    if (callback) {
-        r.addEventListener('loadend', callback, false);
-    }
-    r.send();
-    return r;
 }
 
 function popFromBlockList(snippetID) {

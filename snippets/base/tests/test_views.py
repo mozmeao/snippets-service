@@ -52,18 +52,11 @@ class FetchRenderSnippetsTests(TestCase):
         # Snippet that doesn't match.
         SnippetFactory.create(on_nightly=False),
 
-        snippets_ok = [snippet_1]
         params = self.client_params
         response = self.client.get('/{0}/'.format('/'.join(params)))
 
-        snippets_json = json.dumps([{
-            'id': snippet.id,
-            'code': snippet.render(),
-            'country': snippet.country,
-            'weight': snippet.weight,
-        } for snippet in snippets_ok])
-
-        eq_(set(snippets_json), set(response.context['snippets_json']))
+        snippets_json = json.dumps([snippet_1.to_dict()])
+        eq_(snippets_json, response.context['snippets_json'])
         eq_(response.context['locale'], 'en-US')
 
     @patch('snippets.base.views.Client', wraps=Client)
@@ -206,9 +199,8 @@ class PreviewSnippetTests(TestCase):
         response = self._preview_snippet(template_id=template.id, data=data)
         eq_(response.status_code, 200)
 
-        snippet = response.context['snippet']
-        eq_(snippet.template, template)
-        eq_(snippet.data, data)
+        snippet = response.context['snippets_json']
+        ok_(json.loads(snippet))
 
 
 class ShowSnippetTests(TestCase):

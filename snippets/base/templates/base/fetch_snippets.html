@@ -1,5 +1,5 @@
 {% include 'base/includes/snippet_css.html' %}
 <script type="text/javascript">
-  var ABOUTHOME_SNIPPETS = {{ snippets_json }};
+  var ABOUTHOME_SNIPPETS = JSON.parse('{{ snippets_json|escapejs|safe }}');
 </script>
 {% include 'base/includes/snippet_js.html' %}

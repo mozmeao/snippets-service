@@ -175,9 +175,10 @@ class SnippetBundle(object):
     def generate(self):
         """Generate and save the code for this snippet bundle."""
         bundle_content = render_to_string('base/fetch_snippets.html', {
-            'snippets': self.snippets,
+            'snippets_json': json.dumps([s.to_dict() for s in self.snippets]),
             'client': self.client,
             'locale': self.client.locale,
+            'settings': settings,
         })
 
         if isinstance(bundle_content, unicode):
@@ -365,6 +366,22 @@ class Snippet(CachingMixin, SnippetBaseModel):
 
     class Meta:
         ordering = ('-modified',)
+
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'code': self.render(),
+            'countries': [],
+            'campaign': self.campaign,
+            'weight': self.weight,
+            'exclude_from_search_engines': [],
+        }
+        if self.id:
+            data['countries'] = [country.code for country in self.countries.all()]
+            data['exclude_from_search_engines'] = [
+                provider.identifier for provider in self.exclude_from_search_providers.all()]
+
+        return data
 
     def render(self):
         data = json.loads(self.data)

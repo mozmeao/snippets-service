@@ -25,6 +25,7 @@ def humanize(date):
         return date.strftime('%a %d %b %Y, %H:%M UTC')
     return None
 
+
 @register.filter
 def escapejs(data):
     return escapejs_filter(data)
