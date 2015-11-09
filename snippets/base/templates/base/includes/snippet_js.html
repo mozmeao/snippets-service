@@ -10,8 +10,8 @@
 
 
 'use strict';
-var SNIPPET_METRICS_SAMPLE_RATE = 0.1;
-var SNIPPET_METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html';
+var SNIPPET_METRICS_SAMPLE_RATE = {{ settings.METRICS_SAMPLE_RATE }};
+var SNIPPET_METRICS_URL = '{{ settings.METRICS_URL }}';
 var ABOUTHOME_SHOWN_SNIPPET = null;
 
 
@@ -105,7 +105,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 (function(showDefaultSnippets) {
     'use strict';
 
-    var GEO_URL = 'https://geo.mozilla.org/country.js';
+    var GEO_URL = '{{ settings.GEO_URL }}';
     var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
 
     // showDefaultSnippets polyfill, available in about:home v4
