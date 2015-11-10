@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from django.template.defaultfilters import escapejs_filter
+
 from jingo import register
 
 
@@ -22,3 +24,7 @@ def humanize(date):
     if isinstance(date, datetime):
         return date.strftime('%a %d %b %Y, %H:%M UTC')
     return None
+
+@register.filter
+def escapejs(data):
+    return escapejs_filter(data)
