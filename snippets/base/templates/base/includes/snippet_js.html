@@ -533,7 +533,7 @@ function addToBlockList(snippetID) {
     var blockList = getBlockList();
     snippetID = parseInt(snippetID, 10);
     if (blockList.indexOf(snippetID) === -1) {
-        blockList.unshift(snippetID);
+        blockList = [snippetID].concat(blockList);
         gSnippetsMap.set('blockList', blockList);
     }
 }
