@@ -126,6 +126,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                 return localStorage[key];
             }
         };
+        window.gSnippetsMap = gSnippetsMap;
     } else {
         // localStorage isn't available, use gSnippetsMap (backed by IndexedDB).
         gSnippetsMap = window.gSnippetsMap;
