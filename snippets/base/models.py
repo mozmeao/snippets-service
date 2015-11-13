@@ -154,7 +154,10 @@ class SnippetBundle(object):
 
     @property
     def url(self):
-        return self.storage.url(self.filename)
+        bundle_url = self.storage.url(self.filename)
+        site_url = getattr(settings, 'CDN_URL', settings.SITE_URL)
+        full_url = urljoin(site_url, bundle_url)
+        return full_url
 
     @property
     def snippets(self):
