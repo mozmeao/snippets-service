@@ -43,7 +43,26 @@ SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
                    (300, 'Appear three times as often as an average snippet'))
 
 
-def validate_xml(data):
+def validate_xml_template(data):
+    parser = xml.sax.make_parser()
+    parser.setContentHandler(ContentHandler())
+    parser.setFeature(xml.sax.handler.feature_external_ges, 0)
+
+    data = data.encode('utf-8')
+    xml_str = '<div>{0}</div>'.format(data)
+    try:
+        parser.parse(StringIO(xml_str))
+    except xml.sax.SAXParseException as e:
+        # getLineNumber() - 1 to get the correct line number because
+        # we're wrapping contents into a div.
+        error_msg = (
+            'XML Error: {message} in line {line} column {column}').format(
+                message=e.getMessage(), line=e.getLineNumber()-1, column=e.getColumnNumber())
+        raise ValidationError(error_msg)
+    return data
+
+
+def validate_xml_variables(data):
     data_dict = json.loads(data)
 
     # set up a safer XML parser that does not resolve external
@@ -170,7 +189,7 @@ class SnippetTemplate(CachingMixin, models.Model):
     snippet will fill in.
     """
     name = models.CharField(max_length=255, unique=True)
-    code = models.TextField()
+    code = models.TextField(validators=[validate_xml_template])
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -301,7 +320,7 @@ class SnippetBaseModel(models.Model):
 class Snippet(CachingMixin, SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
     template = models.ForeignKey(SnippetTemplate)
-    data = models.TextField(default='{}', validators=[validate_xml])
+    data = models.TextField(default='{}', validators=[validate_xml_variables])
 
     priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)

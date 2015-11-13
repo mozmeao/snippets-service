@@ -6,7 +6,8 @@ from mock import ANY, MagicMock, Mock, patch
 from nose.tools import assert_not_equal, assert_raises, eq_, ok_
 from pyquery import PyQuery as pq
 
-from snippets.base.models import Client, SnippetBundle, UploadedFile, validate_xml
+from snippets.base.models import (Client, SnippetBundle, UploadedFile,
+                                  validate_xml_template, validate_xml_variables)
 from snippets.base.tests import (ClientMatchRuleFactory,
                                  JSONSnippetFactory,
                                  SearchProviderFactory,
@@ -82,25 +83,39 @@ class ClientMatchRuleTests(TestCase):
         ok_(not fail_rule.matches(client))
 
 
-class XMLValidatorTests(TestCase):
+class XMLVariablesValidatorTests(TestCase):
     def test_valid_xml(self):
         valid_xml = '{"foo": "<b>foobar</b>"}'
-        eq_(validate_xml(valid_xml), valid_xml)
+        eq_(validate_xml_variables(valid_xml), valid_xml)
 
     def test_invalid_xml(self):
         invalid_xml = '{"foo": "<b><i>foobar<i></b>"}'
-        assert_raises(ValidationError, validate_xml, invalid_xml)
+        assert_raises(ValidationError, validate_xml_variables, invalid_xml)
 
     def test_unicode(self):
         unicode_xml = '{"foo": "<b>\u03c6\u03bf\u03bf</b>"}'
-        eq_(validate_xml(unicode_xml), unicode_xml)
+        eq_(validate_xml_variables(unicode_xml), unicode_xml)
 
     def test_non_string_values(self):
         """
         If a value isn't a string, skip over it and continue validating.
         """
         valid_xml = '{"foo": "<b>Bar</b>", "baz": true}'
-        eq_(validate_xml(valid_xml), valid_xml)
+        eq_(validate_xml_variables(valid_xml), valid_xml)
+
+
+class XMLTemplateValidatorTests(TestCase):
+    def test_valid_xml(self):
+        valid_xml = '<div>yo</div>'
+        eq_(validate_xml_template(valid_xml), valid_xml)
+
+    def test_unicode(self):
+        valid_xml = '<div><b>\u03c6\u03bf\u03bf</b></div>'
+        eq_(validate_xml_template(valid_xml), valid_xml)
+
+    def test_invalid_xml(self):
+        invalid_xml = '<div><input type="text" name="foo"></div>'
+        assert_raises(ValidationError, validate_xml_template, invalid_xml)
 
 
 class SnippetTemplateTests(TestCase):
