@@ -175,10 +175,34 @@ The syntax in a snippet is slightly different and uses square brackets `[[snippe
 Custom Metric Pings
 ^^^^^^^^^^^^^^^^^^^
 
-Snippet events can be captured and send to a metrics server. By default an `impression` ping gets triggered when a snippet is shown. Pings are sampled and only 10% of the total pings get send to the server.
+Snippet events can be captured and sent to our metrics server. By
+default snippet impressions get captured and sent to our metrics
+server tagged as `impression`. Clicks on `<a>` elements with defined
+`href` get captured too and get sent back as `click`.
 
-Snippet developers can send custom pings to capture interactions, clicks and other interesting actions using the `sendMetric` function like this:
+Snippet developers can customize the metric name of clicks by setting
+the `metric` data attribute on the link. For example clicking on the
+link of the following snippet:
 
+  .. code-block:: html
+
+     <div class="snippet">
+       <p class="message">
+         Click this <a href="http://example.com" data-metric="custom-click">link!</a>
+       </p>
+     </div>
+
+will send back a `custom-click` ping instead of a `click` ping.
+
+.. warning::
+  Avoid setting up event listeners on links for click events and
+  manually sending metric pings, or pings may get sent *both* by your
+  click handler and the global click handler resulting in inaccurate
+  numbers.
+
+In addition to impressions and clicks snippet developers can send
+custom pings to capture interactions using the `sendMetric` function
+like this:
 
   .. code-block:: html
 
@@ -204,6 +228,8 @@ Snippet developers can send custom pings to capture interactions, clicks and oth
      </script>
 
   .. note:: Callback function is optional.
+
+.. note:: Only 10% of the pings reach the server. We sample at the browser level. See `sendMetric`_ function for implementation details.
 
 
 Using MozUITour
@@ -358,3 +384,4 @@ the URL for editing it to make it easier for the reviewer to test it.
 .. _1172579: https://bugzilla.mozilla.org/show_bug.cgi?id=1172579
 .. _simple snippet: https://github.com/mozilla/snippets/blob/master/templates/simple-snippet.html
 .. _MozUITour: https://hg.mozilla.org/mozilla-central/file/tip/browser/components/uitour/UITour-lib.js
+.. _sendMetric: https://github.com/mozilla/snippets-service/blob/master/snippets/base/templates/base/includes/snippet_js.html
