@@ -444,33 +444,36 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         }
     }
 
-    // Listen for clicks on links that point to 'about:accounts' and
-    // convert them showFirefoxAccounts Events.
-    document.addEventListener('click', function(event) {
+    // Listen for clicks on links, send metrics and handle
+    // about:account custom links.
+    var topSection = document.getElementById('topSection');
+    topSection.addEventListener('click', function(event) {
         var target = event.target;
-        while (target && target.tagName && target.tagName.toLowerCase() !== 'a') {
+        while (target.tagName && target.tagName.toLowerCase() !== 'a') {
+            // Do not track clicks outside topSection.
+            if (target.id === 'topSection') {
+                return;
+            }
             target = target.parentNode;
         }
 
         // Count snippet clicks.
-        if (target && target.href && target.dataset.eventCounted !== 'true') {
+        if (target.dataset.eventCounted !== 'true') {
             target.dataset.eventCounted = 'true';
             // Fetch custom metric or default to 'click'
             var metric = target.dataset.metric || 'click';
-
             // If user is not opening a new tab, preventDefault action.
-            if (event.button === 0 && !(event.metaKey || event.ctrlKey)) {
+            if (target.href && (event.button === 0 && !(event.metaKey || event.ctrlKey))) {
                 event.preventDefault();
                 var callback = function() {
                     target.click();
                 }
             }
-
             sendMetric(metric, callback);
         }
 
         // Handle about:accounts clicks.
-        if (target && target.href && target.href.indexOf('about:accounts') === 0) {
+        if (target.href && target.href.indexOf('about:accounts') === 0) {
             var snippet_id = document.getElementById('snippet_set').getAttribute('data-snippet-id');
             var metric = snippet_id + '-about-accounts-click';
             var fire_event = function() {
