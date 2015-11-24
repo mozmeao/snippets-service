@@ -4,14 +4,11 @@ Contributing
 Docker Setup
 ------------
 
-These instructions help you set up a copy of the site using `Docker`_ and
-`fig`_.
+These instructions help you set up a copy of the site using `Docker`_.
 
-1. `Install Docker <https://docs.docker.com/installation/#installation>`_.
+1. `Install Docker Toolbox <https://www.docker.com/docker-toolbox>`_.
 
-2. `Install fig <http://www.fig.sh/install.html>`_.
-
-3. Grab the source code using git::
+2. Grab the source code using git::
 
     $ git clone --recursive git://github.com/mozilla/snippets-service.git
     $ cd snippets-service
@@ -20,24 +17,29 @@ These instructions help you set up a copy of the site using `Docker`_ and
    didn't, you can load all the submodules with ``git submodule update --init
    --recursive``.
 
-4. Build the Docker containers using fig::
+3. Pull the docker mysql image::
 
-    $ fig build
+    $ docker pull mysql:5.7
+
+4. Build the Docker containers::
+
+    $ docker-compose build
 
 5. Run the database migrations to set up the database::
 
-    $ fig run web ./bin/run-migrations.sh
+    $ docker-compose run web python manage.py syncdb
+    $ docker-compose run web python manage.py migrate
 
 Once you've finished these steps, you should be able to start the site by
 running::
 
-    $ fig up
+    $ docker-compose up
 
 If you're running Docker directly (via Linux), the site should be available at
-http://localhost:8000. If you're running `boot2docker`_, the site should be
+http://localhost:8000. If you're running docker, the site should be
 available on port 8000 at the IP output by running::
 
-    $ boot2docker ip
+    $ docker-machine env default
 
 .. _Docker: https://docs.docker.com/
 .. _fig: http://www.fig.sh/
