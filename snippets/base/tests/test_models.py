@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test.utils import override_settings
@@ -169,6 +171,22 @@ class SnippetTemplateTests(TestCase):
 
 
 class SnippetTests(TestCase):
+    def test_to_dict(self):
+        snippet = SnippetFactory.create(weight=60, campaign='foo-campaign',
+                                        countries=['gr', 'it'])
+        snippet.render = Mock()
+        snippet.render.return_value = 'rendered'
+
+        data = {
+            'code': 'rendered',
+            'campaign': 'foo-campaign',
+            'weight': 60,
+            'countries': ['gr', 'it'],
+            'exclude_from_search_engines': [],
+            'id': snippet.id,
+        }
+        eq_(data, snippet.to_dict())
+
     def test_render(self):
         template = SnippetTemplateFactory.create()
         template.render = Mock()
@@ -415,9 +433,10 @@ class SnippetBundleTests(TestCase):
                     bundle.generate()
 
         render_to_string.assert_called_with('base/fetch_snippets.html', {
-            'snippets': [self.snippet1, self.snippet2],
+            'snippets_json': json.dumps([s.to_dict() for s in [self.snippet1, self.snippet2]]),
             'client': bundle.client,
             'locale': 'fr',
+            'settings': settings,
         })
         bundle.storage.save.assert_called_with(bundle.filename, ANY)
         cache.set.assert_called_with(bundle.cache_key, True, 10)

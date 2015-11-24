@@ -95,3 +95,8 @@ SOUTH_MIGRATION_MODULES = {
 }
 
 SNIPPET_BUNDLE_TIMEOUT = 15 * 60  # 15 minutes
+
+METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html'
+METRICS_SAMPLE_RATE = 0.1
+
+GEO_URL = 'https://geo.mozilla.org/country.js'

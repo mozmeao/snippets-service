@@ -118,7 +118,7 @@ def fetch_render_snippets(request, **kwargs):
                          .filter_by_available())
 
     response = render(request, 'base/fetch_snippets.html', {
-        'snippets': matching_snippets,
+        'snippets_json': json.dumps([s.to_dict() for s in matching_snippets]),
         'client': client,
         'locale': client.locale,
     })
@@ -190,9 +190,9 @@ def preview_snippet(request):
     template_name = 'base/preview_without_shell.html' if skip_boilerplate else 'base/preview.html'
 
     return render(request, template_name, {
-        'snippet': snippet,
+        'snippets_json': json.dumps([snippet.to_dict()]),
         'client': PREVIEW_CLIENT,
-        'preview': True
+        'preview': True,
     })
 
 
@@ -202,9 +202,9 @@ def show_snippet(request, snippet_id):
         raise Http404()
 
     return render(request, 'base/preview.html', {
-        'snippet': snippet,
+        'snippets_json': json.dumps([snippet.to_dict()]),
         'client': PREVIEW_CLIENT,
-        'preview': True
+        'preview': True,
     })
 
 
