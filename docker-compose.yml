@@ -16,4 +16,4 @@ web:
   environment:
     - PYTHONDONTWRITEBYTECODE=1
     - DOCKER=1
-  command: ./bin/run-fig.sh
+  command: python manage.py runserver 0.0.0.0:8000
