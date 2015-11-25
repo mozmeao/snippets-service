@@ -433,6 +433,7 @@ class SnippetBundleTests(TestCase):
                     bundle.generate()
 
         render_to_string.assert_called_with('base/fetch_snippets.html', {
+            'snippet_ids': [s.id for s in [self.snippet1, self.snippet2]],
             'snippets_json': json.dumps([s.to_dict() for s in [self.snippet1, self.snippet2]]),
             'client': bundle.client,
             'locale': 'fr',

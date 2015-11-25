@@ -1,4 +1,10 @@
 {% include 'base/includes/snippet_css.html' %}
+<!--
+Included snippets:
+{% for id in snippet_ids %}
+  - {{ id }}
+{% endfor %}
+-->
 <script type="text/javascript">
   var ABOUTHOME_SNIPPETS = JSON.parse('{{ snippets_json|escapejs|safe }}');
 </script>

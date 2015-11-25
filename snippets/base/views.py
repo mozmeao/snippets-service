@@ -118,6 +118,7 @@ def fetch_render_snippets(request, **kwargs):
                          .filter_by_available())
 
     response = render(request, 'base/fetch_snippets.html', {
+        'snippet_ids': [snippet.id for snippet in matching_snippets],
         'snippets_json': json.dumps([s.to_dict() for s in matching_snippets]),
         'client': client,
         'locale': client.locale,
