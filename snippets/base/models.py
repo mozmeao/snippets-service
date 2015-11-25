@@ -175,6 +175,7 @@ class SnippetBundle(object):
     def generate(self):
         """Generate and save the code for this snippet bundle."""
         bundle_content = render_to_string('base/fetch_snippets.html', {
+            'snippet_ids': [snippet.id for snippet in self.snippets],
             'snippets_json': json.dumps([s.to_dict() for s in self.snippets]),
             'client': self.client,
             'locale': self.client.locale,
