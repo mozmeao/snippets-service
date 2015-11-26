@@ -2,7 +2,13 @@ from datetime import datetime
 
 from django.template.defaultfilters import escapejs_filter
 
+import jinja2
 from jingo import register
+
+
+@register.function
+def utcnow():
+    return jinja2.Markup(datetime.utcnow())
 
 
 @register.function
