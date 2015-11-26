@@ -1,12 +1,12 @@
-<!-- Generated on {{ utcnow() }} -->
 {% include 'base/includes/snippet_css.html' %}
-<!--
-Included snippets:
-{% for id in snippet_ids %}
-  - {{ id }}
-{% endfor %}
--->
 <script type="text/javascript">
+//<![CDATA[
+  // Generated on {{ utcnow() }}
+  // Included snippets:
+{% for id in snippet_ids %}
+  //  - {{ id }}
+{% endfor %}
   var ABOUTHOME_SNIPPETS = JSON.parse('{{ snippets_json|escapejs|safe }}');
+//]]>
 </script>
 {% include 'base/includes/snippet_js.html' %}
