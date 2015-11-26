@@ -29,8 +29,13 @@ from snippets.base import ENGLISH_COUNTRIES
 from snippets.base.fields import CountryField, LocaleField, RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 from snippets.base.storage import OverwriteStorage
+from snippets.base.util import hashfile
 
 
+SNIPPET_JS_HASH = hashfile(
+    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_js.html'))
+SNIPPET_CSS_HASH = hashfile(
+    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_css.html'))
 CHANNELS = ('release', 'beta', 'aurora', 'nightly')
 FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4')
 FENNEC_STARTPAGE_VERSIONS = ('1',)
@@ -131,6 +136,8 @@ class SnippetBundle(object):
         key_properties.extend([
             self.client.startpage_version,
             self.client.locale,
+            SNIPPET_JS_HASH,
+            SNIPPET_CSS_HASH,
         ])
 
         key_string = u'_'.join(unicode(prop) for prop in key_properties)
