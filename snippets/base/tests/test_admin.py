@@ -2,16 +2,12 @@ from django.forms import ModelForm
 from django.test.client import RequestFactory
 
 from mock import Mock, patch
-from nose.tools import eq_, ok_
 
-from snippets.base import LANGUAGE_VALUES
-from snippets.base.admin import (SnippetAdmin, SnippetTemplateAdmin,
-                                 cmr_to_locales_action)
+from snippets.base.admin import SnippetAdmin, SnippetTemplateAdmin
 from snippets.base.forms import SnippetAdminForm
 from snippets.base.models import (Snippet, SnippetLocale, SnippetTemplate,
                                   SnippetTemplateVariable)
-from snippets.base.tests import (ClientMatchRuleFactory, SnippetFactory,
-                                 SnippetTemplateFactory,
+from snippets.base.tests import (SnippetFactory, SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase)
 
 
@@ -49,7 +45,7 @@ class SnippetAdminTests(TestCase):
 
         snippet = Snippet.objects.get(pk=snippet.pk)
         locales = (l.locale for l in snippet.locale_set.all())
-        eq_(set(locales), set(('en-us', 'de')))
+        self.assertEqual(set(locales), set(('en-us', 'de')))
 
     def test_no_locales(self):
         """
@@ -76,7 +72,7 @@ class SnippetAdminTests(TestCase):
 
         snippet = Snippet.objects.get(pk=snippet.pk)
         locales = (l.locale for l in snippet.locale_set.all())
-        eq_(set(locales), set(('en-us', 'fr')))
+        self.assertEqual(set(locales), set(('en-us', 'fr')))
 
     def test_save_as_disabled(self):
         request = self.factory.post('/', data={
@@ -90,7 +86,7 @@ class SnippetAdminTests(TestCase):
             self.model_admin.change_view(request, 999)
             change_view_mock.assert_called_with(request, 999)
             request = change_view_mock.call_args[0][0]
-            eq_(request.POST['disabled'], u'on')
+            self.assertEqual(request.POST['disabled'], u'on')
 
     def test_normal_save_disabled(self):
         """Test that normal save doesn't alter 'disabled' attribute."""
@@ -104,36 +100,7 @@ class SnippetAdminTests(TestCase):
             self.model_admin.change_view(request, 999)
             change_view_mock.assert_called_with(request, 999)
             request = change_view_mock.call_args[0][0]
-            eq_(request.POST['disabled'], u'foo')
-
-
-class CMRToLocalesActionTests(TestCase):
-    def test_base(self):
-        cmr_el = ClientMatchRuleFactory(locale='/^el/')
-        cmr_ast = ClientMatchRuleFactory(locale='ast|ja-JP-mac',
-                                         channel='aurora')
-        cmr_es = ClientMatchRuleFactory(locale='/(es-MX)|(es-AR)/')
-        cmr_bogus = ClientMatchRuleFactory(locale='/foo/')
-        snippet = SnippetFactory(client_match_rules=[cmr_el, cmr_ast, cmr_es,
-                                                     cmr_bogus],
-                                 locale_set=[SnippetLocale(locale='pl'),
-                                             SnippetLocale(locale='en')])
-        cmr_to_locales_action(None, None, [snippet])
-        eq_(snippet.locale_set.count(), 5)
-        eq_(set(snippet.locale_set.values_list('locale', flat=True)),
-            set(['el', 'ast', 'ja-jp-mac', 'es-mx', 'es-ar']))
-        eq_(snippet.client_match_rules.count(), 1)
-        eq_(snippet.client_match_rules.all()[0], cmr_ast)
-
-    def test_exclusion_cmr(self):
-        cmr_el = ClientMatchRuleFactory(locale='/^el/', is_exclusion=True)
-        snippet = SnippetFactory(client_match_rules=[cmr_el],
-                                 locale_set=[SnippetLocale(locale='pl'),
-                                             SnippetLocale(locale='en')])
-        cmr_to_locales_action(None, None, [snippet])
-        eq_(snippet.locale_set.count(), len(LANGUAGE_VALUES)-1)
-        ok_(not snippet.locale_set.filter(locale='el').exists())
-        eq_(snippet.client_match_rules.count(), 0)
+            self.assertEqual(request.POST['disabled'], u'foo')
 
 
 class SnippetTemplateAdminTests(TestCase):
@@ -170,9 +137,9 @@ class SnippetTemplateAdminTests(TestCase):
             {% endif %}
         """)
         variables = self._save_related(template)
-        eq_(len(variables), 2)
-        ok_('sample_var' in variables)
-        ok_('another_test_var' in variables)
+        self.assertEqual(len(variables), 2)
+        self.assertTrue('sample_var' in variables)
+        self.assertTrue('another_test_var' in variables)
 
     def test_save_related_remove_old(self):
         """
@@ -190,20 +157,20 @@ class SnippetTemplateAdminTests(TestCase):
         SnippetTemplateVariableFactory.create(
             name='does_not_exist_2', template=template)
 
-        ok_(SnippetTemplateVariable.objects
-            .filter(template=template, name='does_not_exist').exists())
-        ok_(SnippetTemplateVariable.objects
-            .filter(template=template, name='does_not_exist_2').exists())
+        self.assertTrue(SnippetTemplateVariable.objects
+                        .filter(template=template, name='does_not_exist').exists())
+        self.assertTrue(SnippetTemplateVariable.objects
+                        .filter(template=template, name='does_not_exist_2').exists())
 
         variables = self._save_related(template)
-        eq_(len(variables), 2)
-        ok_('sample_var' in variables)
-        ok_('another_test_var' in variables)
+        self.assertEqual(len(variables), 2)
+        self.assertTrue('sample_var' in variables)
+        self.assertTrue('another_test_var' in variables)
 
-        ok_(not SnippetTemplateVariable.objects
-            .filter(template=template, name='does_not_exist').exists())
-        ok_(not SnippetTemplateVariable.objects
-            .filter(template=template, name='does_not_exist_2').exists())
+        self.assertFalse(SnippetTemplateVariable.objects
+                         .filter(template=template, name='does_not_exist').exists())
+        self.assertTrue(SnippetTemplateVariable.objects
+                        .filter(template=template, name='does_not_exist_2').exists())
 
     @patch('snippets.base.admin.RESERVED_VARIABLES', ('reserved_name',))
     def test_save_related_reserved_name(self):
@@ -218,8 +185,8 @@ class SnippetTemplateAdminTests(TestCase):
             {% endif %}
         """)
         variables = self._save_related(template)
-        eq_(len(variables), 1)
-        ok_('another_test_var' in variables)
+        self.assertEqual(len(variables), 1)
+        self.assertTrue('another_test_var' in variables)
 
-        ok_(not SnippetTemplateVariable.objects
-            .filter(template=template, name='reserved_name').exists())
+        self.assertFalse(SnippetTemplateVariable.objects
+                         .filter(template=template, name='reserved_name').exists())

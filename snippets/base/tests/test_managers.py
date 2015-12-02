@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from mock import patch
-from nose.tools import eq_
 
 from snippets.base.models import Client, ClientMatchRule, Snippet, SnippetLocale
 from snippets.base.tests import ClientMatchRuleFactory, SnippetFactory, TestCase
@@ -30,8 +29,8 @@ class ClientMatchRuleQuerySetTests(TestCase):
             self.id, False)
 
         passed, failed = self.manager.all().evaluate('asdf')
-        eq_(set([rule1_pass, rule2_pass, rule4_pass]), set(passed))
-        eq_(set([rule3_fail, rule5_fail]), set(failed))
+        self.assertEqual(set([rule1_pass, rule2_pass, rule4_pass]), set(passed))
+        self.assertEqual(set([rule3_fail, rule5_fail]), set(failed))
 
 
 class SnippetQuerySetTests(TestCase):
@@ -51,7 +50,7 @@ class SnippetQuerySetTests(TestCase):
             datetime_mock.utcnow.return_value = datetime(2012, 06, 01, 0, 0)
             matching_snippets = self.manager.all().filter_by_available()
 
-        eq_(set([snippet_match_1, snippet_match_2]), set(matching_snippets))
+        self.assertEqual(set([snippet_match_1, snippet_match_2]), set(matching_snippets))
 
 
 class SnippetManagerTests(TestCase):
@@ -72,7 +71,7 @@ class SnippetManagerTests(TestCase):
     def _assert_client_matches_snippets(self, client_attrs, snippets):
         client = self._build_client(**client_attrs)
         matched_snippets = Snippet.cached_objects.match_client(client)
-        eq_(set(matched_snippets), set(snippets))
+        self.assertEqual(set(matched_snippets), set(snippets))
 
     def test_match_client_base(self):
         client_match_rule_pass_1 = ClientMatchRuleFactory(channel='nightly')
@@ -95,7 +94,7 @@ class SnippetManagerTests(TestCase):
                                                   client_match_rule_pass_2])
         client = self._build_client(channel='nightly')
         snippets = Snippet.cached_objects.match_client(client)
-        eq_(set(snippets), set([snippet_1, snippet_2, snippet_3]))
+        self.assertEqual(set(snippets), set([snippet_1, snippet_2, snippet_3]))
 
     @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
     def test_match_client(self):
@@ -231,5 +230,5 @@ class SnippetManagerTests(TestCase):
 
         # Assert that both the snippets returned from nightly and from default
         # are the same snippets. Just `nightly_snippet` in this case.
-        eq_(set([nightly_snippet]), set(nightly_snippets))
-        eq_(set([nightly_snippet]), set(default_snippets))
+        self.assertEqual(set([nightly_snippet]), set(nightly_snippets))
+        self.assertEqual(set([nightly_snippet]), set(default_snippets))

@@ -20,7 +20,7 @@ class ClientMatchRuleQuerySet(CachingQuerySet):
 
 
 class ClientMatchRuleManager(CachingManager):
-    def get_query_set(self):
+    def get_queryset(self):
         return ClientMatchRuleQuerySet(self.model)
 
 
@@ -84,8 +84,8 @@ class SnippetQuerySet(CachingQuerySet):
 
 
 class SnippetManager(CachingManager):
-    def get_query_set(self):
+    def get_queryset(self):
         return SnippetQuerySet(self.model)
 
     def match_client(self, client):
-        return self.get_query_set().match_client(client)
+        return self.get_queryset().match_client(client)

@@ -1,10 +1,9 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from snippets.base import views
 
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^$', views.SnippetIndexView.as_view(), name='base.index'),
     url(r'^(?P<startpage_version>[^/]+)/(?P<name>[^/]+)/(?P<version>[^/]+)/'
         '(?P<appbuildid>[^/]+)/(?P<build_target>[^/]+)/(?P<locale>[^/]+)/'
@@ -20,4 +19,4 @@ urlpatterns = patterns(
     url(r'^show/(?P<snippet_id>\d+)/$', views.show_snippet, name='base.show'),
     url(r'^json-snippets/', views.JSONSnippetIndexView.as_view(), name='base.index_json'),
     url(r'^active-snippets.json', views.ActiveSnippetsView.as_view(), name='base.active_snippets'),
-)
+]

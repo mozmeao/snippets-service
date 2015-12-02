@@ -3,7 +3,6 @@ import json
 from django.forms import ValidationError
 
 from mock import MagicMock, patch
-from nose.tools import assert_raises, eq_, ok_
 from pyquery import PyQuery as pq
 
 from snippets.base.forms import (IconWidget, TemplateDataWidget,
@@ -18,10 +17,10 @@ class IconWidgetTests(TestCase):
             render_mock.return_value = 'original widget code'
             widget = IconWidget()
             rendered_widget = widget.render('iconname', 'iconvalue')
-        ok_('original widget code' in rendered_widget)
+        self.assertTrue('original widget code' in rendered_widget)
         d = pq(rendered_widget)
-        eq_(d.find('img').attr('src'), 'iconvalue')
-        ok_(d.attr('id'), 'iconname')
+        self.assertEqual(d.find('img').attr('src'), 'iconvalue')
+        self.assertTrue(d.attr('id'), 'iconname')
 
 
 class TemplateSelectTests(TestCase):
@@ -40,22 +39,22 @@ class TemplateSelectTests(TestCase):
 
         # Blank option should have no data attributes.
         blank_option = d('option:contains("blank")')
-        eq_(blank_option.attr('data-variables'), None)
+        self.assertEqual(blank_option.attr('data-variables'), None)
 
         # Option 1 should have two variables in the data attribute.
         option1 = d('option:contains("t1")')
         variables = json.loads(option1.attr('data-variables'))
-        eq_(len(variables), 2)
-        ok_({'name': variable1.name, 'type': variable1.type,
-             'description': variable1.description} in variables)
-        ok_({'name': variable2.name, 'type': variable2.type,
-             'description': variable1.description} in variables)
+        self.assertEqual(len(variables), 2)
+        self.assertTrue({'name': variable1.name, 'type': variable1.type,
+                         'description': variable1.description} in variables)
+        self.assertTrue({'name': variable2.name, 'type': variable2.type,
+                         'description': variable1.description} in variables)
 
         # Option 2 should have just one variable.
         option2 = d('option:contains("t2")')
         variables = json.loads(option2.attr('data-variables'))
-        eq_(variables, [{'name': variable3.name, 'type': variable3.type,
-                         'description': variable3.description}])
+        self.assertEqual(variables, [{'name': variable3.name, 'type': variable3.type,
+                                      'description': variable3.description}])
 
 
 class TemplateDataWidgetTests(TestCase):
@@ -64,8 +63,8 @@ class TemplateDataWidgetTests(TestCase):
         d = pq(widget.render('anothername', None))
         data_widget = d('.template-data-widget')
 
-        eq_(data_widget.attr('data-select-name'), 'somename')
-        eq_(data_widget.attr('data-input-name'), 'anothername')
+        self.assertEqual(data_widget.attr('data-select-name'), 'somename')
+        self.assertEqual(data_widget.attr('data-input-name'), 'anothername')
 
 
 class UploadedFileAdminFormTests(TestCase):
@@ -76,7 +75,7 @@ class UploadedFileAdminFormTests(TestCase):
         file_mock = MagicMock()
         file_mock.name = 'bar.png'
         form.cleaned_data = {'file': file_mock}
-        eq_(form.clean_file(), file_mock)
+        self.assertEqual(form.clean_file(), file_mock)
 
     def test_clean_file_different_extension(self):
         instance = MagicMock()
@@ -85,4 +84,4 @@ class UploadedFileAdminFormTests(TestCase):
         file_mock = MagicMock()
         file_mock.name = 'bar.pdf'
         form.cleaned_data = {'file': file_mock}
-        assert_raises(ValidationError, form.clean_file)
+        self.assertRaises(ValidationError, form.clean_file)

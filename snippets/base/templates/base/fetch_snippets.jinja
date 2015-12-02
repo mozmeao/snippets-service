@@ -1,0 +1,12 @@
+{% include 'base/includes/snippet_css.jinja' %}
+<script type="text/javascript">
+//<![CDATA[
+  // Generated on {{ utcnow() }}
+  // Included snippets:
+{% for id in snippet_ids %}
+  //  - {{ id }}
+{% endfor %}
+  var ABOUTHOME_SNIPPETS = JSON.parse('{{ snippets_json|escapejs|safe }}');
+//]]>
+</script>
+{% include 'base/includes/snippet_js.jinja' %}

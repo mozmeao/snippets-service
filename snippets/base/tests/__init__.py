@@ -1,15 +1,15 @@
+from django.test import TransactionTestCase
+
 import factory
-from test_utils import TestCase as BaseTestCase
 
 from snippets.base import models
 
 
-class TestCase(BaseTestCase):
+class TestCase(TransactionTestCase):
     pass
 
 
 class SnippetTemplateFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = models.SnippetTemplate
     name = factory.Sequence(lambda n: 'Test Template {0}'.format(n))
     code = factory.Sequence(lambda n: '<p>Test Snippet {0}</p>'.format(n))
 
@@ -21,17 +21,24 @@ class SnippetTemplateFactory(factory.DjangoModelFactory):
         if extracted:
             self.variable_set.add(*extracted)
 
+    class Meta:
+        model = models.SnippetTemplate
+
 
 class SnippetTemplateVariableFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = models.SnippetTemplateVariable
     name = factory.Sequence(lambda n: 'test_var_{0}'.format(n))
     template = factory.SubFactory(SnippetTemplateFactory)
 
+    class Meta:
+        model = models.SnippetTemplateVariable
+
 
 class BaseSnippetFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = models.Snippet
     name = factory.Sequence(lambda n: 'Test Snippet {0}'.format(n))
     disabled = False
+
+    class Meta:
+        model = models.Snippet
 
     @factory.post_generation
     def client_match_rules(self, create, extracted, **kwargs):
@@ -63,29 +70,38 @@ class BaseSnippetFactory(factory.DjangoModelFactory):
 
 
 class SnippetFactory(BaseSnippetFactory):
-    FACTORY_FOR = models.Snippet
     template = factory.SubFactory(SnippetTemplateFactory)
+
+    class Meta:
+        model = models.Snippet
 
 
 class JSONSnippetFactory(BaseSnippetFactory):
-    FACTORY_FOR = models.JSONSnippet
+    class Meta:
+        model = models.JSONSnippet
 
 
 class ClientMatchRuleFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = models.ClientMatchRule
     description = factory.Sequence(lambda n: 'Client Match Rule {0}'.format(n))
+
+    class Meta:
+        model = models.ClientMatchRule
 
 
 class UploadedFileFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = models.UploadedFile
     name = factory.Sequence(lambda n: 'Uploaded File {0}'.format(n))
     # factory.django.FileField is broken and doesn't save filename. We
     # set file to None to prevent factory from taking any action and mock
     # it as needed in the tests.
     file = None
 
+    class Meta:
+        model = models.UploadedFile
+
 
 class SearchProviderFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = models.SearchProvider
     name = factory.Sequence(lambda n: 'Search Provider {0}'.format(n))
     identifier = factory.Sequence(lambda n: 'search-provider-{0}'.format(n))
+
+    class Meta:
+        model = models.SearchProvider

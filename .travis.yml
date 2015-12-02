@@ -1,19 +1,16 @@
 sudo: false
 language: python
 python:
-  - '2.6'
-  - '2.7'
+  - "2.7"
 before_script:
-  - mysql -e 'create database snippets character set utf8;'
-before_install:
-  - git submodule update --init --recursive
-  - pip install flake8 requests
-  - flake8 snippets --exit-zero | python bin/comment-on-pr.py
+  - mysql -e 'create database snippets_db;'
 install:
-  - pip install -r requirements/compiled.txt
-  - pip install -r requirements/dev.txt
-script:
-  - python manage.py test snippets
+  - pip install tox coveralls
 env:
-  global:
-    - TRAVIS_BOT_GITHUB_TOKEN=032783628529705aa6c4a3c79610b0fa593fed21
+  - TOX_ENV=flake8
+  - TOX_ENV=docs
+  - TOX_ENV=tests
+script:
+  - tox -e $TOX_ENV
+after_success:
+  - coveralls

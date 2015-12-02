@@ -129,8 +129,15 @@ class BaseSnippetAdminForm(forms.ModelForm):
 
 
 class SnippetAdminForm(BaseSnippetAdminForm):
+
     class Meta:
         model = Snippet
+        fields = ('name', 'template', 'data', 'priority', 'disabled',
+                  'countries', 'publish_start', 'publish_end',
+                  'on_release', 'on_beta', 'on_aurora', 'on_nightly',
+                  'on_startpage_1', 'on_startpage_2', 'on_startpage_3', 'on_startpage_4',
+                  'weight', 'client_match_rules', 'exclude_from_search_providers',
+                  'campaign')
         widgets = {
             'template': TemplateSelect,
             'data': TemplateDataWidget('template'),
@@ -140,6 +147,10 @@ class SnippetAdminForm(BaseSnippetAdminForm):
 class JSONSnippetAdminForm(BaseSnippetAdminForm):
     class Meta:
         model = JSONSnippet
+        fields = ('name', 'priority', 'disabled', 'icon', 'text', 'url', 'countries',
+                  'publish_start', 'publish_end',
+                  'on_release', 'on_beta', 'on_aurora', 'on_nightly',
+                  'on_startpage_1', 'weight', 'client_match_rules',)
         widgets = {
             'text': forms.Textarea,
             'icon': IconWidget,
@@ -160,3 +171,4 @@ class UploadedFileAdminForm(forms.ModelForm):
 
     class Meta:
         model = UploadedFile
+        fields = ('file', 'name')
