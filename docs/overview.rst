@@ -94,8 +94,9 @@ Once the code is injected, the included JavaScript:
 
 - Identifies all elements in the snippet code with the ``snippet`` class as
   potential snippets to display.
-- Filters out snippets that don't match the user's location (determined via IP
-  and stored locally to preserve privacy).
+- Filters out snippets that don't match the user's location. See
+  :doc:`geolocation` for information on how we retrieve and store
+  geolocation data.
 - Filters out snippets that are only supposed to be shown to users without a
   Firefox account.
 - Filters out snippets that are only supposed to be shown to users with a
@@ -107,9 +108,10 @@ Once the code is injected, the included JavaScript:
 - Triggers a ``show_snippet`` event on the ``.snippet`` element.
 - Modifies all ``<a>`` tags in the snippet to add the snippet ID as a
   URL parameter.
-- Logs an impression for the displayed snippet by sending a request to the
-  snippets metrics server. These requests are sampled and only go out 10% of
-  the time.
+- Logs an impression for the displayed snippet by sending a request to
+  the snippets metrics server. These requests are sampled and only go
+  out 10% of the time. See also :doc:`data_collection` chapter for more
+  information on the data send to the metrics server.
 
 If no snippets are available, the code falls back to showing default snippets
 included within Firefox itself.
