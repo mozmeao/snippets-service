@@ -139,6 +139,7 @@ class SnippetBundle(object):
         key_properties.extend([
             self.client.startpage_version,
             self.client.locale,
+            self.client.channel,
             SNIPPET_JS_TEMPLATE_HASH,
             SNIPPET_CSS_TEMPLATE_HASH,
             SNIPPET_FETCH_TEMPLATE_HASH,
