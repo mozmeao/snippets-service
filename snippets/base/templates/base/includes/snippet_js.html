@@ -248,7 +248,10 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         var blockList = getBlockList();
         snippets = snippets.filter(
             function (snippet) {
-                if (blockList.indexOf(snippet.id) === -1) {
+                var snippet_id = parseInt(snippet.id, 10);
+                var campaign = snippet.campaign;
+                var snippetHandle = campaign || snippet_id;
+                if (blockList.indexOf(snippetHandle) === -1) {
                     return true;
                 }
                 return false;
@@ -425,10 +428,15 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 
     // Add links to buttons that block snippets.
     function addSnippetBlockLinks(elements) {
-        var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
+        var snippet_id = parseInt(ABOUTHOME_SHOWN_SNIPPET.id, 10);
+        var campaign = ABOUTHOME_SHOWN_SNIPPET.campaign;
+        var snippetHandle = campaign || snippet_id;
+        if (!snippetHandle && snippetHandle !== 0) {
+            return;
+        }
         var blockSnippet = function (event) {
             event.preventDefault();
-            addToBlockList(snippet_id);
+            addToBlockList(snippetHandle);
             sendMetric('snippet-blocked', function() { window.location.reload(); })
         };
 
@@ -544,18 +552,17 @@ function sendMetric(metric, callback) {
     {% endif %}
 }
 
-function popFromBlockList(snippetID) {
+function popFromBlockList(snippetHandle) {
     var blockList = getBlockList();
-    var item = blockList.pop(snippetID);
+    var item = blockList.pop(snippetHandle);
     gSnippetsMap.set('blockList', blockList);
     return item;
 }
 
-function addToBlockList(snippetID) {
+function addToBlockList(snippetHandle) {
     var blockList = getBlockList();
-    snippetID = parseInt(snippetID, 10);
-    if (blockList.indexOf(snippetID) === -1) {
-        blockList = [snippetID].concat(blockList);
+    if (blockList.indexOf(snippetHandle) === -1) {
+        blockList = [snippetHandle].concat(blockList);
         gSnippetsMap.set('blockList', blockList);
     }
 }
