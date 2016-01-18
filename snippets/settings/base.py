@@ -99,5 +99,4 @@ SNIPPET_BUNDLE_TIMEOUT = 15 * 60  # 15 minutes
 METRICS_URL = 'https://snippets-stats.mozilla.org/foo.html'
 METRICS_SAMPLE_RATE = 0.1
 
-OLD_GEO_URL = 'https://geo.mozilla.org/country.js'
 GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-4205-9a11-82feda9d83a3'
