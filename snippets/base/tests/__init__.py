@@ -9,7 +9,7 @@ class TestCase(TransactionTestCase):
     pass
 
 
-class SnippetTemplateFactory(factory.DjangoModelFactory):
+class SnippetTemplateFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Test Template {0}'.format(n))
     code = factory.Sequence(lambda n: '<p>Test Snippet {0}</p>'.format(n))
 
@@ -25,7 +25,7 @@ class SnippetTemplateFactory(factory.DjangoModelFactory):
         model = models.SnippetTemplate
 
 
-class SnippetTemplateVariableFactory(factory.DjangoModelFactory):
+class SnippetTemplateVariableFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'test_var_{0}'.format(n))
     template = factory.SubFactory(SnippetTemplateFactory)
 
@@ -33,12 +33,9 @@ class SnippetTemplateVariableFactory(factory.DjangoModelFactory):
         model = models.SnippetTemplateVariable
 
 
-class BaseSnippetFactory(factory.DjangoModelFactory):
+class BaseSnippetFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Test Snippet {0}'.format(n))
     disabled = False
-
-    class Meta:
-        model = models.Snippet
 
     @factory.post_generation
     def client_match_rules(self, create, extracted, **kwargs):
@@ -81,14 +78,14 @@ class JSONSnippetFactory(BaseSnippetFactory):
         model = models.JSONSnippet
 
 
-class ClientMatchRuleFactory(factory.DjangoModelFactory):
+class ClientMatchRuleFactory(factory.django.DjangoModelFactory):
     description = factory.Sequence(lambda n: 'Client Match Rule {0}'.format(n))
 
     class Meta:
         model = models.ClientMatchRule
 
 
-class UploadedFileFactory(factory.DjangoModelFactory):
+class UploadedFileFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Uploaded File {0}'.format(n))
     # factory.django.FileField is broken and doesn't save filename. We
     # set file to None to prevent factory from taking any action and mock
@@ -99,7 +96,7 @@ class UploadedFileFactory(factory.DjangoModelFactory):
         model = models.UploadedFile
 
 
-class SearchProviderFactory(factory.DjangoModelFactory):
+class SearchProviderFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Search Provider {0}'.format(n))
     identifier = factory.Sequence(lambda n: 'search-provider-{0}'.format(n))
 

@@ -1,5 +1,7 @@
 sudo: false
 language: python
+git:
+  submodules: false
 python:
   - "2.7"
 before_script:

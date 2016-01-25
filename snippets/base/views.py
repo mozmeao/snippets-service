@@ -148,7 +148,7 @@ def fetch_json_snippets(request, **kwargs):
                          .order_by('priority')
                          .filter_by_available())
     return HttpResponse(json.dumps(matching_snippets, cls=JSONSnippetEncoder),
-                        mimetype='application/json')
+                        content_type='application/json')
 
 
 PREVIEW_CLIENT = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
@@ -212,4 +212,4 @@ class ActiveSnippetsView(View):
         snippets = (list(Snippet.cached_objects.filter(disabled=False)) +
                     list(JSONSnippet.cached_objects.filter(disabled=False)))
         return HttpResponse(json.dumps(snippets, cls=ActiveSnippetsEncoder),
-                            mimetype='application/json')
+                            content_type='application/json')

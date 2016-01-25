@@ -1,0 +1,16 @@
+# sha256: Ld8Y2jsGIfpD_uS3KQ2grnibRvuJkniorMzaGVxJeac
+# sha256: Gm5RMMK0LS3jAWk8KZ94zEvTUB54thDAjkXvxw4rURQ
+Sphinx==1.3.1
+
+# sha256: PDjQN3E714BDSG7qW_dx1x7Wl-wlwJ4W9J5EiH9_4YQ
+# sha256: RsLKi0grA5i5Yhu1qOx8nFxyJpJuU2PhjXRPXw05148
+# sha256: JzhG-KrKwyv5VCNlpZO0lbaNgDXC44LJzO3Kw4fJoKE
+sphinx_rtd_theme==0.1.9
+
+# sha256: Egr4uJMGHscr5KqRuTRV5tDUqAF1wHpTgZkQxNiXSDA
+# sha256: CMxlW-wlusPmYKstHFFHHUUy7zk_xA-vvSUBQCY1Frs
+sphinx-autobuild==0.5.2
+
+# sha256: 3OvUkoESYxYm9MTQ31l4fHSEBOZt2pUhEAMOqIPTuM0
+# sha256: x9txeBCraWX2bIzwOYqYydjfmC2jm0zX8WKRHriVlvo
+docutils==0.12

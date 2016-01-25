@@ -249,8 +249,7 @@ class SnippetTemplateVariable(CachingMixin, models.Model):
     type = models.IntegerField(choices=TYPE_CHOICES, default=TEXT)
     description = models.TextField(blank=True, default='')
 
-    objects = models.Manager()
-    cached_objects = CachingManager()
+    objects = CachingManager()
 
     def __unicode__(self):
         return u'{0}: {1}'.format(self.template.name, self.name)
@@ -509,8 +508,7 @@ class JSONSnippetLocale(CachingMixin, models.Model):
     snippet = models.ForeignKey(JSONSnippet, related_name='locale_set')
     locale = LocaleField()
 
-    objects = models.Manager()
-    cached_objects = CachingManager()
+    objects = CachingManager()
 
 
 def _generate_filename(instance, filename):

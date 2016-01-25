@@ -23,7 +23,7 @@ class JSONSnippetEncoderTests(TestCase):
         data = {'id': 99, 'text': 'test-text',
                 'icon': 'test-icon', 'url': 'test-url',
                 'weight': 100}
-        snippet = JSONSnippetFactory.build(**data)
+        snippet = JSONSnippetFactory(**data)
         result = encoder.default(snippet)
         self.assertEqual(result, data)
 

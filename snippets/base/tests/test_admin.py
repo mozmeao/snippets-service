@@ -67,6 +67,7 @@ class SnippetAdminTests(TestCase):
         class FormClass(ModelForm):
             class Meta:
                 model = Snippet
+                fields = ('name', 'data', 'template', 'priority', 'weight')
         form = FormClass(data, instance=snippet)
         self._save_model(snippet, form)
 
@@ -169,8 +170,9 @@ class SnippetTemplateAdminTests(TestCase):
 
         self.assertFalse(SnippetTemplateVariable.objects
                          .filter(template=template, name='does_not_exist').exists())
-        self.assertTrue(SnippetTemplateVariable.objects
-                        .filter(template=template, name='does_not_exist_2').exists())
+
+        self.assertFalse(SnippetTemplateVariable.objects
+                         .filter(template=template, name='does_not_exist_2').exists())
 
     @patch('snippets.base.admin.RESERVED_VARIABLES', ('reserved_name',))
     def test_save_related_reserved_name(self):

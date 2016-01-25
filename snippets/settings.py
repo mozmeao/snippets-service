@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 
 import dj_database_url
+import django_cache_url
 from decouple import Csv, config
 from django_sha2 import get_password_hashers
 
@@ -26,6 +27,7 @@ SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
+DEBUG_TEMPLATE = config('DEBUG_TEMPLATE', default=DEBUG, cast=bool),
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
@@ -90,15 +92,16 @@ LANGUAGE_CODE = config('LANGUAGE_CODE', default='en-us')
 
 TIME_ZONE = config('TIME_ZONE', default='UTC')
 
-USE_I18N = config('USE_I18N', default=True, cast=bool)
+USE_I18N = config('USE_I18N', default=False, cast=bool)
 
-USE_L10N = config('USE_L10N', default=True, cast=bool)
+USE_L10N = config('USE_L10N', default=False, cast=bool)
 
-USE_TZ = config('USE_TZ', default=True, cast=bool)
+USE_TZ = config('USE_TZ', default=False, cast=bool)
 
 STATIC_ROOT = config('STATIC_ROOT', default=os.path.join(BASE_DIR, 'static'))
 STATIC_URL = config('STATIC_URL', '/static/')
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+if not DEBUG_TEMPLATE:
+    STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 MEDIA_ROOT = config('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
 MEDIA_URL = config('MEDIA_URL', '/media/')
@@ -110,6 +113,7 @@ TEMPLATES = [
         'BACKEND': 'django_jinja.backend.Jinja2',
         'APP_DIRS': True,
         'OPTIONS': {
+            'debug': DEBUG_TEMPLATE,
             'match_extension': '.jinja',
             'newstyle_gettext': True,
             'context_processors': [
@@ -176,4 +180,8 @@ GEO_URL = 'https://geo.mozilla.org/country.js'
 # TODO
 SITE_URL = config('SITE_URL')
 
-GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-4205-9a11-82feda9d83a3'
+CACHES = {
+    'default': config('CACHE_URL', default='locmem://', cast=django_cache_url.parse),
+}
+
+GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-4205-9a11-82feda9d83a3'  # noqa

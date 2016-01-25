@@ -1,13 +1,3 @@
-# Adding peep so we can track it on requires.io. For packages
-# installation we use peep.py shipped in ./bin
-# sha256: KoBM4H9Zz1WtVFuy4WMSwRNkuU0_k4bW4SFFsuOOXBw
-peep==2.4.1
-
-# sha256: c1CauJkYk_5byimUihn9wtv5xN1KDpiqnFgDvveKsiY
-# sha256: zpqSSG7aW_PZ5Ah_gCSSsVtxsGuJTWgM-Wb1wnlD5TI
-# sha256: m7S7kSEJqteivOjiKGp9mgnrzKrv5Br4VYZrZgcVkGA
-peepin==0.11
-
 # sha256: j7aT7P5M1v-a4xNv8KHqpKyuAa8ie7geZG3CutMpXM8
 # sha256: F6Zt5c9Zte6Bw9xXYJsUW7Ra3dwNwGk3uZhZfW57RSM
 Django==1.8.7
@@ -38,9 +28,6 @@ gunicorn==19.3.0
 # sha256: fQHFIMGnwEIEv1KHtts8Zz47l6s6jlzBovzFnYahRAw
 whitenoise==2.0.4
 
-# sha256: 0yV2uq13_dnmhZvpfCtqPBem9IQ2Q4nbcx8Gl7ehlmE
-django-csp==2.0.3
-
 # sha256: Or5qbT_C-75MYBRCEfRdou2-MYKm9lEa9ru6BZix-ZI
 # sha256: k575weEiTZgEBWial__PeCjFbRUXsx1zRkNWwfK3dp4
 # sha256: 6tSu-nAHJJ4F5RsBCVcZ1ajdlXYAifVzCqxWmLGTKRg
@@ -59,55 +46,13 @@ pytz==2015.7
 # sha256: tYAUqlZA40Vup9vzPxUaHEud9HKJdocwwKAwYaRxOGU
 newrelic==2.56.0.42
 
-# sha256: sVjy_R5it9Jdvj4JGfyXeYcZ9ypgcr2y-bDh0C_CsD8
-# sha256: ghbIxu4JKuk9UfibyRBFZIyIzZvnfWDPR998om7k-Iw
-flake8==2.5.0
-
-# sha256: SqEp342QB7GSv4IBP0FVM5lGUtfKqTDQAmh-tCpsKkE
-# sha256: uLfjVjC1U54moZffxgBb6eHpoTVJazd3I6jrwBuby_8
-pep8==1.6.2
-
-# sha256: Bx0SHp57MwWKobpd57zpuXv6MUnP4ay7ZYfCH8HI7aE
-# sha256: 854zpMA77q2HdPAFvT7PDD8vJk-gIB3pZfzgr_HTQmM
-pyflakes==1.0.0
-
-# sha256: vWwID7NyrrywzhnjXdrHRPKr9ae--iB9stEJfUjv5jo
-# sha256: X36m-zqpr-FG0H_W1c7feIdH2LDCnkRzJFPCstsePRY
-mccabe==0.3.1
-
-# sha256: lUHOZ55R670NvTImy0NMw6yTIbUvA7ra0pdfYNbJ8Lo
-# sha256: VsBHyYmu7GaF7iqLJcB-zcoEKiN0nm6iPPsZSEThV7w
-# sha256: L9J2xAf7Cynl1IhKcCmiwn_vCgb9ejSSTM5pt8xD9No
-# sha256: WnlMdzRJTPhTamfVCc8UQ_TlSIg3onwsWzSNhAWRR8E
-ipython==4.0.0
-
-# sha256: F2PRVkET9euJ33eHmo0yEyc8TX_5Pcs3owcM3ww0_Xw
-ipdb==0.8.1
-
-# sha256: Ld8Y2jsGIfpD_uS3KQ2grnibRvuJkniorMzaGVxJeac
-# sha256: Gm5RMMK0LS3jAWk8KZ94zEvTUB54thDAjkXvxw4rURQ
-Sphinx==1.3.1
-
-# sha256: PDjQN3E714BDSG7qW_dx1x7Wl-wlwJ4W9J5EiH9_4YQ
-# sha256: RsLKi0grA5i5Yhu1qOx8nFxyJpJuU2PhjXRPXw05148
-# sha256: JzhG-KrKwyv5VCNlpZO0lbaNgDXC44LJzO3Kw4fJoKE
-sphinx_rtd_theme==0.1.9
-
-# sha256: Egr4uJMGHscr5KqRuTRV5tDUqAF1wHpTgZkQxNiXSDA
-# sha256: CMxlW-wlusPmYKstHFFHHUUy7zk_xA-vvSUBQCY1Frs
-sphinx-autobuild==0.5.2
-
-# sha256: 3OvUkoESYxYm9MTQ31l4fHSEBOZt2pUhEAMOqIPTuM0
-# sha256: x9txeBCraWX2bIzwOYqYydjfmC2jm0zX8WKRHriVlvo
-docutils==0.12
-
 # sha256: CjoiZeHvsN76ci0fQpcw3J35da3DxgrH0rQyvfA8BB0
 # sha256: Xe0vqQlP19_rPakmNkCf1wKg0H1gYoNQTX7gRAHO5cs
 # sha256: cyCRkITm2sj0VAY4pGRHo71zD8oXKvwX0sA-7SLPT1E
 Pygments==2.0.2
 
-# sha256: b0wujFraFwOf8cHji8Ub6pMXrzZ24oRmFIyN9fx48TI
-django-jinja==1.4.1
+# sha256: Ljgtj2X4xfA3ic9v8RL1zl31umAus0yRDarxFImTv4k
+django-jinja==2.1.1
 
 # sha256: RORjnsBXprap3duGnU46SBj8knjsSQzOOa7whEBZKpM
 django-session-csrf==0.5
@@ -129,16 +74,6 @@ django-smuggler==0.6.1
 # sha256: VgGKF9FIjrGh4Y583dyuok08ezcEFy41b2kWxXf0_Z4
 bleach==1.4.2
 
-# sha256: RsUeuHi3h-gU7o-XN7CmIREDSutNHAZFCsWo6lpw5gI
-pyquery==1.2.9
-
-# sha256: kPUHiRrRBz4Iz2kI61HV4d68PFpdVUQn6MP79zzfEu4
-fake-factory==0.5.3
-
-# sha256: EWYQoXCRjfNC2yxLr7yPS5F4DEmHj5KdieNg8QrSnSo
-# sha256: deTJeG7SjRnsf7UA88ciGm64d0jLxvXi7qykw9aPMMs
-factory_boy==2.6.0
-
 # sha256: WN0CwygZupfEB4uMEziI0w9_vTk3KW_9rVD3n7V9XNs
 django-mozilla-product-details==0.8.1
 
@@ -156,9 +91,6 @@ django-waffle==0.11
 # sha256: j4MIDaoknQNsvM-4rlzG_wB7iNbZN1ITca-r57Gbrbw
 mock==1.0.1
 
-# sha256: BTWn4nAUh0snrjpNM-h0njRb36YnZhlSCLeZa_EQBoI
-cssselect==0.9.1
-
 # sha256: NJ-T46SwnMWUGIVKuAE9An0kZ1fFF0S_IAabyJAW9Xg
 # sha256: hijMgpV8Qb4Qq86Imhl2zre54_Nuv_pPyxqAkBv3etw
 # sha256: HJwmu2wxw9WzwQToQyEdnBBdtgtN9ncKxCZzJj1V1JQ
@@ -166,3 +98,21 @@ cssselect==0.9.1
 # sha256: Kr9srJt5UgR9i3JlOEqVZeQZpyfbpnXoPkt_W3iStrs
 # sha256: bf-QkCDQwDD7JgBGJsj4f5EW4DgXAv7UFcr5T1qblJM
 lxml==3.5.0
+
+# sha256: cVBsEnq6Vmqxubd78JzNMRmjh663bfGzTyVBzkdkkBw
+# sha256: NYPKHJtDsIudxxRjpcAv2ubr697oEqZxmOKn5CnFQhA
+django-cache-url==1.0.0
+
+
+# sha256: RsUeuHi3h-gU7o-XN7CmIREDSutNHAZFCsWo6lpw5gI
+pyquery==1.2.9
+
+# sha256: kPUHiRrRBz4Iz2kI61HV4d68PFpdVUQn6MP79zzfEu4
+fake-factory==0.5.3
+
+# sha256: EWYQoXCRjfNC2yxLr7yPS5F4DEmHj5KdieNg8QrSnSo
+# sha256: deTJeG7SjRnsf7UA88ciGm64d0jLxvXi7qykw9aPMMs
+factory_boy==2.6.0
+
+# sha256: BTWn4nAUh0snrjpNM-h0njRb36YnZhlSCLeZa_EQBoI
+cssselect==0.9.1

@@ -52,8 +52,3 @@ def validate_regex(regex_str):
         except re.error, exp:
             raise ValidationError(str(exp))
     return regex_str
-
-
-# add_introspection_rules([], ['^snippets\.base\.fields\.LocaleField'])
-# add_introspection_rules([], ['^snippets\.base\.fields\.CountryField'])
-# add_introspection_rules([], ["^snippets\.base\.fields\.RegexField"])

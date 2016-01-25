@@ -78,7 +78,8 @@ class FetchRenderSnippetsTests(TestCase):
         """
         params = self.client_params
         response = self.client.get('/{0}/'.format('/'.join(params)))
-        self.assertEqual(response['Cache-control'], 'public, max-age=75')
+        cache_headers = [header.strip() for header in response['Cache-control'].split(',')]
+        self.assertEqual(set(cache_headers), set(['public', 'max-age=75']))
         self.assertEqual(response['Vary'], 'If-None-Match')
 
     def test_etag(self):
@@ -150,7 +151,8 @@ class JSONSnippetsTests(TestCase):
                   'Darwin_Universal-gcc3', 'en-US', 'nightly',
                   'Darwin%2010.8.0', 'default', 'default_version')
         response = self.client.get('/json/{0}/'.format('/'.join(params)))
-        self.assertEqual(response['Cache-control'], 'public, max-age=75')
+        cache_headers = [header.strip() for header in response['Cache-control'].split(',')]
+        self.assertEqual(set(cache_headers), set(['public', 'max-age=75']))
         self.assertTrue('Vary' not in response)
 
     def test_response(self):
@@ -174,7 +176,7 @@ class PreviewSnippetTests(TestCase):
         response = self._preview_snippet()
         self.assertEqual(response.status_code, 400)
 
-        response = self._preview_snippet(template_id=99999999999999999999)
+        response = self._preview_snippet(template_id=9999999999999)
         self.assertEqual(response.status_code, 400)
 
         response = self._preview_snippet(template_id='')
@@ -197,7 +199,6 @@ class PreviewSnippetTests(TestCase):
 
         response = self._preview_snippet(template_id=template.id, data=data)
         self.assertEqual(response.status_code, 200)
-
         snippet = response.context['snippets_json']
         self.assertTrue(json.loads(snippet))
 

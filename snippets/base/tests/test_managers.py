@@ -2,7 +2,7 @@ from datetime import datetime
 
 from mock import patch
 
-from snippets.base.models import Client, ClientMatchRule, Snippet, SnippetLocale
+from snippets.base.models import Client, ClientMatchRule, JSONSnippet, Snippet, SnippetLocale
 from snippets.base.tests import ClientMatchRuleFactory, SnippetFactory, TestCase
 from snippets.base.util import first
 
@@ -211,7 +211,7 @@ class SnippetManagerTests(TestCase):
         """
         client = self._build_client(name='fennec')
         with patch('snippets.base.managers.first', wraps=first) as first_mock:
-            Snippet.cached_objects.match_client(client)
+            JSONSnippet.cached_objects.match_client(client)
         first_mock.assert_called_with(['test-fennec'], client.startpage_version.startswith)
 
     def test_default_is_same_as_nightly(self):

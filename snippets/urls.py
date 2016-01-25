@@ -6,9 +6,6 @@ from django.http import HttpResponse
 from django.views.static import serve as static_serve
 
 
-admin.autodiscover()
-
-
 def robots_txt(request):
     permission = 'Allow' if settings.ENGAGE_ROBOTS else 'Disallow'
     return HttpResponse('User-agent: *\n{0}: /'.format(permission),
