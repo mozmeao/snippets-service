@@ -23,3 +23,4 @@ Contents
    developing
    contributing
    data_collection
+   geolocation

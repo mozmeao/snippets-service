@@ -175,3 +175,5 @@ GEO_URL = 'https://geo.mozilla.org/country.js'
 
 # TODO
 SITE_URL = config('SITE_URL')
+
+GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-4205-9a11-82feda9d83a3'
