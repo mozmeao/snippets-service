@@ -106,66 +106,61 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         };
     }
 
-    // gSnippetsMap polyfill, available in Firefox 22 and above.
-    var gSnippetsMap = null;
-    if (supportsLocalStorage()) {
-        // localStorage is available, so we wrap it with gSnippetsMap.
-        gSnippetsMap = {
-            set: function(key, value) {
-                localStorage[key] = value;
-            },
-            get: function(key) {
-                return localStorage[key];
-            }
-        };
-        window.gSnippetsMap = gSnippetsMap;
-    } else {
-        // localStorage isn't available, use gSnippetsMap (backed by IndexedDB).
-        gSnippetsMap = window.gSnippetsMap;
+    var gSnippetsMap = window.gSnippetsMap;
+
+    // By the time show_snippet event reaches #snippets the snippet
+    // will have finished initializing and altering the DOM. It's the
+    // time to modifyLinks() and addSnippetBlockLinks().
+    var snippets = document.getElementById('snippets');
+    snippets.addEventListener('show_snippet', function(event) {
+        var topSection = document.getElementById('topSection');
+        // Add sample rate and snippet ID to currently displayed links.
+        var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
+                          ABOUTHOME_SHOWN_SNIPPET.id);
+        modifyLinks(topSection.querySelectorAll('a'), parameters);
+        addSnippetBlockLinks(topSection.querySelectorAll('.block-snippet-button'));
+        sendImpression();
+    });
+
+    var snippetContainer;
+    injectSnippet();
+    function injectSnippet() {
+      var show_snippet = null;
+      if (ABOUTHOME_SNIPPETS.length > 0) {
+          show_snippet = chooseSnippet(ABOUTHOME_SNIPPETS);
+      }
+
+      if (show_snippet) {
+          ABOUTHOME_SHOWN_SNIPPET = show_snippet;
+
+          // Inject the snippet onto the page.
+          snippetContainer = document.createElement('div');
+          snippetContainer.innerHTML = show_snippet.code;
+          document.getElementById('snippets').appendChild(snippetContainer);
+          activateScriptTags(snippetContainer);
+
+          try {
+              activateSnippetsButtonClick(show_snippet);
+          } catch (err) {
+              // Do nothing, most likely a newer version of Firefox w/o
+              // activateSnippetsButtonClick
+          }
+
+          // Trigger show_snippet event
+          var evt = document.createEvent('Event');
+          evt.initEvent('show_snippet', true, true);
+          snippetContainer.querySelector('.snippet').dispatchEvent(evt);
+      } else {
+          showDefaultSnippets();
+      }
     }
 
-
-    var show_snippet = null;
-    if (ABOUTHOME_SNIPPETS.length > 0) {
-        show_snippet = chooseSnippet(ABOUTHOME_SNIPPETS);
-    }
-
-    if (show_snippet) {
-        ABOUTHOME_SHOWN_SNIPPET = show_snippet;
-
-        // Inject the snippet onto the page.
-        var snippetContainer = document.createElement('div');
-        snippetContainer.innerHTML = show_snippet.code;
-        document.getElementById('snippets').appendChild(snippetContainer);
-        activateScriptTags(snippetContainer);
-
-        try {
-            activateSnippetsButtonClick(show_snippet);
-        } catch (err) {
-            // Do nothing, most likely a newer version of Firefox w/o
-            // activateSnippetsButtonClick
+    function removeSnippet() {
+        ABOUTHOME_SHOWN_SNIPPET = null;
+        var snippetContainerParent = snippetContainer.parentNode;
+        if (snippetContainerParent) {
+          snippetContainerParent.removeChild(snippetContainer);
         }
-
-        // By the time show_snippet event reaches #snippets the snippet
-        // will have finished initializing and altering the DOM. It's the
-        // time to modifyLinks() and addSnippetBlockLinks().
-        var snippets = document.getElementById('snippets');
-        snippets.addEventListener('show_snippet', function(event) {
-            var topSection = document.getElementById('topSection');
-            // Add sample rate and snippet ID to currently displayed links.
-            var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
-                              ABOUTHOME_SHOWN_SNIPPET.id);
-            modifyLinks(topSection.querySelectorAll('a'), parameters);
-            addSnippetBlockLinks(topSection.querySelectorAll('.block-snippet-button'));
-            sendImpression();
-        });
-
-        // Trigger show_snippet event
-        var evt = document.createEvent('Event');
-        evt.initEvent('show_snippet', true, true);
-        snippetContainer.querySelector('.snippet').dispatchEvent(evt);
-    } else {
-        showDefaultSnippets();
     }
 
     // Update FxAccount Status
@@ -401,25 +396,21 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
         var blockSnippet = function (event) {
             event.preventDefault();
+            // We want to stop other click events.
+            // This element is being removed, so another
+            // click might cause parentNode reference errors.
+            // See trackLinkClicks()
+            event.stopPropagation();
             addToBlockList(snippet_id);
-            sendMetric('snippet-blocked', function() { window.location.reload(); })
+            sendMetric('snippet-blocked', function() {
+              removeSnippet();
+              injectSnippet();
+            });
         };
 
         for (var k = 0; k < elements.length; k++) {
             var button = elements[k];
             button.addEventListener('click', blockSnippet);
-        }
-    }
-
-    // Check for localStorage support. Copied from Modernizr.
-    function supportsLocalStorage() {
-        var s = 'snippets-test';
-        try {
-            localStorage.setItem(s, s);
-            localStorage.removeItem(s);
-            return true;
-        } catch(e) {
-            return false;
         }
     }
 
@@ -438,11 +429,11 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     // Listen for clicks on links, send metrics and handle
     // about:account custom links.
     var topSection = document.getElementById('topSection');
-    topSection.addEventListener('click', function(event) {
+    function trackLinkClicks(event) {
         var target = event.target;
         while (target.tagName && target.tagName.toLowerCase() !== 'a') {
             // Do not track clicks outside topSection.
-            if (target.id === 'topSection') {
+            if (target.id === 'topSection' || !target.parentNode) {
                 return;
             }
             target = target.parentNode;
@@ -476,7 +467,8 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             };
             sendMetric(metric, fire_event);
         }
-    }, false);
+    }
+    topSection.addEventListener('click', trackLinkClicks, false);
 
 
 })(window.showDefaultSnippets);
