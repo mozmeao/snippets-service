@@ -3,7 +3,8 @@ snippets
 
 [![Build Status](https://img.shields.io/travis/mozilla/snippets-service/master.svg)](https://travis-ci.org/mozilla/snippets-service)
 
-[![Coverage status](https://img.shields.io/coveralls/mozilla/snippets/master.svg)](https://coveralls.io/r/mozilla/snippets)
+[![codecov.io](https://codecov.io/github/mozilla/snippets-service/coverage.svg?branch=master)](https://codecov.io/github/mozilla/snippets-service?branch=master)
+
 
 Run the tests
 -------------
