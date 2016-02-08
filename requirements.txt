@@ -74,8 +74,9 @@ django-smuggler==0.6.1
 # sha256: VgGKF9FIjrGh4Y583dyuok08ezcEFy41b2kWxXf0_Z4
 bleach==1.4.2
 
-# sha256: WN0CwygZupfEB4uMEziI0w9_vTk3KW_9rVD3n7V9XNs
-django-mozilla-product-details==0.8.1
+# sha256: QA5ZvjwWOuv8jAeIeeh6iV2tJJWJ2LwzK7dtycm2Pvs
+# sha256: M63XBGg6XX-f9JwD5ApNjFAIglia7pcNXtga0Rx651w
+django-mozilla-product-details==0.10
 
 # sha256: sqKdMSc4F3L6h2nBx_rcW3C2NTOByJ4Bg6M-KadFIbo
 https://github.com/alex/django-filter/archive/70063a947f3a5cb434abe0e5623d02ec4f3bd75a.tar.gz#egg=django_filter
@@ -132,6 +133,7 @@ pyflakes==1.0.0
 # sha256: y8KTj2wBBhvG0h0Mg4wkiWZHVcsYZ28HNNdhf0V30J4
 # sha256: misS69h253xy5B6_QBzC58W1ZmSdUBBcpJgiaIZCIHs
 mccabe==0.4.0
+
 # sha256: uAicJCv1vQlorw9lti08uEgu6rW7wTZYxZQKRl7qgUU
 # sha256: qNx8JGds7mf5S5BrsszdznInqM4Mgkg0JBm5Qh33t9g
 # sha256: TSIF8QvjDsVzIUpoDoKRxALAjCSjJVzcw3rhZ46JLnM
