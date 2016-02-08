@@ -49,7 +49,7 @@ deploy:
   - provider: script
     script: bin/deploy-travis.sh $DEIS_STAGE_APPLICATION $NEWRELIC_STAGE_APPLICATION
     on:
-      branch: master
+      branch: travis
       repo: mozilla/snippets-service
   - provider: script
     script: bin/deploy-travis.sh $DEIS_PROD_APPLICATION $NEWRELIC_PROD_APPLICATION
