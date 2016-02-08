@@ -59,6 +59,7 @@ for app in config('EXTRA_APPS', default='', cast=Csv()):
 
 
 MIDDLEWARE_CLASSES = (
+    'sslify.middleware.SSLifyMiddleware',
     'snippets.base.middleware.FetchSnippetsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'waffle.middleware.WaffleMiddleware',
@@ -107,6 +108,10 @@ MEDIA_ROOT = config('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
 MEDIA_URL = config('MEDIA_URL', '/media/')
 
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
+
+SSLIFY_DISABLE = config('DISABLE_SSL', default=DEBUG, cast=bool)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 TEMPLATES = [
     {
