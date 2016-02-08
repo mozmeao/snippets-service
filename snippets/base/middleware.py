@@ -1,4 +1,4 @@
-from django.core.urlresolvers import resolve
+from django.core.urlresolvers import Resolver404, resolve
 
 from snippets.base.views import fetch_json_snippets, fetch_snippets
 
@@ -15,6 +15,10 @@ class FetchSnippetsMiddleware(object):
     and executes the view early, bypassing the rest of the middleware.
     """
     def process_request(self, request):
-        result = resolve(request.path)
+        try:
+            result = resolve(request.path)
+        except Resolver404:
+            return
+
         if result.func in (fetch_snippets, fetch_json_snippets):
             return result.func(request, *result.args, **result.kwargs)
