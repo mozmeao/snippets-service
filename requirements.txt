@@ -164,3 +164,13 @@ mccabe==0.4.0
 # sha256: ZCHrv99buuROW-W3Qd6wDwCnARvUUnMaJglfST0fVbs
 # sha256: 7DhUnoZKprr0wJHI0QABO8SOKpWztauJBZYCej1dcgQ
 coverage==4.1b2
+
+# sha256: lxVrN9fNpOfYZYvhFIyYOYThqXUJC6RYzH4kQCUZHb0
+# sha256: Xfuuas_FTt8KekFbmeCyHAo8J6f3h7KS7qcnsfrMVTM
+redis==2.10.5
+
+# sha256: XgASKaVBgKAtzdWdsjyZeDUa9VsSkMJ7xUnjgfQ6zWs
+msgpack-python==0.4.7
+
+# sha256: lYSFy14oHSkuEqxmAseL8ZqOn_dlJ6UKZJbVZlyJoAQ
+django-redis==4.3.0
