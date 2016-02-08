@@ -1,5 +1,7 @@
 from mock import Mock, patch
 
+from django.test import RequestFactory
+
 from snippets.base.middleware import FetchSnippetsMiddleware
 from snippets.base.tests import TestCase
 
@@ -53,4 +55,8 @@ class FetchSnippetsMiddlewareTests(TestCase):
         result = resolve.return_value
         result.func = lambda request: 'asdf'
 
+        self.assertEqual(self.middleware.process_request(request), None)
+
+    def test_unknown_url(self):
+        request = RequestFactory().get('/admin')
         self.assertEqual(self.middleware.process_request(request), None)
