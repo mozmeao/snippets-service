@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from django.db.models import get_model
+from django.db.models import Manager, get_model
 
-from caching.base import CachingManager, CachingQuerySet
+from caching.base import CachingQuerySet
 
 from snippets.base import LANGUAGE_VALUES
 from snippets.base.util import first
@@ -19,8 +19,8 @@ class ClientMatchRuleQuerySet(CachingQuerySet):
         return passed_rules, failed_rules
 
 
-class ClientMatchRuleManager(CachingManager):
-    def get_query_set(self):
+class ClientMatchRuleManager(Manager):
+    def get_queryset(self):
         return ClientMatchRuleQuerySet(self.model)
 
 
@@ -72,20 +72,24 @@ class SnippetQuerySet(CachingQuerySet):
             filters.update(locale_set__isnull=True)
 
         snippets = self.filter(**filters).distinct()
+        if client.name.lower() == 'fennec':
+            filtering = {'jsonsnippet__in': snippets}
+        else:
+            filtering = {'snippet__in': snippets}
 
         # Filter based on ClientMatchRules
         ClientMatchRule = get_model('base', 'ClientMatchRule')
         passed_rules, failed_rules = (ClientMatchRule.cached_objects
-                                      .filter(snippet__in=snippets)
+                                      .filter(**filtering)
                                       .distinct()
                                       .evaluate(client))
 
         return snippets.exclude(client_match_rules__in=failed_rules)
 
 
-class SnippetManager(CachingManager):
-    def get_query_set(self):
+class SnippetManager(Manager):
+    def get_queryset(self):
         return SnippetQuerySet(self.model)
 
     def match_client(self, client):
-        return self.get_query_set().match_client(client)
+        return self.get_queryset().match_client(client)

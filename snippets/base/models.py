@@ -18,9 +18,9 @@ from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.manager import Manager
+from django.template import engines
 from django.template.loader import render_to_string
 
-import jingo
 from caching.base import CachingManager, CachingMixin
 from jinja2 import Markup
 from jinja2.utils import LRUCache
@@ -32,12 +32,14 @@ from snippets.base.storage import OverwriteStorage
 from snippets.base.util import hashfile
 
 
+JINJA_ENV = engines['backend']
+
 SNIPPET_JS_TEMPLATE_HASH = hashfile(
-    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_js.html'))
+    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_js.jinja'))
 SNIPPET_CSS_TEMPLATE_HASH = hashfile(
-    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_css.html'))
+    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_css.jinja'))
 SNIPPET_FETCH_TEMPLATE_HASH = hashfile(
-    os.path.join(settings.ROOT, 'snippets/base/templates/base/fetch_snippets.html'))
+    os.path.join(settings.ROOT, 'snippets/base/templates/base/fetch_snippets.jinja'))
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly')
 FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4')
@@ -57,7 +59,7 @@ def validate_xml_template(data):
     parser.setFeature(xml.sax.handler.feature_external_ges, 0)
 
     data = data.encode('utf-8')
-    xml_str = '<div>{0}</div>'.format(data)
+    xml_str = '<div>\n{0}</div>'.format(data)
     try:
         parser.parse(StringIO(xml_str))
     except xml.sax.SAXParseException as e:
@@ -162,7 +164,7 @@ class SnippetBundle(object):
 
     @property
     def filename(self):
-        return u'bundles/bundle_{0}.html'.format(self.key)
+        return u'bundles/bundle_{0}.jinja'.format(self.key)
 
     @property
     def url(self):
@@ -186,7 +188,7 @@ class SnippetBundle(object):
 
     def generate(self):
         """Generate and save the code for this snippet bundle."""
-        bundle_content = render_to_string('base/fetch_snippets.html', {
+        bundle_content = render_to_string('base/fetch_snippets.jinja', {
             'snippet_ids': [snippet.id for snippet in self.snippets],
             'snippets_json': json.dumps([s.to_dict() for s in self.snippets]),
             'client': self.client,
@@ -221,7 +223,7 @@ class SnippetTemplate(CachingMixin, models.Model):
         cache_key = hashlib.sha1(self.code).hexdigest()
         template = template_cache.get(cache_key)
         if not template:
-            template = jingo.env.from_string(self.code)
+            template = JINJA_ENV.from_string(self.code)
             template_cache[cache_key] = template
         return template.render(ctx)
 
@@ -247,8 +249,7 @@ class SnippetTemplateVariable(CachingMixin, models.Model):
     type = models.IntegerField(choices=TYPE_CHOICES, default=TEXT)
     description = models.TextField(blank=True, default='')
 
-    objects = models.Manager()
-    cached_objects = CachingManager()
+    objects = CachingManager()
 
     def __unicode__(self):
         return u'{0}: {1}'.format(self.template.name, self.name)
@@ -507,28 +508,28 @@ class JSONSnippetLocale(CachingMixin, models.Model):
     snippet = models.ForeignKey(JSONSnippet, related_name='locale_set')
     locale = LocaleField()
 
-    objects = models.Manager()
-    cached_objects = CachingManager()
+    objects = CachingManager()
+
+
+def _generate_filename(instance, filename):
+    """Generate a new unique filename while preserving the original
+    filename extension. If an existing UploadedFile gets updated
+    do not generate a new filename.
+    """
+
+    # Instance is new UploadedFile, generate a filename
+    if not instance.id:
+        ext = os.path.splitext(filename)[1]
+        filename = str(uuid.uuid4()) + ext
+        return os.path.join(UploadedFile.FILES_ROOT, filename)
+
+    # Use existing filename.
+    obj = UploadedFile.objects.get(id=instance.id)
+    return obj.file.name
 
 
 class UploadedFile(models.Model):
     FILES_ROOT = 'files'  # Directory name inside MEDIA_ROOT
-
-    def _generate_filename(instance, filename):
-        """Generate a new unique filename while preserving the original
-        filename extension. If an existing UploadedFile gets updated
-        do not generate a new filename.
-        """
-
-        # Instance is new UploadedFile, generate a filename
-        if not instance.id:
-            ext = os.path.splitext(filename)[1]
-            filename = str(uuid.uuid4()) + ext
-            return os.path.join(UploadedFile.FILES_ROOT, filename)
-
-        # Use existing filename.
-        obj = UploadedFile.objects.get(id=instance.id)
-        return obj.file.name
 
     file = models.FileField(storage=OverwriteStorage(), upload_to=_generate_filename)
     name = models.CharField(max_length=255)

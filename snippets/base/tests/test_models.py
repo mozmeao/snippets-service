@@ -4,12 +4,12 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test.utils import override_settings
 
+from jinja2 import Markup
 from mock import ANY, MagicMock, Mock, patch
-from nose.tools import assert_not_equal, assert_raises, eq_, ok_
 from pyquery import PyQuery as pq
 
 from snippets.base.models import (Client, SnippetBundle, UploadedFile,
-                                  validate_xml_template, validate_xml_variables)
+                                  validate_xml_template, validate_xml_variables, _generate_filename)
 from snippets.base.tests import (ClientMatchRuleFactory,
                                  JSONSnippetFactory,
                                  SearchProviderFactory,
@@ -24,11 +24,12 @@ class DuplicateSnippetMixInTests(TestCase):
     def _dup_test(self, snippet):
         snippet.client_match_rules.add(*ClientMatchRuleFactory.create_batch(3))
         snippet_copy = snippet.duplicate()
-        eq_(snippet_copy.disabled, True)
-        ok_(snippet_copy.id != snippet.id)
-        eq_(snippet_copy.locale_set.count(), 1)
-        ok_(snippet_copy.locale_set.all()[0] != snippet.locale_set.all()[0])
-        eq_(set(snippet_copy.client_match_rules.all()), set(snippet.client_match_rules.all()))
+        self.assertEqual(snippet_copy.disabled, True)
+        self.assertTrue(snippet_copy.id != snippet.id)
+        self.assertEqual(snippet_copy.locale_set.count(), 1)
+        self.assertTrue(snippet_copy.locale_set.all()[0] != snippet.locale_set.all()[0])
+        self.assertEqual(set(snippet_copy.client_match_rules.all()),
+                         set(snippet.client_match_rules.all()))
 
     def test_snippet(self):
         snippet = SnippetFactory.create()
@@ -50,30 +51,30 @@ class ClientMatchRuleTests(TestCase):
         pass_rule = ClientMatchRuleFactory(channel='aurora')
         fail_rule = ClientMatchRuleFactory(channel='nightly')
 
-        ok_(pass_rule.matches(client))
-        ok_(not fail_rule.matches(client))
+        self.assertTrue(pass_rule.matches(client))
+        self.assertTrue(not fail_rule.matches(client))
 
     def test_regex_match(self):
         client = self._client(version='15.2.4')
         pass_rule = ClientMatchRuleFactory(version='/[\d\.]+/')
         fail_rule = ClientMatchRuleFactory(version='/\D+/')
 
-        ok_(pass_rule.matches(client))
-        ok_(not fail_rule.matches(client))
+        self.assertTrue(pass_rule.matches(client))
+        self.assertTrue(not fail_rule.matches(client))
 
     def test_multi_match(self):
         client = self._client(version='1.0', locale='en-US')
         pass_rule = ClientMatchRuleFactory(version='1.0', locale='en-US')
         fail_rule = ClientMatchRuleFactory(version='1.0', locale='fr')
 
-        ok_(pass_rule.matches(client))
-        ok_(not fail_rule.matches(client))
+        self.assertTrue(pass_rule.matches(client))
+        self.assertTrue(not fail_rule.matches(client))
 
     def test_empty_match(self):
         client = self._client(version='1.0', locale='fr')
         rule = ClientMatchRuleFactory()
 
-        ok_(rule.matches(client))
+        self.assertTrue(rule.matches(client))
 
     def test_exclusion_rule_match(self):
         client = self._client(channel='aurora')
@@ -81,57 +82,57 @@ class ClientMatchRuleTests(TestCase):
         pass_rule = ClientMatchRuleFactory(channel='nightly',
                                            is_exclusion=True)
 
-        ok_(pass_rule.matches(client))
-        ok_(not fail_rule.matches(client))
+        self.assertTrue(pass_rule.matches(client))
+        self.assertTrue(not fail_rule.matches(client))
 
 
 class XMLVariablesValidatorTests(TestCase):
     def test_valid_xml(self):
         valid_xml = '{"foo": "<b>foobar</b>"}'
-        eq_(validate_xml_variables(valid_xml), valid_xml)
+        self.assertEqual(validate_xml_variables(valid_xml), valid_xml)
 
     def test_invalid_xml(self):
         invalid_xml = '{"foo": "<b><i>foobar<i></b>"}'
-        assert_raises(ValidationError, validate_xml_variables, invalid_xml)
+        self.assertRaises(ValidationError, validate_xml_variables, invalid_xml)
 
     def test_unicode(self):
         unicode_xml = '{"foo": "<b>\u03c6\u03bf\u03bf</b>"}'
-        eq_(validate_xml_variables(unicode_xml), unicode_xml)
+        self.assertEqual(validate_xml_variables(unicode_xml), unicode_xml)
 
     def test_non_string_values(self):
         """
         If a value isn't a string, skip over it and continue validating.
         """
         valid_xml = '{"foo": "<b>Bar</b>", "baz": true}'
-        eq_(validate_xml_variables(valid_xml), valid_xml)
+        self.assertEqual(validate_xml_variables(valid_xml), valid_xml)
 
 
 class XMLTemplateValidatorTests(TestCase):
     def test_valid_xml(self):
         valid_xml = '<div>yo</div>'
-        eq_(validate_xml_template(valid_xml), valid_xml)
+        self.assertEqual(validate_xml_template(valid_xml), valid_xml)
 
     def test_unicode(self):
         valid_xml = '<div><b>\u03c6\u03bf\u03bf</b></div>'
-        eq_(validate_xml_template(valid_xml), valid_xml)
+        self.assertEqual(validate_xml_template(valid_xml), valid_xml)
 
     def test_invalid_xml(self):
         invalid_xml = '<div><input type="text" name="foo"></div>'
-        assert_raises(ValidationError, validate_xml_template, invalid_xml)
+        self.assertRaises(ValidationError, validate_xml_template, invalid_xml)
 
 
 class SnippetTemplateTests(TestCase):
     def test_render(self):
         template = SnippetTemplateFactory(code='<p>{{myvar}}</p>')
-        eq_(template.render({'myvar': 'foo'}), '<p>foo</p>')
+        self.assertEqual(template.render({'myvar': 'foo'}), '<p>foo</p>')
 
     def test_render_snippet_id(self):
         """If the template context doesn't have a snippet_id entry, add one set to 0."""
         template = SnippetTemplateFactory(code='<p>{{ snippet_id }}</p>')
-        eq_(template.render({'myvar': 'foo'}), '<p>0</p>')
+        self.assertEqual(template.render({'myvar': 'foo'}), '<p>0</p>')
 
     @patch('snippets.base.models.hashlib.sha1')
-    @patch('snippets.base.models.jingo.env.from_string')
+    @patch('snippets.base.models.JINJA_ENV.from_string')
     def test_render_not_cached(self, mock_from_string, mock_sha1):
         """If the template isn't in the cache, add it."""
         template = SnippetTemplateFactory(code='asdf')
@@ -142,15 +143,15 @@ class SnippetTemplateTests(TestCase):
 
         jinja_template = mock_from_string.return_value
         cache_key = mock_sha1.return_value.hexdigest.return_value
-        eq_(mock_cache, {cache_key: jinja_template})
+        self.assertEqual(mock_cache, {cache_key: jinja_template})
 
         mock_sha1.assert_called_with('asdf')
         mock_from_string.assert_called_with('asdf')
         jinja_template.render.assert_called_with({'snippet_id': 0})
-        eq_(result, jinja_template.render.return_value)
+        self.assertEqual(result, jinja_template.render.return_value)
 
     @patch('snippets.base.models.hashlib.sha1')
-    @patch('snippets.base.models.jingo.env.from_string')
+    @patch('snippets.base.models.JINJA_ENV.from_string')
     def test_render_cached(self, mock_from_string, mock_sha1):
         """
         If the template is in the cache, use the cached version instead
@@ -165,9 +166,9 @@ class SnippetTemplateTests(TestCase):
             result = template.render({})
 
         mock_sha1.assert_called_with('asdf')
-        ok_(not mock_from_string.called)
+        self.assertTrue(not mock_from_string.called)
         jinja_template.render.assert_called_with({'snippet_id': 0})
-        eq_(result, jinja_template.render.return_value)
+        self.assertEqual(result, jinja_template.render.return_value)
 
 
 class SnippetTests(TestCase):
@@ -181,11 +182,11 @@ class SnippetTests(TestCase):
             'code': 'rendered',
             'campaign': 'foo-campaign',
             'weight': 60,
-            'countries': ['gr', 'it'],
+            'countries': [u'gr', u'it'],
             'exclude_from_search_engines': [],
             'id': snippet.id,
         }
-        eq_(data, snippet.to_dict())
+        self.assertEqual(data, snippet.to_dict())
 
     def test_render(self):
         template = SnippetTemplateFactory.create()
@@ -199,7 +200,7 @@ class SnippetTests(TestCase):
         expected = ('<div data-snippet-id="{id}" data-weight="60" data-campaign="" '
                     'class="snippet-metadata" data-countries="us">'
                     '<a href="asdf">qwer</a></div>'.format(id=snippet.id))
-        eq_(snippet.render().strip(), expected)
+        self.assertEqual(snippet.render().strip(), expected)
         template.render.assert_called_with({
             'url': 'asdf',
             'text': 'qwer',
@@ -214,10 +215,10 @@ class SnippetTests(TestCase):
         data = '{"url": "asdf", "text": "qwer"}'
         snippet = SnippetFactory.create(template=template, data=data, campaign='foo')
 
-        expected = ('<div data-snippet-id="{id}" data-weight="100" '
-                    'data-campaign="foo" class="snippet-metadata">'
-                    '<a href="asdf">qwer</a></div>'.format(id=snippet.id))
-        eq_(snippet.render().strip(), expected)
+        expected = Markup('<div data-snippet-id="{id}" data-weight="100" '
+                          'data-campaign="foo" class="snippet-metadata">'
+                          '<a href="asdf">qwer</a></div>'.format(id=snippet.id))
+        self.assertEqual(snippet.render().strip(), expected)
 
     def test_render_no_country(self):
         """
@@ -231,11 +232,11 @@ class SnippetTests(TestCase):
         data = '{"url": "asdf", "text": "qwer"}'
         snippet = SnippetFactory.create(template=template, data=data)
 
-        expected = ('<div data-snippet-id="{0}" data-weight="100" '
-                    'data-campaign="" class="snippet-metadata">'
-                    '<a href="asdf">qwer</a></div>'
-                    .format(snippet.id))
-        eq_(snippet.render().strip(), expected)
+        expected = Markup('<div data-snippet-id="{0}" data-weight="100" '
+                          'data-campaign="" class="snippet-metadata">'
+                          '<a href="asdf">qwer</a></div>'
+                          .format(snippet.id))
+        self.assertEqual(snippet.render().strip(), expected)
 
     def test_render_multiple_countries(self):
         """
@@ -248,11 +249,11 @@ class SnippetTests(TestCase):
         data = '{"url": "asdf", "text": "qwer"}'
         snippet = SnippetFactory.create(template=template, data=data, countries=['us', 'el'])
 
-        expected = (
+        expected = Markup(
             '<div data-snippet-id="{0}" data-weight="100" data-campaign="" '
             'class="snippet-metadata" data-countries="us,el">'
             '<a href="asdf">qwer</a></div>'.format(snippet.id))
-        eq_(snippet.render().strip(), expected)
+        self.assertEqual(snippet.render().strip(), expected)
 
     def test_render_exclude_search_engines(self):
         """
@@ -268,13 +269,12 @@ class SnippetTests(TestCase):
         search_providers = SearchProviderFactory.create_batch(2)
         snippet.exclude_from_search_providers.add(*search_providers)
 
-        expected = ('<div data-snippet-id="{id}" data-weight="100" data-campaign="" '
-                    'class="snippet-metadata" data-exclude-from-search-engines="{engines}">'
-                    '<a href="asdf">qwer</a></div>'.format(
-                        id=snippet.id,
-                        engines=','.join(map(lambda x: x.identifier, search_providers))
-                    ))
-        eq_(snippet.render().strip(), expected)
+        engines = ','.join(map(lambda x: x.identifier, search_providers))
+        expected = Markup(
+            '<div data-snippet-id="{id}" data-weight="100" data-campaign="" '
+            'class="snippet-metadata" data-exclude-from-search-engines="{engines}">'
+            '<a href="asdf">qwer</a></div>'.format(id=snippet.id, engines=engines))
+        self.assertEqual(snippet.render().strip(), expected)
 
     def test_render_unicode(self):
         variable = SnippetTemplateVariableFactory(name='data')
@@ -283,7 +283,7 @@ class SnippetTests(TestCase):
         snippet = SnippetFactory(template=template,
                                  data='{"data": "\u03c6\u03bf\u03bf"}')
         output = snippet.render()
-        eq_(pq(output)[0].text, u'\u03c6\u03bf\u03bf')
+        self.assertEqual(pq(output)[0].text, u'\u03c6\u03bf\u03bf')
 
     def test_render_snippet_id(self):
         """Include the snippet ID in the template context when rendering."""
@@ -324,7 +324,7 @@ class UploadedFileTests(TestCase):
         test_file = UploadedFile()
         test_file.file = Mock()
         test_file.file.url = 'foo'
-        eq_(test_file.url, 'http://example.com/foo')
+        self.assertEqual(test_file.url, 'http://example.com/foo')
 
     @override_settings(CDN_URL='http://example.com/error/')
     def test_url_without_cdn_url(self):
@@ -334,22 +334,22 @@ class UploadedFileTests(TestCase):
         with patch('snippets.base.models.settings', wraps=settings) as settings_mock:
             delattr(settings_mock, 'CDN_URL')
             settings_mock.SITE_URL = 'http://example.com/foo/'
-            eq_(test_file.url, 'http://example.com/foo/bar')
+            self.assertEqual(test_file.url, 'http://example.com/foo/bar')
 
     @patch('snippets.base.models.uuid')
     def test_generate_new_filename(self, uuid_mock):
         uuid_mock.uuid4.return_value = 'bar'
         file = UploadedFileFactory.build()
         UploadedFile.FILES_ROOT = 'filesroot'
-        filename = UploadedFile._generate_filename(file, 'filename.boing')
-        eq_(filename, 'filesroot/bar.boing')
+        filename = _generate_filename(file, 'filename.boing')
+        self.assertEqual(filename, 'filesroot/bar.boing')
 
     def test_generate_filename_existing_entry(self):
         obj = UploadedFileFactory.build()
         obj.file.name = 'bar.png'
         obj.save()
-        filename = UploadedFile._generate_filename(obj, 'new_filename.boing')
-        eq_(filename, 'bar.png')
+        filename = _generate_filename(obj, 'new_filename.boing')
+        self.assertEqual(filename, 'bar.png')
 
     def test_snippets(self):
         instance = UploadedFileFactory.build()
@@ -358,7 +358,7 @@ class UploadedFileTests(TestCase):
         snippets = SnippetFactory.create_batch(2, data='lalala {0} foobar'.format(instance.url))
         template = SnippetTemplateFactory.create(code='<foo>{0}</foo>'.format(instance.url))
         more_snippets = SnippetFactory.create_batch(3, template=template)
-        eq_(set(instance.snippets), set(list(snippets) + list(more_snippets)))
+        self.assertEqual(set(instance.snippets), set(list(snippets) + list(more_snippets)))
 
 
 class SnippetBundleTests(TestCase):
@@ -381,7 +381,7 @@ class SnippetBundleTests(TestCase):
         bundle2 = SnippetBundle(client)
         bundle2._snippets = [self.snippet2]
 
-        assert_not_equal(bundle1.key, bundle2.key)
+        self.assertNotEqual(bundle1.key, bundle2.key)
 
     def test_key_startpage_version(self):
         """
@@ -393,7 +393,7 @@ class SnippetBundleTests(TestCase):
         bundle1 = SnippetBundle(client1)
         bundle2 = SnippetBundle(client2)
 
-        assert_not_equal(bundle1.key, bundle2.key)
+        self.assertNotEqual(bundle1.key, bundle2.key)
 
     def test_key_locale(self):
         """
@@ -405,7 +405,7 @@ class SnippetBundleTests(TestCase):
         bundle1 = SnippetBundle(client1)
         bundle2 = SnippetBundle(client2)
 
-        assert_not_equal(bundle1.key, bundle2.key)
+        self.assertNotEqual(bundle1.key, bundle2.key)
 
     def test_key_equal(self):
         client1 = self._client(locale='en-US', startpage_version='4')
@@ -415,7 +415,7 @@ class SnippetBundleTests(TestCase):
         bundle2 = SnippetBundle(client2)
         bundle2._snippets = [self.snippet1, self.snippet2]
 
-        eq_(bundle1.key, bundle2.key)
+        self.assertEqual(bundle1.key, bundle2.key)
 
     def test_generate(self):
         """
@@ -432,7 +432,7 @@ class SnippetBundleTests(TestCase):
                     render_to_string.return_value = 'rendered snippet'
                     bundle.generate()
 
-        render_to_string.assert_called_with('base/fetch_snippets.html', {
+        render_to_string.assert_called_with('base/fetch_snippets.jinja', {
             'snippet_ids': [s.id for s in [self.snippet1, self.snippet2]],
             'snippets_json': json.dumps([s.to_dict() for s in [self.snippet1, self.snippet2]]),
             'client': bundle.client,
@@ -444,4 +444,4 @@ class SnippetBundleTests(TestCase):
 
         # Check content of saved file.
         content_file = bundle.storage.save.call_args[0][1]
-        eq_(content_file.read(), 'rendered snippet')
+        self.assertEqual(content_file.read(), 'rendered snippet')

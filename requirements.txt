@@ -1,0 +1,118 @@
+# sha256: j7aT7P5M1v-a4xNv8KHqpKyuAa8ie7geZG3CutMpXM8
+# sha256: F6Zt5c9Zte6Bw9xXYJsUW7Ra3dwNwGk3uZhZfW57RSM
+Django==1.8.7
+
+# sha256: 8uJz7TSsu1YJYtXPEpF5NtjfAil98JvTCJuFRtRYQTg
+# sha256: ygF2j97N4TQwHzFwdDIm9g7f9cOTXxJDc3jr2RFQY1M
+dj-database-url==0.3.0
+
+# sha256: H6pJd-mFBzHot_ih1YuGJzk6N0RUN4jsQ3-0XgbP5AE
+# sha256: dEkWl77Zj4ypFAGCfEmCLh6yugJzdZpNCzghcv02ejg
+# sha256: -ZiCO3pvAOX4Qh6wYjVcTVCsfkq4XWU4Kn5WiV9CBS0
+MySQL-python==1.2.3c1
+
+# sha256: mYNMn_fOXFsvShi8CIB1PlTqOqq8PPsWlhqS1QRmZd8
+python-decouple==3.0
+
+# sha256: LiSsXQBNtXFJdqBKwOgMbfbkfpjDVMssDYL4h51Pj9s
+Jinja2==2.7.3
+
+# sha256: pOwa_1m5WhS0XrLiN2GgF56YMZ2lp-t2tW6ozce4ccM
+MarkupSafe==0.23
+
+# sha256: pRec3pItK04EXuWxHocyPud9NjrkApT8glLyXWoOrwY
+# sha256: i8g1CCiCrZoBLNeQxGABHk2WvzUS2YoE09q75FOToIk
+gunicorn==19.3.0
+
+# sha256: HCXe64vZm2Kwo-ODYV_ohOwRTOTDu-udw53RQU7cKU0
+# sha256: fQHFIMGnwEIEv1KHtts8Zz47l6s6jlzBovzFnYahRAw
+whitenoise==2.0.4
+
+# sha256: Or5qbT_C-75MYBRCEfRdou2-MYKm9lEa9ru6BZix-ZI
+# sha256: k575weEiTZgEBWial__PeCjFbRUXsx1zRkNWwfK3dp4
+# sha256: 6tSu-nAHJJ4F5RsBCVcZ1ajdlXYAifVzCqxWmLGTKRg
+# sha256: PMoN8IvQ7ZhDI5BJTOPe0AP15mGqRgvnpzS__jWYNgU
+# sha256: Pt5HDT0XujwHY436DRBFK8G25a0yYSemW6d-aq6xG-w
+# sha256: aMR5ZPcYbuwwaxNilidyK5B5zURH7Z5eyuzU6shMpzQ
+# sha256: 3V05kZUKrkCmyB3hV4lC5z1imAjO_FHRLNFXmA5s_Bg
+# sha256: p3xSBiwH63x7MFRdvHPjKZW34Rfup1Axe1y1x6RhjxQ
+# sha256: ga-a7EvJYKmgEnxIjxh3La5GNGiSM_BvZUQ-exHr61E
+# sha256: 4Hmx2txcBiRswbtv4bI6ULHRFz8u3VEE79QLtzoo9AY
+# sha256: -9JnRncsJMuTyLl8va1cueRshrvbG52KdD7gDi-x_F0
+# sha256: mSZu8wo35Dky3uwrfKc-g8jbw7n_cD7HPsprHa5r7-o
+# sha256: i2zhyZOQl4O8luC0806iI7_3pN8skL25xODxrJKGieM
+pytz==2015.7
+
+# sha256: tYAUqlZA40Vup9vzPxUaHEud9HKJdocwwKAwYaRxOGU
+newrelic==2.56.0.42
+
+# sha256: CjoiZeHvsN76ci0fQpcw3J35da3DxgrH0rQyvfA8BB0
+# sha256: Xe0vqQlP19_rPakmNkCf1wKg0H1gYoNQTX7gRAHO5cs
+# sha256: cyCRkITm2sj0VAY4pGRHo71zD8oXKvwX0sA-7SLPT1E
+Pygments==2.0.2
+
+# sha256: Ljgtj2X4xfA3ic9v8RL1zl31umAus0yRDarxFImTv4k
+django-jinja==2.1.1
+
+# sha256: RORjnsBXprap3duGnU46SBj8knjsSQzOOa7whEBZKpM
+django-session-csrf==0.5
+
+# sha256: rxL5lFTolenkMMdXI8O5QZwLzNDqd4A2YtaprFb2Qls
+py-bcrypt==0.3
+
+# sha256: s3dwm_pgykg2RcKcd6ZzVQy6Qmf6Lgbu4aDy9jRhlQY
+django-cache-machine==0.9.1
+
+# sha256: LfpotUw1JurEJ_8T2xyrR7nvlpikOp82jIfI8SOIS3g
+django-ace==1.0.2
+
+# sha256: 0GLT6CFblGZ5z7iT2Oivc0HOJ0Xr6FB3pJKXQYAl8ok
+# sha256: s3GcmZo8EhAG9esdc3vgyQ1ooRokOpX5M0GzZvBJ2hA
+django-smuggler==0.6.1
+
+# sha256: WKLBU8C1RQaVw0zi7dwj-z7kdrMah45qXCTHX9HtTYk
+# sha256: VgGKF9FIjrGh4Y583dyuok08ezcEFy41b2kWxXf0_Z4
+bleach==1.4.2
+
+# sha256: WN0CwygZupfEB4uMEziI0w9_vTk3KW_9rVD3n7V9XNs
+django-mozilla-product-details==0.8.1
+
+# sha256: sqKdMSc4F3L6h2nBx_rcW3C2NTOByJ4Bg6M-KadFIbo
+https://github.com/alex/django-filter/archive/70063a947f3a5cb434abe0e5623d02ec4f3bd75a.tar.gz#egg=django_filter
+
+# sha256: B01srfwR4nxRsIj3mXDeD7biBI_2tN6fys7hIABEn1g
+https://github.com/fwenzel/django-sha2/archive/f4519bf0cc9b1dd7a7d78394fa4aec4504bc86e9.tar.gz#egg=django_sha2
+
+# sha256: nNnjqXaEmjzYFoMNeBG5NUPB3J2p88sczC-dqDG4sCU
+# sha256: kUtLh0-mJQoIl7wwtn4CA02SpyNatyqRv22km3F1HeQ
+django-waffle==0.11
+
+# sha256: uDndLZwRfHAUMMFJlWkYpCOphjtIsJyQ4wpgE-fS9E8
+# sha256: j4MIDaoknQNsvM-4rlzG_wB7iNbZN1ITca-r57Gbrbw
+mock==1.0.1
+
+# sha256: NJ-T46SwnMWUGIVKuAE9An0kZ1fFF0S_IAabyJAW9Xg
+# sha256: hijMgpV8Qb4Qq86Imhl2zre54_Nuv_pPyxqAkBv3etw
+# sha256: HJwmu2wxw9WzwQToQyEdnBBdtgtN9ncKxCZzJj1V1JQ
+# sha256: AeVFEQNDM_GHcsM17Aszp2u6mIE16vcnoHWJeGbRlgQ
+# sha256: Kr9srJt5UgR9i3JlOEqVZeQZpyfbpnXoPkt_W3iStrs
+# sha256: bf-QkCDQwDD7JgBGJsj4f5EW4DgXAv7UFcr5T1qblJM
+lxml==3.5.0
+
+# sha256: cVBsEnq6Vmqxubd78JzNMRmjh663bfGzTyVBzkdkkBw
+# sha256: NYPKHJtDsIudxxRjpcAv2ubr697oEqZxmOKn5CnFQhA
+django-cache-url==1.0.0
+
+
+# sha256: RsUeuHi3h-gU7o-XN7CmIREDSutNHAZFCsWo6lpw5gI
+pyquery==1.2.9
+
+# sha256: kPUHiRrRBz4Iz2kI61HV4d68PFpdVUQn6MP79zzfEu4
+fake-factory==0.5.3
+
+# sha256: EWYQoXCRjfNC2yxLr7yPS5F4DEmHj5KdieNg8QrSnSo
+# sha256: deTJeG7SjRnsf7UA88ciGm64d0jLxvXi7qykw9aPMMs
+factory_boy==2.6.0
+
+# sha256: BTWn4nAUh0snrjpNM-h0njRb36YnZhlSCLeZa_EQBoI
+cssselect==0.9.1

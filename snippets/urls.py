@@ -1,17 +1,9 @@
 from django.conf import settings
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
 from django.views.static import serve as static_serve
-
-from funfactory.monkeypatches import patch
-
-
-# Apply funfactory monkeypatches.
-patch()
-
-admin.autodiscover()
 
 
 def robots_txt(request):
@@ -19,13 +11,12 @@ def robots_txt(request):
     return HttpResponse('User-agent: *\n{0}: /'.format(permission),
                         mimetype='text/plain')
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'', include('snippets.base.urls')),
     url(r'^admin/', include('smuggler.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^robots\.txt$', robots_txt)
-)
+]
 
 # In DEBUG mode, serve media files through Django.
 if settings.DEBUG:
@@ -35,9 +26,8 @@ if settings.DEBUG:
         response['Access-Control-Allow-Origin'] = '*'
         return response
 
-    urlpatterns += patterns(
-        '',
+    urlpatterns += [
         url(r'^media/(?P<path>.*)$', serve_media, {
             'document_root': settings.MEDIA_ROOT,
         }),
-    ) + staticfiles_urlpatterns()
+    ] + staticfiles_urlpatterns()

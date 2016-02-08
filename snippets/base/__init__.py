@@ -1,6 +1,5 @@
 from product_details import product_details
 
-
 ENGLISH_LANGUAGE_CHOICES = sorted(
     [(key.lower(), u'{0} ({1})'.format(key, value['English']))
      for key, value in product_details.languages.items()]

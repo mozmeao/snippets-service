@@ -16,7 +16,6 @@ from django.views.decorators.csrf import csrf_exempt
 
 import django_filters
 import waffle
-from commonware.response.decorators import xframe_allow
 
 from snippets.base.decorators import access_control
 from snippets.base.encoders import ActiveSnippetsEncoder, JSONSnippetEncoder
@@ -68,7 +67,7 @@ class IndexView(TemplateView):
 
 
 class SnippetIndexView(IndexView):
-    template_name = 'base/index.html'
+    template_name = 'base/index.jinja'
 
     def get(self, request, *args, **kwargs):
         self.snippets = (Snippet.cached_objects
@@ -80,7 +79,7 @@ class SnippetIndexView(IndexView):
 
 
 class JSONSnippetIndexView(IndexView):
-    template_name = 'base/index-json.html'
+    template_name = 'base/index-json.jinja'
 
     def get(self, request, *args, **kwargs):
         self.snippets = (JSONSnippet.cached_objects
@@ -117,7 +116,7 @@ def fetch_render_snippets(request, **kwargs):
                          .select_related('template')
                          .filter_by_available())
 
-    response = render(request, 'base/fetch_snippets.html', {
+    response = render(request, 'base/fetch_snippets.jinja', {
         'snippet_ids': [snippet.id for snippet in matching_snippets],
         'snippets_json': json.dumps([s.to_dict() for s in matching_snippets]),
         'client': client,
@@ -149,14 +148,13 @@ def fetch_json_snippets(request, **kwargs):
                          .order_by('priority')
                          .filter_by_available())
     return HttpResponse(json.dumps(matching_snippets, cls=JSONSnippetEncoder),
-                        mimetype='application/json')
+                        content_type='application/json')
 
 
 PREVIEW_CLIENT = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
                         'release', 'default', 'default', 'default')
 
 
-@xframe_allow
 @csrf_exempt
 @permission_required('base.change_snippet')
 def preview_snippet(request):
@@ -188,7 +186,7 @@ def preview_snippet(request):
     skip_boilerplate = request.POST.get('skip_boilerplate', 'false')
     skip_boilerplate = strtobool(skip_boilerplate)
 
-    template_name = 'base/preview_without_shell.html' if skip_boilerplate else 'base/preview.html'
+    template_name = 'base/preview_without_shell.jinja' if skip_boilerplate else 'base/preview.jinja'
 
     return render(request, template_name, {
         'snippets_json': json.dumps([snippet.to_dict()]),
@@ -202,7 +200,7 @@ def show_snippet(request, snippet_id):
     if snippet.disabled and not request.user.is_authenticated():
         raise Http404()
 
-    return render(request, 'base/preview.html', {
+    return render(request, 'base/preview.jinja', {
         'snippets_json': json.dumps([snippet.to_dict()]),
         'client': PREVIEW_CLIENT,
         'preview': True,
@@ -214,4 +212,4 @@ class ActiveSnippetsView(View):
         snippets = (list(Snippet.cached_objects.filter(disabled=False)) +
                     list(JSONSnippet.cached_objects.filter(disabled=False)))
         return HttpResponse(json.dumps(snippets, cls=ActiveSnippetsEncoder),
-                            mimetype='application/json')
+                            content_type='application/json')

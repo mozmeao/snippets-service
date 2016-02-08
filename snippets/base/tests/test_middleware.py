@@ -1,5 +1,4 @@
 from mock import Mock, patch
-from nose.tools import eq_
 
 from snippets.base.middleware import FetchSnippetsMiddleware
 from snippets.base.tests import TestCase
@@ -22,8 +21,8 @@ class FetchSnippetsMiddlewareTests(TestCase):
         result.args = (1, 'asdf')
         result.kwargs = {'blah': 5}
 
-        eq_(self.middleware.process_request(request),
-            fetch_snippets.return_value)
+        self.assertEqual(self.middleware.process_request(request),
+                         fetch_snippets.return_value)
         fetch_snippets.assert_called_with(request, 1, 'asdf', blah=5)
 
     @patch('snippets.base.middleware.resolve')
@@ -39,8 +38,8 @@ class FetchSnippetsMiddlewareTests(TestCase):
         result.args = (1, 'asdf')
         result.kwargs = {'blah': 5}
 
-        eq_(self.middleware.process_request(request),
-            fetch_json_snippets.return_value)
+        self.assertEqual(self.middleware.process_request(request),
+                         fetch_json_snippets.return_value)
         fetch_json_snippets.assert_called_with(request, 1, 'asdf', blah=5)
 
     @patch('snippets.base.middleware.resolve')
@@ -54,4 +53,4 @@ class FetchSnippetsMiddlewareTests(TestCase):
         result = resolve.return_value
         result.func = lambda request: 'asdf'
 
-        eq_(self.middleware.process_request(request), None)
+        self.assertEqual(self.middleware.process_request(request), None)

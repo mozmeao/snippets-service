@@ -1,23 +1,66 @@
-# Snippets Service
-![build status](https://travis-ci.org/mozilla/snippets-service.svg?branch=master)
-![docs status](https://readthedocs.org/projects/abouthome-snippets-service/badge/?version=latest&style=)
+snippets
+==========
 
-The Snippets Service hosts small chunks of HTML, CSS, and JavaScript that are
-displayed on [about:home](about:home) in Firefox, among other places.
+[![Build Status](https://img.shields.io/travis/mozilla/snippets/master.svg)](https://travis-ci.org/mozilla/snippets)
 
-You can read more about the Mozilla-hosted instance of Snippets
-[on the wiki](https://wiki.mozilla.org/Websites/Snippets).
+[![Coverage status](https://img.shields.io/coveralls/mozilla/snippets/master.svg)](https://coveralls.io/r/mozilla/snippets)
 
-Snippets is based on [Playdoh](https://github.com/mozilla/playdoh).
+Run the tests
+-------------
+
+There's a sample test in `snippets/base/tests.py` for your convenience, that
+you can run using the following command:
+
+    python manage.py test
+
+If you want to run the full suite, with flake8 and coverage, you may use
+[tox](https://testrun.org/tox/latest/). This will run the tests the same way
+they are run by [travis](https://travis-ci.org)):
+
+    pip install tox
+    tox
+
+The `.travis.yml` file will also run [coveralls](https://coveralls.io) by
+default.
+
+If you want to benefit from Travis and Coveralls, you will need to activate
+them both for your project.
+
+Oh, and you might want to change the "Build Status" and "Coverage Status" links
+at the top of this file to point to your own travis and coveralls accounts.
 
 
-## Documentation
+Docker for development
+----------------------
 
-https://abouthome-snippets-service.readthedocs.org/en/latest/
+0. Make sure you have [docker](https://docker.io) and [docker-compose](https://github.com/docker/compose)
+1. docker-compose up
 
 
-## License
+Docker for deploying to production
+-----------------------------------
 
-This software is licensed under the
-[New BSD License](http://creativecommons.org/licenses/BSD/). For more
-information, read the file ``LICENSE``.
+1. Add your project in [Docker Registry](https://registry.hub.docker.com/) as [Automated Build](http://docs.docker.com/docker-hub/builds/)
+2. Prepare a 'env' file with all the variables needed by dev, stage or production.
+3. Run the image:
+
+    docker run --env-file env -p 80:8000 mozilla/snippets
+
+Heroku
+------
+1. heroku create
+2. heroku config:set DEBUG=False ALLOWED_HOSTS=<foobar>.herokuapp.com, SECRET_KEY=something_secret
+   DATABASE_URL gets populated by heroku once you setup a database.
+3. git push heroku master
+
+
+NewRelic Monitoring
+-------------------
+
+A newrelic.ini file is already included. To enable NewRelic monitoring
+add two enviroment variables:
+
+ - NEW_RELIC_LICENSE_KEY
+ - NEW_RELIC_APP_NAME
+
+See the [full list of supported environment variables](https://docs.newrelic.com/docs/agents/python-agent/installation-configuration/python-agent-configuration#environment-variables).
