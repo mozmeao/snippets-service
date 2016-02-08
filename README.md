@@ -1,7 +1,7 @@
 snippets
 ==========
 
-[![Build Status](https://img.shields.io/travis/mozilla/snippets/master.svg)](https://travis-ci.org/mozilla/snippets)
+[![Build Status](https://img.shields.io/travis/mozilla/snippets-service/master.svg)](https://travis-ci.org/mozilla/snippets-service)
 
 [![Coverage status](https://img.shields.io/coveralls/mozilla/snippets/master.svg)](https://coveralls.io/r/mozilla/snippets)
 
