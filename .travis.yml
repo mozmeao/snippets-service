@@ -1,18 +1,58 @@
-sudo: false
+sudo: required
+services:
+  - docker
 language: python
-git:
-  submodules: false
-python:
-  - "2.7"
-before_script:
-  - mysql -e 'create database snippets_db;'
-install:
-  - pip install tox coveralls
 env:
-  - TOX_ENV=flake8
-  - TOX_ENV=docs
-  - TOX_ENV=tests
+  global:
+    # NewRelic
+    - NEWRELIC_STAGE_APPLICATION=snippets-stage-us-west
+    - NEWRELIC_PROD_APPLICATION=snippets-prod-us-west
+    # Deis
+    - DEIS_STAGE_APPLICATION=snippets-stage
+    - DEIS_PROD_APPLICATION=snippets-prod
+    - DEIS_USERNAME=travis
+    - DEIS_CONTROLLER=https://deis.us-west.moz.works
+    # Docker
+    - DOCKER_REPOSITORY=mozorg/snippets
+    - DOCKER_EMAIL="foo@example.com"
+    - DOCKER_USERNAME="mozjenkins"
+    # Django
+    - DEBUG=False
+    - ALLOWED_HOSTS=*
+    - SECRET_KEY=foo
+    - DATABASE_URL=mysql://root@db/snippets
+    - SITE_URL=http://localhost:8000
+    - CACHE_URL=dummy://
+before_install:
+  - docker --version
+  - echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
+install:
+  # Take advantage of docker caching by pulling previously built images.
+  - docker pull ${DOCKER_REPOSITORY}:last_successful_build || true
+  - docker pull ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} || true
+  - docker build -t ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} --pull=true .
+before_script:
+  - env > .env
 script:
-  - tox -e $TOX_ENV
+  - docker run -d --name mariadb -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -e MYSQL_DATABASE=snippets mariadb
+  - docker run ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} flake8 snippets
+  # Wait mysql to initialize.
+  - docker run --link mariadb:db -e CHECK_PORT=3306 -e CHECK_HOST=db giorgos/takis
+  - docker run -v /tmp:/tmp --env-file .env --link mariadb:db ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} coverage run ./manage.py test
 after_success:
-  - coveralls
+  - sudo docker cp `docker ps -a -q | head -n 1`:/app /
+  - sudo chown travis /app
+  - cd /app
+  - pip install codecov
+  - codecov
+deploy:
+  - provider: script
+    script: bin/deploy-travis.sh $DEIS_STAGE_APPLICATION $NEWRELIC_STAGE_APPLICATION
+    on:
+      branch: travis
+      repo: mozilla/snippets-service
+  - provider: script
+    script: bin/deploy-travis.sh $DEIS_PROD_APPLICATION $NEWRELIC_PROD_APPLICATION
+    on:
+      tags: true
+      repo: mozilla/snippets-service
