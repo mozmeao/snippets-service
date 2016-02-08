@@ -18,6 +18,9 @@ urlpatterns = [
     url(r'^robots\.txt$', robots_txt)
 ]
 
+admin.site.site_header = 'Snippets Administration'
+admin.site.site_title = 'Mozilla Snippets'
+
 # In DEBUG mode, serve media files through Django.
 if settings.DEBUG:
     # Use custom serve function that adds necessary headers.
