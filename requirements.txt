@@ -116,3 +116,19 @@ factory_boy==2.6.0
 
 # sha256: BTWn4nAUh0snrjpNM-h0njRb36YnZhlSCLeZa_EQBoI
 cssselect==0.9.1
+
+# sha256: B7vHv7ajX7uXOFGmRl-NlHaPXnPwxP1HifiGg0BVxIQ
+# sha256: Pb7pBFto7RnjX76dpY80B968rRbso4s2943Wleykymw
+flake8==2.5.2
+
+# sha256: T8LkeK3c8XAWZX3_MLLY1hHoNB-sGczydogC9mNde4o
+# sha256: oRPV9a16errO-d9ew_KvI6IKKABZIVd7Fd1YTQmdWQA
+pep8==1.7.0
+
+# sha256: Bx0SHp57MwWKobpd57zpuXv6MUnP4ay7ZYfCH8HI7aE
+# sha256: 854zpMA77q2HdPAFvT7PDD8vJk-gIB3pZfzgr_HTQmM
+pyflakes==1.0.0
+
+# sha256: y8KTj2wBBhvG0h0Mg4wkiWZHVcsYZ28HNNdhf0V30J4
+# sha256: misS69h253xy5B6_QBzC58W1ZmSdUBBcpJgiaIZCIHs
+mccabe==0.4.0
