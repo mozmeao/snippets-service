@@ -31,7 +31,6 @@ DEBUG_TEMPLATE = config('DEBUG_TEMPLATE', default=DEBUG, cast=bool),
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,6 +43,7 @@ INSTALLED_APPS = [
     'smuggler',
     'django_filters',
     'django_ace',
+    'product_details',
 
     # Django apps
     'django.contrib.admin',
@@ -182,7 +182,6 @@ METRICS_SAMPLE_RATE = 0.1
 
 GEO_URL = 'https://geo.mozilla.org/country.js'
 
-# TODO
 SITE_URL = config('SITE_URL')
 
 CACHES = {
@@ -190,3 +189,6 @@ CACHES = {
 }
 
 GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-4205-9a11-82feda9d83a3'  # noqa
+
+PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
+                              default='product_details.storage.PDFileStorage')
