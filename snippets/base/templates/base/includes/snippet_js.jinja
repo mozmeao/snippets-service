@@ -157,6 +157,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                               ABOUTHOME_SHOWN_SNIPPET.id);
             modifyLinks(topSection.querySelectorAll('a'), parameters);
             addSnippetBlockLinks(topSection.querySelectorAll('.block-snippet-button'));
+            keypressIsMine(snippetContainer.querySelector('.snippet'));
             sendImpression();
         });
 
@@ -409,6 +410,17 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             var button = elements[k];
             button.addEventListener('click', blockSnippet);
         }
+    }
+
+    // Bug 1238092. Got fixed in Fx45. We can drop this when Fx44
+    // usage drops significantly.
+    function keypressIsMine(snippet) {
+        snippet.addEventListener('keypress', function(event) {
+            var tagName = event.target.tagName.toLowerCase();
+            if (tagName === 'input' || tagName === 'select') {
+                event.stopPropagation();
+            }
+        });
     }
 
     // Check for localStorage support. Copied from Modernizr.
