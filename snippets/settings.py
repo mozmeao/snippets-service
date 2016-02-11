@@ -173,6 +173,8 @@ SOUTH_MIGRATION_MODULES = {
     'waffle': 'waffle.south_migrations',
 }
 
+ENABLE_ADMIN = config('ENABLE_ADMIN', default=True, cast=bool)
+
 ANON_ALWAYS = True
 
 SNIPPET_BUNDLE_TIMEOUT = 15 * 60  # 15 minutes

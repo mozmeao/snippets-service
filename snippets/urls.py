@@ -13,10 +13,16 @@ def robots_txt(request):
 
 urlpatterns = [
     url(r'', include('snippets.base.urls')),
-    url(r'^admin/', include('smuggler.urls')),
-    url(r'^admin/', include(admin.site.urls)),
     url(r'^robots\.txt$', robots_txt)
 ]
+
+if settings.ENABLE_ADMIN:
+    urlpatterns += [
+        url(r'^admin/', include('smuggler.urls')),
+        url(r'^admin/', include(admin.site.urls)),
+    ]
+    admin.site.site_header = 'Snippets Administration'
+    admin.site.site_title = 'Mozilla Snippets'
 
 # In DEBUG mode, serve media files through Django.
 if settings.DEBUG:
