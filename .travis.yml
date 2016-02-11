@@ -5,13 +5,16 @@ language: python
 env:
   global:
     # NewRelic
-    - NEWRELIC_STAGE_APPLICATION=snippets-stage-us-west
-    - NEWRELIC_PROD_APPLICATION=snippets-prod-us-west
+    - NEWRELIC_US_WEST_STAGE_APPLICATION=snippets-stage-us-west
+    - NEWRELIC_US_WEST_PROD_APPLICATION=snippets-prod-us-west
+    - NEWRELIC_EU_WEST_STAGE_APPLICATION=snippets-stage-eu-west
+    - NEWRELIC_EU_WEST_PROD_APPLICATION=snippets-prod-eu-west
     # Deis
     - DEIS_STAGE_APPLICATION=snippets-stage
     - DEIS_PROD_APPLICATION=snippets-prod
     - DEIS_USERNAME=travis
-    - DEIS_CONTROLLER=https://deis.us-west.moz.works
+    - DEIS_CONTROLLER_US_WEST=https://deis.us-west.moz.works
+    - DEIS_CONTROLLER_EU_WEST=https://deis.eu-west.moz.works
     # Docker
     - DOCKER_REPOSITORY=mozorg/snippets
     - DOCKER_EMAIL="foo@example.com"
@@ -48,12 +51,22 @@ after_success:
   - codecov
 deploy:
   - provider: script
-    script: bin/deploy-travis.sh $DEIS_STAGE_APPLICATION $NEWRELIC_STAGE_APPLICATION
+    script: bin/deploy-travis.sh $DEIS_CONTROLLER_US_WEST $DEIS_STAGE_APPLICATION $NEWRELIC_US_WEST_STAGE_APPLICATION
     on:
       branch: master
       repo: mozilla/snippets-service
   - provider: script
-    script: bin/deploy-travis.sh $DEIS_PROD_APPLICATION $NEWRELIC_PROD_APPLICATION
+    script: bin/deploy-travis.sh $DEIS_CONTROLLER_EU_WEST $DEIS_STAGE_APPLICATION $NEWRELIC_EU_WEST_STAGE_APPLICATION
+    on:
+      branch: master
+      repo: mozilla/snippets-service
+  - provider: script
+    script: bin/deploy-travis.sh $DEIS_CONTROLLER_US_WEST $DEIS_PROD_APPLICATION $NEWRELIC_US_WEST_PROD_APPLICATION
+    on:
+      tags: true
+      repo: mozilla/snippets-service
+  - provider: script
+    script: bin/deploy-travis.sh $DEIS_CONTROLLER_EU_WEST $DEIS_PROD_APPLICATION $NEWRELIC_EU_WEST_PROD_APPLICATION
     on:
       tags: true
       repo: mozilla/snippets-service
