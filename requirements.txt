@@ -84,9 +84,6 @@ django-mozilla-product-details==0.10
 # sha256: sqKdMSc4F3L6h2nBx_rcW3C2NTOByJ4Bg6M-KadFIbo
 https://github.com/alex/django-filter/archive/70063a947f3a5cb434abe0e5623d02ec4f3bd75a.tar.gz#egg=django_filter
 
-# sha256: B01srfwR4nxRsIj3mXDeD7biBI_2tN6fys7hIABEn1g
-https://github.com/fwenzel/django-sha2/archive/f4519bf0cc9b1dd7a7d78394fa4aec4504bc86e9.tar.gz#egg=django_sha2
-
 # sha256: nNnjqXaEmjzYFoMNeBG5NUPB3J2p88sczC-dqDG4sCU
 # sha256: kUtLh0-mJQoIl7wwtn4CA02SpyNatyqRv22km3F1HeQ
 django-waffle==0.11

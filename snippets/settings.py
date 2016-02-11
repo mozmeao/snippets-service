@@ -12,7 +12,6 @@ import os
 import dj_database_url
 import django_cache_url
 from decouple import Csv, config
-from django_sha2 import get_password_hashers
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -145,26 +144,6 @@ TEMPLATES = [
         }
     },
 ]
-
-PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
-    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
-    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
-    'django.contrib.auth.hashers.BCryptPasswordHasher',
-    'django.contrib.auth.hashers.SHA1PasswordHasher',
-    'django.contrib.auth.hashers.MD5PasswordHasher',
-    'django.contrib.auth.hashers.CryptPasswordHasher',
-    'django_sha2.hashers.BcryptHMACCombinedPasswordVerifier',
-    'django_sha2.hashers.SHA512PasswordHasher',
-    'django_sha2.hashers.SHA256PasswordHasher',
-]
-
-# TODO
-HMAC_KEYS = {
-    '2012-06-06': 'some secret',
-}
-
-PASSWORD_HASHERS = get_password_hashers(PASSWORD_HASHERS, HMAC_KEYS)
 
 SNIPPET_SIZE_LIMIT = 500
 SNIPPET_IMAGE_SIZE_LIMIT = 250
