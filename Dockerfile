@@ -12,14 +12,13 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# Pin a known to work with peep pip version.
-RUN pip install pip==6.0.0
-
-# First copy requirements.txt and peep so we can take advantage of
+# First copy requirements.txt and pip so we can take advantage of
 # docker caching.
-COPY ./bin/peep.py /app/bin/peep.py
-COPY requirements.txt /app/requirements.txt
-RUN ./bin/peep.py install -r requirements.txt
+# Get pip8
+COPY bin/pipstrap.py bin/pipstrap.py
+RUN ./bin/pipstrap.py
+COPY requirements.txt requirements.txt
+RUN pip install --require-hashes --no-cache-dir -r requirements.txt
 
 COPY . /app
 RUN DEBUG=False SECRET_KEY=foo ALLOWED_HOSTS=localhost, DATABASE_URL=sqlite:/// SITE_URL= ./manage.py collectstatic --noinput
