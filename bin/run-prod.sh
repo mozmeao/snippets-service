@@ -4,4 +4,4 @@
 
 echo "$GIT_SHA" > static/revision.txt
 
-gunicorn snippets.wsgi:application -b 0.0.0.0:${PORT:-8000} --log-file -
+exec gunicorn snippets.wsgi.app --config snippets/wsgi/config.py
