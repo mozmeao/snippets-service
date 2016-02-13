@@ -163,7 +163,7 @@ METRICS_SAMPLE_RATE = 0.1
 
 GEO_URL = 'https://geo.mozilla.org/country.js'
 
-SITE_URL = config('SITE_URL')
+SITE_URL = config('SITE_URL', default='')
 
 CACHES = {
     'default': config('CACHE_URL', default='locmem://', cast=django_cache_url.parse),
