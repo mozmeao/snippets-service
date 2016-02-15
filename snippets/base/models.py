@@ -15,6 +15,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.manager import Manager
@@ -28,7 +29,6 @@ from jinja2.utils import LRUCache
 from snippets.base import ENGLISH_COUNTRIES
 from snippets.base.fields import CountryField, LocaleField, RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
-from snippets.base.storage import OverwriteStorage
 from snippets.base.util import hashfile
 
 
@@ -126,8 +126,6 @@ class SnippetBundle(object):
     """
     def __init__(self, client):
         self.client = client
-        self.storage = OverwriteStorage()
-
         self._snippets = None
 
     @property
@@ -164,11 +162,11 @@ class SnippetBundle(object):
 
     @property
     def filename(self):
-        return u'bundles/bundle_{0}.jinja'.format(self.key)
+        return u'bundles/bundle_{0}.html'.format(self.key)
 
     @property
     def url(self):
-        bundle_url = self.storage.url(self.filename)
+        bundle_url = default_storage.url(self.filename)
         site_url = getattr(settings, 'CDN_URL', settings.SITE_URL)
         full_url = urljoin(site_url, bundle_url)
         return full_url
@@ -198,7 +196,7 @@ class SnippetBundle(object):
 
         if isinstance(bundle_content, unicode):
             bundle_content = bundle_content.encode('utf-8')
-        self.storage.save(self.filename, ContentFile(bundle_content))
+        default_storage.save(self.filename, ContentFile(bundle_content))
         cache.set(self.cache_key, True, settings.SNIPPET_BUNDLE_TIMEOUT)
 
 
@@ -531,7 +529,7 @@ def _generate_filename(instance, filename):
 class UploadedFile(models.Model):
     FILES_ROOT = 'files'  # Directory name inside MEDIA_ROOT
 
-    file = models.FileField(storage=OverwriteStorage(), upload_to=_generate_filename)
+    file = models.FileField(upload_to=_generate_filename)
     name = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
