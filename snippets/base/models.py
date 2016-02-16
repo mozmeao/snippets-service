@@ -280,7 +280,7 @@ class ClientMatchRule(CachingMixin, models.Model):
     cached_objects = ClientMatchRuleManager()
 
     class Meta:
-        ordering = ('-modified',)
+        ordering = ('description',)
 
     def matches(self, client):
         """Evaluate whether this rule matches the given client."""
