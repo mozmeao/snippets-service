@@ -109,6 +109,13 @@
                 self.onImageFieldChange(this);
             });
 
+            this.$container.on('click', '.image-input-remove', function(event) {
+                event.preventDefault();
+                var imageInput = $(event.target).siblings('input')[0];
+                $(imageInput).val('');
+                self.onImageFieldChange(imageInput);
+            });
+
             this.$container.on('input', 'textarea', function() {
                 self.triggerDataChange();
             });
@@ -161,7 +168,10 @@
          */
         onImageFieldChange: function(input) {
             var self = this;
+            var preview = $(input).siblings('img')[0];
             if (input.files.length < 1) {
+                preview.src = '';
+                self.triggerDataChange();
                 return;
             }
 
@@ -180,7 +190,6 @@
             }
 
             // Load file.
-            var preview = $(input).siblings('img')[0];
             var reader = new FileReader();
             reader.onload = function(e) {
                 preview.src = e.target.result;
