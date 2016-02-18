@@ -35,6 +35,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 INSTALLED_APPS = [
     # Project specific apps
     'snippets.base',
+    'snippets.saml',
 
     # Third party apps
     'django_jinja',
@@ -140,6 +141,7 @@ TEMPLATES = [
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
                 'session_csrf.context_processor',
+                'snippets.base.context_processors.settings',
             ],
         }
     },
@@ -173,3 +175,7 @@ GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-42
 
 PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
                               default='product_details.storage.PDFileStorage')
+
+SAML_ENABLE = config('SAML_ENABLE', default=False, cast=bool)
+if SAML_ENABLE:
+    from saml.settings import *  # noqa
