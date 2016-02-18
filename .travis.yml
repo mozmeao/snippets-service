@@ -9,9 +9,11 @@ env:
     - NEWRELIC_US_WEST_PROD_APPLICATION=snippets-prod-us-west
     - NEWRELIC_EU_WEST_STAGE_APPLICATION=snippets-stage-eu-west
     - NEWRELIC_EU_WEST_PROD_APPLICATION=snippets-prod-eu-west
+    - NEWRELIC_US_WEST_ADMIN_APPLICATION=snippets-admin-us-west
     # Deis
     - DEIS_STAGE_APPLICATION=snippets-stage
     - DEIS_PROD_APPLICATION=snippets-prod
+    - DEIS_PROD_ADMIN_APPLICATION=snippets-admin
     - DEIS_USERNAME=travis
     - DEIS_CONTROLLER_US_WEST=https://deis.us-west.moz.works
     - DEIS_CONTROLLER_EU_WEST=https://deis.eu-west.moz.works
@@ -67,6 +69,11 @@ deploy:
       repo: mozilla/snippets-service
   - provider: script
     script: bin/deploy-travis.sh $DEIS_CONTROLLER_EU_WEST $DEIS_PROD_APPLICATION $NEWRELIC_EU_WEST_PROD_APPLICATION
+    on:
+      tags: true
+      repo: mozilla/snippets-service
+  - provider: script
+    script: bin/deploy-travis.sh $DEIS_CONTROLLER_US_WEST $DEIS_PROD_ADMIN_APPLICATION $NEWRELIC_US_WEST_ADMIN_APPLICATION
     on:
       tags: true
       repo: mozilla/snippets-service
