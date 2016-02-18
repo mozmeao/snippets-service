@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+                     validUntil="{{ expire }}"
+                     cacheDuration="PT1454594145S"
+                     entityID="{{ saml_entity_id }}">
+    <md:SPSSODescriptor AuthnRequestsSigned="true" WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+        <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>
+        <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                                     Location="{{ saml_sso_url }}"
+                                     index="1" />
+    </md:SPSSODescriptor>
+</md:EntityDescriptor>
