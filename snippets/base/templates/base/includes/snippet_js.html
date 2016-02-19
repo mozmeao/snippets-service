@@ -403,7 +403,17 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         var blockSnippet = function (event) {
             event.preventDefault();
             addToBlockList(snippet_id);
-            sendMetric('snippet-blocked', function() { window.location.reload(); })
+
+            // Waiting for 500ms before reloading the page after user blocks a snippet,
+            // will allow the IndexedDB more time to complete its transaction. While
+            // this is an imperfect non-deterministic solution it will fix the issue
+            // for most of the users. Ideally we would create our own
+            // connection to the iDB and ensure that the write completes
+            // before we reload the page. Bug 1236090.
+            function reloadWindow() {
+                window.location.reload();
+            }
+            sendMetric('snippet-blocked', function() { setTimeout(reloadWindow, 500); })
         };
 
         for (var k = 0; k < elements.length; k++) {
