@@ -73,10 +73,15 @@ class SnippetQuerySet(CachingQuerySet):
 
         snippets = self.filter(**filters).distinct()
 
+        if client.name.lower() == 'fennec':
+            filtering = {'jsonsnippet__in': snippets}
+        else:
+            filtering = {'snippet__in': snippets}
+
         # Filter based on ClientMatchRules
         ClientMatchRule = get_model('base', 'ClientMatchRule')
         passed_rules, failed_rules = (ClientMatchRule.cached_objects
-                                      .filter(snippet__in=snippets)
+                                      .filter(**filtering)
                                       .distinct()
                                       .evaluate(client))
 
