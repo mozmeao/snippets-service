@@ -72,7 +72,8 @@ class SnippetQuerySet(CachingQuerySet):
             filters.update(locale_set__isnull=True)
 
         snippets = self.filter(**filters).distinct()
-        if client.name.lower() == 'fennec':
+        JSONSnippet = get_model('base', 'JSONSnippet')
+        if issubclass(self.model, JSONSnippet):
             filtering = {'jsonsnippet__in': snippets}
         else:
             filtering = {'snippet__in': snippets}
