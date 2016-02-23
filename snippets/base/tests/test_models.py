@@ -428,9 +428,10 @@ class SnippetBundleTests(TestCase):
 
         with patch('snippets.base.models.cache') as cache:
             with patch('snippets.base.models.render_to_string') as render_to_string:
-                with self.settings(SNIPPET_BUNDLE_TIMEOUT=10):
-                    render_to_string.return_value = 'rendered snippet'
-                    bundle.generate()
+                with patch('snippets.base.models.default_storage') as default_storage:
+                    with self.settings(SNIPPET_BUNDLE_TIMEOUT=10):
+                        render_to_string.return_value = 'rendered snippet'
+                        bundle.generate()
 
         render_to_string.assert_called_with('base/fetch_snippets.jinja', {
             'snippet_ids': [s.id for s in [self.snippet1, self.snippet2]],
@@ -439,9 +440,9 @@ class SnippetBundleTests(TestCase):
             'locale': 'fr',
             'settings': settings,
         })
-        bundle.storage.save.assert_called_with(bundle.filename, ANY)
+        default_storage.save.assert_called_with(bundle.filename, ANY)
         cache.set.assert_called_with(bundle.cache_key, True, 10)
 
         # Check content of saved file.
-        content_file = bundle.storage.save.call_args[0][1]
+        content_file = default_storage.save.call_args[0][1]
         self.assertEqual(content_file.read(), 'rendered snippet')

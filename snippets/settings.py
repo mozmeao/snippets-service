@@ -176,6 +176,21 @@ GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-42
 PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
                               default='product_details.storage.PDFileStorage')
 
+
 SAML_ENABLE = config('SAML_ENABLE', default=False, cast=bool)
 if SAML_ENABLE:
     from saml.settings import *  # noqa
+
+
+DEFAULT_FILE_STORAGE = config('FILE_STORAGE', 'storages.backends.overwrite.OverwriteStorage')
+# Set to 'storages.backends.s3boto.S3BotoStorage' for S3
+if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
+    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+    # Full list of S3 endpoints http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+    AWS_S3_HOST = config('AWS_S3_HOST')
+    AWS_CACHE_CONTROL_HEADERS = {
+        'files/': 'max-age=900',  # 15 Minutes
+        'bundles/': 'max-age=2592000',  # 1 Month
+    }
