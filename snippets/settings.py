@@ -39,7 +39,6 @@ INSTALLED_APPS = [
 
     # Third party apps
     'django_jinja',
-    'waffle',
     'smuggler',
     'django_filters',
     'django_ace',
@@ -62,7 +61,6 @@ MIDDLEWARE_CLASSES = (
     'sslify.middleware.SSLifyMiddleware',
     'snippets.base.middleware.FetchSnippetsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'waffle.middleware.WaffleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'session_csrf.CsrfMiddleware',
@@ -150,10 +148,6 @@ TEMPLATES = [
 SNIPPET_SIZE_LIMIT = 500
 SNIPPET_IMAGE_SIZE_LIMIT = 250
 
-SOUTH_MIGRATION_MODULES = {
-    'waffle': 'waffle.south_migrations',
-}
-
 ENABLE_ADMIN = config('ENABLE_ADMIN', default=True, cast=bool)
 
 ANON_ALWAYS = True
@@ -170,6 +164,8 @@ SITE_URL = config('SITE_URL')
 CACHES = {
     'default': config('CACHE_URL', default='locmem://', cast=django_cache_url.parse),
 }
+
+SERVE_SNIPPET_BUNDLES = config('SERVE_SNIPPET_BUNDLES', default=not DEBUG, cast=bool)
 
 GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-4205-9a11-82feda9d83a3'  # noqa
 

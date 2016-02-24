@@ -15,7 +15,6 @@ from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 
 import django_filters
-import waffle
 
 from snippets.base.decorators import access_control
 from snippets.base.encoders import ActiveSnippetsEncoder, JSONSnippetEncoder
@@ -132,7 +131,7 @@ def fetch_render_snippets(request, **kwargs):
 
 def fetch_snippets(request, **kwargs):
     """Determine which snippet-fetching method to use."""
-    if waffle.flag_is_active(request, 'serve_pregenerated_snippets'):
+    if settings.SERVE_SNIPPET_BUNDLES:
         return fetch_pregenerated_snippets(request, **kwargs)
     else:
         return fetch_render_snippets(request, **kwargs)

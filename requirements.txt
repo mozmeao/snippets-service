@@ -65,9 +65,6 @@ bleach==1.4.2 \
 django-mozilla-product-details==0.10 \
     --hash=sha256:400e59be3c163aebfc8c078879e87a895dad249589d8bc332bb76dc9c9b63efb \
     --hash=sha256:33add704683a5d7f9ff49c03e40a4d8c500882589aee970d5ed81ad11c7ae75c
-django-waffle==0.11 \
-    --hash=sha256:9cd9e3a976849a3cd816830d7811b93543c1dc9da9f3cb1ccc2f9da831b8b025 \
-    --hash=sha256:914b4b874fa6250a0897bc30b67e02034d92a7235ab72a91bf6da49b71751de4
 mock==1.0.1 \
     --hash=sha256:b839dd2d9c117c701430c149956918a423a9863b48b09c90e30a6013e7d2f44f \
     --hash=sha256:8f83080daa249d036cbccfb8ae5cc6ff007b88d6d937521371afabe7b19badbc
