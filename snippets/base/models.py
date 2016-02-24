@@ -8,7 +8,7 @@ import xml.sax
 from StringIO import StringIO
 from collections import namedtuple
 from datetime import datetime
-from urlparse import urljoin
+from urlparse import urljoin, urlparse
 from xml.sax import ContentHandler
 
 from django.conf import settings
@@ -162,13 +162,16 @@ class SnippetBundle(object):
 
     @property
     def filename(self):
-        return u'bundles/bundle_{0}.html'.format(self.key)
+        return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.html'.format(self.key))
 
     @property
     def url(self):
         bundle_url = default_storage.url(self.filename)
-        site_url = getattr(settings, 'CDN_URL', settings.SITE_URL)
-        full_url = urljoin(site_url, bundle_url)
+        full_url = urljoin(settings.SITE_URL, bundle_url).split('?')[0]
+        cdn_url = getattr(settings, 'CDN_URL', None)
+        if cdn_url:
+            full_url = urljoin(cdn_url, urlparse(bundle_url).path)
+
         return full_url
 
     @property
@@ -519,7 +522,7 @@ def _generate_filename(instance, filename):
     if not instance.id:
         ext = os.path.splitext(filename)[1]
         filename = str(uuid.uuid4()) + ext
-        return os.path.join(UploadedFile.FILES_ROOT, filename)
+        return os.path.join(settings.MEDIA_FILES_ROOT, filename)
 
     # Use existing filename.
     obj = UploadedFile.objects.get(id=instance.id)
@@ -527,8 +530,6 @@ def _generate_filename(instance, filename):
 
 
 class UploadedFile(models.Model):
-    FILES_ROOT = 'files'  # Directory name inside MEDIA_ROOT
-
     file = models.FileField(upload_to=_generate_filename)
     name = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
@@ -539,8 +540,11 @@ class UploadedFile(models.Model):
 
     @property
     def url(self):
-        site_url = getattr(settings, 'CDN_URL', settings.SITE_URL)
-        full_url = urljoin(site_url, self.file.url)
+        full_url = urljoin(settings.SITE_URL, self.file.url).split('?')[0]
+        cdn_url = getattr(settings, 'CDN_URL', None)
+        if cdn_url:
+            full_url = urljoin(cdn_url, urlparse(self.file.url).path)
+
         return full_url
 
     @property

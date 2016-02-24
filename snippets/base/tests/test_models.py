@@ -336,11 +336,11 @@ class UploadedFileTests(TestCase):
             settings_mock.SITE_URL = 'http://example.com/foo/'
             self.assertEqual(test_file.url, 'http://example.com/foo/bar')
 
+    @override_settings(MEDIA_FILES_ROOT='filesroot/')
     @patch('snippets.base.models.uuid')
     def test_generate_new_filename(self, uuid_mock):
         uuid_mock.uuid4.return_value = 'bar'
         file = UploadedFileFactory.build()
-        UploadedFile.FILES_ROOT = 'filesroot'
         filename = _generate_filename(file, 'filename.boing')
         self.assertEqual(filename, 'filesroot/bar.boing')
 
