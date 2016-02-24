@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django_ace',
     'product_details',
+    'clear_cache',
 
     # Django apps
     'django.contrib.admin',

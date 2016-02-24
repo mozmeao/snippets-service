@@ -183,3 +183,5 @@ django-storages-redux==1.3.2 \
 boto==2.39.0 \
     --hash=sha256:c73f43558bbc2c4a438c39019b7b4947ba00573ead23420c8614dde0239167ca \
     --hash=sha256:950c5bf36691df916b94ebc5679fed07f642030d39132454ec178800d5b6c58a
+django-clear-cache==0.3 \
+    --hash=sha256:fc9d27d6d7dd143917393484236bdf66a109d99bc64a4418cdf5a1127356d766
