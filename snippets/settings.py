@@ -103,8 +103,10 @@ STATIC_URL = config('STATIC_URL', '/static/')
 if not DEBUG_TEMPLATE:
     STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
-MEDIA_ROOT = config('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
 MEDIA_URL = config('MEDIA_URL', '/media/')
+MEDIA_ROOT = config('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
+MEDIA_FILES_ROOT = config('MEDIA_FILES_ROOT', default='files/')
+MEDIA_BUNDLES_ROOT = config('MEDIA_BUNDLES_ROOT', default='bundles/')
 
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
 
@@ -180,6 +182,10 @@ if SAML_ENABLE:
 
 
 DEFAULT_FILE_STORAGE = config('FILE_STORAGE', 'storages.backends.overwrite.OverwriteStorage')
+
+CDN_URL = config('CDN_URL', default='')
+
+
 # Set to 'storages.backends.s3boto.S3BotoStorage' for S3
 if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
