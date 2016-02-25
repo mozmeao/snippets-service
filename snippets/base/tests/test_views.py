@@ -7,7 +7,6 @@ from django.test.client import RequestFactory
 from django.test.utils import override_settings
 
 from mock import patch
-from waffle.models import Flag
 
 import snippets.base.models
 from snippets.base import views
@@ -20,6 +19,7 @@ snippets.base.models.CHANNELS = ('release', 'beta', 'aurora', 'nightly')
 snippets.base.models.FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4')
 
 
+@override_settings(SERVE_SNIPPET_BUNDLES=False)
 class FetchRenderSnippetsTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
@@ -37,9 +37,6 @@ class FetchRenderSnippetsTests(TestCase):
         ]
         self.client_params = [v[1] for v in self.client_items]
         self.client_kwargs = dict(self.client_items)
-
-        # Ensure the render-immediately view is used.
-        Flag.objects.create(name='serve_pregenerated_snippets', everyone=False)
 
     def test_base(self):
         # Matching snippets.
@@ -401,17 +398,15 @@ class FetchSnippetsTests(TestCase):
         self.factory = RequestFactory()
         self.request = self.factory.get('/')
 
+    @override_settings(SERVE_SNIPPET_BUNDLES=False)
     def test_flag_off(self):
-        Flag.objects.create(name='serve_pregenerated_snippets', everyone=False)
-
         with patch.object(views, 'fetch_render_snippets') as fetch_render_snippets:
             self.assertEqual(views.fetch_snippets(self.request, foo='bar'),
                              fetch_render_snippets.return_value)
             fetch_render_snippets.assert_called_with(self.request, foo='bar')
 
+    @override_settings(SERVE_SNIPPET_BUNDLES=True)
     def test_flag_on(self):
-        Flag.objects.create(name='serve_pregenerated_snippets', everyone=True)
-
         with patch.object(views, 'fetch_pregenerated_snippets') as fetch_pregenerated_snippets:
             self.assertEqual(views.fetch_snippets(self.request, foo='bar'),
                              fetch_pregenerated_snippets.return_value)
