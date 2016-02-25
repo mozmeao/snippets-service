@@ -10,7 +10,8 @@
         {% if variable.type == types.text or variable.type == types.body %}
           <textarea>{{ originalData[variable.name] }}</textarea>
         {% elif variable.type == types.image %}
-          <img src="{{ originalData[variable.name] }}">
+
+          <img src="{{ originalData[variable.name] }}" {% if originalData[variable.name] == "" %} style="display:none;" {% endif %}>
           <input type="file" class="image-input">
           <a href="#" class="image-input-remove" style="padding-left: 5px">Remove image</a>
           <div class='fileSize'></div>

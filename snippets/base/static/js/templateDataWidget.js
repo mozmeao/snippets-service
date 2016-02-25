@@ -172,9 +172,11 @@
             var preview = $(input).siblings('img')[0];
             if (input.files.length < 1) {
                 preview.src = '';
+                preview.style.display = 'none';
                 self.triggerDataChange();
                 return;
             }
+            preview.style.display = 'block';
 
             // Check to see if this is an image
             var file = input.files[0];
