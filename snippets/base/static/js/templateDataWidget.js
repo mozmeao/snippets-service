@@ -85,6 +85,7 @@
                 self.$container.find('img').each(function(_, img) {
                     if (!img.src) return;
                     var data = img.src.split(',')[1];
+                    if (!data) return;
                     var binary = atob(data.replace(/\s/g, ''));
 
                     if (binary.length / 1024 > self.snippetImgSizeThreshold) {
