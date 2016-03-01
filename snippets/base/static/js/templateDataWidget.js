@@ -85,6 +85,7 @@
                 self.$container.find('img').each(function(_, img) {
                     if (!img.src) return;
                     var data = img.src.split(',')[1];
+                    if (!data) return;
                     var binary = atob(data.replace(/\s/g, ''));
 
                     if (binary.length / 1024 > self.snippetImgSizeThreshold) {
@@ -107,6 +108,13 @@
 
             this.$container.on('change', '.image-input', function() {
                 self.onImageFieldChange(this);
+            });
+
+            this.$container.on('click', '.image-input-remove', function(event) {
+                event.preventDefault();
+                var imageInput = $(event.target).siblings('input')[0];
+                $(imageInput).val('');
+                self.onImageFieldChange(imageInput);
             });
 
             this.$container.on('input', 'textarea', function() {
@@ -161,9 +169,14 @@
          */
         onImageFieldChange: function(input) {
             var self = this;
+            var preview = $(input).siblings('img')[0];
             if (input.files.length < 1) {
+                preview.src = '';
+                preview.style.display = 'none';
+                self.triggerDataChange();
                 return;
             }
+            preview.style.display = 'block';
 
             // Check to see if this is an image
             var file = input.files[0];
@@ -180,7 +193,6 @@
             }
 
             // Load file.
-            var preview = $(input).siblings('img')[0];
             var reader = new FileReader();
             reader.onload = function(e) {
                 preview.src = e.target.result;
