@@ -35,9 +35,9 @@ from snippets.base.util import hashfile
 JINJA_ENV = engines['backend']
 
 SNIPPET_JS_TEMPLATE_HASH = hashfile(
-    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_js.jinja'))
+    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet.js'))
 SNIPPET_CSS_TEMPLATE_HASH = hashfile(
-    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_css.jinja'))
+    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet.css'))
 SNIPPET_FETCH_TEMPLATE_HASH = hashfile(
     os.path.join(settings.ROOT, 'snippets/base/templates/base/fetch_snippets.jinja'))
 
