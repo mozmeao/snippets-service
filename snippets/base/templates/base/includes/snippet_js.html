@@ -402,6 +402,8 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
         var blockSnippet = function (event) {
             event.preventDefault();
+            event.stopPropagation();
+
             addToBlockList(snippet_id);
 
             // Waiting for 500ms before reloading the page after user blocks a snippet,
