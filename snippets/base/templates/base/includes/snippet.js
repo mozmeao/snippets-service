@@ -8,6 +8,11 @@ var ABOUTHOME_SHOWN_SNIPPET = null;
 var USER_COUNTRY = null;
 var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
 
+var BLOCKED_DATABASE_NAME = "abouthome";
+var BLOCKED_DATABASE_VERSION = 1;
+var BLOCKED_DATABASE_STORAGE = "persistent";
+var BLOCKED_OBJECTSTORE_NAME = "snippets";
+
 // Start MozUITour
 // Copy from https://hg.mozilla.org/mozilla-central/file/tip/browser/components/uitour/UITour-lib.js
 if (typeof Mozilla == 'undefined') {
@@ -98,6 +103,106 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 (function(showDefaultSnippets) {
     'use strict';
 
+  function initBlockList(callback) {
+    function error() {
+      // If we fail to setup the db, just return a dummy so the snippet displays.
+      callback(Object.freeze({
+        get: function () {},
+        set: function (aKey, aValue, callback) {
+          callback = callback || function(){};
+          callback();
+        },
+        has: function () {
+          return false;
+        },
+        delete: function (aKey, callback) {
+          callback = callback || function(){};
+          callback();
+        },
+        clear: function (callback) {
+          callback = callback || function(){};
+          callback();
+        },
+        get size() { return 0; }
+      }));
+    }
+    var openRequest = indexedDB.open(BLOCKED_DATABASE_NAME, {version: BLOCKED_DATABASE_VERSION,
+                                                     storage: BLOCKED_DATABASE_STORAGE});
+
+    openRequest.onerror = function (event) {
+      // Try to delete the old database so that we can start this process over
+      // next time.
+      indexedDB.deleteDatabase(BLOCKED_DATABASE_NAME);
+      error();
+    };
+
+    openRequest.onupgradeneeded = function (event) {
+      var db = event.target.result;
+      if (!db.objectStoreNames.contains(BLOCKED_OBJECTSTORE_NAME)) {
+        db.createObjectStore(BLOCKED_OBJECTSTORE_NAME);
+      }
+    }
+
+    openRequest.onsuccess = function (event) {
+      var db = event.target.result;
+
+      db.onversionchange = function (event) {
+        event.target.close();
+      }
+      var cache = new Map();
+      var cursorRequest = db.transaction(BLOCKED_OBJECTSTORE_NAME)
+                            .objectStore(BLOCKED_OBJECTSTORE_NAME).openCursor();
+
+      cursorRequest.onerror = error;
+
+      cursorRequest.onsuccess = function(event) {
+        var cursor = event.target.result;
+
+        // Populate the cache from the persistent storage.
+        if (cursor) {
+          cache.set(cursor.key, cursor.value);
+          cursor.continue();
+          return;
+        }
+
+        // The cache has been filled up, create the blocked snippets map.
+        window.blockedSnippets = Object.freeze({
+          get: function (aKey) {
+            return cache.get(aKey);
+          },
+          set: function (aKey, aValue, callback) {
+            callback = callback || function(){};
+            var transaction = db.transaction(BLOCKED_OBJECTSTORE_NAME, "readwrite");
+            transaction.oncomplete = callback;
+            transaction.objectStore(BLOCKED_OBJECTSTORE_NAME).put(aValue, aKey);
+            cache.set(aKey, aValue);
+          },
+          has: function (aKey) {
+            return cache.has(aKey);
+          },
+          delete: function (aKey, callback) {
+            callback = callback || function(){};
+            var transaction = db.transaction(BLOCKED_OBJECTSTORE_NAME, "readwrite");
+            transaction.oncomplete = callback;
+            transaction.objectStore(BLOCKED_OBJECTSTORE_NAME).delete(aKey);
+            cache.delete(aKey);
+          },
+          clear: function (callback) {
+            callback = callback || function(){};
+            var transaction = db.transaction(BLOCKED_OBJECTSTORE_NAME, "readwrite");
+            transaction.oncomplete = callback;
+            transaction.objectStore(BLOCKED_OBJECTSTORE_NAME).clear();
+            cache.clear();
+          },
+          get size() { return cache.size; }
+        });
+        callback(window.blockedSnippets);
+      }
+    }
+
+  }
+
+  function blockListReady(gSnippetsMap) {
     // showDefaultSnippets polyfill, available in about:home v4
     if (typeof showDefaultSnippets !== 'function') {
         showDefaultSnippets = function() {
@@ -105,25 +210,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             showSnippets();
         };
     }
-
-    // gSnippetsMap polyfill, available in Firefox 22 and above.
-    var gSnippetsMap = null;
-    if (supportsLocalStorage()) {
-        // localStorage is available, so we wrap it with gSnippetsMap.
-        gSnippetsMap = {
-            set: function(key, value) {
-                localStorage[key] = value;
-            },
-            get: function(key) {
-                return localStorage[key];
-            }
-        };
-        window.gSnippetsMap = gSnippetsMap;
-    } else {
-        // localStorage isn't available, use gSnippetsMap (backed by IndexedDB).
-        gSnippetsMap = window.gSnippetsMap;
-    }
-
 
     var show_snippet = null;
     if (ABOUTHOME_SNIPPETS.length > 0) {
@@ -160,7 +246,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             keypressIsMine(snippetContainer.querySelector('.snippet'));
             sendImpression();
         });
-
         // Trigger show_snippet event
         var evt = document.createEvent('Event');
         evt.initEvent('show_snippet', true, true);
@@ -402,18 +487,11 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
         var blockSnippet = function (event) {
             event.preventDefault();
-            addToBlockList(snippet_id);
-
-            // Waiting for 500ms before reloading the page after user blocks a snippet,
-            // will allow the IndexedDB more time to complete its transaction. While
-            // this is an imperfect non-deterministic solution it will fix the issue
-            // for most of the users. Ideally we would create our own
-            // connection to the iDB and ensure that the write completes
-            // before we reload the page. Bug 1236090.
-            function reloadWindow() {
+            addToBlockList(snippet_id, function() {
+              sendMetric('snippet-blocked', function() {
                 window.location.reload();
-            }
-            sendMetric('snippet-blocked', function() { setTimeout(reloadWindow, 500); })
+              })
+            });
         };
 
         for (var k = 0; k < elements.length; k++) {
@@ -500,7 +578,31 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         }
     }, false);
 
+    function popFromBlockList(snippetID) {
+      var blockList = getBlockList();
+      var item = blockList.pop(snippetID);
+      gSnippetsMap.set('blockList', blockList);
+      return item;
+    }
 
+    function addToBlockList(snippetID, callback) {
+      var blockList = getBlockList();
+      snippetID = parseInt(snippetID, 10);
+      if (blockList.indexOf(snippetID) === -1) {
+          blockList = [snippetID].concat(blockList);
+          gSnippetsMap.set('blockList', blockList, callback);
+      }
+    }
+
+    function getBlockList() {
+      if (gSnippetsMap.get('blockList') === undefined) {
+          gSnippetsMap.set('blockList', []);
+      }
+      return gSnippetsMap.get('blockList');
+    }
+  }
+
+  initBlockList(blockListReady);
 })(window.showDefaultSnippets);
 
 // Send impressions and other interactions to the service
@@ -537,29 +639,6 @@ function sendMetric(metric, callback) {
       request.send();
       return request;
     {% endif %}
-}
-
-function popFromBlockList(snippetID) {
-    var blockList = getBlockList();
-    var item = blockList.pop(snippetID);
-    gSnippetsMap.set('blockList', blockList);
-    return item;
-}
-
-function addToBlockList(snippetID) {
-    var blockList = getBlockList();
-    snippetID = parseInt(snippetID, 10);
-    if (blockList.indexOf(snippetID) === -1) {
-        blockList = [snippetID].concat(blockList);
-        gSnippetsMap.set('blockList', blockList);
-    }
-}
-
-function getBlockList() {
-    if (gSnippetsMap.get('blockList') === undefined) {
-        gSnippetsMap.set('blockList', []);
-    }
-    return gSnippetsMap.get('blockList');
 }
 //]]>
 </script>
