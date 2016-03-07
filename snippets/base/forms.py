@@ -85,12 +85,11 @@ class TemplateDataWidget(forms.TextInput):
         css = {
             'all': ('css/templateDataWidget.css',)
         }
-        js = filter(None, [
+        js = [
             'js/lib/jquery-2.2.1.min.js',
             'js/lib/nunjucks{0}.js'.format('-dev' if settings.DEBUG else ''),
-            'templates/compiled.js' if not settings.DEBUG else None,
             'js/templateDataWidget.js'
-        ])
+        ]
 
 
 class IconWidget(forms.TextInput):
