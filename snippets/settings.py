@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django_ace',
     'product_details',
     'clear_cache',
+    'django_extensions',
 
     # Django apps
     'django.contrib.admin',
@@ -197,3 +198,5 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
         MEDIA_FILES_ROOT: 'max-age=900',  # 15 Minutes
         MEDIA_BUNDLES_ROOT: 'max-age=2592000',  # 1 Month
     }
+
+DEAD_MANS_SNITCH_URL = config('DEAD_MANS_SNITCH_URL', default=None)
