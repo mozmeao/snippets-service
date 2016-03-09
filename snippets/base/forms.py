@@ -87,7 +87,7 @@ class TemplateDataWidget(forms.TextInput):
         }
         js = [
             'js/lib/jquery-2.2.1.min.js',
-            'js/lib/nunjucks{0}.js'.format('-dev' if settings.DEBUG else ''),
+            'js/lib/nunjucks.min.js',
             'js/templateDataWidget.js'
         ]
 
