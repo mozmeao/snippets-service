@@ -194,6 +194,6 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     # Full list of S3 endpoints http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
     AWS_S3_HOST = config('AWS_S3_HOST')
     AWS_CACHE_CONTROL_HEADERS = {
-        'files/': 'max-age=900',  # 15 Minutes
-        'bundles/': 'max-age=2592000',  # 1 Month
+        MEDIA_FILES_ROOT: 'max-age=900',  # 15 Minutes
+        MEDIA_BUNDLES_ROOT: 'max-age=2592000',  # 1 Month
     }
