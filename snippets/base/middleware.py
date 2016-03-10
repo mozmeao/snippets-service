@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.urlresolvers import Resolver404, resolve
 
 from snippets.base.views import fetch_json_snippets, fetch_snippets
@@ -22,3 +23,13 @@ class FetchSnippetsMiddleware(object):
 
         if result.func in (fetch_snippets, fetch_json_snippets):
             return result.func(request, *result.args, **result.kwargs)
+
+
+class HostnameMiddleware(object):
+    def __init__(self):
+        values = [getattr(settings, x) for x in ['HOSTNAME', 'DEIS_APP', 'DEIS_DOMAIN']]
+        self.backend_server = '.'.join(x for x in values if x)
+
+    def process_response(self, request, response):
+        response['X-Backend-Server'] = self.backend_server
+        return response
