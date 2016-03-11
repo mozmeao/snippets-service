@@ -8,6 +8,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.7/ref/settings/
 """
 import os
+import platform
 
 import dj_database_url
 import django_cache_url
@@ -70,6 +71,16 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+
+HOSTNAME = platform.node()
+DEIS_APP = config('DEIS_APP', default=None)
+DEIS_DOMAIN = config('DEIS_DOMAIN', default=None)
+ENABLE_HOSTNAME_MIDDLEWARE = config('ENABLE_HOSTNAME_MIDDLEWARE',
+                                    default=bool(DEIS_APP), cast=bool)
+if ENABLE_HOSTNAME_MIDDLEWARE:
+    MIDDLEWARE_CLASSES = (
+        ('snippets.base.middleware.HostnameMiddleware',) +
+        MIDDLEWARE_CLASSES)
 
 ROOT_URLCONF = 'snippets.urls'
 
