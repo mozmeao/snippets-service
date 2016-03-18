@@ -211,3 +211,6 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     }
 
 DEAD_MANS_SNITCH_URL = config('DEAD_MANS_SNITCH_URL', default=None)
+
+SNIPPET_HTTP_MAX_AGE = config('SNIPPET_HTTP_MAX_AGE', default=90)
+SNIPPETS_PER_PAGE = config('SNIPPETS_PER_PAGE', default=50)
