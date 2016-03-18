@@ -25,7 +25,6 @@ from snippets.base.util import get_object_or_none
 def _http_max_age():
     return getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 90)
 HTTP_MAX_AGE = lazy(_http_max_age, str)()
-SNIPPETS_PER_PAGE = 50
 
 
 class SnippetFilter(django_filters.FilterSet):
@@ -45,7 +44,7 @@ class JSONSnippetFilter(django_filters.FilterSet):
 
 class IndexView(TemplateView):
     def render(self, request, *args, **kwargs):
-        paginator = Paginator(self.snippetsfilter.qs, SNIPPETS_PER_PAGE)
+        paginator = Paginator(self.snippetsfilter.qs, settings.SNIPPETS_PER_PAGE)
 
         page = request.GET.get('page', 1)
         try:

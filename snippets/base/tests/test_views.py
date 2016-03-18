@@ -227,7 +227,7 @@ class ShowSnippetTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-@patch('snippets.base.views.SNIPPETS_PER_PAGE', 1)
+@override_settings(SNIPPETS_PER_PAGE=1)
 class JSONIndexSnippetsTests(TestCase):
     def setUp(self):
         for i in range(10):
@@ -286,7 +286,7 @@ class JSONIndexSnippetsTests(TestCase):
         self.assertEqual(len(pagination_range), 5)
 
 
-@patch('snippets.base.views.SNIPPETS_PER_PAGE', 1)
+@override_settings(SNIPPETS_PER_PAGE=1)
 class IndexSnippetsTests(TestCase):
     def setUp(self):
         for i in range(10):
