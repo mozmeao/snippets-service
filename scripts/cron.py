@@ -56,7 +56,7 @@ def ping_dms(function):
     return _ping
 
 
-@scheduled_job('interval', days=1, max_instances=1, coalesce=True)
+@scheduled_job('cron', month='*', day='*', hour='1', minute='10', max_instances=1, coalesce=True)
 @ping_dms
 def job_update_product_details():
     call_command('update_product_details')
