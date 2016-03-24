@@ -209,6 +209,7 @@ class SnippetTemplate(CachingMixin, models.Model):
     snippet will fill in.
     """
     name = models.CharField(max_length=255, unique=True)
+    hidden = models.BooleanField(help_text='Hide from template selection dropdown', default=False)
     code = models.TextField(validators=[validate_xml_template])
 
     created = models.DateTimeField(auto_now_add=True)
