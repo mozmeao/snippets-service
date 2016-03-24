@@ -11,7 +11,8 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from snippets.base import ENGLISH_LANGUAGE_CHOICES
-from snippets.base.models import JSONSnippet, Snippet, SnippetTemplateVariable, UploadedFile
+from snippets.base.models import (JSONSnippet, Snippet, SnippetTemplate,
+                                  SnippetTemplateVariable, UploadedFile)
 
 
 class TemplateSelect(forms.Select):
@@ -128,6 +129,7 @@ class BaseSnippetAdminForm(forms.ModelForm):
 
 
 class SnippetAdminForm(BaseSnippetAdminForm):
+    template = forms.ModelChoiceField(queryset=SnippetTemplate.objects.exclude(hidden=True))
 
     class Meta:
         model = Snippet

@@ -196,6 +196,8 @@ RESERVED_VARIABLES = ('_', 'snippet_id')
 
 class SnippetTemplateAdmin(BaseModelAdmin):
     save_on_top = True
+    list_display = ('name', 'hidden')
+    list_filter = ('hidden',)
     inlines = (SnippetTemplateVariableInline,)
     formfield_overrides = {
         TextField: {'widget': AceWidget(mode='html', theme='github',
