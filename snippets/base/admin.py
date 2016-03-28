@@ -1,12 +1,12 @@
 import json
 import re
 from textwrap import wrap
+from datetime import datetime, timedelta
 
 from django.contrib import admin
 from django.db import transaction
 from django.db.models import TextField, Q
 from django.template.loader import get_template
-
 from django_ace import AceWidget
 from jinja2.meta import find_undeclared_variables
 
@@ -24,6 +24,25 @@ def duplicate_snippets_action(modeladmin, request, queryset):
 duplicate_snippets_action.short_description = 'Duplicate selected snippets'
 
 
+class ModifiedFilter(admin.SimpleListFilter):
+    title = 'Last modified'
+    parameter_name = 'last_modified'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('24', '24 hours'),
+            ('168', '7 days'),
+            ('720', '30 days'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+
+        when = datetime.utcnow() - timedelta(hours=int(self.value()))
+        return queryset.exclude(modified__lt=when)
+
+
 class TemplateNameFilter(admin.AllValuesFieldListFilter):
     def __init__(self, *args, **kwargs):
         super(TemplateNameFilter, self).__init__(*args, **kwargs)
@@ -35,8 +54,20 @@ class BaseModelAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
 
 
-class BaseSnippetAdmin(BaseModelAdmin):
+class DefaultFilterMixIn(admin.ModelAdmin):
+    def changelist_view(self, request, *args, **kwargs):
+        if self.default_filters and not request.GET:
+            q = request.GET.copy()
+            for filtr in self.default_filters:
+                key, value = filtr.split('=')
+                q[key] = value
+            request.GET = q
+            request.META['QUERY_STRING'] = request.GET.urlencode()
+        return super(DefaultFilterMixIn, self).changelist_view(request, *args, **kwargs)
 
+
+class BaseSnippetAdmin(BaseModelAdmin, DefaultFilterMixIn):
+    default_filters = ('last_modified=24',)
     list_display = (
         'name',
         'id',
@@ -45,10 +76,9 @@ class BaseSnippetAdmin(BaseModelAdmin):
         'locales',
         'publish_start',
         'publish_end',
-        'modified',
     )
     list_filter = (
-        'disabled',
+        ModifiedFilter,
         'on_release',
         'on_beta',
         'on_aurora',
@@ -102,7 +132,7 @@ class SnippetAdmin(BaseSnippetAdmin):
     search_fields = ('name', 'client_match_rules__description',
                      'template__name', 'campaign')
     list_filter = BaseSnippetAdmin.list_filter + (
-        'template',
+        ('template', admin.RelatedOnlyFieldListFilter),
         'exclude_from_search_providers',
     )
     filter_horizontal = ('exclude_from_search_providers', 'client_match_rules', 'countries')
