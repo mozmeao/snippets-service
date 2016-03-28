@@ -57,6 +57,25 @@ class ModifiedFilter(admin.SimpleListFilter):
             }
 
 
+class ReleaseFilter(admin.SimpleListFilter):
+    title = 'Release'
+    parameter_name = 'release'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('on_release', 'Release'),
+            ('on_beta', 'Beta'),
+            ('on_aurora', 'Aurora'),
+            ('on_nightly', 'Nightly'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+
+        return queryset.filter(**{self.value(): True})
+
+
 class TemplateNameFilter(admin.AllValuesFieldListFilter):
     def __init__(self, *args, **kwargs):
         super(TemplateNameFilter, self).__init__(*args, **kwargs)
@@ -80,11 +99,8 @@ class BaseSnippetAdmin(BaseModelAdmin):
     )
     list_filter = (
         ModifiedFilter,
-        'on_release',
-        'on_beta',
-        'on_aurora',
-        'on_nightly',
         'disabled',
+        ReleaseFilter,
         'locale_set__locale',
         'client_match_rules',
     )
