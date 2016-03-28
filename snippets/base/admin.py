@@ -54,7 +54,20 @@ class BaseModelAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
 
 
-class BaseSnippetAdmin(BaseModelAdmin):
+class DefaultFilterMixIn(admin.ModelAdmin):
+    def changelist_view(self, request, *args, **kwargs):
+        if self.default_filters and not request.GET:
+            q = request.GET.copy()
+            for filtr in self.default_filters:
+                key, value = filtr.split('=')
+                q[key] = value
+            request.GET = q
+            request.META['QUERY_STRING'] = request.GET.urlencode()
+        return super(DefaultFilterMixIn, self).changelist_view(request, *args, **kwargs)
+
+
+class BaseSnippetAdmin(BaseModelAdmin, DefaultFilterMixIn):
+    default_filters = ('last_modified=24',)
     list_display = (
         'name',
         'id',
