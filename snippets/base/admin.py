@@ -102,7 +102,7 @@ class SnippetAdmin(BaseSnippetAdmin):
     search_fields = ('name', 'client_match_rules__description',
                      'template__name', 'campaign')
     list_filter = BaseSnippetAdmin.list_filter + (
-        'template',
+        ('template', admin.RelatedOnlyFieldListFilter),
         'exclude_from_search_providers',
     )
     filter_horizontal = ('exclude_from_search_providers', 'client_match_rules', 'countries')
