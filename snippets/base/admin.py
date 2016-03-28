@@ -34,6 +34,7 @@ class ModifiedFilter(admin.SimpleListFilter):
         return (
             ('24', '24 hours'),
             ('168', '7 days'),
+            ('336', '14 days'),
             ('720', '30 days'),
             ('all', 'All'),
         )
@@ -87,7 +88,20 @@ class BaseModelAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
 
 
-class BaseSnippetAdmin(BaseModelAdmin):
+class DefaultFilterMixIn(admin.ModelAdmin):
+    def changelist_view(self, request, *args, **kwargs):
+        if self.default_filters and not request.GET:
+            q = request.GET.copy()
+            for filtr in self.default_filters:
+                key, value = filtr.split('=')
+                q[key] = value
+            request.GET = q
+            request.META['QUERY_STRING'] = request.GET.urlencode()
+        return super(DefaultFilterMixIn, self).changelist_view(request, *args, **kwargs)
+
+
+class BaseSnippetAdmin(BaseModelAdmin, DefaultFilterMixIn):
+    default_filters = ('last_modified=336',)
     list_display = (
         'name',
         'id',
