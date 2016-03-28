@@ -427,10 +427,10 @@ class Snippet(CachingMixin, SnippetBaseModel):
             ]
             if search_engine_identifiers:
                 attrs.append(('data-exclude-from-search-engines',
-                              ','.join(search_engine_identifiers)))
+                              u','.join(search_engine_identifiers)))
 
-        attr_string = ' '.join('{0}="{1}"'.format(key, value) for key, value in
-                               attrs)
+        attr_string = u' '.join(u'{0}="{1}"'.format(key, value) for key, value in
+                                attrs)
 
         rendered_snippet = u'<div {attrs}>{content}</div>'.format(
             attrs=attr_string,
