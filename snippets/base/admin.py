@@ -358,9 +358,16 @@ class SearchProviderAdmin(admin.ModelAdmin):
     list_display = ('name', 'identifier')
 
 
+class TargetedCountryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'priority')
+    list_filter = ('priority',)
+    list_editable = ('priority',)
+
+
 admin.site.register(models.Snippet, SnippetAdmin)
 admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
 admin.site.register(models.JSONSnippet, JSONSnippetAdmin)
 admin.site.register(models.UploadedFile, UploadedFileAdmin)
 admin.site.register(models.SearchProvider, SearchProviderAdmin)
+admin.site.register(models.TargetedCountry, TargetedCountryAdmin)

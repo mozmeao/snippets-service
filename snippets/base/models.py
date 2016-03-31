@@ -26,7 +26,6 @@ from caching.base import CachingManager, CachingMixin
 from jinja2 import Markup
 from jinja2.utils import LRUCache
 
-from snippets.base import ENGLISH_COUNTRIES
 from snippets.base.fields import CountryField, LocaleField, RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 from snippets.base.util import hashfile
@@ -577,11 +576,14 @@ class SearchProvider(CachingMixin, models.Model):
 
 class TargetedCountry(CachingMixin, models.Model):
     code = CountryField('Geolocation Country', unique=True)
+    name = models.CharField(max_length=100)
+    priority = models.BooleanField(default=False)
 
     objects = CachingManager()
 
     def __unicode__(self):
-        return u'{0} ({1})'.format(ENGLISH_COUNTRIES.get(self.code), self.code)
+        return u'{0} ({1})'.format(self.name, self.code)
 
     class Meta:
-        ordering = ('id',)
+        ordering = ('-priority', 'name', 'code',)
+        verbose_name_plural = 'targeted countries'

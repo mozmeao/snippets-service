@@ -251,7 +251,7 @@ class SnippetTests(TestCase):
 
         expected = Markup(
             '<div data-snippet-id="{0}" data-weight="100" data-campaign="" '
-            'class="snippet-metadata" data-countries="us,el">'
+            'class="snippet-metadata" data-countries="el,us">'
             '<a href="asdf">qwer</a></div>'.format(snippet.id))
         self.assertEqual(snippet.render().strip(), expected)
 

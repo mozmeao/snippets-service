@@ -61,8 +61,9 @@ class BaseSnippetFactory(factory.django.DjangoModelFactory):
             return
 
         if extracted:
-            countries = [models.TargetedCountry.objects.get_or_create(code=code)[0]
-                         for code in extracted]
+            countries = [
+                models.TargetedCountry.objects.get_or_create(code=code, name=code)[0]
+                for code in extracted]
             self.countries.add(*countries)
 
 
