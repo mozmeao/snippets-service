@@ -209,6 +209,9 @@ class SnippetTemplate(CachingMixin, models.Model):
     snippet will fill in.
     """
     name = models.CharField(max_length=255, unique=True)
+    priority = models.BooleanField(
+        verbose_name='Priority template', default=False,
+        help_text='Set to true to display first in dropdowns for faster selections')
     hidden = models.BooleanField(help_text='Hide from template selection dropdown', default=False)
     code = models.TextField(validators=[validate_xml_template])
 
@@ -231,6 +234,9 @@ class SnippetTemplate(CachingMixin, models.Model):
 
     def __unicode__(self):
         return self.name
+
+    class Meta:
+        ordering = ('-priority', 'name')
 
 
 class SnippetTemplateVariable(CachingMixin, models.Model):
