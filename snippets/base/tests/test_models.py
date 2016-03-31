@@ -26,8 +26,8 @@ class DuplicateSnippetMixInTests(TestCase):
         snippet_copy = snippet.duplicate()
         self.assertEqual(snippet_copy.disabled, True)
         self.assertTrue(snippet_copy.id != snippet.id)
-        self.assertEqual(snippet_copy.locale_set.count(), 1)
-        self.assertTrue(snippet_copy.locale_set.all()[0] != snippet.locale_set.all()[0])
+        self.assertEqual(snippet_copy.locales.count(), 1)
+        self.assertTrue(snippet_copy.locales.all()[0] == snippet.locales.all()[0])
         self.assertEqual(set(snippet_copy.client_match_rules.all()),
                          set(snippet.client_match_rules.all()))
 

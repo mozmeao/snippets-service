@@ -1,14 +1,10 @@
-from django.forms import ModelForm
 from django.test.client import RequestFactory
 
 from mock import Mock, patch
 
 from snippets.base.admin import SnippetAdmin, SnippetTemplateAdmin
-from snippets.base.forms import SnippetAdminForm
-from snippets.base.models import (Snippet, SnippetLocale, SnippetTemplate,
-                                  SnippetTemplateVariable)
-from snippets.base.tests import (SnippetFactory, SnippetTemplateFactory,
-                                 SnippetTemplateVariableFactory, TestCase)
+from snippets.base.models import Snippet, SnippetTemplate, SnippetTemplateVariable
+from snippets.base.tests import SnippetTemplateFactory, SnippetTemplateVariableFactory, TestCase
 
 
 class SnippetAdminTests(TestCase):
@@ -16,64 +12,6 @@ class SnippetAdminTests(TestCase):
         self.factory = RequestFactory()
         self.model_admin = SnippetAdmin(Snippet, None)
         self.model_admin.admin_site = Mock()
-
-    def _save_model(self, snippet, form):
-        """Call SnippetAdmin.save_model for the given snippet instance."""
-        request = self.factory.post('/url', {})
-        form.is_valid()  # Generate cleaned_data.
-        self.model_admin.save_model(request, snippet, form, True)
-
-    def test_save_model_locales(self):
-        """
-        save_model should delete any locales that were removed from the snippet
-        and save any locales that were added.
-        """
-        en_us = SnippetLocale(locale='en-us')
-        fr = SnippetLocale(locale='fr')
-        snippet = SnippetFactory.create(locale_set=[en_us, fr])
-        data = {
-            'name': 'test',
-            'data': '{}',
-            'template': snippet.template.id,
-            'locales': ['en-us', 'de'],
-            'priority': 0,
-            'weight': 100,
-        }
-
-        form = SnippetAdminForm(data, instance=snippet)
-        self._save_model(snippet, form)
-
-        snippet = Snippet.objects.get(pk=snippet.pk)
-        locales = (l.locale for l in snippet.locale_set.all())
-        self.assertEqual(set(locales), set(('en-us', 'de')))
-
-    def test_no_locales(self):
-        """
-        If the form being saved has no locale field, do not alter the snippet's
-        locale.
-        """
-        en_us = SnippetLocale(locale='en-us')
-        fr = SnippetLocale(locale='fr')
-        snippet = SnippetFactory.create(locale_set=[en_us, fr])
-        data = {
-            'name': 'test',
-            'data': '{}',
-            'template': snippet.template.id,
-            'priority': 0,
-            'weight': 100,
-        }
-
-        # FormClass has no locale field.
-        class FormClass(ModelForm):
-            class Meta:
-                model = Snippet
-                fields = ('name', 'data', 'template', 'priority', 'weight')
-        form = FormClass(data, instance=snippet)
-        self._save_model(snippet, form)
-
-        snippet = Snippet.objects.get(pk=snippet.pk)
-        locales = (l.locale for l in snippet.locale_set.all())
-        self.assertEqual(set(locales), set(('en-us', 'fr')))
 
     def test_save_as_disabled(self):
         request = self.factory.post('/', data={

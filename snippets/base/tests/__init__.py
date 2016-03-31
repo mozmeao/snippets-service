@@ -46,14 +46,16 @@ class BaseSnippetFactory(factory.django.DjangoModelFactory):
             self.client_match_rules.add(*extracted)
 
     @factory.post_generation
-    def locale_set(self, create, extracted, **kwargs):
+    def locales(self, create, extracted, **kwargs):
         if not create:
             return
 
-        if extracted is not None:
-            self.locale_set.add(*extracted)
-        else:
-            self.locale_set.create(locale='en-us')
+        if extracted is None:
+            extracted = ['en-us']
+
+        locales = [models.TargetedLocale.objects.get_or_create(code=code, name=code)[0]
+                   for code in extracted]
+        self.locales.add(*locales)
 
     @factory.post_generation
     def countries(self, create, extracted, **kwargs):

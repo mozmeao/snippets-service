@@ -53,8 +53,8 @@
               <td>{{ snippet.channels|join(', ')|title }}</td>
               <td>
                 <select multiple="multiple">
-                  {% for locale in snippet.locale_set.all() %}
-                    <option>{{ locale.get_locale_display() }}</option>
+                  {% for locale in snippet.locales.all() %}
+                    <option>{{ locale }}</option>
                   {% endfor %}
                 </select>
               </td>

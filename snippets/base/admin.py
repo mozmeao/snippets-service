@@ -107,7 +107,7 @@ class BaseSnippetAdmin(BaseModelAdmin, DefaultFilterMixIn):
         'id',
         'disabled',
         'text',
-        'locales',
+        'locale_list',
         'publish_start',
         'publish_end',
     )
@@ -115,8 +115,8 @@ class BaseSnippetAdmin(BaseModelAdmin, DefaultFilterMixIn):
         ModifiedFilter,
         'disabled',
         ReleaseFilter,
-        'locale_set__locale',
-        'client_match_rules',
+        ('locales', admin.RelatedOnlyFieldListFilter),
+        ('client_match_rules', admin.RelatedOnlyFieldListFilter),
     )
     list_editable = (
         'disabled',
@@ -128,20 +128,12 @@ class BaseSnippetAdmin(BaseModelAdmin, DefaultFilterMixIn):
     save_on_top = True
     save_as = True
 
-    filter_horizontal = ('client_match_rules',)
+    filter_horizontal = ('client_match_rules', 'locales', 'countries')
     actions = (duplicate_snippets_action,)
 
     def save_model(self, request, obj, form, change):
         """Save locale changes as well as the snippet itself."""
         super(BaseSnippetAdmin, self).save_model(request, obj, form, change)
-
-        try:
-            locales = form.cleaned_data['locales']
-            obj.locale_set.all().delete()
-            for locale in locales:
-                obj.locale_set.create(locale=locale)
-        except KeyError:
-            pass  # If the locales weren't even specified, do nothing.
 
     def change_view(self, request, *args, **kwargs):
         if request.method == 'POST' and '_saveasnew' in request.POST:
@@ -149,10 +141,10 @@ class BaseSnippetAdmin(BaseModelAdmin, DefaultFilterMixIn):
             request.POST['disabled'] = u'on'
         return super(BaseSnippetAdmin, self).change_view(request, *args, **kwargs)
 
-    def locales(self, obj):
-        num_locales = obj.locale_set.count()
-        locale_set = obj.locale_set.all()[:3]
-        active_locales = ', '.join([locale.get_locale_display() for locale in locale_set])
+    def locale_list(self, obj):
+        num_locales = obj.locales.count()
+        locales = obj.locales.all()[:3]
+        active_locales = ', '.join([str(locale) for locale in locales])
         if num_locales > 3:
             active_locales += ' and {0} more.'.format(num_locales - 3)
         return active_locales
@@ -167,7 +159,8 @@ class SnippetAdmin(BaseSnippetAdmin):
         ('template', admin.RelatedOnlyFieldListFilter),
         'exclude_from_search_providers',
     )
-    filter_horizontal = ('exclude_from_search_providers', 'client_match_rules', 'countries')
+    filter_horizontal = (BaseSnippetAdmin.filter_horizontal +
+                         ('exclude_from_search_providers', 'client_match_rules'))
 
     fieldsets = (
         (None, {'fields': ('name', 'priority', 'disabled', 'campaign',
@@ -189,11 +182,6 @@ class SnippetAdmin(BaseSnippetAdmin):
             'description': 'What channels will this snippet be available in?',
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
         }),
-        ('Search Providers', {
-            'description': ('Would you like to <strong>exclude</strong> '
-                            'any search providers from this snippet?'),
-            'fields': (('exclude_from_search_providers',),)
-        }),
         ('Country and Locale', {
             'description': ('What countries and locales will this snippet be '
                             'available in?'),
@@ -201,6 +189,11 @@ class SnippetAdmin(BaseSnippetAdmin):
         }),
         ('Client Match Rules', {
             'fields': ('client_match_rules',),
+        }),
+        ('Search Providers', {
+            'description': ('Would you like to <strong>exclude</strong> '
+                            'any search providers from this snippet?'),
+            'fields': (('exclude_from_search_providers',),)
         }),
         ('Startpage Versions', {
             'fields': (('on_startpage_1', 'on_startpage_2', 'on_startpage_3',
@@ -231,7 +224,7 @@ class SnippetAdmin(BaseSnippetAdmin):
 
     def queryset(self, request):
         return (super(SnippetAdmin, self)
-                .queryset(request).prefetch_related('locale_set').select_related('template'))
+                .queryset(request).prefetch_related('locales').select_related('template'))
 
 
 class ClientMatchRuleAdmin(BaseModelAdmin):
@@ -299,7 +292,6 @@ class SnippetTemplateAdmin(BaseModelAdmin):
 class JSONSnippetAdmin(BaseSnippetAdmin):
     form = forms.JSONSnippetAdminForm
     search_fields = ('name', 'client_match_rules__description')
-    filter_horizontal = ('client_match_rules', 'countries')
 
     fieldsets = (
         (None, {'fields': ('name', 'priority', 'disabled',
@@ -364,6 +356,12 @@ class TargetedCountryAdmin(admin.ModelAdmin):
     list_editable = ('priority',)
 
 
+class TargetedLocaleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'priority')
+    list_filter = ('priority',)
+    list_editable = ('priority',)
+
+
 admin.site.register(models.Snippet, SnippetAdmin)
 admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
@@ -371,3 +369,4 @@ admin.site.register(models.JSONSnippet, JSONSnippetAdmin)
 admin.site.register(models.UploadedFile, UploadedFileAdmin)
 admin.site.register(models.SearchProvider, SearchProviderAdmin)
 admin.site.register(models.TargetedCountry, TargetedCountryAdmin)
+admin.site.register(models.TargetedLocale, TargetedLocaleAdmin)

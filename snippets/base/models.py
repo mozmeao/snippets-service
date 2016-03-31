@@ -21,6 +21,7 @@ from django.db import models
 from django.db.models.manager import Manager
 from django.template import engines
 from django.template.loader import render_to_string
+from django.utils.encoding import python_2_unicode_compatible
 
 from caching.base import CachingManager, CachingMixin
 from jinja2 import Markup
@@ -352,6 +353,7 @@ class Snippet(CachingMixin, SnippetBaseModel):
 
     countries = models.ManyToManyField(
         'TargetedCountry', blank=True, verbose_name='Targeted Countries')
+    locales = models.ManyToManyField('TargetedLocale', blank=True, verbose_name='Targeted Locales')
 
     publish_start = models.DateTimeField(blank=True, null=True)
     publish_end = models.DateTimeField(blank=True, null=True)
@@ -479,6 +481,7 @@ class JSONSnippet(CachingMixin, SnippetBaseModel):
 
     countries = models.ManyToManyField(
         'TargetedCountry', blank=True, verbose_name='Targeted Countries')
+    locales = models.ManyToManyField('TargetedLocale', blank=True, verbose_name='Targeted Locales')
 
     publish_start = models.DateTimeField(blank=True, null=True)
     publish_end = models.DateTimeField(blank=True, null=True)
@@ -574,6 +577,7 @@ class SearchProvider(CachingMixin, models.Model):
         ordering = ('id',)
 
 
+@python_2_unicode_compatible
 class TargetedCountry(CachingMixin, models.Model):
     code = CountryField('Geolocation Country', unique=True)
     name = models.CharField(max_length=100)
@@ -581,9 +585,22 @@ class TargetedCountry(CachingMixin, models.Model):
 
     objects = CachingManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return u'{0} ({1})'.format(self.name, self.code)
 
     class Meta:
         ordering = ('-priority', 'name', 'code',)
         verbose_name_plural = 'targeted countries'
+
+
+@python_2_unicode_compatible
+class TargetedLocale(models.Model):
+    code = models.CharField(max_length=255)
+    name = models.CharField(max_length=100)
+    priority = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ('-priority', 'name', 'code')
+
+    def __str__(self):
+        return u'{} ({})'.format(self.name, self.code)
