@@ -5,6 +5,8 @@ snippets
 
 [![codecov.io](https://codecov.io/github/mozilla/snippets-service/coverage.svg?branch=master)](https://codecov.io/github/mozilla/snippets-service?branch=master)
 
+[What's deployed?](https://whatsdeployed.io/s-ka4)
+
 
 Run the tests
 -------------
