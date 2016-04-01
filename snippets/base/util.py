@@ -1,5 +1,7 @@
 import hashlib
 
+from product_details import product_details
+
 
 def get_object_or_none(model_class, **filters):
     """
@@ -25,3 +27,24 @@ def hashfile(filepath):
     with open(filepath, 'rb') as fp:
         sha1.update(fp.read())
     return sha1.hexdigest()
+
+
+def create_locales():
+    from snippets.base.models import TargetedLocale
+
+    for code, name in product_details.languages.items():
+        locale = TargetedLocale.objects.get_or_create(code=code.lower())[0]
+        name = name['English']
+        if locale.name != name:
+            locale.name = name
+            locale.save()
+
+
+def create_countries():
+    from snippets.base.models import TargetedCountry
+
+    for code, name in product_details.get_regions('en-US').items():
+        country = TargetedCountry.objects.get_or_create(code=code)[0]
+        if country.name != name:
+            country.name = name
+            country.save()
