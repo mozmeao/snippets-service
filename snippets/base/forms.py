@@ -110,7 +110,7 @@ class IconWidget(forms.TextInput):
         return mark_safe(widget_code)
 
     class Media:
-        js = ('js/lib/jquery-2.0.0.js',
+        js = ('js/lib/jquery-2.2.1.min.js',
               'js/iconWidget.js')
 
 
