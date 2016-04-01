@@ -129,7 +129,8 @@ class BaseSnippetAdminForm(forms.ModelForm):
 
 
 class SnippetAdminForm(BaseSnippetAdminForm):
-    template = forms.ModelChoiceField(queryset=SnippetTemplate.objects.exclude(hidden=True))
+    template = forms.ModelChoiceField(queryset=SnippetTemplate.objects.exclude(hidden=True),
+                                      widget=TemplateSelect)
 
     class Meta:
         model = Snippet
@@ -140,7 +141,6 @@ class SnippetAdminForm(BaseSnippetAdminForm):
                   'weight', 'client_match_rules', 'exclude_from_search_providers',
                   'campaign')
         widgets = {
-            'template': TemplateSelect,
             'data': TemplateDataWidget('template'),
         }
 
