@@ -110,6 +110,7 @@ class BaseSnippetAdmin(BaseModelAdmin, DefaultFilterMixIn):
         'locales',
         'publish_start',
         'publish_end',
+        'modified',
     )
     list_filter = (
         ModifiedFilter,
