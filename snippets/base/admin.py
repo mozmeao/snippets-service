@@ -183,6 +183,9 @@ class SnippetAdmin(BaseSnippetAdmin):
             'description': 'What channels will this snippet be available in?',
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
         }),
+        ('Client Filtering', {
+            'fields': ('client_option_has_fxaccount',)
+        }),
         ('Country and Locale', {
             'description': ('What countries and locales will this snippet be '
                             'available in?'),

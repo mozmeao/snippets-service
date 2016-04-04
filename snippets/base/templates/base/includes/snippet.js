@@ -210,12 +210,26 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             )
         }
 
-        // FxAccount is already setup skip snippets that link to
-        // about:accounts
-        if (isFxAccountSetup()) {
+        // Filter Snippets based on the has_fxaccount attribute.
+        var has_fxaccount = gSnippetsMap.get('fxaccount');
+        if (has_fxaccount == true) {
             snippets = snippets.filter(
                 function(snippet) {
-                    return !hasAboutAccountsLink(snippet);
+                    return (snippet.client_options.has_fxaccount == 'yes' ||
+                            snippet.client_options.has_fxaccount == 'any');
+                }
+            )
+        } else if (has_fxaccount == false) {
+            snippets = snippets.filter(
+                function(snippet) {
+                    return (snippet.client_options.has_fxaccount == 'no' ||
+                            snippet.client_options.has_fxaccount == 'any');
+                }
+            );
+        } else {
+            snippets = snippets.filter(
+                function(snippet) {
+                    return (snippet.client_options.has_fxaccount == 'any');
                 }
             );
         }
@@ -264,23 +278,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         }
     }
     {% endif %}
-
-    // Check whether snippet links to about:accounts.
-    function hasAboutAccountsLink(snippet) {
-        return snippet.code.indexOf('href="about:accounts"') !== -1;
-    }
-
-    function isFxAccountSetup() {
-        var fxaccount = gSnippetsMap.get('fxaccount');
-        if (fxaccount !== undefined) {
-            return fxaccount;
-        }
-        // If fxaccount === undefined pretend that sync is already
-        // setup, to avoid showing about:accounts snippets to browsers
-        // that do not support mozUITour signal or have accounts
-        // already setup.
-        return true;
-    }
 
     function updateFxAccountStatus() {
         var callback = function(result) {

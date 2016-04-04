@@ -23,6 +23,7 @@ from django.template import engines
 from django.template.loader import render_to_string
 from django.utils.encoding import python_2_unicode_compatible
 
+import django_mysql.models
 from caching.base import CachingManager, CachingMixin
 from jinja2 import Markup
 from jinja2.utils import LRUCache
@@ -315,7 +316,7 @@ class ClientMatchRule(CachingMixin, models.Model):
         return self.description
 
 
-class SnippetBaseModel(models.Model):
+class SnippetBaseModel(django_mysql.models.Model):
     def duplicate(self):
         snippet_copy = copy.copy(self)
         snippet_copy.id = None
@@ -384,6 +385,13 @@ class Snippet(CachingMixin, SnippetBaseModel):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
+    client_options = django_mysql.models.DynamicField(
+        default=None,
+        spec={
+            'has_fxaccount': unicode,
+        }
+    )
+
     objects = models.Manager()
     cached_objects = SnippetManager()
 
@@ -398,6 +406,7 @@ class Snippet(CachingMixin, SnippetBaseModel):
             'campaign': self.campaign,
             'weight': self.weight,
             'exclude_from_search_engines': [],
+            'client_options': self.client_options,
         }
         if self.id:
             data['countries'] = [country.code for country in self.countries.all()]
@@ -459,6 +468,11 @@ class Snippet(CachingMixin, SnippetBaseModel):
 
     def get_absolute_url(self):
         return reverse('base.show', kwargs={'snippet_id': self.id})
+
+    def save(self, *args, **kwargs):
+        if self.client_options is None:
+            self.client_options = {}
+        return super(Snippet, self).save(*args, **kwargs)
 
 
 class SnippetLocale(CachingMixin, models.Model):
