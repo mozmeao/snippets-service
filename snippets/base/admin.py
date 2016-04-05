@@ -363,6 +363,11 @@ class TargetedLocaleAdmin(admin.ModelAdmin):
     list_editable = ('priority',)
 
 
+class LogEntryAdmin(admin.ModelAdmin):
+    list_display = ('user', 'content_type', 'object_id', 'object_repr', 'change_message')
+    list_filter = ('user', 'content_type')
+
+
 admin.site.register(models.Snippet, SnippetAdmin)
 admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
@@ -371,3 +376,4 @@ admin.site.register(models.UploadedFile, UploadedFileAdmin)
 admin.site.register(models.SearchProvider, SearchProviderAdmin)
 admin.site.register(models.TargetedCountry, TargetedCountryAdmin)
 admin.site.register(models.TargetedLocale, TargetedLocaleAdmin)
+admin.site.register(admin.models.LogEntry, LogEntryAdmin)
