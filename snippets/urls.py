@@ -8,8 +8,7 @@ from django.views.static import serve as static_serve
 
 def robots_txt(request):
     permission = 'Allow' if settings.ENGAGE_ROBOTS else 'Disallow'
-    return HttpResponse('User-agent: *\n{0}: /'.format(permission),
-                        mimetype='text/plain')
+    return HttpResponse('User-agent: *\n{0}: /'.format(permission), content_type='text/plain')
 
 urlpatterns = [
     url(r'', include('snippets.base.urls')),
