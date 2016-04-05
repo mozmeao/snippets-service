@@ -9,6 +9,8 @@ from django.conf import settings
 import requests
 from apscheduler.schedulers.blocking import BlockingScheduler
 
+from snippets.base.utils import create_countries, create_locales
+
 
 schedule = BlockingScheduler()
 
@@ -60,6 +62,8 @@ def ping_dms(function):
 @ping_dms
 def job_update_product_details():
     call_command('update_product_details')
+    create_countries()
+    create_locales()
 
 
 def run():

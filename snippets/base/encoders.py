@@ -36,7 +36,7 @@ class ActiveSnippetsEncoder(json.JSONEncoder):
                 'on_beta': obj.on_beta,
                 'on_aurora': obj.on_aurora,
                 'on_nightly': obj.on_nightly,
-                'locales': [locale.locale for locale in obj.locale_set.all()],
+                'locales': [locale.code for locale in obj.locales.all()],
                 'countries': [country.code for country in obj.countries.all()],
                 'weight': obj.weight,
             }
@@ -53,7 +53,7 @@ class ActiveSnippetsEncoder(json.JSONEncoder):
                 'on_beta': obj.on_beta,
                 'on_aurora': obj.on_aurora,
                 'on_nightly': obj.on_nightly,
-                'locales': [locale.locale for locale in obj.locale_set.all()],
+                'locales': [locale.code for locale in obj.locales.all()],
                 'countries': [country.code for country in obj.countries.all()],
                 'weight': obj.weight,
             }

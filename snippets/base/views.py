@@ -70,7 +70,7 @@ class SnippetIndexView(IndexView):
     def get(self, request, *args, **kwargs):
         self.snippets = (Snippet.cached_objects
                          .filter(disabled=False)
-                         .prefetch_related('locale_set', 'countries',
+                         .prefetch_related('locales', 'countries',
                                            'exclude_from_search_providers'))
         self.snippetsfilter = SnippetFilter(request.GET, self.snippets)
         return self.render(request, *args, **kwargs)
@@ -82,7 +82,7 @@ class JSONSnippetIndexView(IndexView):
     def get(self, request, *args, **kwargs):
         self.snippets = (JSONSnippet.cached_objects
                          .filter(disabled=False)
-                         .prefetch_related('locale_set', 'countries'))
+                         .prefetch_related('locales', 'countries'))
         self.snippetsfilter = JSONSnippetFilter(request.GET, self.snippets)
         return self.render(request, *args, **kwargs)
 

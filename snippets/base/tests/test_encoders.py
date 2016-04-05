@@ -75,7 +75,7 @@ class ActiveSnippetsEncoderTests(TestCase):
                                   'on_aurora': False,
                                   'on_nightly': False,
                                   'locales': [u'en-us'],
-                                  'countries': [u'us', u'gr'],
+                                  'countries': [u'gr', u'us'],
                                   'weight': 100
                                   })
 

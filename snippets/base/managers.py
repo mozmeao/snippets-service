@@ -65,11 +65,11 @@ class SnippetQuerySet(CachingQuerySet):
         # Only filter by locale if they pass a valid locale.
         locales = filter(client.locale.lower().startswith, LANGUAGE_VALUES)
         if locales:
-            filters.update(locale_set__locale__in=locales)
+            filters.update(locales__code__in=locales)
         else:
             # If the locale is invalid, only match snippets with no
             # locales specified.
-            filters.update(locale_set__isnull=True)
+            filters.update(locales__isnull=True)
 
         snippets = self.filter(**filters).distinct()
         JSONSnippet = get_model('base', 'JSONSnippet')
