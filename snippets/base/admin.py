@@ -184,7 +184,10 @@ class SnippetAdmin(BaseSnippetAdmin):
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
         }),
         ('Client Filtering', {
-            'fields': ('client_option_has_fxaccount',)
+            'fields': (
+                'client_option_has_fxaccount',
+                'client_option_has_testpilot',
+            )
         }),
         ('Country and Locale', {
             'description': ('What countries and locales will this snippet be '

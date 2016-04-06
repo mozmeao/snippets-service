@@ -389,6 +389,7 @@ class Snippet(CachingMixin, SnippetBaseModel):
         default=None,
         spec={
             'has_fxaccount': unicode,
+            'has_testpilot': unicode,
         }
     )
 

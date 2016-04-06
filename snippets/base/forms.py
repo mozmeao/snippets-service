@@ -124,6 +124,11 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         choices=(('any', 'Show to all users'),
                  ('yes', 'Show only to users with an enabled Firefox Account'),
                  ('no', 'Show only to users without an enabled Firefox Account')))
+    client_option_has_testpilot = forms.ChoiceField(
+        label='Test Pilot',
+        choices=(('any', 'Show to all users'),
+                 ('yes', 'Show only to users with TestPilot'),
+                 ('no', 'Show only to users without TestPilot')))
 
     def __init__(self, *args, **kwargs):
         super(SnippetAdminForm, self).__init__(*args, **kwargs)

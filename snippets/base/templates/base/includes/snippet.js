@@ -212,14 +212,14 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 
         // Filter Snippets based on the has_fxaccount attribute.
         var has_fxaccount = gSnippetsMap.get('fxaccount');
-        if (has_fxaccount == true) {
+        if (has_fxaccount === true) {
             snippets = snippets.filter(
                 function(snippet) {
                     return (snippet.client_options.has_fxaccount == 'yes' ||
                             snippet.client_options.has_fxaccount == 'any');
                 }
             )
-        } else if (has_fxaccount == false) {
+        } else if (has_fxaccount === false) {
             snippets = snippets.filter(
                 function(snippet) {
                     return (snippet.client_options.has_fxaccount == 'no' ||
@@ -230,6 +230,24 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             snippets = snippets.filter(
                 function(snippet) {
                     return (snippet.client_options.has_fxaccount == 'any');
+                }
+            );
+        }
+
+        // Filter Snippets based on TestPilot addon existence.
+        var has_testpilot = Boolean(window.navigator.testpilotAddon);
+        if (has_testpilot === true) {
+            snippets = snippets.filter(
+                function(snippet) {
+                    return (snippet.client_options.has_testpilot == 'yes' ||
+                            snippet.client_options.has_testpilot == 'any');
+                }
+            )
+        } else {
+            snippets = snippets.filter(
+                function(snippet) {
+                    return (snippet.client_options.has_testpilot == 'no' ||
+                            snippet.client_options.has_testpilot == 'any');
                 }
             );
         }
