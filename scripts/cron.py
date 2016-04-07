@@ -9,7 +9,7 @@ from django.conf import settings
 import requests
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from snippets.base.utils import create_countries, create_locales
+from snippets.base.util import create_countries, create_locales
 
 
 schedule = BlockingScheduler()
