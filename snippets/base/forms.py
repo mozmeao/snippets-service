@@ -119,6 +119,25 @@ class BaseSnippetAdminForm(forms.ModelForm):
 class SnippetAdminForm(BaseSnippetAdminForm):
     template = forms.ModelChoiceField(queryset=SnippetTemplate.objects.exclude(hidden=True),
                                       widget=TemplateSelect)
+    client_option_has_fxaccount = forms.ChoiceField(
+        label='Firefox Account',
+        choices=(('any', 'Show to all users'),
+                 ('yes', 'Show only to users with an enabled Firefox Account'),
+                 ('no', 'Show only to users without an enabled Firefox Account')))
+    client_option_has_testpilot = forms.ChoiceField(
+        label='Test Pilot',
+        choices=(('any', 'Show to all users'),
+                 ('yes', 'Show only to users with TestPilot'),
+                 ('no', 'Show only to users without TestPilot')))
+
+    def __init__(self, *args, **kwargs):
+        super(SnippetAdminForm, self).__init__(*args, **kwargs)
+
+        if self.instance.client_options:
+            for key in self.fields.keys():
+                if key.startswith('client_option_'):
+                    self.fields[key].initial = self.instance.client_options.get(
+                        key.split('client_option_', 1)[1], None)
 
     class Meta:
         model = Snippet
@@ -131,6 +150,18 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         widgets = {
             'data': TemplateDataWidget('template'),
         }
+
+    def save(self, *args, **kwargs):
+        snippet = super(SnippetAdminForm, self).save(commit=False)
+
+        client_options = {}
+        for key, value in self.cleaned_data.items():
+            if key.startswith('client_option_'):
+                client_options[key.split('client_option_', 1)[1]] = value
+        snippet.client_options = client_options
+        snippet.save()
+
+        return snippet
 
 
 class JSONSnippetAdminForm(BaseSnippetAdminForm):

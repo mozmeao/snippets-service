@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'product_details',
     'clear_cache',
     'django_extensions',
+    'django_mysql',
 
     # Django apps
     'django.contrib.admin',
@@ -96,6 +97,29 @@ DATABASES = {
         cast=dj_database_url.parse
     )
 }
+
+
+if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
+    DATABASES['default']['OPTIONS'] = {
+        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'; SET innodb_strict_mode=1;",
+    }
+
+    # Dockerized MariaDB reports MySQL 5.5.5 as version. Need to
+    # override this to work with DynamicField.
+    if config('OVERRIDE_MARIADB_VERSION', default=False):
+        from django.utils.functional import cached_property
+        from django.db.backends.mysql.base import DatabaseWrapper
+
+        @cached_property
+        def mysql_version(self):
+            return config('OVERRIDE_MARIADB_VERSION', cast=tuple)
+
+        DatabaseWrapper.mysql_version = mysql_version
+
+SILENCED_SYSTEM_CHECKS = [
+    'django_mysql.W003',
+]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
