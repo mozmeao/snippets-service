@@ -187,6 +187,7 @@ class SnippetAdmin(BaseSnippetAdmin):
             'fields': (
                 'client_option_has_fxaccount',
                 'client_option_has_testpilot',
+                'client_option_is_default_browser',
             )
         }),
         ('Country and Locale', {
