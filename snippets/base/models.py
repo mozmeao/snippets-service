@@ -28,7 +28,7 @@ from caching.base import CachingManager, CachingMixin
 from jinja2 import Markup
 from jinja2.utils import LRUCache
 
-from snippets.base.fields import CountryField, LocaleField, RegexField
+from snippets.base.fields import RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 from snippets.base.util import hashfile
 
@@ -476,14 +476,6 @@ class Snippet(CachingMixin, SnippetBaseModel):
         return super(Snippet, self).save(*args, **kwargs)
 
 
-class SnippetLocale(CachingMixin, models.Model):
-    snippet = models.ForeignKey(Snippet, related_name='locale_set')
-    locale = LocaleField()
-
-    objects = models.Manager()
-    cached_objects = CachingManager()
-
-
 class JSONSnippet(CachingMixin, SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
     priority = models.IntegerField(default=0, blank=True)
@@ -527,13 +519,6 @@ class JSONSnippet(CachingMixin, SnippetBaseModel):
 
     def __unicode__(self):
         return self.name
-
-
-class JSONSnippetLocale(CachingMixin, models.Model):
-    snippet = models.ForeignKey(JSONSnippet, related_name='locale_set')
-    locale = LocaleField()
-
-    objects = CachingManager()
 
 
 def _generate_filename(instance, filename):
@@ -594,7 +579,7 @@ class SearchProvider(CachingMixin, models.Model):
 
 @python_2_unicode_compatible
 class TargetedCountry(CachingMixin, models.Model):
-    code = CountryField('Geolocation Country', unique=True)
+    code = models.CharField('Geolocation Country', max_length=16, unique=True)
     name = models.CharField(max_length=100)
     priority = models.BooleanField(default=False)
 
