@@ -27,6 +27,8 @@ import django_mysql.models
 from caching.base import CachingManager, CachingMixin
 from jinja2 import Markup
 from jinja2.utils import LRUCache
+from product_details import product_details
+from product_details.version_compare import version_list
 
 from snippets.base.fields import RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
@@ -190,12 +192,16 @@ class SnippetBundle(object):
 
     def generate(self):
         """Generate and save the code for this snippet bundle."""
+        current_firefox_version = (
+            version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
+
         bundle_content = render_to_string('base/fetch_snippets.jinja', {
             'snippet_ids': [snippet.id for snippet in self.snippets],
             'snippets_json': json.dumps([s.to_dict() for s in self.snippets]),
             'client': self.client,
             'locale': self.client.locale,
             'settings': settings,
+            'current_firefox_version': current_firefox_version
         })
 
         if isinstance(bundle_content, unicode):
@@ -388,6 +394,8 @@ class Snippet(CachingMixin, SnippetBaseModel):
     client_options = django_mysql.models.DynamicField(
         default=None,
         spec={
+            'version_lower_bound': unicode,
+            'version_upper_bound': unicode,
             'has_fxaccount': unicode,
             'has_testpilot': unicode,
             'is_default_browser': unicode,

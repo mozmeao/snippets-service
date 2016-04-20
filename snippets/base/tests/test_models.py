@@ -431,8 +431,10 @@ class SnippetBundleTests(TestCase):
             with patch('snippets.base.models.render_to_string') as render_to_string:
                 with patch('snippets.base.models.default_storage') as default_storage:
                     with self.settings(SNIPPET_BUNDLE_TIMEOUT=10):
-                        render_to_string.return_value = 'rendered snippet'
-                        bundle.generate()
+                        with patch('snippets.base.models.version_list') as version_list:
+                            version_list.return_value = ['45.0']
+                            render_to_string.return_value = 'rendered snippet'
+                            bundle.generate()
 
         render_to_string.assert_called_with('base/fetch_snippets.jinja', {
             'snippet_ids': [s.id for s in [self.snippet1, self.snippet2]],
@@ -440,6 +442,7 @@ class SnippetBundleTests(TestCase):
             'client': bundle.client,
             'locale': 'fr',
             'settings': settings,
+            'current_firefox_version': '45',
         })
         default_storage.save.assert_called_with(bundle.filename, ANY)
         cache.set.assert_called_with(bundle.cache_key, True, 10)

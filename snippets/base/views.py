@@ -15,6 +15,8 @@ from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 
 import django_filters
+from product_details import product_details
+from product_details.version_compare import version_list
 
 from snippets.base.decorators import access_control
 from snippets.base.encoders import ActiveSnippetsEncoder, JSONSnippetEncoder
@@ -114,11 +116,14 @@ def fetch_render_snippets(request, **kwargs):
                          .select_related('template')
                          .filter_by_available())
 
+    current_firefox_version = (
+        version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
     response = render(request, 'base/fetch_snippets.jinja', {
         'snippet_ids': [snippet.id for snippet in matching_snippets],
         'snippets_json': json.dumps([s.to_dict() for s in matching_snippets]),
         'client': client,
         'locale': client.locale,
+        'current_firefox_version': current_firefox_version
     })
 
     # ETag will be a hash of the response content.
