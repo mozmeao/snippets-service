@@ -83,11 +83,6 @@ class TemplateNameFilter(admin.AllValuesFieldListFilter):
         self.title = 'template'
 
 
-class BaseModelAdmin(admin.ModelAdmin):
-    """Holds customizations shared by every ModelAdmin in the site."""
-    change_list_template = 'smuggler/change_list.html'
-
-
 class DefaultFilterMixIn(admin.ModelAdmin):
     def changelist_view(self, request, *args, **kwargs):
         if self.default_filters and not request.GET:
@@ -100,7 +95,7 @@ class DefaultFilterMixIn(admin.ModelAdmin):
         return super(DefaultFilterMixIn, self).changelist_view(request, *args, **kwargs)
 
 
-class BaseSnippetAdmin(BaseModelAdmin, DefaultFilterMixIn):
+class BaseSnippetAdmin(DefaultFilterMixIn, admin.ModelAdmin):
     default_filters = ('last_modified=336',)
     list_display = (
         'name',
@@ -234,7 +229,7 @@ class SnippetAdmin(BaseSnippetAdmin):
                 .queryset(request).prefetch_related('locales').select_related('template'))
 
 
-class ClientMatchRuleAdmin(BaseModelAdmin):
+class ClientMatchRuleAdmin(admin.ModelAdmin):
     list_display = ('description', 'is_exclusion', 'startpage_version', 'name',
                     'version', 'locale', 'appbuildid', 'build_target',
                     'channel', 'os_version', 'distribution',
@@ -256,7 +251,7 @@ class SnippetTemplateVariableInline(admin.TabularInline):
 RESERVED_VARIABLES = ('_', 'snippet_id')
 
 
-class SnippetTemplateAdmin(BaseModelAdmin):
+class SnippetTemplateAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('name', 'priority', 'hidden')
     list_filter = ('hidden',)

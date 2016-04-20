@@ -40,7 +40,6 @@ INSTALLED_APPS = [
 
     # Third party apps
     'django_jinja',
-    'smuggler',
     'django_filters',
     'django_ace',
     'product_details',

@@ -18,7 +18,6 @@ urlpatterns = [
 
 if settings.ENABLE_ADMIN:
     urlpatterns += [
-        url(r'^admin/', include('smuggler.urls')),
         url(r'^admin/', include(admin.site.urls)),
     ]
     admin.site.site_header = 'Snippets Administration'
