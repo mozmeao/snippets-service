@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.test.client import RequestFactory
 
 from mock import Mock, patch
@@ -12,6 +13,7 @@ class SnippetAdminTests(TestCase):
         self.factory = RequestFactory()
         self.model_admin = SnippetAdmin(Snippet, None)
         self.model_admin.admin_site = Mock()
+        self.user = User.objects.get_or_create(username='foo', email='foo@example.com')[0]
 
     def test_save_as_disabled(self):
         request = self.factory.post('/', data={
@@ -20,10 +22,11 @@ class SnippetAdminTests(TestCase):
             'disabled': u'off',
             '_saveasnew': True
         })
+        request.user = self.user
 
         with patch('snippets.base.admin.admin.ModelAdmin.change_view') as change_view_mock:
             self.model_admin.change_view(request, 999)
-            change_view_mock.assert_called_with(request, 999)
+            change_view_mock.assert_called_with(request, 999, '', None)
             request = change_view_mock.call_args[0][0]
             self.assertEqual(request.POST['disabled'], u'on')
 
@@ -34,10 +37,11 @@ class SnippetAdminTests(TestCase):
             'template': 'foo',
             'disabled': u'foo'
         })
+        request.user = self.user
 
         with patch('snippets.base.admin.admin.ModelAdmin.change_view') as change_view_mock:
             self.model_admin.change_view(request, 999)
-            change_view_mock.assert_called_with(request, 999)
+            change_view_mock.assert_called_with(request, 999, '', None)
             request = change_view_mock.call_args[0][0]
             self.assertEqual(request.POST['disabled'], u'foo')
 
