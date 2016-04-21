@@ -21,7 +21,7 @@ class SnippetAdminTests(TestCase):
             '_saveasnew': True
         })
 
-        with patch('snippets.base.admin.BaseModelAdmin.change_view') as change_view_mock:
+        with patch('snippets.base.admin.admin.ModelAdmin.change_view') as change_view_mock:
             self.model_admin.change_view(request, 999)
             change_view_mock.assert_called_with(request, 999)
             request = change_view_mock.call_args[0][0]
@@ -35,7 +35,7 @@ class SnippetAdminTests(TestCase):
             'disabled': u'foo'
         })
 
-        with patch('snippets.base.admin.BaseModelAdmin.change_view') as change_view_mock:
+        with patch('snippets.base.admin.admin.ModelAdmin.change_view') as change_view_mock:
             self.model_admin.change_view(request, 999)
             change_view_mock.assert_called_with(request, 999)
             request = change_view_mock.call_args[0][0]
