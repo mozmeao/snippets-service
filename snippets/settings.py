@@ -195,8 +195,6 @@ SNIPPET_BUNDLE_TIMEOUT = 15 * 60  # 15 minutes
 METRICS_URL = config('METRICS_URL', default='https://snippets-stats.mozilla.org/foo.html')
 METRICS_SAMPLE_RATE = config('METRICS_SAMPLE_RATE', default=0.1, cast=float)
 
-GEO_URL = 'https://geo.mozilla.org/country.js'
-
 SITE_URL = config('SITE_URL', default='')
 
 CACHES = {
