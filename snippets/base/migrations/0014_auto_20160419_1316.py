@@ -22,7 +22,7 @@ def noop(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('base', '0011_auto_20160407_1435'),
+        ('base', '0013_auto_20160420_1216'),
     ]
 
     operations = [
