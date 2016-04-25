@@ -7,6 +7,7 @@ snippets
 
 [What's deployed?](https://whatsdeployed.io/s-ka4)
 
+[Documentation](http://abouthome-snippets-service.readthedocs.org/)
 
 Run the tests
 -------------
