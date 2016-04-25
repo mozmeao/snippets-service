@@ -287,6 +287,57 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             );
         }
 
+        // Filter Snippets based on TestPilot addon existence.
+        var has_testpilot = Boolean(window.navigator.testpilotAddon);
+        if (has_testpilot === true) {
+            snippets = snippets.filter(
+                function(snippet) {
+                    return (snippet.client_options.has_testpilot == 'yes' ||
+                            snippet.client_options.has_testpilot == 'any');
+                }
+            )
+        } else {
+            snippets = snippets.filter(
+                function(snippet) {
+                    return (snippet.client_options.has_testpilot == 'no' ||
+                            snippet.client_options.has_testpilot == 'any');
+                }
+            );
+        }
+
+        // Filter based on Firefox version
+        var userAgent = window.navigator.userAgent.match(/Firefox\/([0-9]+)\./);
+        var firefox_version  = userAgent ? parseInt(userAgent[1]) : 0;
+        if (firefox_version !== 0) {
+            snippets = snippets.filter(
+                function(snippet) {
+                    var lower_bound = snippet.client_options.version_lower_bound;
+                    var upper_bound = snippet.client_options.version_upper_bound;
+                    if (lower_bound && lower_bound !== 'any') {
+                        if (lower_bound === 'current_release') {
+                            if (firefox_version !== CURRENT_RELEASE)
+                                return false;
+                        }
+                        else {
+                            if (firefox_version < lower_bound) {
+                                return false;
+                            }
+                        }
+                    }
+                    if (upper_bound && upper_bound !== 'any') {
+                        if (upper_bound === 'older_than_current_release') {
+                            if (firefox_version >= CURRENT_RELEASE)
+                                return false;
+                        }
+                        else {
+                            if (firefox_version > upper_bound)
+                                return false;
+                        }
+                    }
+                    return true;
+                });
+        }
+
         // Exclude snippets in block list.
         var blockList = getBlockList();
         snippets = snippets.filter(

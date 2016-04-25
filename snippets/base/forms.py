@@ -1,6 +1,5 @@
 import json
 import os
-
 from collections import defaultdict
 
 from django import forms
@@ -8,6 +7,9 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
+
+from product_details import product_details
+from product_details.version_compare import Version, version_list
 
 from snippets.base.models import (JSONSnippet, Snippet, SnippetTemplate,
                                   SnippetTemplateVariable, UploadedFile)
@@ -119,6 +121,14 @@ class BaseSnippetAdminForm(forms.ModelForm):
 class SnippetAdminForm(BaseSnippetAdminForm):
     template = forms.ModelChoiceField(queryset=SnippetTemplate.objects.exclude(hidden=True),
                                       widget=TemplateSelect)
+    client_option_version_lower_bound = forms.ChoiceField(
+        label='Firefox Version at least',
+        choices=[('any', 'No limit'),
+                 ('current_release', 'Current release')])
+    client_option_version_upper_bound = forms.ChoiceField(
+        label='Firefox Version at most',
+        choices=[('any', 'No limit'),
+                 ('older_than_current_release', 'Older than current release')])
     client_option_has_fxaccount = forms.ChoiceField(
         label='Firefox Account',
         choices=(('any', 'Show to all users'),
@@ -140,6 +150,12 @@ class SnippetAdminForm(BaseSnippetAdminForm):
     def __init__(self, *args, **kwargs):
         super(SnippetAdminForm, self).__init__(*args, **kwargs)
 
+        version_choices = [
+            (x, x) for x in version_list(product_details.firefox_history_major_releases)
+        ]
+        self.fields['client_option_version_lower_bound'].choices += version_choices
+        self.fields['client_option_version_upper_bound'].choices += version_choices
+
         if self.instance.client_options:
             for key in self.fields.keys():
                 if key.startswith('client_option_'):
@@ -157,6 +173,23 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         widgets = {
             'data': TemplateDataWidget('template'),
         }
+
+    def clean(self):
+        cleaned_data = super(SnippetAdminForm, self).clean()
+        version_upper_bound = cleaned_data['client_option_version_upper_bound']
+        version_lower_bound = cleaned_data['client_option_version_lower_bound']
+
+        if (version_upper_bound == 'older_than_current_release' and
+                version_lower_bound == 'current_release'):
+            raise forms.ValidationError(
+                "It doesn't make sense to combine those two Firefox version filters")
+
+        if 'any' not in [version_lower_bound, version_upper_bound]:
+            if Version(version_upper_bound) < Version(version_lower_bound):
+                raise forms.ValidationError(
+                    'Firefox version upper bound must be bigger than lower bound.')
+
+        return cleaned_data
 
     def save(self, *args, **kwargs):
         snippet = super(SnippetAdminForm, self).save(commit=False)
