@@ -1,0 +1,228 @@
+{#
+Simple and Logo Swap Snippet with Block and Click
+
+Variables:
+
+  @block_button_text - small text - Text to display while hovering over opt out button. Default 'Remove this'
+  @blockable: checkbox - Check to allow user to block this snippet.
+  @clickable: checkbox - Check to allow snippet to be clickable
+  @icon: image - Snippet icon. 64x64px. SVG or PNG preferred.
+  @icon_url: text - URL linked from icon and whole snippet when snippet is clickable. (optional / required when snippet is clickable)
+  @link_logo: checkbox - Check to make replacement logo clickable.
+  @replacement_logo: image - Optional. Replace logo.
+  @text: main text - Text of snippet.
+  @logo_height: small_text - Logo height. Defaults to 192px
+  @logo_width: small_text -  Logo width. Defaults to 192px
+
+#}
+<style>
+div.switch#brandLogo {
+   background-size: {{ width|default(192, true) }}px {{ height ~ 'px' if height else 'auto' }};
+}
+
+.switch#brandLogo {
+   height: {{ height|default(192, true) }}px;
+   width: {{ width|default(192, true) }}px;
+}
+
+#snippetContainer div.snippet {
+   margin: 10px 5px;
+}
+
+#snippetContainer div.snippet img.icon {
+    margin: 5px;
+    float: none;
+}
+
+.snippet p {
+    display: inline-block;
+    padding-left: 0;
+    width: auto;
+    max-width: 380px;
+    height: auto;
+    vertical-align: middle;
+}
+
+.snippet .icon {
+    position: relative;
+    right: 0;
+    top: 0;
+    display: inline-block;
+    height: auto;
+    max-height: 64px;
+    vertical-align: middle;
+}
+
+{% if clickable or blockable %}
+  .block-snippet-overlay {
+      border: 2px solid transparent;
+      height: 100%;
+      width: 100%;
+  }
+{% endif %}
+
+{% if clickable %}
+ .block-snippet-overlay-glow {
+     visibility: visible;
+     border: 2px solid  white;
+     box-shadow: 0 0 6px 2px #4CB1FF;
+     border-radius: 12px;
+ }
+
+ #snippet:hover {
+     cursor: pointer;
+ }
+
+ #global-link {
+     color: inherit;
+ }
+{% endif %}
+
+ {% if blockable %}
+   .block-snippet-button {
+       position: absolute;
+       top: 5px;
+       right: 0px;
+       z-index: 10;
+       visibility: hidden;
+       height: 24px;
+       width: 24px;
+       background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAeFBMVEUAAAAAAAAAAAABAQEAAAAAAAAAAAAAAAAAAAAAAADDw8OQkJAAAAAAAAAAAAAAAAD9/f38/Pz6+vr5+fnt7e3i4uLd3d3Z2dmgoKBdXV0mJibv7++amprNzc2amprv7+////9zc3OwsLD29vaPj4+xsbHCwsLBwcHrzmRyAAAAIHRSTlMABAg9HhEMNxkir38xLCkV/Pr39OHTzceOYUrliLuJ5ik+KlgAAAGhSURBVEjHnZbrdoIwDIAXWii3UuV+0wV0+v5vOEBH2ajg8v3y6PlO2pgm+TAAYD0B+HgDsBxbuXzCVbZj7VgAju16USjYhAgjz7WdrVjgKC5FHfh5kxwOSZP7QS0kVw68PJLNJQuKIy44FgGT3LbAHMKNWJviirRlkWsKNIQIqwyNZFU4BFobnihjfEFcCm92tMF83MBnfxwYjBNuchocWN6cCx938AVf5MBywxJ3KUPX0seKqnhfiavIhvlYLMM3yNjP0UDJFmcuN/zF7aI/t1I9lCFIqo1r1y+Nr+6qnXQI87iJDJZGNzra6JZOIG2Y0iWK+bt7N9JrY+Q+/1yIKWmOVy9qt3862lgGPdaeM2U4QDQ52tAEY55BhT4aHS1r/FDBeJUcTY7JwHy8jMVZgybHZGDD+KQkuHbMBiZP5YBrx2zggaCQDka5PiHJhL9yq2B6c8FslmVvKsud4u8Nxb/3xPr1E9t9yP3qIf+vXZylAkJTIrQ+QoMltHHCsCCMJMLgo49XPcTPpiF+1kOcsCrsLSSfeiGhrj305Yqwwn0Dwi/I5rQKpwMAAAAASUVORK5CYII=");
+       background-repeat: no-repeat;
+       background-size: 24px 24px;
+       background-color: transparent;
+       border: 0;
+   }
+
+   .block-snippet-button:hover {
+       background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAe1BMVEUAAAAAAAAAAAAAAAABAQEAAAAAAAAAAAAAAAABAQEAAACQkJAAAADDw8P9/f38/Pz6+vr5+fni4uLZ2dmgoKCampomJibv7+/d3d3ExMRcXFzt7e3t7e3Nzc0AAABeXl7c3Nzv7+/////DOzLdkYz78/LlqaXPYlveko1iPwM8AAAAInRSTlMACwceOhcRBCo+NH8ir/z69/TTx46ISuXNsGHh4LskYszmffUm0QAAAbBJREFUSMelluuSgjAMRrdtegW84/22AXXf/wlXcNzAGEC755fjeCYfmDb5YrBWihpp7dcbWCmM1qpGa3PX3vh96kIAfwdCcOmAJYVWDpZJdl5NR6Pp6pwlS3BKC9lVQhjlfDIfY4PxPPFOGWE7SjjI9/jCPgfHFpJGhe0MWWbboIx8NVJYTLCDyQLSp0PGETLsIYPj06EaB+zl0K5jhYINDrAB1XhvQocFDrIIWlAst50MK5OtM5JizfANZn/RpHY5fX+5YovrhT7nTj/KCOX3ZNyKsmn8FDdydl6JOpdxSdMoKoeMoukkztg6F8wpRlFRklFBUedQJxPpstG7JTm10S46XqaCcjEOGe1kVocMWYdkIgvaVo+yRs7hDFxXDyMUrJBzOANXoMRd8VNkHTKIqX8oI2QdMohRjBIVLOLxI15yxF/Z1zAl3zC9bVlybTnQ/CXT/ENHrGSO2OMg7zoPcvlykCOui88upXsR+9nVd3JGRlywEdd4xLCIGEnRg4/G66lrvJ6q8coPcZ/vuCHuaYjHrQr8QrKuF5Lv9YYWkqG1Bx5rD9Da87/lKmKF+wUdVNNtsJwP7gAAAABJRU5ErkJggg==");
+   }
+
+   .block-snippet-button:active {
+       background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAe1BMVEUAAAAAAAAAAAAAAAABAQEAAAABAQEAAAAAAAAAAAD9/f3Dw8MAAAAAAACRkZH6+vr5+fnv7+/i4uLd3d3Z2dmgoKBdXV0mJiYAAAAAAACPj4/t7e3t7e2ampoAAACamprOzs7MzMyYmJj///8QEBB5eXnw8PCWlpZAQEB2Ec74AAAAI3RSTlMABgseOio+GRA0+68iEn/39OXTzceOYUoWFX/h4Igjiby5hsu+k6AAAAGoSURBVEjHnZbpYoIwEISbZEMIl8oNam27eLz/E9YY22DdgmR+efAxGxJ2540SY/wmxog/ycvDVombVBvOY4ynKpFaQ3AVaC0TlXI2CXRCQtPHxWYdRetNEWcNSNFZiHYQMsjKCEeKyiyQwjiRhJKw3+GTdl8gFcWwUOg6R1J5rUXInokEqhX+o1UFiWXGxDvEOKEY3i0z9vjESX08+jAurMe0j+CO4UpXOKtKK/5rksp6NY+sapmyHxMBOb6gHAS/m3Ry734/nfFB55P7vJcdu5sEO0dchuOYOA4Xx2wDwe8r6cfEYBhHDGMms6thCkpXxmB0dISRK7UEZRCeNNHotpYhvhhFTWIqC01dBEMQiL0Mr3W1OkaCIQmMdcvMUgqkGIrAwiyGC9ggxVAEbkBwsytrJBiSwHVgkQgJhiQw8kG8CvNYvsdD9thKc2Cy1w9MJkOPY+l3+Fkqs4WvmNmZ7YIXeVm7OMiOLWxKxsSj9Xk0WI827jEsPEaSx+DzHq9uiAeHLTHED4Eb4lRU6P9Ghd5GhelAkhGBZDb2gI09QMQer3DlEeG+AWkO2NrlPO+kAAAAAElFTkSuQmCC");
+   }
+
+   #snippet:hover > .block-snippet-button {
+       visibility: visible;
+   }
+
+   #brandLogo:hover > .block-snippet-button {
+       visibility: visible;
+   }
+
+  .block-snippet-overlay-close {
+      visibility: visible;
+      background-color: #eaeaea;
+      border: 2px solid transparent;
+      box-shadow: 0 0 0 transparent;
+      border-radius: 12px;
+   }
+ {% endif %}
+
+</style>
+{% if clickable %}
+<a id="global-link" href="{{ icon_url | safe }}">
+{% endif %}
+  <div class="snippet" id="snippet">
+    {% if blockable or clickable %}
+      <div id="block-snippet-overlay" class="block-snippet-overlay">
+    {% endif %}
+
+    {% if icon_url %}
+      <a href="{{ icon_url|safe }}">
+    {% endif %}
+          <img class="icon" src="{{ icon }}" />
+    {% if icon_url %}
+      </a>
+    {% endif %}
+
+    <p>{{ text|safe }}</p>
+
+    {% if blockable or clickable %}
+      </div>
+    {% endif %}
+
+    {% if blockable %}
+      <button class="block-snippet-button" title="{{ block_button_text|default('Remove this', true) }}">
+      </button>
+    {% endif %}
+  </div>
+{% if clickable %}
+  </a>
+{% endif %}
+<script type="text/javascript">
+ //<![CDATA[
+ (function() {
+     var snippet = document.getElementById('snippet');
+
+     snippet.addEventListener('show_snippet', function () {
+         var overlay = document.getElementById('block-snippet-overlay');
+         var xbuttons = document.querySelectorAll('.block-snippet-button');
+
+         {% if replacement_logo %}
+           var newLogo = '{{ replacement_logo }}';
+           var brandLogo = document.getElementById('brandLogo');
+
+           // Fade out logo
+           brandLogo.style.opacity = 1;
+           brandLogo.style.transitionProperty = 'opacity';
+           brandLogo.style.transitionDuration = '200ms';
+           // Once the logo fades out, show the video.
+           brandLogo.addEventListener('transitionend', function() {
+               brandLogo.style.transitionProperty = '';
+               brandLogo.style.transitionDuration = '';
+               if (brandLogo.src !== undefined) {
+                   brandLogo.src = newLogo;
+               } else {
+                   brandLogo.style.backgroundImage = 'url(' + newLogo + ')';
+               }
+               brandLogo.classList.add('switch');
+
+               {% if link_logo %}
+                 var parent = brandLogo.parentElement;
+                 var searchContainer = document.getElementById('searchContainer');
+                 var link = document.createElement('a');
+                 brandLogo = parent.replaceChild(link, brandLogo);
+                 link.href = '{{ icon_url }}';
+                 link.appendChild(brandLogo);
+               {% endif %}
+             brandLogo.style.opacity = 1;
+           });
+           brandLogo.style.opacity = 0;
+
+
+         {% endif %}
+
+         {% if clickable %}
+           snippet.addEventListener('mouseover', function(e) {
+               overlay.classList.add('block-snippet-overlay-glow');
+           });
+           snippet.addEventListener('mouseout', function(e) {
+               overlay.classList.remove('block-snippet-overlay-glow');
+           });
+         {% endif %}
+
+         {% if blockable %}
+           var mouseover = function(event) {
+               overlay.classList.add('block-snippet-overlay-close');
+               {% if replacement_logo %}
+                 brandLogo.style.opacity = 0.6;
+               {% endif %}
+           };
+
+           var mouseout = function(event) {
+               overlay.classList.remove('block-snippet-overlay-close');
+               {% if replacement_logo %}
+                 brandLogo.style.opacity = 1;
+               {% endif %}
+           };
+           for (var k = 0, l = xbuttons.length; k < l; k++) {
+               var xbutton = xbuttons[k];
+               xbutton.addEventListener('mouseover', mouseover, false);
+               xbutton.addEventListener('mouseout', mouseout, false);
+           }
+         {% endif %}
+     });
+ })();
+ //]]>
+</script>
