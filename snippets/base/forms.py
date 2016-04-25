@@ -129,6 +129,13 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         choices=(('any', 'Show to all users'),
                  ('yes', 'Show only to users with TestPilot'),
                  ('no', 'Show only to users without TestPilot')))
+    client_option_is_default_browser = forms.ChoiceField(
+        label='Default Browser',
+        help_text=('If we cannot determine the status we will act '
+                   'as if Firefox <em>is</em> the default browser'),
+        choices=(('any', 'Show to all users'),
+                 ('yes', 'Show only to users with Firefox as default browser'),
+                 ('no', 'Show only to users with Firefox as second browser')))
 
     def __init__(self, *args, **kwargs):
         super(SnippetAdminForm, self).__init__(*args, **kwargs)

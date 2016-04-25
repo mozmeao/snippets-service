@@ -172,6 +172,9 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     // Update FxAccount Status
     updateFxAccountStatus();
 
+    // Update Default Browser Status
+    updateDefaultBrowserStatus();
+
     // Update Selected Search Engine
     updateSelectedSearchEngine();
 
@@ -252,6 +255,24 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             );
         }
 
+        // Filter Snippets based on whether Firefox is the default browser or now.
+        var is_default_browser = gSnippetsMap.get('is_default_browser');
+        if (is_default_browser === true || is_default_browser === undefined) {
+            snippets = snippets.filter(
+                function(snippet) {
+                    return (snippet.client_options.is_default_browser == 'yes' ||
+                            snippet.client_options.is_default_browser == 'any');
+                }
+            )
+        } else {
+            snippets = snippets.filter(
+                function(snippet) {
+                    return (snippet.client_options.is_default_browser == 'no' ||
+                            snippet.client_options.is_default_browser == 'any');
+                }
+            );
+        }
+
         // Exclude snippets from search providers.
         var searchProvider = gSnippetsMap.get('selectedSearchEngine');
         if (searchProvider) {
@@ -308,6 +329,25 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                     action:'getConfiguration',
                     data: {
                         configuration: 'sync',
+                        callbackID: _waitForCallback(callback)
+                    }
+                }
+            }
+        );
+        document.dispatchEvent(event);
+    }
+
+    function updateDefaultBrowserStatus() {
+        var callback = function(result) {
+            gSnippetsMap.set('is_default_browser', result.defaultBrowser);
+        }
+        var event = new CustomEvent(
+            'mozUITour', {
+                bubbles: true,
+                detail: {
+                    action:'getConfiguration',
+                    data: {
+                        configuration: 'appinfo',
                         callbackID: _waitForCallback(callback)
                     }
                 }
