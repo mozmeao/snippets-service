@@ -190,11 +190,14 @@ def preview_snippet(request):
     skip_boilerplate = strtobool(skip_boilerplate)
 
     template_name = 'base/preview_without_shell.jinja' if skip_boilerplate else 'base/preview.jinja'
+    current_firefox_version = (
+        version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
 
     return render(request, template_name, {
         'snippets_json': json.dumps([snippet.to_dict()]),
         'client': PREVIEW_CLIENT,
         'preview': True,
+        'current_firefox_version': current_firefox_version,
     })
 
 
