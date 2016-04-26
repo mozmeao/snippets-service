@@ -206,10 +206,13 @@ def show_snippet(request, snippet_id):
     if snippet.disabled and not request.user.is_authenticated():
         raise Http404()
 
+    current_firefox_version = (
+        version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
     return render(request, 'base/preview.jinja', {
         'snippets_json': json.dumps([snippet.to_dict()]),
         'client': PREVIEW_CLIENT,
         'preview': True,
+        'current_firefox_version': current_firefox_version,
     })
 
 
