@@ -224,3 +224,5 @@ django-mysql==1.0.7 \
 mariadb_dyncol==1.1.0 \
     --hash=sha256:b4b2f9bf55a5444332f0b450372d9947c16bd68d1efe0c7410c6a224f9d64659 \
     --hash=sha256:28ed5a6cb4d466f745c937bc4324baae9c9df816676e9309b501c017d40ff4d8
+django-reversion==1.10.2 \
+    --hash=sha256:f1ffc5d9d7a9417fdb8593a8a60b49a6223798afb4fa1d069dca728461384a11

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'clear_cache',
     'django_extensions',
     'django_mysql',
+    'reversion',
 
     # Django apps
     'django.contrib.admin',

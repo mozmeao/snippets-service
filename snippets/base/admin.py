@@ -11,6 +11,7 @@ from django.utils.encoding import force_text
 
 from django_ace import AceWidget
 from jinja2.meta import find_undeclared_variables
+from reversion.admin import VersionAdmin
 
 from snippets.base import forms, models
 from snippets.base.models import JINJA_ENV
@@ -95,7 +96,7 @@ class DefaultFilterMixIn(admin.ModelAdmin):
         return super(DefaultFilterMixIn, self).changelist_view(request, *args, **kwargs)
 
 
-class BaseSnippetAdmin(DefaultFilterMixIn, admin.ModelAdmin):
+class BaseSnippetAdmin(VersionAdmin, DefaultFilterMixIn, admin.ModelAdmin):
     default_filters = ('last_modified=336',)
     list_display = (
         'name',
@@ -232,7 +233,7 @@ class SnippetAdmin(BaseSnippetAdmin):
                 .queryset(request).prefetch_related('locales').select_related('template'))
 
 
-class ClientMatchRuleAdmin(admin.ModelAdmin):
+class ClientMatchRuleAdmin(VersionAdmin, admin.ModelAdmin):
     list_display = ('description', 'is_exclusion', 'startpage_version', 'name',
                     'version', 'locale', 'appbuildid', 'build_target',
                     'channel', 'os_version', 'distribution',
