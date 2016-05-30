@@ -1,23 +1,26 @@
-Developing a Snippet
-====================
+Developing a Snippet Template
+=============================
 
-The following document explains how to develop and test a snippet for use in
-the Snippets Service. It is assumed that you've already filed a bug in the
-`Snippets Campaign`_ component in Bugzilla to inform the snippets team that you
-want to create a snippet.
+The following document explains how to develop and test a snippet template for
+use in the Snippets Service. It is assumed that you've already filed a bug in
+the `Snippets Campaign`_ component in Bugzilla to inform the snippets team that
+you want to create a snippet template.
 
 .. _Snippets Campaign: https://bugzilla.mozilla.org/enter_bug.cgi?product=Snippets&component=Campaign
 
-Using the staging server
-------------------------
+Setting up your development environment
+---------------------------------------
 
-In order to develop a snippet properly, you must add your snippet to a test
-instance of the snippet service. You may either user the staging instance of
-snippets at https://snippets.allizom.org, or you may set up a local instance of
-the snippets service using the :doc:`installation documentation <contributing>`.
+In order to develop a snippet template you need to setup have a snippets server.
+You can either setup the full Snippets Service or the `Simple Snippets Server
+for Template Development`_. The latter is strongly recommended and it will be
+all you'll need for template development. It needs no configuration and the code
+served to the browsers is the same the original Snippets Service serves. The
+major difference is that all the Client Matching rules are ignored. All snippets
+are served all the time and on every request which makes this ideal for template
+development.
 
-To get access to the staging server, ask the snippets team via the bug you've
-filed in Bugzilla.
+.. _Simple Snippets Server for Template Development: https://github.com/mozilla/snippets-service/tree/master/simple_template_server
 
 Template or snippet?
 --------------------
@@ -28,40 +31,8 @@ shared between multiple snippets. Templates are useful for snippets where you
 want an admin to be able to substitute different text for localization or other
 customization purposes. Templates are written in the Jinja2_ template language.
 
-The admin interface can be reached at http://localhost:8000/admin/. Within it
-you will find a section for creating templates and creating snippets. If you
-intend to create a single snippet instead of a reusable template, you will have
-to create a "Raw" template for your code that contains a single variable:
-
-.. code-block:: jinja
-
-   {{ code|safe }}
-
-You can then use this template for creating your snippet by dumping all of your
-HTML into the ``code`` variable.
-
 .. _Jinja2: http://jinja.pocoo.org/
 
-Creating the snippet in the admin
----------------------------------
-
-When creating or editing the snippet in the admin interface, you'll want to
-check the following fields:
-
-**Disabled**
-   This must be unchecked or the snippet will not be served.
-**Product channels**
-   Controls which release channels the snippet goes to. Make sure all of them
-   are checked.
-**Locales**
-  Controls which locales the snippet goes to. Make sure all locales are moved
-  to the "Chosen locales" box (the "Choose all" link at the bottom can help).
-
-Once you've saved the snippet, there will be a "View on site" button in the top
-right of the editing page, which will show your snippet in a mock `about:home`
-page. This page is really useful for initial development, but once you're ready
-for final testing, you should read the :ref:`testing` section below for how to
-test on a real `about:home` page.
 
 How are snippets loaded?
 ------------------------
@@ -338,13 +309,22 @@ the host for your `about:home` snippets to point to
 ``https://snippets.allizom.org`` or ``http://localhost:8000``, depending on
 which server you are using for development.
 
+Alternatively to using the add-on you can change the
+`browser.aboutHomeSnippets.updateUrl` perf from `about:config` to point to your
+server. For example
+
+``http://localhost:8000/%STARTPAGE_VERSION%/%NAME%/%VERSION%/%APPBUILDID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%/%OS_VERSION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/``
+
 If you are using the staging server, the developer who set up your account and
 snippet should give you instructions on a Name value to use in the add-on's
 settings in order to view your snippet specifically.
 
-With the add-on installed, your `about:home` should load the latest snippet
-code from your local snippets instance (after a short delay). If the code
-doesn't seem to update, try force-refreshing with Cmd-Shift-R or Ctrl-Shift-R.
+With the add-on installed or the perf change made, your `about:home` should load
+the latest snippet code from your local snippets instance (after a short delay).
+If the code doesn't seem to update, try force-refreshing with Cmd-Shift-R or
+Ctrl-Shift-R and deleting local snippet storage by typing in a web console:
+
+``gSnippetsMap.clear()``
 
 What versions of Firefox should I test?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -385,3 +365,4 @@ the URL for editing it to make it easier for the reviewer to test it.
 .. _simple snippet: https://github.com/mozilla/snippets/blob/master/templates/simple-snippet.html
 .. _MozUITour: https://hg.mozilla.org/mozilla-central/file/tip/browser/components/uitour/UITour-lib.js
 .. _sendMetric: https://github.com/mozilla/snippets-service/blob/master/snippets/base/templates/base/includes/snippet_js.html
+.. _
