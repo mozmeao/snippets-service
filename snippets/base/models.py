@@ -25,6 +25,7 @@ from django.utils.encoding import python_2_unicode_compatible
 
 import django_mysql.models
 from caching.base import CachingManager, CachingMixin
+from django_statsd.clients import statsd
 from jinja2 import Markup
 from jinja2.utils import LRUCache
 from product_details import product_details
@@ -208,6 +209,7 @@ class SnippetBundle(object):
             bundle_content = bundle_content.encode('utf-8')
         default_storage.save(self.filename, ContentFile(bundle_content))
         cache.set(self.cache_key, True, settings.SNIPPET_BUNDLE_TIMEOUT)
+        statsd.incr('bundle.generate')
 
 
 class SnippetTemplate(CachingMixin, models.Model):
