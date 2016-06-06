@@ -3,6 +3,7 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
+from django.views.generic import RedirectView
 from django.views.static import serve as static_serve
 
 
@@ -22,7 +23,10 @@ if settings.ENABLE_ADMIN:
     ]
     admin.site.site_header = 'Snippets Administration'
     admin.site.site_title = 'Mozilla Snippets'
-
+elif settings.ADMIN_REDIRECT_URL:
+    urlpatterns.append(
+        url(r'^admin/', RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL))
+    )
 
 if settings.SAML_ENABLE:
     urlpatterns += [
