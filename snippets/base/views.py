@@ -15,6 +15,7 @@ from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 
 import django_filters
+from django_statsd.clients import statsd
 from product_details import product_details
 from product_details.version_compare import version_list
 
@@ -100,6 +101,9 @@ def fetch_pregenerated_snippets(request, **kwargs):
     bundle = SnippetBundle(client)
     if bundle.expired:
         bundle.generate()
+        statsd.incr('bundle.generate')
+    else:
+        statsd.incr('bundle.cached')
 
     return HttpResponseRedirect(bundle.url)
 
