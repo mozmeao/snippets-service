@@ -10,6 +10,7 @@ from django.template.loader import get_template
 from django.utils.encoding import force_text
 
 from django_ace import AceWidget
+from django_statsd.clients import statsd
 from jinja2.meta import find_undeclared_variables
 from reversion.admin import VersionAdmin
 
@@ -128,10 +129,6 @@ class BaseSnippetAdmin(VersionAdmin, DefaultFilterMixIn, admin.ModelAdmin):
     filter_horizontal = ('client_match_rules', 'locales', 'countries')
     actions = (duplicate_snippets_action,)
 
-    def save_model(self, request, obj, form, change):
-        """Save locale changes as well as the snippet itself."""
-        super(BaseSnippetAdmin, self).save_model(request, obj, form, change)
-
     def change_view(self, request, *args, **kwargs):
         if request.method == 'POST' and '_saveasnew' in request.POST:
             # Always saved cloned snippets as disabled.
@@ -214,6 +211,10 @@ class SnippetAdmin(BaseSnippetAdmin):
         css = {
             'all': ('css/admin.css',)
         }
+
+    def save_model(self, request, obj, form, change):
+        statsd.incr('save.snippet')
+        super(SnippetAdmin, self).save_model(request, obj, form, change)
 
     def lookup_allowed(self, key, value):
         if key == 'template__name':
@@ -332,6 +333,10 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    def save_model(self, request, obj, form, change):
+        statsd.incr('save.json_snippet')
+        super(JSONSnippetAdmin, self).save_model(request, obj, form, change)
 
 
 class UploadedFileAdmin(admin.ModelAdmin):
