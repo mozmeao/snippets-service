@@ -139,6 +139,7 @@ def fetch_render_snippets(request, **kwargs):
 
 def fetch_snippets(request, **kwargs):
     """Determine which snippet-fetching method to use."""
+    statsd.incr('serve.snippets')
     if settings.SERVE_SNIPPET_BUNDLES:
         return fetch_pregenerated_snippets(request, **kwargs)
     else:
@@ -148,6 +149,7 @@ def fetch_snippets(request, **kwargs):
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
 @access_control(max_age=HTTP_MAX_AGE)
 def fetch_json_snippets(request, **kwargs):
+    statsd.incr('serve.json_snippets')
     client = Client(**kwargs)
     matching_snippets = (JSONSnippet.cached_objects
                          .filter(disabled=False)
