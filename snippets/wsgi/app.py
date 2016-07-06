@@ -14,8 +14,8 @@ from django.core.wsgi import get_wsgi_application
 
 import newrelic.agent
 from decouple import config
+from raven.contrib.django.raven_compat.middleware.wsgi import Sentry
 from whitenoise.django import DjangoWhiteNoise
-
 
 application = get_wsgi_application()
 application = DjangoWhiteNoise(application)
@@ -23,6 +23,8 @@ application = DjangoWhiteNoise(application)
 # Add media files
 if settings.MEDIA_ROOT and settings.MEDIA_URL:
     application.add_files(settings.MEDIA_ROOT, prefix=settings.MEDIA_URL)
+
+application = Sentry(application)
 
 # Add NewRelic
 newrelic_ini = config('NEW_RELIC_CONFIG_FILE', default='newrelic.ini')

@@ -239,3 +239,9 @@ django-statsd-mozilla==0.3.15 \
 statsd==3.1 \
     --hash=sha256:788ffa29dfb754900e08b90881f7ea16c3c25ca2949548eea7b43d2ca739e33f \
     --hash=sha256:fbae5feb33ae9394c275bc834ab94684b94de03acc8f36387bd0bf0c51ef28ee
+raven==5.21.0 \
+    --hash=sha256:feae5e8a7189d3ff8e92bdcb8ccd51dd0b3e2ee22bde6dd730c423f27932d91b \
+    --hash=sha256:11ed9ed0c0759c608455861dc52a91ca634ace7bee536e61b7d04ad827eeabca
+contextlib2==0.5.3 \
+    --hash=sha256:888a280f24dcff2cc55ac0e51fc764484b284f91ff711a219e459a6d5f76de2b \
+    --hash=sha256:30e500f13921c73c96f49a6dd2adfbdd92bc3fae12183e91b06b2e4583486206
