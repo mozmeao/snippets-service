@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_mysql',
     'reversion',
+    'raven.contrib.django.raven_compat',
 
     # Django apps
     'django.contrib.admin',
@@ -267,3 +268,8 @@ STATSD_HOST = config('STATSD_HOST', get_default_gateway_linux())
 STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
 STATSD_PREFIX = config('STATSD_PREFIX', DEIS_APP)
 STATSD_CLIENT = config('STATSD_CLIENT', 'django_statsd.clients.null')
+
+RAVEN_CONFIG = {
+    'dsn': config('SENTRY_DSN', None),
+    'release': config('GIT_SHA', None),
+}
