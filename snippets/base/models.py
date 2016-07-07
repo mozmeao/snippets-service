@@ -139,6 +139,7 @@ class SnippetBundle(object):
         # being sent.
         key_properties = ['{id}-{date}'.format(id=snippet.id, date=snippet.modified.isoformat())
                           for snippet in self.snippets]
+
         key_properties.extend([
             self.client.startpage_version,
             self.client.locale,
@@ -148,8 +149,8 @@ class SnippetBundle(object):
             SNIPPET_FETCH_TEMPLATE_HASH,
         ])
 
-        key_string = u'_'.join(unicode(prop) for prop in key_properties)
-        return hashlib.sha1(key_string).hexdigest()
+        key_string = u'_'.join(key_properties)
+        return hashlib.sha1(key_string.encode('utf-8')).hexdigest()
 
     @property
     def cache_key(self):

@@ -384,6 +384,14 @@ class SnippetBundleTests(TestCase):
 
         self.assertNotEqual(bundle1.key, bundle2.key)
 
+    def test_key_funny_characters(self):
+        """
+        bundle.key should generate even when client contains strange unicode
+        characters
+        """
+        client = self._client(channel=u'release-cck- \xe2\x80\x9cubuntu\xe2\x80\x9d')
+        SnippetBundle(client).key
+
     def test_key_startpage_version(self):
         """
         bundle.key must be different between bundles if they have
