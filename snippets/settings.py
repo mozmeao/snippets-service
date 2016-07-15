@@ -273,3 +273,6 @@ RAVEN_CONFIG = {
     'dsn': config('SENTRY_DSN', None),
     'release': config('GIT_SHA', None),
 }
+
+ALTERNATE_METRICS_URL = config('ALTERNATE_METRICS_URL', default=None)
+ALTERNATE_METRICS_CHANNELS = config('ALTERNATE_METRICS_CHANNELS', default='', cast=Csv())

@@ -196,13 +196,19 @@ class SnippetBundle(object):
         current_firefox_version = (
             version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
 
+        metrics_url = settings.METRICS_URL
+        if ((settings.ALTERNATE_METRICS_URL and
+             self.client.channel in settings.ALTERNATE_METRICS_CHANNELS)):
+            metrics_url = settings.ALTERNATE_METRICS_URL
+
         bundle_content = render_to_string('base/fetch_snippets.jinja', {
             'snippet_ids': [snippet.id for snippet in self.snippets],
             'snippets_json': json.dumps([s.to_dict() for s in self.snippets]),
             'client': self.client,
             'locale': self.client.locale,
             'settings': settings,
-            'current_firefox_version': current_firefox_version
+            'current_firefox_version': current_firefox_version,
+            'metrics_url': metrics_url,
         })
 
         if isinstance(bundle_content, unicode):
