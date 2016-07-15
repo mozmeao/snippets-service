@@ -451,6 +451,7 @@ class SnippetBundleTests(TestCase):
             'locale': 'fr',
             'settings': settings,
             'current_firefox_version': '45',
+            'metrics_url': settings.METRICS_URL,
         })
         default_storage.save.assert_called_with(bundle.filename, ANY)
         cache.set.assert_called_with(bundle.cache_key, True, 10)

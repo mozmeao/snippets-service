@@ -3,7 +3,7 @@
 'use strict';
 
 var SNIPPET_METRICS_SAMPLE_RATE = {{ settings.METRICS_SAMPLE_RATE }};
-var SNIPPET_METRICS_URL = '{{ settings.METRICS_URL }}';
+var SNIPPET_METRICS_URL = '{{ metrics_url }}';
 var ABOUTHOME_SHOWN_SNIPPET = null;
 var USER_COUNTRY = null;
 var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
@@ -69,7 +69,7 @@ Mozilla.UITour.showMenu = function(name, callback) {
 
     _sendEvent('showMenu', {
         name: name,
-        showCallbackID: showCallbackID,
+        showCallbackID: showCallbackID
     });
 };
 
@@ -89,7 +89,7 @@ Mozilla.UITour.getConfiguration = function(configName, callback) {
 Mozilla.UITour.setConfiguration = function(configName, configValue) {
     _sendEvent('setConfiguration', {
         configuration: configName,
-        value: configValue,
+        value: configValue
     });
 };
 // End MozUITour
