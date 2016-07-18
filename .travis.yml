@@ -56,24 +56,24 @@ deploy:
     script: bin/deploy-travis.sh $DEIS_CONTROLLER_US_WEST $DEIS_STAGE_APPLICATION $NEWRELIC_US_WEST_STAGE_APPLICATION
     on:
       branch: master
-      repo: mozilla/snippets-service
+      repo: mozmar/snippets-service
   - provider: script
     script: bin/deploy-travis.sh $DEIS_CONTROLLER_EU_WEST $DEIS_STAGE_APPLICATION $NEWRELIC_EU_WEST_STAGE_APPLICATION
     on:
       branch: master
-      repo: mozilla/snippets-service
+      repo: mozmar/snippets-service
   - provider: script
     script: bin/deploy-travis.sh $DEIS_CONTROLLER_US_WEST $DEIS_PROD_ADMIN_APPLICATION $NEWRELIC_US_WEST_ADMIN_APPLICATION
     on:
       tags: true
-      repo: mozilla/snippets-service
+      repo: mozmar/snippets-service
   - provider: script
     script: bin/deploy-travis.sh $DEIS_CONTROLLER_US_WEST $DEIS_PROD_APPLICATION $NEWRELIC_US_WEST_PROD_APPLICATION
     on:
       tags: true
-      repo: mozilla/snippets-service
+      repo: mozmar/snippets-service
   - provider: script
     script: bin/deploy-travis.sh $DEIS_CONTROLLER_EU_WEST $DEIS_PROD_APPLICATION $NEWRELIC_EU_WEST_PROD_APPLICATION
     on:
       tags: true
-      repo: mozilla/snippets-service
+      repo: mozmar/snippets-service
