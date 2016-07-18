@@ -1,9 +1,9 @@
 snippets
 ==========
 
-[![Build Status](https://img.shields.io/travis/mozilla/snippets-service/master.svg)](https://travis-ci.org/mozilla/snippets-service)
+[![Build Status](https://img.shields.io/travis/mozmar/snippets-service/master.svg)](https://travis-ci.org/mozmar/snippets-service)
 
-[![codecov.io](https://codecov.io/github/mozilla/snippets-service/coverage.svg?branch=master)](https://codecov.io/github/mozilla/snippets-service?branch=master)
+[![codecov.io](https://codecov.io/github/mozmar/snippets-service/coverage.svg?branch=master)](https://codecov.io/github/mozmar/snippets-service?branch=master)
 
 [What's deployed?](https://whatsdeployed.io/s-ka4)
 
@@ -48,7 +48,7 @@ Docker for deploying to production
 2. Prepare a 'env' file with all the variables needed by dev, stage or production.
 3. Run the image:
 
-    docker run --env-file env -p 80:8000 mozilla/snippets
+    docker run --env-file env -p 80:8000 mozmar/snippets
 
 Heroku
 ------
