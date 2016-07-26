@@ -47,8 +47,13 @@ class SnippetQuerySet(CachingQuerySet):
 
         # Retrieve the first channel that starts with the client's channel.
         # Allows things like "release-cck-mozilla14" to match "release".
-        client_channel = ('nightly' if client.channel == 'default'
-                          else first(CHANNELS, client.channel.startswith))
+        if client.channel == 'default':
+            client_channel = 'nightly'
+        elif client.channel == 'esr':
+            client_channel = 'release'
+        else:
+            client_channel = first(CHANNELS, client.channel.startswith)
+
         if client_channel:
             filters.update(**{'on_{0}'.format(client_channel): True})
 
