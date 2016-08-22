@@ -19,7 +19,6 @@ env:
     - DEIS_CONTROLLER_EU_WEST=https://deis.eu-west.moz.works
     # Docker
     - DOCKER_REPOSITORY=mozorg/snippets
-    - DOCKER_EMAIL="foo@example.com"
     - DOCKER_USERNAME="mozjenkins"
     # Django
     - DEBUG=False
