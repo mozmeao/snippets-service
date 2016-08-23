@@ -7,8 +7,6 @@ NEW_RELIC_APP_NAME=$3
 
 docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
 docker push ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT}
-docker tag ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} ${DOCKER_REPOSITORY}:last_successful_build
-docker push ${DOCKER_REPOSITORY}:last_successful_build
 
 # Install deis client
 ./bin/deis-cli-install.sh
