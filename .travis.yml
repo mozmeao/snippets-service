@@ -2,6 +2,9 @@ sudo: required
 services:
   - docker
 language: python
+cache:
+  directories:
+    - /home/travis/docker/
 env:
   global:
     # NewRelic
