@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Manager, get_model
+from django.db.models import Manager
 
 from caching.base import CachingQuerySet
 
@@ -41,7 +41,8 @@ class SnippetQuerySet(CachingQuerySet):
 
     def match_client(self, client):
         from snippets.base.models import (
-            CHANNELS, FENNEC_STARTPAGE_VERSIONS, FIREFOX_STARTPAGE_VERSIONS)
+            CHANNELS, FENNEC_STARTPAGE_VERSIONS, FIREFOX_STARTPAGE_VERSIONS,
+            JSONSnippet, ClientMatchRule)
 
         filters = {}
 
@@ -77,14 +78,12 @@ class SnippetQuerySet(CachingQuerySet):
             filters.update(locales__isnull=True)
 
         snippets = self.filter(**filters).distinct()
-        JSONSnippet = get_model('base', 'JSONSnippet')
         if issubclass(self.model, JSONSnippet):
             filtering = {'jsonsnippet__in': snippets}
         else:
             filtering = {'snippet__in': snippets}
 
         # Filter based on ClientMatchRules
-        ClientMatchRule = get_model('base', 'ClientMatchRule')
         passed_rules, failed_rules = (ClientMatchRule.cached_objects
                                       .filter(**filtering)
                                       .distinct()
