@@ -271,8 +271,6 @@ class SnippetTemplateVariable(CachingMixin, models.Model):
     type = models.IntegerField(choices=TYPE_CHOICES, default=TEXT)
     description = models.TextField(blank=True, default='')
 
-    objects = CachingManager()
-
     def __unicode__(self):
         return u'{0}: {1}'.format(self.template.name, self.name)
 
