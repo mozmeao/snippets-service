@@ -1,5 +1,3 @@
-<script type="text/javascript">
-//<![CDATA[
 'use strict';
 
 var SNIPPET_METRICS_SAMPLE_RATE = {{ settings.METRICS_SAMPLE_RATE }};
@@ -669,5 +667,3 @@ function getBlockList() {
     }
     return gSnippetsMap.get('blockList');
 }
-//]]>
-</script>
