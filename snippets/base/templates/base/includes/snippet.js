@@ -588,7 +588,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                     target.click();
                 }
             }
-            sendMetric(metric, callback);
+            sendMetric(metric, callback, target.href);
         }
 
         // Handle about:accounts clicks.
@@ -602,7 +602,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                 );
                 document.dispatchEvent(event);
             };
-            sendMetric(metric, fire_event);
+            sendMetric(metric, fire_event, target.href);
         }
     }, false);
 
@@ -611,7 +611,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 
 // Send impressions and other interactions to the service
 // If no parameter is entered, quit function
-function sendMetric(metric, callback) {
+function sendMetric(metric, callback, href) {
     {# In preview mode, disable sampling, log metric, but do not send to service #}
     {% if preview %}
       console.log("[preview mode] Sending metric: " + metric);
@@ -635,6 +635,11 @@ function sendMetric(metric, callback) {
       var url = (SNIPPET_METRICS_URL + '?snippet_name=' + snippet_id +
                  '&locale=' + locale + '&country=' + userCountry +
                  '&metric=' + metric + '&campaign=' + campaign);
+
+      if (href) {
+          url = url + "&href=" + escape(href);
+      }
+
       var request = new XMLHttpRequest();
       request.open('GET', url);
       if (callback) {
