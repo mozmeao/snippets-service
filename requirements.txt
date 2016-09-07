@@ -14,8 +14,6 @@ MySQL-python==1.2.3c1 \
     --hash=sha256:f998823b7a6f00e5f8421eb062355c4d50ac7e4ab85d65382a7e56895f42052d
 python-decouple==3.0 \
     --hash=sha256:99834c9ff7ce5c5b2f4a18bc0880753e54ea3aaabc3cfb16961a92d5046665df
-django-sslify==0.2.7 \
-    --hash=sha256:f6bfd21048c7dfc95b39659a3da77775d6db1c1f7a745805ccc6c6138f783b6d
 Jinja2==2.7.3 \
     --hash=sha256:2e24ac5d004db5714976a04ac0e80c6df6e47e98c354cb2c0d82f8879d4f8fdb
 MarkupSafe==0.23 \

@@ -26,7 +26,7 @@ env:
     - DOCKER_CACHE_FILE=/home/travis/docker/cache.tar.gz
     # Django
     - DEBUG=False
-    - DISABLE_SSL=True
+    - SECURE_SSL_REDIRECT=False
     - ALLOWED_HOSTS=*
     - SECRET_KEY=foo
     - DATABASE_URL=mysql://root@db/snippets
