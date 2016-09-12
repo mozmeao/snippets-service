@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 
 from distutils.util import strtobool
 
@@ -13,11 +14,13 @@ from django.utils.functional import lazy
 from django.views.generic import TemplateView, View
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 import django_filters
 from django_statsd.clients import statsd
 from product_details import product_details
 from product_details.version_compare import version_list
+from raven.contrib.django.models import client as sentry_client
 
 from snippets.base.decorators import access_control
 from snippets.base.encoders import ActiveSnippetsEncoder, JSONSnippetEncoder
@@ -235,3 +238,30 @@ class ActiveSnippetsView(View):
                     list(JSONSnippet.cached_objects.filter(disabled=False)))
         return HttpResponse(json.dumps(snippets, cls=ActiveSnippetsEncoder),
                             content_type='application/json')
+
+
+@csrf_exempt
+@require_POST
+def csp_violation_capture(request):
+    data = sentry_client.get_data_from_request(request)
+    data.update({
+        'level': logging.INFO,
+        'logger': 'CSP',
+    })
+    try:
+        csp_data = json.loads(request.body)
+    except ValueError:
+        # Cannot decode CSP violation data, ignore
+        return HttpResponseBadRequest('Invalid CSP Report')
+
+    try:
+        blocked_uri = csp_data['csp-report']['blocked-uri']
+    except KeyError:
+        # Incomplete CSP report
+        return HttpResponseBadRequest('Incomplete CSP Report')
+
+    sentry_client.captureMessage(
+        message='CSP Violation: {}'.format(blocked_uri),
+        data=data)
+
+    return HttpResponse('Captured CSP violation, thanks for reporting.')
