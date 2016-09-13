@@ -13,7 +13,11 @@ def robots_txt(request):
 
 urlpatterns = [
     url(r'', include('snippets.base.urls')),
-    url(r'^robots\.txt$', robots_txt)
+    url(r'^robots\.txt$', robots_txt),
+
+    # contribute.json url
+    url(r'^(?P<path>contribute\.json)$', 'django.views.static.serve',
+        {'document_root': settings.ROOT}),
 ]
 
 
