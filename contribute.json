@@ -1,9 +1,25 @@
 {
-  "name": "snippets",
-  "description": "Snippets Service",
-  "repository": {
-    "url": "https://github.com/mozilla/snippets-service/",
-    "license": "MPL 2.0",
-    "tests": "https://travis-ci.org/mozilla/snippets-service/"
-  }
+    "name": "Snippets Service",
+    "description": "Service powering snippets on Firefox's about:home.",
+    "repository": {
+        "url": "https://github.com/mozmar/snippets-service/",
+        "license": "MPL 2.0",
+        "tests": "https://travis-ci.org/mozmar/snippets-service/"
+    },
+    "urls": {
+         "prod": "https://snippets.mozilla.com",
+         "stage": "https://snippets-stage.us-west.moz.works"
+    },
+    "bugs": {
+        "list": "https://bugzilla.mozilla.org/buglist.cgi?product=Snippets&component=Service&resolution=---",
+        "report": "https://bugzilla.mozilla.org/enter_bug.cgi?product=Snippets&component=Service"
+    },
+    "participate": {
+        "docs": "https://abouthome-snippets-service.readthedocs.org/",
+        "irc": "irc://irc.mozilla.org/#snippets",
+        "irc-contacts": [
+            "giorgos",
+            "bensternthal"
+        ]
+    }
 }
