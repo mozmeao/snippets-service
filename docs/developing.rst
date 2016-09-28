@@ -76,45 +76,10 @@ Snippet requirements
          // ]]>
        </script>
 
-- Globally unique things, such as tags with specific IDs or global JavaScript
-  variables, should be avoided as much as possible. Prefer classes instead of
-  IDs in HTML, and surround your JavaScript code with a function to avoid
-  polluting the global scope. If absolutely necessary, this rule can be broken
-  for snippets that will not ever show up more than once in the snippet bundle
-  sent to the user.
-
-  A common technique is to use the ``show_snippet`` event to get a reference to
-  the individual snippet being shown, and to select elements based on their
-  class from that element:
-
-  .. code-block:: html
-
-     <div class="snippet message-snippet" data-bound="0">
-       <p class="message">Foo!</p>
-     </div>
-     <script>
-       // <![CDATA[
-       var snippets = document.getElementsByClassName('message-snippet');
-       for (var k = 0; k < snippets.length; k++) {
-         var snippet = snippets[k];
-
-         // Only bind the handler if we haven't yet, in case there's multiple
-         // message snippets.
-         if (snippet.dataset['bound'] == '0') {
-           snippet.dataset['bound'] = '1';
-           snippet.addEventListener('show_snippet', function(e) {
-             snippet.getElementsByClassName('message')[0].innerHTML = 'Bar!';
-           }, false);
-         }
-       }
-       // ]]>
-     </script>
-
-  .. note:: This will be made more sane in the future, trust me!
-
 - Avoid loading remote resources if possible. For images and other media that
   you must include, use data URIs to include them directly in your snippet
   code.
+
 - Due to performance concerns, avoid going over 500 kilobytes in filesize for
   a snippet. Snippets over 500 kilobytes large must be cleared with the
   development team first.
