@@ -71,13 +71,16 @@ deploy:
     on:
       tags: true
       repo: mozmar/snippets-service
+      condition: $(echo ${TRAVIS_TAG} | egrep "^201[6-9][0-9]{4}.[0-9]+.usw")
   - provider: script
     script: bin/deploy-travis.sh $DEIS_CONTROLLER_US_WEST $DEIS_PROD_APPLICATION $NEWRELIC_US_WEST_PROD_APPLICATION
     on:
       tags: true
       repo: mozmar/snippets-service
+      condition: $(echo ${TRAVIS_TAG} | egrep "^201[6-9][0-9]{4}.[0-9]+.usw")
   - provider: script
     script: bin/deploy-travis.sh $DEIS_CONTROLLER_EU_WEST $DEIS_PROD_APPLICATION $NEWRELIC_EU_WEST_PROD_APPLICATION
     on:
       tags: true
       repo: mozmar/snippets-service
+      condition: $(echo ${TRAVIS_TAG} | egrep "^201[6-9][0-9]{4}.[0-9]+.euw")
