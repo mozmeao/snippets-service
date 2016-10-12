@@ -222,12 +222,22 @@ SITE_URL = config('SITE_URL', default='')
 
 CACHES = {
     'default': config('CACHE_URL', default='locmem://', cast=django_cache_url.parse),
+    'product-details': {
+        'BACKEND': 'snippets.base.cache.SimpleDictCache',
+        'LOCATION': 'product-details',
+        'OPTIONS': {
+            'MAX_ENTRIES': 200,  # currently 104 json files
+            'CULL_FREQUENCY': 4,  # 1/4 entries deleted if max reached
+        }
+
+    }
 }
 
 SERVE_SNIPPET_BUNDLES = config('SERVE_SNIPPET_BUNDLES', default=not DEBUG, cast=bool)
 
 GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-4205-9a11-82feda9d83a3'  # noqa
 
+PROD_DETAILS_CACHE_NAME = 'product-details'
 PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
                               default='product_details.storage.PDFileStorage')
 
