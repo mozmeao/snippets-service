@@ -416,6 +416,7 @@ class Snippet(CachingMixin, SnippetBaseModel):
     def to_dict(self):
         data = {
             'id': self.id,
+            'name': self.name,
             'code': self.render(),
             'countries': [],
             'campaign': self.campaign,

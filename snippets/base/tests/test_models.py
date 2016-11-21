@@ -186,6 +186,7 @@ class SnippetTests(TestCase):
             'countries': [u'gr', u'it'],
             'exclude_from_search_engines': [],
             'id': snippet.id,
+            'name': snippet.name,
         }
         self.assertEqual(data, snippet.to_dict())
 
