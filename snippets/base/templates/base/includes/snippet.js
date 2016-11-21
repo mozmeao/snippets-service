@@ -631,8 +631,10 @@ function sendMetric(metric, callback, href) {
       var userCountry = USER_COUNTRY || '';
       var campaign = ABOUTHOME_SHOWN_SNIPPET.campaign;
       var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
+      var snippet_full_name = ABOUTHOME_SHOWN_SNIPPET.name;
 
       var url = (SNIPPET_METRICS_URL + '?snippet_name=' + snippet_id +
+                 '&snippet_full_name=' + snippet_full_name +
                  '&locale=' + locale + '&country=' + userCountry +
                  '&metric=' + metric + '&campaign=' + campaign);
 
