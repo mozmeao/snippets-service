@@ -217,7 +217,12 @@ to trigger more events. For example to trigger Firefox Accounts:
 Snippet Block List
 ^^^^^^^^^^^^^^^^^^
 
-Snippets can be prevented from showing using a block list. By default the block list is empty and the intention is to allow users to block specific snippets from showing by taking an action. Snippet service automatically assigns the block functionality to all elements of snippet with class `block-snippet-button`. For example a disruptive snippet can include a special `Do not display again` link that adds the snippet into the block list:
+Snippets can be prevented from showing using a block list. By default the block
+list is empty and the intention is to allow users to block specific snippets
+from showing by taking an action. Snippet service automatically assigns the
+block functionality to all elements of snippet with class
+`block-snippet-button`. For example a disruptive snippet can include a special
+`Do not display again` link that adds the snippet into the block list:
 
   .. code-block:: html
 
@@ -243,7 +248,8 @@ If you need more control you can directly access the low-level function `addToBl
            (function () {
              var link = document.getElementById('block-snippet-link');
              link.onclick = function() {
-               addToBlockList([[snippet_id]]);
+               // Add currently showing snippet to block list
+               addToBlockList();
                window.location.reload();
              }
            })();
@@ -257,9 +263,25 @@ If you need more control you can directly access the low-level function `addToBl
 
 More low level functions are `popFromBlockList` and `getBlockList`.
 
-In bug `1172579`_ close button assets are provided to build a image
-button in your snippet. Refer to the `simple snippet`_ code on how to
-do this.
+Function `addToBlockList` will by default add to block list the *campaign* of
+the current snippet thus preventing all snippets -even the ones created in the
+future- with the same campaign name to get blocked. This is particularly useful
+when we do A/B testing. A user who blocked a variation of a snippet will not see
+any of the variations either, as long as they share the same snippet campaign.
+
+If there's no campaign set for showing snippet `addToBlockList` will block the
+ID from the snippet.
+
+The function also accepts an argument to explicitly set the blocking value::
+
+  .. code-html::
+     addToBlockList('foo-bar');
+
+Will add `foo-bar` to block list instead of the showing snippet's campaign
+or ID.
+
+In bug `1172579`_ close button assets are provided to build a image button in
+your snippet. Refer to the `simple snippet`_ code on how to do this.
 
 
 

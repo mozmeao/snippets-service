@@ -392,7 +392,8 @@ class Snippet(CachingMixin, SnippetBaseModel):
 
     campaign = models.CharField(
         max_length=255, blank=True, default='',
-        help_text='Optional campaign name. Will be added in the stats ping.')
+        help_text=('Optional campaign name. Will be added in the stats ping. '
+                   'Will be used for snippet blocking if set.'))
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 

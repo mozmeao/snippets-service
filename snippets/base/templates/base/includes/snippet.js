@@ -340,7 +340,8 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         var blockList = getBlockList();
         snippets = snippets.filter(
             function (snippet) {
-                if (blockList.indexOf(snippet.id) === -1) {
+                var blockID = snippet.campaign || snippet.id;
+                if (blockList.indexOf(blockID) === -1) {
                     return true;
                 }
                 return false;
@@ -503,12 +504,11 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 
     // Add links to buttons that block snippets.
     function addSnippetBlockLinks(elements) {
-        var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
         var blockSnippet = function (event) {
             event.preventDefault();
             event.stopPropagation();
 
-            addToBlockList(snippet_id);
+            addToBlockList();
 
             // Waiting for 500ms before reloading the page after user blocks a snippet,
             // will allow the IndexedDB more time to complete its transaction. While
@@ -519,7 +519,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             function reloadWindow() {
                 window.location.reload();
             }
-            sendMetric('snippet-blocked', function() { setTimeout(reloadWindow, 500); })
+            sendMetric('snippet-blocked', function() { setTimeout(reloadWindow, 500); });
         };
 
         for (var k = 0; k < elements.length; k++) {
@@ -586,7 +586,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                 event.preventDefault();
                 var callback = function() {
                     target.click();
-                }
+                };
             }
             sendMetric(metric, callback, target.href);
         }
@@ -661,7 +661,9 @@ function popFromBlockList(snippetID) {
 
 function addToBlockList(snippetID) {
     var blockList = getBlockList();
-    snippetID = parseInt(snippetID, 10);
+    if (snippetID === undefined) {
+        snippetID = ABOUTHOME_SHOWN_SNIPPET.campaign || ABOUTHOME_SHOWN_SNIPPET.id;
+    }
     if (blockList.indexOf(snippetID) === -1) {
         blockList = [snippetID].concat(blockList);
         gSnippetsMap.set('blockList', blockList);
