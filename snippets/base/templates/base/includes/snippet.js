@@ -616,13 +616,16 @@ function sendMetric(metric, callback, href) {
     {% if preview %}
       console.log("[preview mode] Sending metric: " + metric);
       if (callback) {
-          callback();
+          setTimeout(callback);
       }
       return;
     {% else %}
-      if ((Math.random() > SNIPPET_METRICS_SAMPLE_RATE) || (!metric)) {
+      if (!SNIPPET_METRICS_URL || (Math.random() > SNIPPET_METRICS_SAMPLE_RATE) || (!metric)) {
           if (callback) {
-              callback();
+              // setTimeout is here because when metrics succeeds the callback is async.
+              // When we don't use metrics, we should be consistent and
+              // fire the callback async too.
+              setTimeout(callback);
           }
           return;
       }
