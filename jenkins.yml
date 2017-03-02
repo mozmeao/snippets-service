@@ -3,10 +3,10 @@ project:
   docker_name: mozorg/snippets
 deploy:
   stage:
-    - us-west-stage:
-        url: "https://deis.us-west.moz.works"
-        credentials: jenkins-deis
-        app: "snippets-stage"
+    - name: "US-West Stage"
+      url: "https://deis.us-west.moz.works"
+      credentials: jenkins-deis
+      app: "snippets-stage"
   prod:
     - name: "US-West Admin"
       url: "https://deis.us-west.moz.works"
