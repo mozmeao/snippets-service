@@ -26,6 +26,7 @@ conduit {
 
     stage("Build") {
       if (!dockerImageExists(docker_image)) {
+        sh "echo 'ENV GIT_SHA ${GIT_COMMIT_SHORT}' >> Dockerfile"
         dockerImageBuild(docker_image, ["pull": true])
       }
       else {
@@ -51,6 +52,7 @@ conduit {
                             "-e CHECK_PORT=3306 " +
                             "-e CHECK_HOST=db")
           ]
+          // Takis waits for mysql to come online
           dockerRun("giorgos/takis", args)
 
           args = [
