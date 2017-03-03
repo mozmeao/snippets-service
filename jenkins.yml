@@ -21,7 +21,7 @@ deploy:
       credentials: jenkins-deis
       app: "snippets-prod"
     - name: "EU-West Prod"
-      url: "https://deis.us-west.moz.works"
+      url: "https://deis.eu-west.moz.works"
       credentials: jenkins-deis
       app: "snippets-prod"
 notifications:

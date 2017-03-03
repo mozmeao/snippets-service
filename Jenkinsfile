@@ -98,6 +98,8 @@ conduit {
             deisLogin(deploy.url, deploy.credentials) {
               deisPull(deploy.app, docker_image)
             }
+            newRelicDeployment(deploy.newrelic_app, env.GIT_COMMIT_SHORT,
+                               "jenkins", "newrelic-api-key")
           }
         }
       }
@@ -114,6 +116,8 @@ conduit {
             deisLogin(deploy.url, deploy.credentials) {
               deisPull(deploy.app, docker_image)
             }
+            newRelicDeployment(deploy.newrelic_app, env.GIT_COMMIT_SHORT,
+                               "jenkins", "newrelic-api-key")
           }
         }
       }
