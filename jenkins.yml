@@ -7,23 +7,28 @@ deploy:
       url: "https://deis.us-west.moz.works"
       credentials: jenkins-deis
       app: "snippets-stage"
+      newrelic_app: "snippets-stage-us-west"
     - name: "EU-West Stage"
       url: "https://deis.eu-west.moz.works"
       credentials: jenkins-deis
       app: "snippets-stage"
+      newrelic_app:  "snippets-stage-eu-west"
   prod:
     - name: "US-West Admin"
       url: "https://deis.us-west.moz.works"
       credentials: jenkins-deis
       app: "snippets-admin"
+      newrelic_app: "snippets-admin-us-west"
     - name: "US-West Prod"
       url: "https://deis.us-west.moz.works"
       credentials: jenkins-deis
       app: "snippets-prod"
+      newrelic_app: "snippets-prod-us-west"
     - name: "EU-West Prod"
       url: "https://deis.eu-west.moz.works"
       credentials: jenkins-deis
       app: "snippets-prod"
+      newrelic_app: "snippets-prod-eu-west"
 notifications:
   irc:
     server: irc.mozilla.org:6697
