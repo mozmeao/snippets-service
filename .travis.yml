@@ -2,28 +2,10 @@ sudo: required
 services:
   - docker
 language: python
-cache:
-  directories:
-    - /home/travis/docker/
 env:
   global:
-    # NewRelic
-    - NEWRELIC_US_WEST_STAGE_APPLICATION=snippets-stage-us-west
-    - NEWRELIC_US_WEST_PROD_APPLICATION=snippets-prod-us-west
-    - NEWRELIC_EU_WEST_STAGE_APPLICATION=snippets-stage-eu-west
-    - NEWRELIC_EU_WEST_PROD_APPLICATION=snippets-prod-eu-west
-    - NEWRELIC_US_WEST_ADMIN_APPLICATION=snippets-admin-us-west
-    # Deis
-    - DEIS_STAGE_APPLICATION=snippets-stage
-    - DEIS_PROD_APPLICATION=snippets-prod
-    - DEIS_PROD_ADMIN_APPLICATION=snippets-admin
-    - DEIS_USERNAME=travis
-    - DEIS_CONTROLLER_US_WEST=https://deis.us-west.moz.works
-    - DEIS_CONTROLLER_EU_WEST=https://deis.eu-west.moz.works
     # Docker
     - DOCKER_REPOSITORY=mozorg/snippets
-    - DOCKER_USERNAME="mozjenkins"
-    - DOCKER_CACHE_FILE=/home/travis/docker/cache.tar.gz
     # Django
     - DEBUG=False
     - SECURE_SSL_REDIRECT=False
@@ -35,9 +17,7 @@ env:
 before_install:
   - docker --version
   - echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
-  - if [ -f ${DOCKER_CACHE_FILE} ]; then gunzip -c ${DOCKER_CACHE_FILE} | docker load; fi
 install:
-  # Take advantage of docker caching by pulling previously built images.
   - docker build -t ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} --pull=true .
 before_script:
   - env > .env
@@ -46,41 +26,4 @@ script:
   - docker run ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} flake8 snippets
   # Wait mysql to initialize.
   - docker run --link mariadb:db -e CHECK_PORT=3306 -e CHECK_HOST=db giorgos/takis
-  - docker run --env-file .env --link mariadb:db ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} coverage run ./manage.py test
-  # Save built images to Travis cache directory only if building master branch and not a pull request.
-  - if [[ ${TRAVIS_BRANCH} == "master" ]] && [[ ${TRAVIS_PULL_REQUEST} == "false" ]]; then mkdir -p $(dirname ${DOCKER_CACHE_FILE}) ; docker save $(docker history -q ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} | grep -v '<missing>') | gzip > ${DOCKER_CACHE_FILE}; fi
-after_success:
-  - sudo docker cp `docker ps -a -q | head -n 1`:/app /
-  - sudo chown travis /app
-  - cd /app
-  - pip install codecov
-  - codecov
-deploy:
-  - provider: script
-    script: bin/deploy-travis.sh $DEIS_CONTROLLER_US_WEST $DEIS_STAGE_APPLICATION $NEWRELIC_US_WEST_STAGE_APPLICATION
-    on:
-      branch: master
-      repo: mozmar/snippets-service
-  - provider: script
-    script: bin/deploy-travis.sh $DEIS_CONTROLLER_EU_WEST $DEIS_STAGE_APPLICATION $NEWRELIC_EU_WEST_STAGE_APPLICATION
-    on:
-      branch: master
-      repo: mozmar/snippets-service
-  - provider: script
-    script: bin/deploy-travis.sh $DEIS_CONTROLLER_US_WEST $DEIS_PROD_ADMIN_APPLICATION $NEWRELIC_US_WEST_ADMIN_APPLICATION
-    on:
-      tags: true
-      repo: mozmar/snippets-service
-      condition: $(echo ${TRAVIS_TAG} | egrep "^201[6-9][0-9]{4}.[0-9]+.usw")
-  - provider: script
-    script: bin/deploy-travis.sh $DEIS_CONTROLLER_US_WEST $DEIS_PROD_APPLICATION $NEWRELIC_US_WEST_PROD_APPLICATION
-    on:
-      tags: true
-      repo: mozmar/snippets-service
-      condition: $(echo ${TRAVIS_TAG} | egrep "^201[6-9][0-9]{4}.[0-9]+.usw")
-  - provider: script
-    script: bin/deploy-travis.sh $DEIS_CONTROLLER_EU_WEST $DEIS_PROD_APPLICATION $NEWRELIC_EU_WEST_PROD_APPLICATION
-    on:
-      tags: true
-      repo: mozmar/snippets-service
-      condition: $(echo ${TRAVIS_TAG} | egrep "^201[6-9][0-9]{4}.[0-9]+.euw")
+  - docker run --env-file .env --link mariadb:db ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} ./manage.py test
