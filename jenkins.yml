@@ -34,6 +34,7 @@ deploy:
       credentials: jenkins-deis-2
       app: "snippets-prod"
       newrelic_app: "snippets-prod-us-east"
+      deis_executable: "deis2"
 notifications:
   irc:
     server: irc.mozilla.org:6697
