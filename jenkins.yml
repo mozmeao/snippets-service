@@ -29,6 +29,11 @@ deploy:
       credentials: jenkins-deis
       app: "snippets-prod"
       newrelic_app: "snippets-prod-eu-west"
+    - name: "US-East Prod"
+      url: "https://deis.virginia.moz.works"
+      credentials: jenkins-deis-2
+      app: "snippets-prod"
+      newrelic_app: "snippets-prod-us-east"
 notifications:
   irc:
     server: irc.mozilla.org:6697
