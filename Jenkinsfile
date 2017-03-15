@@ -1,4 +1,4 @@
-@Library('github.com/glogiotatidis/jenkins-pipeline@deis-updates')
+@Library('github.com/mozmar/jenkins-pipeline@20170315.1')
 def stage_deployed = false
 def config
 def docker_image
@@ -92,8 +92,8 @@ conduit {
 
   if (deployStage) {
     for (deploy in config.deploy.stage) {
-      node {
-        stage ("Deploying to ${deploy.name}") {
+      stage ("Deploying to ${deploy.name}") {
+        node {
           lock("push to ${deploy.name}") {
             deis_executable = deploy.deis_executable ?: "deis"
             deisLogin(deploy.url, deploy.credentials, deis_executable) {
@@ -108,11 +108,11 @@ conduit {
   }
   if (deployProd) {
     for (deploy in config.deploy.prod) {
-      timeout(time: 10, unit: 'MINUTES') {
-        input("Push to ${deploy.name}?")
-      }
-      node {
-        stage ("Deploying to ${deploy.name}") {
+      stage ("Deploying to ${deploy.name}") {
+        timeout(time: 10, unit: 'MINUTES') {
+          input("Push to ${deploy.name}?")
+        }
+        node {
           lock("push to ${deploy.name}") {
             deis_executable = deploy.deis_executable ?: "deis"
             deisLogin(deploy.url, deploy.credentials, deis_executable) {
