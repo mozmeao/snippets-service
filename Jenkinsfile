@@ -86,6 +86,7 @@ conduit {
       deployStage = true
     }
     onTag(/\d{4}\d{2}\d{2}.\d{1,2}/) {
+      deployStage = true
       deployProd = true
     }
   }
