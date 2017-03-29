@@ -35,6 +35,12 @@ deploy:
       app: "snippets-prod"
       newrelic_app: "snippets-prod-us-east"
       deis_executable: "deis2"
+    - name: "Tokyo Prod"
+      url: "https://deis.tokyo.moz.works"
+      credentials: jenkins-deis-2
+      app: "snippets-prod"
+      newrelic_app: "snippets-prod-tokyo"
+      deis_executable: "deis2"
 notifications:
   irc:
     server: irc.mozilla.org:6697
