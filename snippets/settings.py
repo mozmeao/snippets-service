@@ -299,6 +299,11 @@ STATSD_CLIENT = config('STATSD_CLIENT', 'django_statsd.clients.null')
 RAVEN_CONFIG = {
     'dsn': config('SENTRY_DSN', None),
     'release': config('GIT_SHA', None),
+    'tags': {
+        'server_full_name': '.'.join(x for x in [HOSTNAME, DEIS_APP, DEIS_DOMAIN] if x),
+        'environment': config('SENTRY_ENVIRONMENT', ''),
+        'site': '.'.join(x for x in [DEIS_APP, DEIS_DOMAIN] if x),
+    }
 }
 
 ALTERNATE_METRICS_URL = config('ALTERNATE_METRICS_URL', default=None)
