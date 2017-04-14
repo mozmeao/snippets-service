@@ -17,5 +17,6 @@ web:
     - DEBUG=True
     - ALLOWED_HOSTS=localhost,127.0.0.1,
     - SECRET_KEY=59114b6a-2858-4caf-8878-482a24ee9542
+    - OVERRIDE_MARIADB_VERSION="(10, 1, 22)"
   command:
     ./bin/run-dev.sh
