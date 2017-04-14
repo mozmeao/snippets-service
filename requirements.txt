@@ -246,3 +246,6 @@ contextlib2==0.5.3 \
 django-csp==3.0 \
     --hash=sha256:e6e627955651235852508f98238f3f04c7ab9a77b625a6bd101cd0cf1a1e3419 \
     --hash=sha256:e44479be426ffd5371b7522f43f8c32f8597a5003c236f31bb98ff4497a20a21
+eventlet==0.21.0 \
+    --hash=sha256:0a7d1e1d2f4dd2e0b2cb627dadf7a0f23de0eca88ba2d6af4229abe32a24dec9 \
+    --hash=sha256:08faffab88c1b08bd53ea28bf084a572c89f7e7648bd9d71e6116ac17a51a15d
