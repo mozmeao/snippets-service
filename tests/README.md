@@ -13,12 +13,12 @@ ___Running the tests against staging___
 
 ___Running the tests against production___
 
-* `export PYTEST_BASE_URL="https://snippets.mozilla.com"`
-* `tox`
+* Set `export PYTEST_BASE_URL="https://snippets.mozilla.com"`
+* Run `tox`
 
 Or:
 
-* Run `tox -- --base-url=https://snippets.mozilla.com`
+* Run `tox -e py27 -- --base-url=https://snippets.mozilla.com`
 
 License
 -------
