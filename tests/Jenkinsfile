@@ -14,12 +14,12 @@ pipeline {
   stages {
     stage('Lint') {
       steps {
-        sh "tox tox.ini -e flake8"
+        sh "tox -e flake8"
       }
     }
     stage('Test') {
       steps {
-        sh "tox tox.ini -e py27"
+        sh "tox -e py27"
       }
       post {
         always {
