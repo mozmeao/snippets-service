@@ -19,7 +19,7 @@ pipeline {
     }
     stage('Test') {
       steps {
-        sh "tox tests/tox.ini -e py27"
+        sh "tox tox.ini -e py27"
       }
       post {
         always {
