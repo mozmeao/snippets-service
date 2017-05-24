@@ -6,8 +6,19 @@ Automated tests for the Snippets web app
 Running Tests
 -------------
 
+___Running the tests against staging___
+
 * [Install Tox](https://tox.readthedocs.io/en/latest/install.html)
 * Run `tox`
+
+___Running the tests against production___
+
+* `export PYTEST_BASE_URL="https://snippets.mozilla.com"`
+* `tox`
+
+Or:
+
+* Run `tox -- --base-url=https://snippets.mozilla.com`
 
 License
 -------
