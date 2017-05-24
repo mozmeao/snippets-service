@@ -14,19 +14,19 @@ pipeline {
   stages {
     stage('Lint') {
       steps {
-        sh "tox -c e2e-tests/tox.ini -e flake8"
+        sh "tox -c tests/tox.ini -e flake8"
       }
     }
     stage('Test') {
       steps {
-        sh "tox -c e2e-tests/tox.ini -e py27"
+        sh "tox -c tests/tox.ini -e py27"
       }
       post {
         always {
-          archiveArtifacts 'e2e-tests/results/*'
-          junit 'e2e-tests/results/*.xml'
-          submitToActiveData('e2e-tests/results/py27_raw.txt')
-          submitToTreeherder('snippets-tests', 'e2e', 'End-to-end integration tests', 'e2e-tests/results/*', 'e2e-tests/results/py27_tbpl.txt')
+          archiveArtifacts 'tests/results/*'
+          junit 'tests/results/*.xml'
+          submitToActiveData('tests/results/py27_raw.txt')
+          submitToTreeherder('snippets-tests', 'e2e', 'End-to-end integration tests', 'tests/results/*', 'tests/results/py27_tbpl.txt')
         }
       }
     }
