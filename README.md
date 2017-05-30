@@ -1,4 +1,4 @@
-snippets
+snippetstest
 ==========
 
 [![Build Status](https://img.shields.io/travis/mozmar/snippets-service/master.svg)](https://travis-ci.org/mozmar/snippets-service)
