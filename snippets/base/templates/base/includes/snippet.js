@@ -170,11 +170,11 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     // Update FxAccount Status
     updateFxAccountStatus();
 
-    // Update Default Browser Status
-    updateDefaultBrowserStatus();
-
     // Update Selected Search Engine
     updateSelectedSearchEngine();
+
+    // Get appinfo from UITour
+    updateAppInfoStatus();
 
     // Fetch user country if we don't have it.
     if (!haveUserCountry()) {
@@ -189,6 +189,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     // Choose which snippet to display to the user based on various factors,
     // such as which country they are in.
     function chooseSnippet(snippets) {
+
         USER_COUNTRY = getUserCountry();
         if (USER_COUNTRY) {
             snippets = snippets.filter(
@@ -208,7 +209,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                 function(snippet) {
                     return snippet.countries.length === 0;
                 }
-            )
+            );
         }
 
         // Filter Snippets based on the has_fxaccount attribute.
@@ -219,7 +220,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                     return (snippet.client_options.has_fxaccount == 'yes' ||
                             snippet.client_options.has_fxaccount == 'any');
                 }
-            )
+            );
         } else if (has_fxaccount === false) {
             snippets = snippets.filter(
                 function(snippet) {
@@ -243,7 +244,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                     return (snippet.client_options.has_testpilot == 'yes' ||
                             snippet.client_options.has_testpilot == 'any');
                 }
-            )
+            );
         } else {
             snippets = snippets.filter(
                 function(snippet) {
@@ -254,14 +255,14 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         }
 
         // Filter Snippets based on whether Firefox is the default browser or now.
-        var is_default_browser = gSnippetsMap.get('is_default_browser');
-        if (is_default_browser === true || is_default_browser === undefined) {
+        var appInfo = gSnippetsMap.get('appInfo');
+        if (appInfo && (appInfo.defaultBrowser === true || appInfo.defaultBrowser === undefined)) {
             snippets = snippets.filter(
                 function(snippet) {
                     return (snippet.client_options.is_default_browser == 'yes' ||
                             snippet.client_options.is_default_browser == 'any');
                 }
-            )
+            );
         } else {
             snippets = snippets.filter(
                 function(snippet) {
@@ -371,7 +372,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     function updateFxAccountStatus() {
         var callback = function(result) {
             gSnippetsMap.set('fxaccount', result.setup);
-        }
+        };
         var event = new CustomEvent(
             'mozUITour', {
                 bubbles: true,
@@ -387,10 +388,10 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         document.dispatchEvent(event);
     }
 
-    function updateDefaultBrowserStatus() {
+    function updateAppInfoStatus() {
         var callback = function(result) {
-            gSnippetsMap.set('is_default_browser', result.defaultBrowser);
-        }
+            gSnippetsMap.set('appInfo', result);
+        };
         var event = new CustomEvent(
             'mozUITour', {
                 bubbles: true,
@@ -409,7 +410,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     function updateSelectedSearchEngine() {
         var callback = function(result) {
             gSnippetsMap.set('selectedSearchEngine', result.searchEngineIdentifier);
-        }
+        };
         var event = new CustomEvent(
             'mozUITour', {
                 bubbles: true,
