@@ -6,8 +6,7 @@ from django.db import migrations, models
 from django_mysql.models.functions import AsType, ColumnAdd
 
 
-def migrate_aboutaccounts_snippets(apps, schema_editor):
-    """Migrate existing snippets that used about:accounts link filtering."""
+def set_browser_versions(apps, schema_editor):
     Snippet = apps.get_model('base', 'Snippet')
     Snippet.objects.update(
         client_options=ColumnAdd(
@@ -31,5 +30,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(migrate_aboutaccounts_snippets, noop),
+        migrations.RunPython(set_browser_versions, noop),
     ]

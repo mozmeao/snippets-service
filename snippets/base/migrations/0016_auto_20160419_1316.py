@@ -7,7 +7,6 @@ from django_mysql.models.functions import AsType, ColumnAdd
 
 
 def set_isdefaultbrowser_clientoption(apps, schema_editor):
-    """Migrate existing snippets that used about:accounts link filtering."""
     Snippet = apps.get_model('base', 'Snippet')
     Snippet.objects.update(
         client_options=ColumnAdd('client_options', {'is_default_browser': AsType('any', 'CHAR')})
