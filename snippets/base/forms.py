@@ -11,6 +11,7 @@ from django.utils.safestring import mark_safe
 from product_details import product_details
 from product_details.version_compare import Version, version_list
 
+from snippets.base.fields import MultipleChoiceFieldCSV
 from snippets.base.models import (JSONSnippet, Snippet, SnippetTemplate,
                                   SnippetTemplateVariable, UploadedFile)
 
@@ -146,6 +147,14 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         choices=(('any', 'Show to all users'),
                  ('yes', 'Show only to users with Firefox as default browser'),
                  ('no', 'Show only to users with Firefox as second browser')))
+    client_option_screen_resolutions = MultipleChoiceFieldCSV(
+        label='Show on screens',
+        help_text='Select all the screen resolutions you want this snippet to appear on.',
+        widget=forms.CheckboxSelectMultiple(),
+        initial=['0-1024', '1024-1920', '1920-50000'],  # Show to all screens by default
+        choices=(('0-1024',  'Screens with less than 1024 vertical pixels. (low)'),
+                 ('1024-1920',  'Screens with less than 1920 vertical pixels. (hd)'),
+                 ('1920-50000', 'Screens with more than 1920 vertical pixels (full-hd, 4k)')))
 
     def __init__(self, *args, **kwargs):
         super(SnippetAdminForm, self).__init__(*args, **kwargs)

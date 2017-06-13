@@ -336,6 +336,24 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                 });
         }
 
+        // Filter based on screen resolution
+        var verticalScreenResolution = screen.width;
+        snippets = snippets.filter(
+            function(snippet) {
+                let snippetResolutions = snippet.client_options.screen_resolutions.split(';');
+                let display = false;
+                snippetResolutions.forEach(function(resolution) {
+                    let minmax = resolution.split('-');
+                    if (parseInt(minmax[0]) <= verticalScreenResolution
+                        && verticalScreenResolution < parseInt(minmax[1])) {
+                        display = true;
+                        return;
+                    }
+                });
+                return display;
+            }
+        );
+
         // Exclude snippets in block list.
         var blockList = getBlockList();
         snippets = snippets.filter(
