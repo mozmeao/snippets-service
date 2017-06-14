@@ -189,7 +189,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     // Choose which snippet to display to the user based on various factors,
     // such as which country they are in.
     function chooseSnippet(snippets) {
-
         USER_COUNTRY = getUserCountry();
         if (USER_COUNTRY) {
             snippets = snippets.filter(
@@ -336,6 +335,40 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                 return display;
             }
         );
+
+        // Filter based on Profile age
+        //
+        // appInfo.profileCreatedWeeksAgo can be either undefined for Firefox
+        // versions that don't expose this information, or a number >= 0.
+        if (appInfo && appInfo.profileCreatedWeeksAgo !== undefined) {
+            let profileAge = appInfo.profileCreatedWeeksAgo;
+            snippets = snippets.filter(
+                function(snippet) {
+                    let lower_bound = snippet.client_options.profileage_lower_bound;
+                    let upper_bound = snippet.client_options.profileage_upper_bound;
+                    if (lower_bound > -1 && profileAge < lower_bound) {
+                        return false;
+                    }
+                    if (upper_bound > -1 && profileAge >= upper_bound) {
+                        return false;
+                    }
+                    return true;
+                }
+            );
+        }
+        else {
+            // Remove all snippets that use profile age since this information
+            // is not available.
+            snippets = snippets.filter(
+                function(snippet) {
+                    if (snippet.client_options.profileage_lower_bound > -1
+                        || snippet.client_options.profileage_upper_bound > -1) {
+                        return false;
+                    }
+                    return true;
+                }
+            );
+        }
 
         // Exclude snippets in block list.
         var blockList = getBlockList();

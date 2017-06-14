@@ -406,6 +406,8 @@ class Snippet(CachingMixin, SnippetBaseModel):
             'has_testpilot': unicode,
             'is_default_browser': unicode,
             'screen_resolutions': unicode,
+            'profileage_lower_bound': int,
+            'profileage_upper_bound': int,
         }
     )
 
