@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils.cache import patch_vary_headers
 from django.utils.functional import lazy
 from django.views.generic import TemplateView, View
-from django.views.decorators.cache import cache_control
+from django.views.decorators.cache import cache_control, cache_page
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -265,3 +265,10 @@ def csp_violation_capture(request):
         data=data)
 
     return HttpResponse('Captured CSP violation, thanks for reporting.')
+
+
+@cache_page(5)
+def healthz(request):
+    """For use with Healthchecks. Wrapped with cache_page to test cache."""
+    assert Snippet.objects.exists(), 'No snippets exist'
+    return HttpResponse('OK')

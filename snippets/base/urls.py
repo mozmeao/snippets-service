@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^active-snippets.json', views.ActiveSnippetsView.as_view(), name='base.active_snippets'),
     url(r'^csp-violation-capture$', views.csp_violation_capture,
         name='csp-violation-capture'),
+    url(r'^healthz/$', views.healthz, name='base.healthz')
 ]
