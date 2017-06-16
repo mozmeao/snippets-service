@@ -429,3 +429,14 @@ class ActiveSnippetsViewTests(TestCase):
         self.assertEqual(
             set([snippets[0].id, snippets[1].id, jsonsnippets[0].id, jsonsnippets[1].id]),
             set([x['id'] for x in data]))
+
+
+class HealthzViewTests(TestCase):
+    def test_ok(self):
+        SnippetFactory.create()
+        response = self.client.get(reverse('base.healthz'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_fail(self):
+        with self.assertRaises(AssertionError):
+            self.client.get(reverse('base.healthz'))
