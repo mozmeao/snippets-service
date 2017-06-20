@@ -78,9 +78,10 @@ Metrics
 -------
 
 Snippet code, which is executed on about:home, sends HTTP requests to a server
-located at https://snippets-stats.mozilla.org whenever an event occurs that we
-would like to measure. These requests are sampled at a rate of 10%, meaning that
-only 10% of the time an event occurs will a request be made.
+located at https://snippets-stats.moz.works and / or
+https://snippets-stats.mozilla.org whenever an event occurs that we would like
+to measure. These requests are sampled at a rate of 1%, meaning that only 1% of
+the time an event occurs will a request be made.
 
 Requests sent to snippets-stats.mozilla.org contain the following data (sent as
 URL parameters in the query string) in addition to the normal data available
@@ -160,7 +161,8 @@ elements that can be tracked this way include:
 Google Analytics
 ----------------
 
-Some Mozilla websites use Google Analytics to collect data about user behavior
-so that we can improve our sites. Neither the Snippets Service nor the code on
-about:home use Google Analytics directly, and Google Analytics is never loaded
-within about:home.
+The `snippets statistics server <https://google.com>`_ may proxy data to Google
+Analytics, with stripped IP information and with a unique to every request,
+randomly generated UID. Google Analytics is never loaded within about:home. Some
+Mozilla websites use Google Analytics to collect data about user behavior so
+that we can improve our sites.
