@@ -161,8 +161,9 @@ elements that can be tracked this way include:
 Google Analytics
 ----------------
 
-The `snippets statistics server <https://google.com>`_ may proxy data to Google
-Analytics, with stripped IP information and with a unique to every request,
-randomly generated UID. Google Analytics is never loaded within about:home. Some
+The `snippets statistics server
+<https://github.com/mozmar/snippets-stats-proxy>`_ may proxy data to Google
+Analytics, with stripped IP information and with a randomly generated UID unique
+to every request. Google Analytics is never loaded within about:home. Some
 Mozilla websites use Google Analytics to collect data about user behavior so
 that we can improve our sites.
