@@ -78,7 +78,7 @@ Metrics
 -------
 
 Snippet code, which is executed on about:home, sends HTTP requests to a server
-located at https://snippets-stats.moz.works and / or
+located at https://snippets-stats.moz.works and/or
 https://snippets-stats.mozilla.org whenever an event occurs that we would like
 to measure. These requests are sampled at a rate of 1%, meaning that only 1% of
 the time an event occurs will a request be made.
