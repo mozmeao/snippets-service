@@ -285,24 +285,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             );
         }
 
-        // Filter Snippets based on TestPilot addon existence.
-        var has_testpilot = Boolean(window.navigator.testpilotAddon);
-        if (has_testpilot === true) {
-            snippets = snippets.filter(
-                function(snippet) {
-                    return (snippet.client_options.has_testpilot == 'yes' ||
-                            snippet.client_options.has_testpilot == 'any');
-                }
-            )
-        } else {
-            snippets = snippets.filter(
-                function(snippet) {
-                    return (snippet.client_options.has_testpilot == 'no' ||
-                            snippet.client_options.has_testpilot == 'any');
-                }
-            );
-        }
-
         // Filter based on Firefox version
         var userAgent = window.navigator.userAgent.match(/Firefox\/([0-9]+)\./);
         var firefox_version  = userAgent ? parseInt(userAgent[1]) : 0;
