@@ -44,8 +44,9 @@ Pygments==2.0.2 \
     --hash=sha256:0a3a2265e1efb0defa722d1f429730dc9df975adc3c60ac7d2b432bdf03c041d \
     --hash=sha256:5ded2fa9094fd7dfeb3da92636409fd702a0d07d606283504d7ee04401cee5cb \
     --hash=sha256:7320919084e6dac8f4540638a46447a3bd730fca172afc17d2c03eed22cf4f51
-django-jinja==2.1.1 \
-    --hash=sha256:2e382d8f65f8c5f03789cf6ff112f5ce5df5ba602eb34c910daaf1148993bf89
+django-jinja==2.3.1 \
+    --hash=sha256:ebfde44cb716e57a9cdff6c1a4935fc49c7419ea4cd0b2b89bcecc696b9c0c86 \
+    --hash=sha256:5e826a0cce967f40e6fdc037ea23667a2d3cd072807c4c87ffcc010b3c59121f
 django-session-csrf==0.5 \
     --hash=sha256:44e4639ec057a6b6a9dddb869d4e3a4818fc9278ec490cce39aef08440592a93
 py-bcrypt==0.3 \
