@@ -218,7 +218,7 @@ class SnippetAdminForm(BaseSnippetAdminForm):
                   'countries', 'publish_start', 'publish_end',
                   'on_release', 'on_beta', 'on_aurora', 'on_nightly',
                   'on_startpage_1', 'on_startpage_2', 'on_startpage_3', 'on_startpage_4',
-                  'weight', 'client_match_rules', 'exclude_from_search_providers',
+                  'on_startpage_5', 'weight', 'client_match_rules', 'exclude_from_search_providers',
                   'campaign')
         widgets = {
             'data': TemplateDataWidget('template'),
@@ -226,6 +226,7 @@ class SnippetAdminForm(BaseSnippetAdminForm):
 
     def clean(self):
         cleaned_data = super(SnippetAdminForm, self).clean()
+
         version_upper_bound = cleaned_data['client_option_version_upper_bound']
         version_lower_bound = cleaned_data['client_option_version_lower_bound']
 
@@ -252,6 +253,18 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         if not any([cleaned_data['on_release'], cleaned_data['on_beta'],
                     cleaned_data['on_aurora'], cleaned_data['on_nightly']]):
             raise forms.ValidationError('Select at least one channel to publish this snippet on.')
+
+        if ((cleaned_data['on_startpage_5'] and
+             any([cleaned_data['on_startpage_4'], cleaned_data['on_startpage_3'],
+                  cleaned_data['on_startpage_2'], cleaned_data['on_startpage_1']]))):
+
+            raise forms.ValidationError('Activity Stream cannot be combined '
+                                        'with Startpage Versions 1-4.')
+
+        if not any([cleaned_data['on_startpage_4'], cleaned_data['on_startpage_3'],
+                    cleaned_data['on_startpage_2'], cleaned_data['on_startpage_1'],
+                    cleaned_data['on_startpage_5']]):
+            raise forms.ValidationError('Select at least one Startpage to publish this snippet on.')
 
         return cleaned_data
 

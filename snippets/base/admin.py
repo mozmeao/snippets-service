@@ -176,6 +176,10 @@ class SnippetAdmin(BaseSnippetAdmin):
             'description': 'What channels will this snippet be available in?',
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
         }),
+        ('Startpage Versions', {
+            'fields': (('on_startpage_1', 'on_startpage_2', 'on_startpage_3',
+                        'on_startpage_4', 'on_startpage_5'),),
+        }),
         ('Client Filtering', {
             'fields': (
                 'client_option_version_lower_bound',
@@ -200,11 +204,6 @@ class SnippetAdmin(BaseSnippetAdmin):
             'description': ('Would you like to <strong>exclude</strong> '
                             'any search providers from this snippet?'),
             'fields': (('exclude_from_search_providers',),)
-        }),
-        ('Startpage Versions', {
-            'fields': (('on_startpage_1', 'on_startpage_2', 'on_startpage_3',
-                        'on_startpage_4'),),
-            'classes': ('collapse',)
         }),
     )
 

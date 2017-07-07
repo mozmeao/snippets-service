@@ -131,7 +131,11 @@ def fetch_render_snippets(request, **kwargs):
          client.channel in settings.ALTERNATE_METRICS_CHANNELS)):
         metrics_url = settings.ALTERNATE_METRICS_URL
 
-    response = render(request, 'base/fetch_snippets.jinja', {
+    template = 'base/fetch_snippets.jinja'
+
+    if client.startpage_version == '5':
+        template = 'base/fetch_snippets_as.jinja'
+    response = render(request, template, {
         'snippet_ids': [snippet.id for snippet in matching_snippets],
         'snippets_json': json.dumps([s.to_dict() for s in matching_snippets]),
         'client': client,
