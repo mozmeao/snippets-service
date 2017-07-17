@@ -14,6 +14,31 @@ from product_details.version_compare import Version, version_list
 from snippets.base.fields import MultipleChoiceFieldCSV
 from snippets.base.models import (JSONSnippet, Snippet, SnippetTemplate,
                                   SnippetTemplateVariable, UploadedFile)
+from snippets.base.validators import MinValueValidator
+
+
+PROFILE_AGE_CHOICES = (
+    (-1, 'No limit'),
+    (-2, '----------'),
+    (1, 'One week'),
+    (2, 'Two weeks'),
+    (3, 'Three weeks'),
+    (4, 'Four weeks'),
+    (5, 'Five weeks'),
+    (6, 'Six weeks'),
+    (7, 'Seven weeks'),
+    (8, 'Eight weeks'),
+    (-2, '-----------'),
+    (4, 'One Month'),
+    (8, 'Two Months'),
+    (12, 'Three Months'),
+    (16, 'Four Months'),
+    (20, 'Five Months'),
+    (24, 'Six Months'),
+    (-2, '-----------'),
+    (48, 'One Year'),
+    (96, 'Two Years'),
+)
 
 
 class TemplateSelect(forms.Select):
@@ -127,7 +152,7 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         choices=[('any', 'No limit'),
                  ('current_release', 'Current release')])
     client_option_version_upper_bound = forms.ChoiceField(
-        label='Firefox Version at most',
+        label='Firefox Version less than',
         choices=[('any', 'No limit'),
                  ('older_than_current_release', 'Older than current release')])
     client_option_has_fxaccount = forms.ChoiceField(
@@ -155,6 +180,22 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         choices=(('0-1024',  'Screens with less than 1024 vertical pixels. (low)'),
                  ('1024-1920',  'Screens with less than 1920 vertical pixels. (hd)'),
                  ('1920-50000', 'Screens with more than 1920 vertical pixels (full-hd, 4k)')))
+    client_option_profileage_lower_bound = forms.ChoiceField(
+        label='Profile age at least',
+        choices=PROFILE_AGE_CHOICES,
+        validators=[
+            MinValueValidator(
+                -1, message='Select a value or "No limit" to disable this filter.')
+        ],
+    )
+    client_option_profileage_upper_bound = forms.ChoiceField(
+        label='Profile age less than',
+        choices=PROFILE_AGE_CHOICES,
+        validators=[
+            MinValueValidator(
+                -1, message='Select a value or "No limit" to disable this filter.')
+        ],
+    )
 
     def __init__(self, *args, **kwargs):
         super(SnippetAdminForm, self).__init__(*args, **kwargs)
@@ -197,6 +238,16 @@ class SnippetAdminForm(BaseSnippetAdminForm):
             if Version(version_upper_bound) < Version(version_lower_bound):
                 raise forms.ValidationError(
                     'Firefox version upper bound must be bigger than lower bound.')
+
+        profileage_lower_bound = int(cleaned_data.get('client_option_profileage_lower_bound', -1))
+        profileage_upper_bound = int(cleaned_data.get('client_option_profileage_upper_bound', -1))
+
+        cleaned_data['client_option_profileage_lower_bound'] = profileage_lower_bound
+        cleaned_data['client_option_profileage_upper_bound'] = profileage_upper_bound
+
+        if ((profileage_lower_bound > -1 and profileage_upper_bound > -1 and
+             profileage_upper_bound <= profileage_lower_bound)):
+            raise forms.ValidationError('Profile age upper bound must be bigger than lower bound.')
 
         return cleaned_data
 
