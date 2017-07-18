@@ -1,4 +1,4 @@
-@Library('github.com/mozmar/jenkins-pipeline@20170315.1')
+@Library('github.com/mozmeao/jenkins-pipeline@20170315.1')
 def stage_deployed = false
 def config
 def docker_image
