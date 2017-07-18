@@ -9,6 +9,8 @@ snippets
 
 [Documentation](http://abouthome-snippets-service.readthedocs.org/)
 
+[![webqa tests](https://img.shields.io/badge/WebQA-Treeherder-lightgrey.svg)](https://treeherder.mozilla.org/#/jobs?repo=snippets-service)
+
 Run the tests
 -------------
 
