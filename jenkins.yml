@@ -12,7 +12,7 @@ deploy:
       url: "https://deis.eu-west.moz.works"
       credentials: jenkins-deis
       app: "snippets-stage"
-      newrelic_app:  "snippets-stage-eu-west"
+      newrelic_app: "snippets-stage-eu-west"
   prod:
     - name: "US-West Admin"
       url: "https://deis.us-west.moz.works"
@@ -29,17 +29,17 @@ deploy:
       credentials: jenkins-deis
       app: "snippets-prod"
       newrelic_app: "snippets-prod-eu-west"
-    - name: "Virginia Prod"
-      url: "https://deis.virginia.moz.works"
-      credentials: jenkins-deis-2
-      app: "snippets-prod"
-      newrelic_app: "snippets-prod-virginia"
-      deis_executable: "deis2"
     - name: "Tokyo Prod"
       url: "https://deis.tokyo.moz.works"
       credentials: jenkins-deis-2
       app: "snippets-prod"
       newrelic_app: "snippets-prod-tokyo"
+      deis_executable: "deis2"
+    - name: "Frankfurt Prod"
+      url: "https://deis.frankfurt.moz.works"
+      credentials: jenkins-deis-2
+      app: "snippets-prod"
+      newrelic_app: "snippets-prod-frankfurt"
       deis_executable: "deis2"
 notifications:
   irc:
