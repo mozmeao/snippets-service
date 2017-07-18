@@ -26,7 +26,7 @@ pipeline {
           archiveArtifacts 'tests/results/*'
           junit 'tests/results/*.xml'
           submitToActiveData('tests/results/py27_raw.txt')
-          submitToTreeherder('snippets-tests', 'e2e', 'End-to-end integration tests', 'tests/results/*', 'tests/results/py27_tbpl.txt')
+          submitToTreeherder('snippets-service', 'e2e', 'End-to-end integration tests', 'tests/results/*', 'tests/results/py27_tbpl.txt')
         }
       }
     }
