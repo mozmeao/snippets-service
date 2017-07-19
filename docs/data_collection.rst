@@ -162,7 +162,7 @@ Google Analytics
 ----------------
 
 The `snippets statistics server
-<https://github.com/mozmar/snippets-stats-proxy>`_ may proxy data to Google
+<https://github.com/mozmeao/snippets-stats-proxy>`_ may proxy data to Google
 Analytics, with stripped IP information and with a randomly generated UID unique
 to every request. Google Analytics is never loaded within about:home. Some
 Mozilla websites use Google Analytics to collect data about user behavior so
