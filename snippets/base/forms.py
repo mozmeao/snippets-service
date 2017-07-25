@@ -249,6 +249,10 @@ class SnippetAdminForm(BaseSnippetAdminForm):
              profileage_upper_bound <= profileage_lower_bound)):
             raise forms.ValidationError('Profile age upper bound must be bigger than lower bound.')
 
+        if not any([cleaned_data['on_release'], cleaned_data['on_beta'],
+                    cleaned_data['on_aurora'], cleaned_data['on_nightly']]):
+            raise forms.ValidationError('Select at least one channel to publish this snippet on.')
+
         return cleaned_data
 
     def save(self, *args, **kwargs):

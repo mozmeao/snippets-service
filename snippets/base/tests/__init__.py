@@ -36,6 +36,7 @@ class SnippetTemplateVariableFactory(factory.django.DjangoModelFactory):
 class BaseSnippetFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Test Snippet {0}'.format(n))
     disabled = False
+    on_release = True
 
     @factory.post_generation
     def client_match_rules(self, create, extracted, **kwargs):
