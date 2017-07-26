@@ -25,7 +25,7 @@ Installation
     ```
 
 Using the server
-----------------
+-------------------
 
 0. Make sure you're in `simple_template_server` directory.
 
@@ -35,16 +35,25 @@ Using the server
     python webserver.py
     ```
 
-    The server listens on *http://0.0.0.0:8000*
+   The server listens on *http://0.0.0.0:8000*
 
-2. Add your templates in the `snippets/` directory ending with `.html`.
+   If you develop for Activity Stream set the SNIPPETS_STARTPAGE_VERSION
+   environment variable to 5.
+
+   ```shell
+   SNIPPETS_STARTPAGE_VERSION=5 python webserver.py
+   ```
+
+2. Add your templates in the `snippets/` directory ending with `.html`. If
+   you're developing for Activity Stream use the `snippets_as/` directory
+   instead.
 
 3. Most likely your template will have variables and you can add those in a YAML
    file under the same directory with the same base filename with `.yml`
    extension.
 
-For demo purposes the `snippets/` directory already contains a
-`snippet-one.html` and the corresponding `snippet-one.yml` variable file.
+For demo purposes the `snippets/` and `snippets_as/` directories already contain
+ `snippet-one.html` and the corresponding `snippet-one.yml` variable files.
 
 You can add as many snippets you want and *all* of them will be served to every
 requesting browser. The server will auto-load the snippets on every request.

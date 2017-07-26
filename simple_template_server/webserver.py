@@ -7,6 +7,11 @@ import jinja2
 import yaml
 from bottle import route, run, hook, response
 
+try:
+    STARTPAGE_VERSION = int(os.getenv('SNIPPETS_STARTPAGE_VERSION', 4))
+except ValueError:
+    raise Exception('Invalid startpage version: {}'.format(os.getenv('SNIPPETS_STARTPAGE_VERSION')))
+
 
 jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader('templates'),
@@ -40,7 +45,8 @@ class Settings():
 
 
 class Client():
-    startpage_version = 4
+    startpage_version = STARTPAGE_VERSION
+    locale = 'en-US'
 
 
 def render_snippet(snippet_code, data):
@@ -60,7 +66,12 @@ def render_snippet(snippet_code, data):
 @route('<:re:.*>')
 def home():
     data = []
-    for snippet_id, snippet_filename in enumerate(glob.glob('snippets/*.html')):
+    if STARTPAGE_VERSION == 5:
+        directory = 'snippets_as'
+    else:
+        directory = 'snippets'
+
+    for snippet_id, snippet_filename in enumerate(glob.glob('{}/*.html'.format(directory))):
         with open('{}'.format(snippet_filename)) as f:
             snippet_code = f.read()
 
@@ -86,17 +97,26 @@ def home():
                 'version_lower_bound': 'any',
                 'version_upper_bound': 'any',
                 'is_default_browser': 'any',
+                'screen_resolutions': "0-1024;1024-1920;1920-50000",
+                'profileage_lower_bound': -1,
+                'profileage_upper_bound': -1,
             }
         })
 
-    template = jinja_env.get_or_select_template('fetch_snippets.jinja')
+    if STARTPAGE_VERSION == 5:
+        template = jinja_env.get_or_select_template('fetch_snippets_as.jinja')
+    else:
+        template = jinja_env.get_or_select_template('fetch_snippets.jinja')
+
     return template.render(**{
         'utcnow': datetime.datetime.utcnow,
-        'snippet_ids': [],
+        'snippet_ids': list(range(len(data))),
         'snippets_json': unicode(json.dumps(data)),
-        'settings': Settings(),
         'client': Client(),
-        'current_firefox_version': 44,
+        'locale': Client().locale,
+        'settings': Settings(),
+        'current_firefox_version': 56,
+        'metrics_url': Settings().METRICS_URL,
     })
 
 
