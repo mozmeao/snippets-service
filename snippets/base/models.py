@@ -370,7 +370,7 @@ class Snippet(CachingMixin, SnippetBaseModel):
     publish_start = models.DateTimeField(blank=True, null=True)
     publish_end = models.DateTimeField(blank=True, null=True)
 
-    on_release = models.BooleanField(default=True, verbose_name='Release')
+    on_release = models.BooleanField(default=False, verbose_name='Release')
     on_beta = models.BooleanField(default=False, verbose_name='Beta')
     on_aurora = models.BooleanField(default=False, verbose_name='Aurora')
     on_nightly = models.BooleanField(default=False, verbose_name='Nightly')
