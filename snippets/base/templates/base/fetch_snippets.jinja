@@ -1,15 +1,14 @@
 {% include 'base/includes/snippet.css' %}
 <script type="text/javascript">
-//<![CDATA[
-  // Generated on {{ utcnow() }}
-  // Included snippets:
-{% for id in snippet_ids %}
-  //  - {{ id }}
-{% endfor %}
-  var ABOUTHOME_SNIPPETS = JSON.parse('{{ snippets_json|escapejs|safe }}');
-  var CURRENT_RELEASE = {{ current_firefox_version }};
+ //<![CDATA[
+ // Generated on {{ utcnow() }}
+ // Included snippets:
+     {% for id in snippet_ids %}
+ //  - {{ id }}
+     {% endfor %}
+     var ABOUTHOME_SNIPPETS = JSON.parse('{{ snippets_json|escapejs|safe }}');
+     var CURRENT_RELEASE = {{ current_firefox_version }};
+     {% include 'base/includes/snippet.js' %}
 
-  {% include 'base/includes/snippet.js' %}
-
-//]]>
+ //]]>
 </script>

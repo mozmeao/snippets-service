@@ -460,3 +460,38 @@ class SnippetBundleTests(TestCase):
         # Check content of saved file.
         content_file = default_storage.save.call_args[0][1]
         self.assertEqual(content_file.read(), 'rendered snippet')
+
+    def test_generate_activity_stream(self):
+        """
+        bundle.generate should render the snippets, save them to the
+        filesystem, and mark the bundle as not-expired in the cache for
+        activity stream!
+        """
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+        bundle.storage = Mock()
+        bundle._snippets = [self.snippet1, self.snippet2]
+
+        with patch('snippets.base.models.cache') as cache:
+            with patch('snippets.base.models.render_to_string') as render_to_string:
+                with patch('snippets.base.models.default_storage') as default_storage:
+                    with self.settings(SNIPPET_BUNDLE_TIMEOUT=10):
+                        with patch('snippets.base.models.version_list') as version_list:
+                            version_list.return_value = ['45.0']
+                            render_to_string.return_value = 'rendered snippet'
+                            bundle.generate()
+
+        render_to_string.assert_called_with('base/fetch_snippets_as.jinja', {
+            'snippet_ids': [s.id for s in [self.snippet1, self.snippet2]],
+            'snippets_json': json.dumps([s.to_dict() for s in [self.snippet1, self.snippet2]]),
+            'client': bundle.client,
+            'locale': 'fr',
+            'settings': settings,
+            'current_firefox_version': '45',
+            'metrics_url': settings.METRICS_URL,
+        })
+        default_storage.save.assert_called_with(bundle.filename, ANY)
+        cache.set.assert_called_with(bundle.cache_key, True, 10)
+
+        # Check content of saved file.
+        content_file = default_storage.save.call_args[0][1]
+        self.assertEqual(content_file.read(), 'rendered snippet')

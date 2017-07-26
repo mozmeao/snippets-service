@@ -52,6 +52,8 @@ class FetchRenderSnippetsTests(TestCase):
         response = self.client.get('/{0}/'.format('/'.join(params)))
 
         snippets_json = json.dumps([snippet_1.to_dict()])
+
+        self.assertTemplateUsed(response, 'base/fetch_snippets.jinja')
         self.assertEqual(snippets_json, response.context['snippets_json'])
         self.assertEqual(response.context['locale'], 'en-US')
 
@@ -93,6 +95,11 @@ class FetchRenderSnippetsTests(TestCase):
             # sha256 of 'asdf'
             expected = 'f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b'
             self.assertEqual(response['ETag'], expected)
+
+    def test_activity_stream(self):
+        params = ['5'] + self.client_params[1:]
+        response = self.client.get('/{0}/'.format('/'.join(params)))
+        self.assertTemplateUsed(response, 'base/fetch_snippets_as.jinja')
 
 
 class JSONSnippetsTests(TestCase):

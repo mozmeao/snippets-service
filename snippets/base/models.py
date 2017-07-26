@@ -43,9 +43,11 @@ SNIPPET_CSS_TEMPLATE_HASH = hashfile(
     os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet.css'))
 SNIPPET_FETCH_TEMPLATE_HASH = hashfile(
     os.path.join(settings.ROOT, 'snippets/base/templates/base/fetch_snippets.jinja'))
+SNIPPET_FETCH_AS_TEMPLATE_HASH = hashfile(
+    os.path.join(settings.ROOT, 'snippets/base/templates/base/fetch_snippets_as.jinja'))
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly')
-FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4')
+FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4', '5')
 FENNEC_STARTPAGE_VERSIONS = ('1',)
 SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
                    (50, 'Appear half as often as an average snippet'),
@@ -147,6 +149,7 @@ class SnippetBundle(object):
             SNIPPET_JS_TEMPLATE_HASH,
             SNIPPET_CSS_TEMPLATE_HASH,
             SNIPPET_FETCH_TEMPLATE_HASH,
+            SNIPPET_FETCH_AS_TEMPLATE_HASH,
         ])
 
         key_string = u'_'.join(key_properties)
@@ -201,7 +204,10 @@ class SnippetBundle(object):
              self.client.channel in settings.ALTERNATE_METRICS_CHANNELS)):
             metrics_url = settings.ALTERNATE_METRICS_URL
 
-        bundle_content = render_to_string('base/fetch_snippets.jinja', {
+        template = 'base/fetch_snippets.jinja'
+        if self.client.startpage_version == '5':
+            template = 'base/fetch_snippets_as.jinja'
+        bundle_content = render_to_string(template, {
             'snippet_ids': [snippet.id for snippet in self.snippets],
             'snippets_json': json.dumps([s.to_dict() for s in self.snippets]),
             'client': self.client,
@@ -379,6 +385,7 @@ class Snippet(CachingMixin, SnippetBaseModel):
     on_startpage_2 = models.BooleanField(default=True, verbose_name='Version 2')
     on_startpage_3 = models.BooleanField(default=True, verbose_name='Version 3')
     on_startpage_4 = models.BooleanField(default=True, verbose_name='Version 4')
+    on_startpage_5 = models.BooleanField(default=False, verbose_name='Activity Stream')
 
     weight = models.IntegerField(
         'Prevalence', choices=SNIPPET_WEIGHTS, default=100,
