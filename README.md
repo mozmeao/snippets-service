@@ -5,7 +5,7 @@ snippets
 
 [![codecov.io](https://codecov.io/github/mozmeao/snippets-service/coverage.svg?branch=master)](https://codecov.io/github/mozmeao/snippets-service?branch=master)
 
-[What's deployed?](https://whatsdeployed.io/s-i76)
+[What's deployed?](https://whatsdeployed.io/s-VrF)
 
 [Documentation](http://abouthome-snippets-service.readthedocs.org/)
 
