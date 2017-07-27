@@ -1,16 +1,13 @@
 <style type="text/css">
   {% include 'base/includes/snippet_as.css' %}
 </style>
-<script type="text/javascript">
- //<![CDATA[
+<script type="application/javascript">
  // Generated on {{ utcnow() }}
  // Included snippets:
-     {% for id in snippet_ids %}
+ {% for id in snippet_ids %}
  //  - {{ id }}
-     {% endfor %}
-     var ABOUTHOME_SNIPPETS = JSON.parse("{{ snippets_json|escapejs|safe }}");
-     var CURRENT_RELEASE = {{ current_firefox_version }};
-     {% include 'base/includes/snippet_as.js' %}
-
- //]]>
+ {% endfor %}
+ var ABOUTHOME_SNIPPETS = JSON.parse("{{ snippets_json|escapejs|safe }}");
+ var CURRENT_RELEASE = {{ current_firefox_version }};
+ {% include 'base/includes/snippet_as.js' %}
 </script>

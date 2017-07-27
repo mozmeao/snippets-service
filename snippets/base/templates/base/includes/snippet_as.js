@@ -6,92 +6,6 @@ var ABOUTHOME_SHOWN_SNIPPET = null;
 var USER_COUNTRY = null;
 var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
 
-// Start MozUITour
-// Copy from https://hg.mozilla.org/mozilla-central/file/tip/browser/components/uitour/UITour-lib.js
-if (typeof Mozilla == 'undefined') {
-    var Mozilla = {};
-}
-
-if (typeof Mozilla.UITour == 'undefined') {
-    Mozilla.UITour = {};
-}
-
-function _sendEvent(action, data) {
-    var event = new CustomEvent('mozUITour', {
-        bubbles: true,
-        detail: {
-            action: action,
-            data: data || {}
-        }
-    });
-
-    document.dispatchEvent(event);
-}
-
-function _generateCallbackID() {
-    return Math.random().toString(36).replace(/[^a-z]+/g, '');
-}
-
-function _waitForCallback(callback) {
-    var id = _generateCallbackID();
-
-    function listener(event) {
-        if (typeof event.detail != 'object')
-            return;
-        if (event.detail.callbackID != id)
-            return;
-
-        document.removeEventListener('mozUITourResponse', listener);
-        callback(event.detail.data);
-    }
-    document.addEventListener('mozUITourResponse', listener);
-
-    return id;
-}
-
-Mozilla.UITour.showHighlight = function(target, effect) {
-    _sendEvent('showHighlight', {
-        target: target,
-        effect: effect
-    });
-};
-
-Mozilla.UITour.hideHighlight = function() {
-    _sendEvent('hideHighlight');
-};
-
-Mozilla.UITour.showMenu = function(name, callback) {
-    var showCallbackID;
-    if (callback)
-        showCallbackID = _waitForCallback(callback);
-
-    _sendEvent('showMenu', {
-        name: name,
-        showCallbackID: showCallbackID
-    });
-};
-
-Mozilla.UITour.hideMenu = function(name) {
-    _sendEvent('hideMenu', {
-        name: name
-    });
-};
-
-Mozilla.UITour.getConfiguration = function(configName, callback) {
-    _sendEvent('getConfiguration', {
-        callbackID: _waitForCallback(callback),
-        configuration: configName,
-    });
-};
-
-Mozilla.UITour.setConfiguration = function(configName, configValue) {
-    _sendEvent('setConfiguration', {
-        configuration: configName,
-        value: configValue
-    });
-};
-// End MozUITour
-
 
 (function(showDefaultSnippets) {
     'use strict';
@@ -103,25 +17,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             showSnippets();
         };
     }
-
-    // gSnippetsMap polyfill, available in Firefox 22 and above.
-    var gSnippetsMap = null;
-    if (supportsLocalStorage()) {
-        // localStorage is available, so we wrap it with gSnippetsMap.
-        gSnippetsMap = {
-            set: function(key, value) {
-                localStorage[key] = value;
-            },
-            get: function(key) {
-                return localStorage[key];
-            }
-        };
-        window.gSnippetsMap = gSnippetsMap;
-    } else {
-        // localStorage isn't available, use gSnippetsMap (backed by IndexedDB).
-        gSnippetsMap = window.gSnippetsMap;
-    }
-
 
     var show_snippet = null;
     if (ABOUTHOME_SNIPPETS.length > 0) {
@@ -137,25 +32,17 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         document.getElementById('snippets').appendChild(snippetContainer);
         activateScriptTags(snippetContainer);
 
-        try {
-            activateSnippetsButtonClick(show_snippet);
-        } catch (err) {
-            // Do nothing, most likely a newer version of Firefox w/o
-            // activateSnippetsButtonClick
-        }
-
         // By the time show_snippet event reaches #snippets the snippet
         // will have finished initializing and altering the DOM. It's the
         // time to modifyLinks() and addSnippetBlockLinks().
         var snippets = document.getElementById('snippets');
         snippets.addEventListener('show_snippet', function(event) {
-            var topSection = document.getElementById('topSection');
+            var snippetsContainer = document.getElementById('snippets-container');
             // Add sample rate and snippet ID to currently displayed links.
             var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
                               ABOUTHOME_SHOWN_SNIPPET.id);
-            modifyLinks(topSection.querySelectorAll('a'), parameters);
-            addSnippetBlockLinks(topSection.querySelectorAll('.block-snippet-button'));
-            keypressIsMine(snippetContainer.querySelector('.snippet'));
+            modifyLinks(snippetsContainer.querySelectorAll('a'), parameters);
+            addSnippetBlockLinks(snippetsContainer.querySelectorAll('.block-snippet-button'));
             sendImpression();
         });
 
@@ -166,15 +53,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     } else {
         showDefaultSnippets();
     }
-
-    // Update FxAccount Status
-    updateFxAccountStatus();
-
-    // Update Selected Search Engine
-    updateSelectedSearchEngine();
-
-    // Get appinfo from UITour
-    updateAppInfoStatus();
 
     // Fetch user country if we don't have it.
     if (!haveUserCountry()) {
@@ -402,63 +280,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     }
     {% endif %}
 
-    function updateFxAccountStatus() {
-        var callback = function(result) {
-            gSnippetsMap.set('fxaccount', result.setup);
-        };
-        var event = new CustomEvent(
-            'mozUITour', {
-                bubbles: true,
-                detail: {
-                    action:'getConfiguration',
-                    data: {
-                        configuration: 'sync',
-                        callbackID: _waitForCallback(callback)
-                    }
-                }
-            }
-        );
-        document.dispatchEvent(event);
-    }
-
-    function updateAppInfoStatus() {
-        var callback = function(result) {
-            gSnippetsMap.set('appInfo', result);
-        };
-        var event = new CustomEvent(
-            'mozUITour', {
-                bubbles: true,
-                detail: {
-                    action:'getConfiguration',
-                    data: {
-                        configuration: 'appinfo',
-                        callbackID: _waitForCallback(callback)
-                    }
-                }
-            }
-        );
-        document.dispatchEvent(event);
-    }
-
-    function updateSelectedSearchEngine() {
-        var callback = function(result) {
-            gSnippetsMap.set('selectedSearchEngine', result.searchEngineIdentifier);
-        };
-        var event = new CustomEvent(
-            'mozUITour', {
-                bubbles: true,
-                detail: {
-                    action:'getConfiguration',
-                    data: {
-                        configuration: 'selectedSearchEngine',
-                        callbackID: _waitForCallback(callback)
-                    }
-                }
-            }
-        );
-        document.dispatchEvent(event);
-    }
-
     // Check whether we have the user's country stored and if it is still valid.
     function haveUserCountry() {
         // Check if there's an existing country code to use.
@@ -541,19 +362,11 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         var blockSnippet = function (event) {
             event.preventDefault();
             event.stopPropagation();
-
+            sendMetric('snippet-blocked');
             addToBlockList();
 
-            // Waiting for 500ms before reloading the page after user blocks a snippet,
-            // will allow the IndexedDB more time to complete its transaction. While
-            // this is an imperfect non-deterministic solution it will fix the issue
-            // for most of the users. Ideally we would create our own
-            // connection to the iDB and ensure that the write completes
-            // before we reload the page. Bug 1236090.
-            function reloadWindow() {
-                window.location.reload();
-            }
-            sendMetric('snippet-blocked', function() { setTimeout(reloadWindow, 500); });
+            // Hide #snippets-container for this tab.
+            document.querySelector("#snippets-container").style.display = "none";
         };
 
         for (var k = 0; k < elements.length; k++) {
@@ -562,28 +375,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
         }
     }
 
-    // Bug 1238092. Got fixed in Fx45. We can drop this when Fx44
-    // usage drops significantly.
-    function keypressIsMine(snippet) {
-        snippet.addEventListener('keypress', function(event) {
-            var tagName = event.target.tagName.toLowerCase();
-            if (tagName === 'input' || tagName === 'select') {
-                event.stopPropagation();
-            }
-        });
-    }
-
-    // Check for localStorage support. Copied from Modernizr.
-    function supportsLocalStorage() {
-        var s = 'snippets-test';
-        try {
-            localStorage.setItem(s, s);
-            localStorage.removeItem(s);
-            return true;
-        } catch(e) {
-            return false;
-        }
-    }
 
     // Scripts injected by innerHTML are inactive, so we have to relocate them
     // through DOM manipulation to activate their contents.
@@ -591,7 +382,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     function activateScriptTags(element) {
        Array.forEach(element.getElementsByTagName('script'), function(elt) {
            var relocatedScript = document.createElement('script');
-           relocatedScript.type = 'text/javascript;version=1.8';
+           relocatedScript.type = 'application/javascript';
            relocatedScript.text = elt.text;
            elt.parentNode.replaceChild(relocatedScript, elt);
        });
@@ -599,12 +390,12 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 
     // Listen for clicks on links, send metrics and handle
     // about:account custom links.
-    var topSection = document.getElementById('topSection');
-    topSection.addEventListener('click', function(event) {
+    var snippetsContainer = document.getElementById('snippets-container');
+    snippetsContainer.addEventListener('click', function(event) {
         var target = event.target;
         while (target.tagName && target.tagName.toLowerCase() !== 'a') {
-            // Do not track clicks outside topSection.
-            if (target.id === 'topSection') {
+            // Do not track clicks outside snippets-container.
+            if (target.id === 'snippets-container') {
                 return;
             }
             target = target.parentNode;
@@ -625,19 +416,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             sendMetric(metric, callback, target.href);
         }
 
-        // Handle about:accounts clicks.
-        if (target.href && target.href.indexOf('about:accounts') === 0) {
-            var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
-            var metric = snippet_id + '-about-accounts-click';
-            var fire_event = function() {
-                var event = new CustomEvent(
-                    'mozUITour',
-                    { bubbles: true, detail: { action:'showFirefoxAccounts', data: {}}}
-                );
-                document.dispatchEvent(event);
-            };
-            sendMetric(metric, fire_event, target.href);
-        }
     }, false);
 
 
