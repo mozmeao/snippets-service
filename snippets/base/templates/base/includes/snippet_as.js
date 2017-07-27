@@ -7,52 +7,42 @@ var USER_COUNTRY = null;
 var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
 
 
-(function(showDefaultSnippets) {
+(function() {
     'use strict';
 
-    // showDefaultSnippets polyfill, available in about:home v4
-    if (typeof showDefaultSnippets !== 'function') {
-        showDefaultSnippets = function() {
-            localStorage.snippets = '';
-            showSnippets();
-        };
-    }
-
-    var show_snippet = null;
     if (ABOUTHOME_SNIPPETS.length > 0) {
-        show_snippet = chooseSnippet(ABOUTHOME_SNIPPETS);
+        ABOUTHOME_SHOWN_SNIPPET = chooseSnippet(ABOUTHOME_SNIPPETS);
     }
 
-    if (show_snippet) {
-        ABOUTHOME_SHOWN_SNIPPET = show_snippet;
-
-        // Inject the snippet onto the page.
-        var snippetContainer = document.createElement('div');
-        snippetContainer.innerHTML = show_snippet.code;
-        document.getElementById('snippets').appendChild(snippetContainer);
-        activateScriptTags(snippetContainer);
-
-        // By the time show_snippet event reaches #snippets the snippet
-        // will have finished initializing and altering the DOM. It's the
-        // time to modifyLinks() and addSnippetBlockLinks().
-        var snippets = document.getElementById('snippets');
-        snippets.addEventListener('show_snippet', function(event) {
-            var snippetsContainer = document.getElementById('snippets-container');
-            // Add sample rate and snippet ID to currently displayed links.
-            var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
-                              ABOUTHOME_SHOWN_SNIPPET.id);
-            modifyLinks(snippetsContainer.querySelectorAll('a'), parameters);
-            addSnippetBlockLinks(snippetsContainer.querySelectorAll('.block-snippet-button'));
-            sendImpression();
-        });
-
-        // Trigger show_snippet event
-        var evt = document.createEvent('Event');
-        evt.initEvent('show_snippet', true, true);
-        snippetContainer.querySelector('.snippet').dispatchEvent(evt);
-    } else {
-        showDefaultSnippets();
+    if (ABOUTHOME_SHOWN_SNIPPET === null) {
+        return;
     }
+
+    // Inject the snippet onto the page.
+    var snippetElement = document.createElement('div');
+    snippetElement.innerHTML = ABOUTHOME_SHOWN_SNIPPET.code;
+    document.getElementById('snippets').appendChild(snippetElement);
+    activateScriptTags(snippetElement);
+    document.querySelector("#snippets-container").style.display = "block";
+
+    // By the time show_snippet event reaches #snippets the snippet
+    // will have finished initializing and altering the DOM. It's the
+    // time to modifyLinks() and addSnippetBlockLinks().
+    var snippets = document.getElementById('snippets');
+    snippets.addEventListener('show_snippet', function(event) {
+        var snippetsContainer = document.getElementById('snippets-container');
+        // Add sample rate and snippet ID to currently displayed links.
+        var parameters = ('sample_rate=' + SNIPPET_METRICS_SAMPLE_RATE + '&snippet_name=' +
+                          ABOUTHOME_SHOWN_SNIPPET.id);
+        modifyLinks(snippetsContainer.querySelectorAll('a'), parameters);
+        addSnippetBlockLinks(snippetsContainer.querySelectorAll('.block-snippet-button'));
+        sendImpression();
+    });
+
+    // Trigger show_snippet event
+    var evt = document.createEvent('Event');
+    evt.initEvent('show_snippet', true, true);
+    snippetElement.querySelector('.snippet').dispatchEvent(evt);
 
     // Fetch user country if we don't have it.
     if (!haveUserCountry()) {
@@ -388,8 +378,7 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
        });
     }
 
-    // Listen for clicks on links, send metrics and handle
-    // about:account custom links.
+    // Listen for clicks on links and send metrics.
     var snippetsContainer = document.getElementById('snippets-container');
     snippetsContainer.addEventListener('click', function(event) {
         var target = event.target;
@@ -419,7 +408,7 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
     }, false);
 
 
-})(window.showDefaultSnippets);
+})();
 
 // Send impressions and other interactions to the service
 // If no parameter is entered, quit function
