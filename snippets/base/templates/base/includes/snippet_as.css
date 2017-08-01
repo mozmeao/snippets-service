@@ -4,11 +4,27 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: white;
-    height: 122px;
+    border-top: solid 2px #E9E9E9;
+    background: rgba(255, 255, 255, 0.97);
+    height: 120px;
 }
 
 #snippets {
     max-width: 736px;
     margin: 0 auto;
+}
+
+.snippet .block-snippet-button {
+   position: absolute;
+   top: 50%;
+   right: 50px;
+   margin-top: -8px;
+   height: 16px;
+   width: 16px;
+   background-image: url("chrome://browser/skin/sidebar/close.svg");
+   background-repeat: no-repeat;
+   background-size: 16px 16px;
+   background-color: transparent;
+   border: 0;
+   cursor: pointer;
 }
