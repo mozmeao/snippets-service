@@ -1,7 +1,8 @@
-@Library('fxtest@1.6') _
-
 pipeline {
   agent any
+  libraries {
+    lib('fxtest@1.6')
+  }
   options {
     ansiColor('xterm')
     timestamps()
