@@ -27,4 +27,9 @@
    background-color: transparent;
    border: 0;
    cursor: pointer;
+   display: none;
+}
+
+#snippets-container:hover .snippet .block-snippet-button {
+   display: block;
 }
