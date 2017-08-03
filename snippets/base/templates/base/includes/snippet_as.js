@@ -421,8 +421,10 @@ function sendMetric(metric, callback, href) {
       }
       return;
     {% else %}
-      if (!SNIPPET_METRICS_URL || (Math.random() > SNIPPET_METRICS_SAMPLE_RATE) || (!metric)) {
-          if (callback) {
+
+    if (!gSnippetsMap.get('appData.telemetryEnabled') || !SNIPPET_METRICS_URL ||
+        !metric || (Math.random() > SNIPPET_METRICS_SAMPLE_RATE)) {
+        if (callback) {
               // setTimeout is here because when metrics succeeds the callback is async.
               // When we don't use metrics, we should be consistent and
               // fire the callback async too.
