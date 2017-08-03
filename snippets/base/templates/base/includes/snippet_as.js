@@ -206,18 +206,18 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
 
         // Filter based on Profile age
         //
-        // appInfo.profileCreatedWeeksAgo can be either undefined for Firefox
+        // profileCreatedWeeksAgo can be either undefined for Firefox
         // versions that don't expose this information, or a number >= 0.
-        if (appInfo && appInfo.profileCreatedWeeksAgo !== undefined) {
-            let profileAge = appInfo.profileCreatedWeeksAgo;
+        var profileCreatedWeeksAgo = gSnippetsMap.get('appData.profileCreatedWeeksAgo');
+        if (profileCreatedWeeksAgo !== undefined) {
             snippets = snippets.filter(
                 function(snippet) {
                     let lower_bound = snippet.client_options.profileage_lower_bound;
                     let upper_bound = snippet.client_options.profileage_upper_bound;
-                    if (lower_bound > -1 && profileAge < lower_bound) {
+                    if (lower_bound > -1 && profileCreatedWeeksAgo < lower_bound) {
                         return false;
                     }
-                    if (upper_bound > -1 && profileAge >= upper_bound) {
+                    if (upper_bound > -1 && profileCreatedWeeksAgo >= upper_bound) {
                         return false;
                     }
                     return true;
