@@ -80,7 +80,7 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
         }
 
         // Filter Snippets based on the has_fxaccount attribute.
-        var has_fxaccount = gSnippetsMap.get('fxaccount');
+        var has_fxaccount = gSnippetsMap.get('appData.fxaccount');
         if (has_fxaccount === true) {
             snippets = snippets.filter(
                 function(snippet) {
