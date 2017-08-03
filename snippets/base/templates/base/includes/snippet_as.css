@@ -15,6 +15,7 @@
 }
 
 .snippet .block-snippet-button {
+   display: none;
    position: absolute;
    top: 50%;
    right: 50px;
@@ -27,4 +28,8 @@
    background-color: transparent;
    border: 0;
    cursor: pointer;
+}
+
+#snippets-container:hover .snippet .block-snippet-button {
+   display: block;
 }
