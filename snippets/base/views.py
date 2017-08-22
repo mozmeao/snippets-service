@@ -11,7 +11,7 @@ from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpRespo
 from django.shortcuts import get_object_or_404, render
 from django.utils.cache import patch_vary_headers
 from django.utils.functional import lazy
-from django.views.generic import TemplateView, View
+from django.views.generic import TemplateView
 from django.views.decorators.cache import cache_control, cache_page
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -23,14 +23,14 @@ from product_details.version_compare import version_list
 from raven.contrib.django.models import client as sentry_client
 
 from snippets.base.decorators import access_control
-from snippets.base.encoders import ActiveSnippetsEncoder, JSONSnippetEncoder
+from snippets.base.encoders import JSONSnippetEncoder
 from snippets.base.models import Client, JSONSnippet, Snippet, SnippetBundle, SnippetTemplate
 from snippets.base.util import get_object_or_none
 
 
 def _http_max_age():
     return getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 90)
-HTTP_MAX_AGE = lazy(_http_max_age, str)()
+HTTP_MAX_AGE = lazy(_http_max_age, str)()  # noqa
 
 
 class SnippetFilter(django_filters.FilterSet):
@@ -234,14 +234,6 @@ def show_snippet(request, snippet_id):
         'preview': True,
         'current_firefox_version': current_firefox_version,
     })
-
-
-class ActiveSnippetsView(View):
-    def get(self, request):
-        snippets = (list(Snippet.cached_objects.filter(disabled=False)) +
-                    list(JSONSnippet.cached_objects.filter(disabled=False)))
-        return HttpResponse(json.dumps(snippets, cls=ActiveSnippetsEncoder),
-                            content_type='application/json')
 
 
 @csrf_exempt
