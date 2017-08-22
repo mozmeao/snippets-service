@@ -8,11 +8,6 @@ deploy:
       credentials: jenkins-deis
       app: "snippets-stage"
       newrelic_app: "snippets-stage-us-west"
-    - name: "EU-West Stage"
-      url: "https://deis.eu-west.moz.works"
-      credentials: jenkins-deis
-      app: "snippets-stage"
-      newrelic_app: "snippets-stage-eu-west"
   prod:
     - name: "US-West Admin"
       url: "https://deis.us-west.moz.works"
@@ -24,11 +19,6 @@ deploy:
       credentials: jenkins-deis
       app: "snippets-prod"
       newrelic_app: "snippets-prod-us-west"
-    - name: "EU-West Prod"
-      url: "https://deis.eu-west.moz.works"
-      credentials: jenkins-deis
-      app: "snippets-prod"
-      newrelic_app: "snippets-prod-eu-west"
     - name: "Tokyo Prod"
       url: "https://deis.tokyo.moz.works"
       credentials: jenkins-deis-2
