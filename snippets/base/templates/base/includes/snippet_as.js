@@ -79,7 +79,7 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
             );
         }
 
-        // Filter Snippets based on the has_fxaccount attribute.
+        // Filter Snippets based on Firefox Account existence.
         var has_fxaccount = gSnippetsMap.get('appData.fxaccount');
         if (has_fxaccount === true) {
             snippets = snippets.filter(
@@ -121,9 +121,9 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
             );
         }
 
-        // Filter Snippets based on whether Firefox is the default browser or now.
-        var appInfo = gSnippetsMap.get('appInfo');
-        if (appInfo && (appInfo.defaultBrowser === true || appInfo.defaultBrowser === undefined)) {
+        // Filter Snippets based on whether Firefox is the default browser or not.
+        var defaultBrowser = gSnippetsMap.get('appData.defaultBrowser');
+        if (defaultBrowser === true || defaultBrowser === undefined) {
             snippets = snippets.filter(
                 function(snippet) {
                     return (snippet.client_options.is_default_browser == 'yes' ||
@@ -140,15 +140,25 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
         }
 
         // Exclude snippets from search providers.
-        var searchProvider = gSnippetsMap.get('selectedSearchEngine');
-        if (searchProvider) {
+        var selectedSearchEngine = gSnippetsMap.get('appData.selectedSearchEngine');
+        if (selectedSearchEngine) {
             snippets = snippets.filter(
                 function(snippet) {
                     var excludeFromSearchEngines = snippet.exclude_from_search_engines;
-                    if (excludeFromSearchEngines.length && excludeFromSearchEngines.indexOf(searchProvider) !== -1) {
+                    if (excludeFromSearchEngines.length &&
+                        excludeFromSearchEngines.indexOf(selectedSearchEngine.searchEngineIdentifier) !== -1) {
                         return false;
                     }
                     return true;
+                }
+            );
+        }
+        else {
+            // We don't have the search engine information yet. Remove all
+            // snippets with search engine filtering.
+            snippets = snippets.filter(
+                function(snippet) {
+                    return snippet.exclude_from_search_engines.length === 0;
                 }
             );
         }
