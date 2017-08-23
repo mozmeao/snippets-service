@@ -7,7 +7,7 @@ RUN adduser --uid 1000 --disabled-password --gecos '' --no-create-home webdev
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential python python-dev python-pip \
-                                               libmysqlclient-dev libxslt1.1 libxml2 libxml2-dev libxslt1-dev \
+                                               mysql-client-5.5 libmysqlclient-dev libxslt1.1 libxml2 libxml2-dev libxslt1-dev \
                                                xmlsec1 libffi-dev libssl-dev && \
     rm -rf /var/lib/apt/lists/*
 
