@@ -455,7 +455,7 @@ class SnippetBundleTests(TestCase):
             'metrics_url': settings.METRICS_URL,
         })
         default_storage.save.assert_called_with(bundle.filename, ANY)
-        cache.set.assert_called_with(bundle.cache_key, True, 10)
+        cache.set.assert_called_with(bundle.cache_key, True, None)
 
         # Check content of saved file.
         content_file = default_storage.save.call_args[0][1]
@@ -490,7 +490,7 @@ class SnippetBundleTests(TestCase):
             'metrics_url': settings.METRICS_URL,
         })
         default_storage.save.assert_called_with(bundle.filename, ANY)
-        cache.set.assert_called_with(bundle.cache_key, True, 10)
+        cache.set.assert_called_with(bundle.cache_key, True, None)
 
         # Check content of saved file.
         content_file = default_storage.save.call_args[0][1]
