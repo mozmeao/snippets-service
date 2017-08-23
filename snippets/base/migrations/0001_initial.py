@@ -5,7 +5,6 @@ from django.db import migrations, models
 import snippets.base.fields
 import snippets.base.models
 import snippets.base.storage
-import caching.base
 
 
 class Migration(migrations.Migration):
@@ -36,7 +35,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ('-modified',),
             },
-            bases=(caching.base.CachingMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='JSONSnippet',
@@ -64,7 +63,7 @@ class Migration(migrations.Migration):
                 'ordering': ('-modified',),
                 'verbose_name': 'JSON Snippet',
             },
-            bases=(caching.base.CachingMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='JSONSnippetLocale',
@@ -73,7 +72,7 @@ class Migration(migrations.Migration):
                 ('locale', models.CharField(default=b'en-us', max_length=32, choices=[('ach', 'ach (Acholi)'), ('af', 'af (Afrikaans)'), ('ak', 'ak (Akan)'), ('am-et', 'am-et (Amharic)'), ('an', 'an (Aragonese)'), ('ar', 'ar (Arabic)'), ('as', 'as (Assamese)'), ('ast', 'ast (Asturian)'), ('az', 'az (Azerbaijani)'), ('be', 'be (Belarusian)'), ('bg', 'bg (Bulgarian)'), ('bm', 'bm (Bambara)'), ('bn-bd', 'bn-BD (Bengali (Bangladesh))'), ('bn-in', 'bn-IN (Bengali (India))'), ('br', 'br (Breton)'), ('brx', 'brx (Bodo)'), ('bs', 'bs (Bosnian)'), ('ca', 'ca (Catalan)'), ('ca-valencia', 'ca-valencia (Catalan (Valencian))'), ('cak', 'cak (Kaqchikel)'), ('cs', 'cs (Czech)'), ('csb', 'csb (Kashubian)'), ('cy', 'cy (Welsh)'), ('da', 'da (Danish)'), ('dbg', 'dbg (Debug Robot)'), ('de', 'de (German)'), ('de-at', 'de-AT (German (Austria))'), ('de-ch', 'de-CH (German (Switzerland))'), ('de-de', 'de-DE (German (Germany))'), ('dsb', 'dsb (Lower Sorbian)'), ('ee', 'ee (Ewe)'), ('el', 'el (Greek)'), ('en-au', 'en-AU (English (Australian))'), ('en-ca', 'en-CA (English (Canadian))'), ('en-gb', 'en-GB (English (British))'), ('en-nz', 'en-NZ (English (New Zealand))'), ('en-us', 'en-US (English (US))'), ('en-za', 'en-ZA (English (South African))'), ('eo', 'eo (Esperanto)'), ('es', 'es (Spanish)'), ('es-ar', 'es-AR (Spanish (Argentina))'), ('es-cl', 'es-CL (Spanish (Chile))'), ('es-es', 'es-ES (Spanish (Spain))'), ('es-mx', 'es-MX (Spanish (Mexico))'), ('et', 'et (Estonian)'), ('eu', 'eu (Basque)'), ('fa', 'fa (Persian)'), ('ff', 'ff (Fulah)'), ('fi', 'fi (Finnish)'), ('fj-fj', 'fj-FJ (Fijian)'), ('fr', 'fr (French)'), ('fur-it', 'fur-IT (Friulian)'), ('fy-nl', 'fy-NL (Frisian)'), ('ga', 'ga (Irish)'), ('ga-ie', 'ga-IE (Irish)'), ('gd', 'gd (Gaelic (Scotland))'), ('gl', 'gl (Galician)'), ('gu', 'gu (Gujarati)'), ('gu-in', 'gu-IN (Gujarati (India))'), ('ha', 'ha (Hausa)'), ('he', 'he (Hebrew)'), ('hi', 'hi (Hindi)'), ('hi-in', 'hi-IN (Hindi (India))'), ('hr', 'hr (Croatian)'), ('hsb', 'hsb (Upper Sorbian)'), ('hu', 'hu (Hungarian)'), ('hy-am', 'hy-AM (Armenian)'), ('id', 'id (Indonesian)'), ('ig', 'ig (Igbo)'), ('is', 'is (Icelandic)'), ('it', 'it (Italian)'), ('ja', 'ja (Japanese)'), ('ja-jp-mac', 'ja-JP-mac (Japanese)'), ('ka', 'ka (Georgian)'), ('kk', 'kk (Kazakh)'), ('km', 'km (Khmer)'), ('kn', 'kn (Kannada)'), ('ko', 'ko (Korean)'), ('kok', 'kok (Konkani)'), ('ks', 'ks (Kashmiri)'), ('ku', 'ku (Kurdish)'), ('la', 'la (Latin)'), ('lg', 'lg (Luganda)'), ('lij', 'lij (Ligurian)'), ('ln', 'ln (Lingala)'), ('lo', 'lo (Lao)'), ('lt', 'lt (Lithuanian)'), ('lv', 'lv (Latvian)'), ('mai', 'mai (Maithili)'), ('mg', 'mg (Malagasy)'), ('mi', 'mi (Maori (Aotearoa))'), ('mk', 'mk (Macedonian)'), ('ml', 'ml (Malayalam)'), ('mn', 'mn (Mongolian)'), ('mr', 'mr (Marathi)'), ('ms', 'ms (Malay)'), ('my', 'my (Burmese)'), ('nb-no', 'nb-NO (Norwegian (Bokm\xe5l))'), ('ne-np', 'ne-NP (Nepali)'), ('nl', 'nl (Dutch)'), ('nn-no', 'nn-NO (Norwegian (Nynorsk))'), ('nr', 'nr (Ndebele, South)'), ('nso', 'nso (Northern Sotho)'), ('oc', 'oc (Occitan (Lengadocian))'), ('or', 'or (Oriya)'), ('pa', 'pa (Punjabi)'), ('pa-in', 'pa-IN (Punjabi (India))'), ('pl', 'pl (Polish)'), ('pt-br', 'pt-BR (Portuguese (Brazilian))'), ('pt-pt', 'pt-PT (Portuguese (Portugal))'), ('rm', 'rm (Romansh)'), ('ro', 'ro (Romanian)'), ('ru', 'ru (Russian)'), ('rw', 'rw (Kinyarwanda)'), ('sa', 'sa (Sanskrit)'), ('sah', 'sah (Sakha)'), ('sat', 'sat (Santali)'), ('si', 'si (Sinhala)'), ('sk', 'sk (Slovak)'), ('sl', 'sl (Slovenian)'), ('son', 'son (Songhai)'), ('sq', 'sq (Albanian)'), ('sr', 'sr (Serbian)'), ('sr-cyrl', 'sr-Cyrl (Serbian)'), ('sr-latn', 'sr-Latn (Serbian)'), ('ss', 'ss (Siswati)'), ('st', 'st (Southern Sotho)'), ('sv-se', 'sv-SE (Swedish)'), ('sw', 'sw (Swahili)'), ('ta', 'ta (Tamil)'), ('ta-in', 'ta-IN (Tamil (India))'), ('ta-lk', 'ta-LK (Tamil (Sri Lanka))'), ('te', 'te (Telugu)'), ('th', 'th (Thai)'), ('tl', 'tl (Tagalog)'), ('tn', 'tn (Tswana)'), ('tr', 'tr (Turkish)'), ('ts', 'ts (Tsonga)'), ('tsz', 'tsz (Pur\xe9pecha)'), ('tt-ru', 'tt-RU (Tatar)'), ('uk', 'uk (Ukrainian)'), ('ur', 'ur (Urdu)'), ('uz', 'uz (Uzbek)'), ('ve', 've (Venda)'), ('vi', 'vi (Vietnamese)'), ('wo', 'wo (Wolof)'), ('x-testing', 'x-testing (Testing)'), ('xh', 'xh (Xhosa)'), ('yo', 'yo (Yoruba)'), ('zh-cn', 'zh-CN (Chinese (Simplified))'), ('zh-tw', 'zh-TW (Chinese (Traditional))'), ('zu', 'zu (Zulu)')])),
                 ('snippet', models.ForeignKey(related_name='locale_set', to='base.JSONSnippet')),
             ],
-            bases=(caching.base.CachingMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='SearchProvider',
@@ -85,7 +84,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ('id',),
             },
-            bases=(caching.base.CachingMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Snippet',
@@ -114,7 +113,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ('-modified',),
             },
-            bases=(caching.base.CachingMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='SnippetLocale',
@@ -123,7 +122,7 @@ class Migration(migrations.Migration):
                 ('locale', models.CharField(default=b'en-us', max_length=32, choices=[('ach', 'ach (Acholi)'), ('af', 'af (Afrikaans)'), ('ak', 'ak (Akan)'), ('am-et', 'am-et (Amharic)'), ('an', 'an (Aragonese)'), ('ar', 'ar (Arabic)'), ('as', 'as (Assamese)'), ('ast', 'ast (Asturian)'), ('az', 'az (Azerbaijani)'), ('be', 'be (Belarusian)'), ('bg', 'bg (Bulgarian)'), ('bm', 'bm (Bambara)'), ('bn-bd', 'bn-BD (Bengali (Bangladesh))'), ('bn-in', 'bn-IN (Bengali (India))'), ('br', 'br (Breton)'), ('brx', 'brx (Bodo)'), ('bs', 'bs (Bosnian)'), ('ca', 'ca (Catalan)'), ('ca-valencia', 'ca-valencia (Catalan (Valencian))'), ('cak', 'cak (Kaqchikel)'), ('cs', 'cs (Czech)'), ('csb', 'csb (Kashubian)'), ('cy', 'cy (Welsh)'), ('da', 'da (Danish)'), ('dbg', 'dbg (Debug Robot)'), ('de', 'de (German)'), ('de-at', 'de-AT (German (Austria))'), ('de-ch', 'de-CH (German (Switzerland))'), ('de-de', 'de-DE (German (Germany))'), ('dsb', 'dsb (Lower Sorbian)'), ('ee', 'ee (Ewe)'), ('el', 'el (Greek)'), ('en-au', 'en-AU (English (Australian))'), ('en-ca', 'en-CA (English (Canadian))'), ('en-gb', 'en-GB (English (British))'), ('en-nz', 'en-NZ (English (New Zealand))'), ('en-us', 'en-US (English (US))'), ('en-za', 'en-ZA (English (South African))'), ('eo', 'eo (Esperanto)'), ('es', 'es (Spanish)'), ('es-ar', 'es-AR (Spanish (Argentina))'), ('es-cl', 'es-CL (Spanish (Chile))'), ('es-es', 'es-ES (Spanish (Spain))'), ('es-mx', 'es-MX (Spanish (Mexico))'), ('et', 'et (Estonian)'), ('eu', 'eu (Basque)'), ('fa', 'fa (Persian)'), ('ff', 'ff (Fulah)'), ('fi', 'fi (Finnish)'), ('fj-fj', 'fj-FJ (Fijian)'), ('fr', 'fr (French)'), ('fur-it', 'fur-IT (Friulian)'), ('fy-nl', 'fy-NL (Frisian)'), ('ga', 'ga (Irish)'), ('ga-ie', 'ga-IE (Irish)'), ('gd', 'gd (Gaelic (Scotland))'), ('gl', 'gl (Galician)'), ('gu', 'gu (Gujarati)'), ('gu-in', 'gu-IN (Gujarati (India))'), ('ha', 'ha (Hausa)'), ('he', 'he (Hebrew)'), ('hi', 'hi (Hindi)'), ('hi-in', 'hi-IN (Hindi (India))'), ('hr', 'hr (Croatian)'), ('hsb', 'hsb (Upper Sorbian)'), ('hu', 'hu (Hungarian)'), ('hy-am', 'hy-AM (Armenian)'), ('id', 'id (Indonesian)'), ('ig', 'ig (Igbo)'), ('is', 'is (Icelandic)'), ('it', 'it (Italian)'), ('ja', 'ja (Japanese)'), ('ja-jp-mac', 'ja-JP-mac (Japanese)'), ('ka', 'ka (Georgian)'), ('kk', 'kk (Kazakh)'), ('km', 'km (Khmer)'), ('kn', 'kn (Kannada)'), ('ko', 'ko (Korean)'), ('kok', 'kok (Konkani)'), ('ks', 'ks (Kashmiri)'), ('ku', 'ku (Kurdish)'), ('la', 'la (Latin)'), ('lg', 'lg (Luganda)'), ('lij', 'lij (Ligurian)'), ('ln', 'ln (Lingala)'), ('lo', 'lo (Lao)'), ('lt', 'lt (Lithuanian)'), ('lv', 'lv (Latvian)'), ('mai', 'mai (Maithili)'), ('mg', 'mg (Malagasy)'), ('mi', 'mi (Maori (Aotearoa))'), ('mk', 'mk (Macedonian)'), ('ml', 'ml (Malayalam)'), ('mn', 'mn (Mongolian)'), ('mr', 'mr (Marathi)'), ('ms', 'ms (Malay)'), ('my', 'my (Burmese)'), ('nb-no', 'nb-NO (Norwegian (Bokm\xe5l))'), ('ne-np', 'ne-NP (Nepali)'), ('nl', 'nl (Dutch)'), ('nn-no', 'nn-NO (Norwegian (Nynorsk))'), ('nr', 'nr (Ndebele, South)'), ('nso', 'nso (Northern Sotho)'), ('oc', 'oc (Occitan (Lengadocian))'), ('or', 'or (Oriya)'), ('pa', 'pa (Punjabi)'), ('pa-in', 'pa-IN (Punjabi (India))'), ('pl', 'pl (Polish)'), ('pt-br', 'pt-BR (Portuguese (Brazilian))'), ('pt-pt', 'pt-PT (Portuguese (Portugal))'), ('rm', 'rm (Romansh)'), ('ro', 'ro (Romanian)'), ('ru', 'ru (Russian)'), ('rw', 'rw (Kinyarwanda)'), ('sa', 'sa (Sanskrit)'), ('sah', 'sah (Sakha)'), ('sat', 'sat (Santali)'), ('si', 'si (Sinhala)'), ('sk', 'sk (Slovak)'), ('sl', 'sl (Slovenian)'), ('son', 'son (Songhai)'), ('sq', 'sq (Albanian)'), ('sr', 'sr (Serbian)'), ('sr-cyrl', 'sr-Cyrl (Serbian)'), ('sr-latn', 'sr-Latn (Serbian)'), ('ss', 'ss (Siswati)'), ('st', 'st (Southern Sotho)'), ('sv-se', 'sv-SE (Swedish)'), ('sw', 'sw (Swahili)'), ('ta', 'ta (Tamil)'), ('ta-in', 'ta-IN (Tamil (India))'), ('ta-lk', 'ta-LK (Tamil (Sri Lanka))'), ('te', 'te (Telugu)'), ('th', 'th (Thai)'), ('tl', 'tl (Tagalog)'), ('tn', 'tn (Tswana)'), ('tr', 'tr (Turkish)'), ('ts', 'ts (Tsonga)'), ('tsz', 'tsz (Pur\xe9pecha)'), ('tt-ru', 'tt-RU (Tatar)'), ('uk', 'uk (Ukrainian)'), ('ur', 'ur (Urdu)'), ('uz', 'uz (Uzbek)'), ('ve', 've (Venda)'), ('vi', 'vi (Vietnamese)'), ('wo', 'wo (Wolof)'), ('x-testing', 'x-testing (Testing)'), ('xh', 'xh (Xhosa)'), ('yo', 'yo (Yoruba)'), ('zh-cn', 'zh-CN (Chinese (Simplified))'), ('zh-tw', 'zh-TW (Chinese (Traditional))'), ('zu', 'zu (Zulu)')])),
                 ('snippet', models.ForeignKey(related_name='locale_set', to='base.Snippet')),
             ],
-            bases=(caching.base.CachingMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='SnippetTemplate',
@@ -134,7 +133,7 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
             ],
-            bases=(caching.base.CachingMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='SnippetTemplateVariable',
@@ -148,7 +147,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ('name',),
             },
-            bases=(caching.base.CachingMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='TargetedCountry',
@@ -159,7 +158,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ('id',),
             },
-            bases=(caching.base.CachingMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='UploadedFile',

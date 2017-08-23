@@ -63,6 +63,7 @@ INSTALLED_APPS = [
 for app in config('EXTRA_APPS', default='', cast=Csv()):
     INSTALLED_APPS.append(app)
 
+CSRF_USE_SESSIONS = True
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
@@ -72,7 +73,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'session_csrf.CsrfMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -98,10 +98,7 @@ WSGI_APPLICATION = 'snippets.wsgi.application'
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 DATABASES = {
-    'default': config(
-        'DATABASE_URL',
-        cast=dj_database_url.parse
-    )
+    'default': config('DATABASE_URL', cast=dj_database_url.parse)
 }
 
 
@@ -169,7 +166,6 @@ TEMPLATES = [
             'match_extension': '.jinja',
             'newstyle_gettext': True,
             'context_processors': [
-                'session_csrf.context_processor',
                 'snippets.base.context_processors.settings',
                 'snippets.base.context_processors.i18n',
             ],
@@ -187,7 +183,6 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
-                'session_csrf.context_processor',
                 'snippets.base.context_processors.settings',
             ],
         }
@@ -223,11 +218,11 @@ SITE_URL = config('SITE_URL', default='')
 CACHES = {
     'default': config('CACHE_URL', default='locmem://', cast=django_cache_url.parse),
     'product-details': {
-        'BACKEND': 'snippets.base.cache.SimpleDictCache',
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'product-details',
         'OPTIONS': {
             'MAX_ENTRIES': 200,  # currently 104 json files
-            'CULL_FREQUENCY': 4,  # 1/4 entries deleted if max reached
+            'CULL_FREQUENCY':  4,  # 1/4 entries deleted if max reached
         }
 
     }

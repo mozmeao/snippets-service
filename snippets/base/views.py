@@ -74,7 +74,7 @@ class SnippetIndexView(IndexView):
     template_name = 'base/index.jinja'
 
     def get(self, request, *args, **kwargs):
-        self.snippets = (Snippet.cached_objects
+        self.snippets = (Snippet.objects
                          .filter(disabled=False)
                          .prefetch_related('locales', 'countries',
                                            'exclude_from_search_providers'))
@@ -86,7 +86,7 @@ class JSONSnippetIndexView(IndexView):
     template_name = 'base/index-json.jinja'
 
     def get(self, request, *args, **kwargs):
-        self.snippets = (JSONSnippet.cached_objects
+        self.snippets = (JSONSnippet.objects
                          .filter(disabled=False)
                          .prefetch_related('locales', 'countries'))
         self.snippetsfilter = JSONSnippetFilter(request.GET, self.snippets)
@@ -116,7 +116,7 @@ def fetch_pregenerated_snippets(request, **kwargs):
 def fetch_render_snippets(request, **kwargs):
     """Fetch snippets for the client and render them immediately."""
     client = Client(**kwargs)
-    matching_snippets = (Snippet.cached_objects
+    matching_snippets = (Snippet.objects
                          .filter(disabled=False)
                          .match_client(client)
                          .order_by('priority')
@@ -165,7 +165,7 @@ def fetch_snippets(request, **kwargs):
 def fetch_json_snippets(request, **kwargs):
     statsd.incr('serve.json_snippets')
     client = Client(**kwargs)
-    matching_snippets = (JSONSnippet.cached_objects
+    matching_snippets = (JSONSnippet.objects
                          .filter(disabled=False)
                          .match_client(client)
                          .order_by('priority')

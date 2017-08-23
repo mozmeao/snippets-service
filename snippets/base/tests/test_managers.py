@@ -8,7 +8,7 @@ from snippets.base.util import first
 
 
 class ClientMatchRuleQuerySetTests(TestCase):
-    manager = ClientMatchRule.cached_objects
+    manager = ClientMatchRule.objects
 
     @patch.object(ClientMatchRule, 'matches', autospec=True)
     def test_basic(self, matches):
@@ -34,7 +34,7 @@ class ClientMatchRuleQuerySetTests(TestCase):
 
 
 class SnippetQuerySetTests(TestCase):
-    manager = Snippet.cached_objects
+    manager = Snippet.objects
 
     def test_filter_by_available(self):
         snippet_match_1 = SnippetFactory.create()
@@ -70,7 +70,7 @@ class SnippetManagerTests(TestCase):
 
     def _assert_client_matches_snippets(self, client_attrs, snippets):
         client = self._build_client(**client_attrs)
-        matched_snippets = Snippet.cached_objects.match_client(client)
+        matched_snippets = Snippet.objects.match_client(client)
         self.assertEqual(set(matched_snippets), set(snippets))
 
     def test_match_client_base(self):
@@ -93,7 +93,7 @@ class SnippetManagerTests(TestCase):
                               client_match_rules=[client_match_rule_fail,
                                                   client_match_rule_pass_2])
         client = self._build_client(channel='nightly')
-        snippets = Snippet.cached_objects.match_client(client)
+        snippets = Snippet.objects.match_client(client)
         self.assertEqual(set(snippets), set([snippet_1, snippet_2, snippet_3]))
 
     @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
@@ -194,7 +194,7 @@ class SnippetManagerTests(TestCase):
         """
         client = self._build_client()
         with patch('snippets.base.managers.first', wraps=first) as first_mock:
-            Snippet.cached_objects.match_client(client)
+            Snippet.objects.match_client(client)
         first_mock.assert_called_with(['test-firefox'], client.startpage_version.startswith)
 
     @patch('snippets.base.models.FENNEC_STARTPAGE_VERSIONS', ['test-fennec'])
@@ -205,7 +205,7 @@ class SnippetManagerTests(TestCase):
         """
         client = self._build_client(name='fennec')
         with patch('snippets.base.managers.first', wraps=first) as first_mock:
-            JSONSnippet.cached_objects.match_client(client)
+            JSONSnippet.objects.match_client(client)
         first_mock.assert_called_with(['test-fennec'], client.startpage_version.startswith)
 
     def test_default_is_same_as_nightly(self):
@@ -217,10 +217,10 @@ class SnippetManagerTests(TestCase):
         SnippetFactory.create(on_beta=True)
 
         nightly_client = self._build_client(channel='nightly')
-        nightly_snippets = Snippet.cached_objects.match_client(nightly_client)
+        nightly_snippets = Snippet.objects.match_client(nightly_client)
 
         default_client = self._build_client(channel='default')
-        default_snippets = Snippet.cached_objects.match_client(default_client)
+        default_snippets = Snippet.objects.match_client(default_client)
 
         # Assert that both the snippets returned from nightly and from default
         # are the same snippets. Just `nightly_snippet` in this case.
@@ -236,10 +236,10 @@ class SnippetManagerTests(TestCase):
         SnippetFactory.create(on_release=False, on_beta=True)
 
         release_client = self._build_client(channel='release')
-        release_snippets = Snippet.cached_objects.match_client(release_client)
+        release_snippets = Snippet.objects.match_client(release_client)
 
         esr_client = self._build_client(channel='esr')
-        esr_snippets = Snippet.cached_objects.match_client(esr_client)
+        esr_snippets = Snippet.objects.match_client(esr_client)
 
         # Assert that both the snippets returned from release and from esr
         # are the same snippets. Just `release_snippet` in this case.
