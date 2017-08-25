@@ -21,7 +21,7 @@
    margin-top: -8px;
    height: 16px;
    width: 16px;
-   background-image: url("chrome://browser/skin/sidebar/close.svg");
+   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMC43OCAxMC43OCI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiM0ZDRkNGQ7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5jbG9zZTwvdGl0bGU+PGcgaWQ9IkxheWVyXzIiIGRhdGEtbmFtZT0iTGF5ZXIgMiI+PGcgaWQ9IkxheWVyXzItMiIgZGF0YS1uYW1lPSJMYXllciAyIj48cG9seWdvbiBjbGFzcz0iY2xzLTEiIHBvaW50cz0iMTAuNzggMS4zMyA5LjQ1IDAgNS4zOSA0LjA2IDEuMzMgMCAwIDEuMzMgNC4wNiA1LjM5IDAgOS40NSAxLjMzIDEwLjc4IDUuMzkgNi43MiA5LjQ1IDEwLjc4IDEwLjc4IDkuNDUgNi43MiA1LjM5IDEwLjc4IDEuMzMiLz48L2c+PC9nPjwvc3ZnPg==");
    background-repeat: no-repeat;
    background-size: 16px 16px;
    background-color: transparent;
