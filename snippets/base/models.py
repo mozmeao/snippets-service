@@ -43,6 +43,10 @@ SNIPPET_CSS_TEMPLATE_HASH = hashfile(
     os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet.css'))
 SNIPPET_FETCH_TEMPLATE_HASH = hashfile(
     os.path.join(settings.ROOT, 'snippets/base/templates/base/fetch_snippets.jinja'))
+SNIPPET_JS_AS_TEMPLATE_HASH = hashfile(
+    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_as.js'))
+SNIPPET_CSS_AS_TEMPLATE_HASH = hashfile(
+    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_as.css'))
 SNIPPET_FETCH_AS_TEMPLATE_HASH = hashfile(
     os.path.join(settings.ROOT, 'snippets/base/templates/base/fetch_snippets_as.jinja'))
 
@@ -149,6 +153,8 @@ class SnippetBundle(object):
             SNIPPET_JS_TEMPLATE_HASH,
             SNIPPET_CSS_TEMPLATE_HASH,
             SNIPPET_FETCH_TEMPLATE_HASH,
+            SNIPPET_JS_AS_TEMPLATE_HASH,
+            SNIPPET_CSS_AS_TEMPLATE_HASH,
             SNIPPET_FETCH_AS_TEMPLATE_HASH,
         ])
 
