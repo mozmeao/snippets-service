@@ -226,7 +226,7 @@ class SnippetBundle(object):
         if isinstance(bundle_content, unicode):
             bundle_content = bundle_content.encode('utf-8')
         default_storage.save(self.filename, ContentFile(bundle_content))
-        cache.set(self.cache_key, True, settings.SNIPPET_BUNDLE_TIMEOUT)
+        cache.set(self.cache_key, True, None)
 
 
 class SnippetTemplate(CachingMixin, models.Model):
