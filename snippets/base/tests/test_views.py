@@ -2,7 +2,6 @@ import json
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 
@@ -56,6 +55,7 @@ class FetchRenderSnippetsTests(TestCase):
         self.assertTemplateUsed(response, 'base/fetch_snippets.jinja')
         self.assertEqual(snippets_json, response.context['snippets_json'])
         self.assertEqual(response.context['locale'], 'en-US')
+        self.assertTrue(response.content)
 
     @patch('snippets.base.views.Client', wraps=Client)
     def test_client_construction(self, ClientMock):
@@ -88,13 +88,11 @@ class FetchRenderSnippetsTests(TestCase):
         """
         request = self.factory.get('/')
 
-        with patch.object(views, 'render') as mock_render:
-            mock_render.return_value = HttpResponse('asdf')
+        with patch('snippets.base.views.SnippetBundle') as SnippetBundleMock:
+            SnippetBundleMock.return_value.expired = False
+            SnippetBundleMock.return_value.contents = 'asdf'
             response = views.fetch_snippets(request, **self.client_kwargs)
-
-            # sha256 of 'asdf'
-            expected = 'f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b'
-            self.assertEqual(response['ETag'], expected)
+        self.assertEqual(response['ETag'], 'f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b')  # noqa
 
     def test_activity_stream(self):
         params = ['5'] + self.client_params[1:]
@@ -368,56 +366,6 @@ class FetchPregeneratedSnippetsTests(TestCase):
             'distribution': 'default',
             'distribution_version': 'default_version',
         }
-
-    def test_normal(self):
-        with patch.object(views, 'SnippetBundle') as SnippetBundle:
-            bundle = SnippetBundle.return_value
-            bundle.url = '/foo/bar'
-            bundle.expired = False
-            response = views.fetch_pregenerated_snippets(self.request, **self.client_kwargs)
-
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], '/foo/bar')
-
-        # Check for correct client.
-        self.assertEqual(SnippetBundle.call_args[0][0].locale, 'en-US')
-
-        # Do not generate bundle when not expired.
-        self.assertTrue(not SnippetBundle.return_value.generate.called)
-
-    def test_regenerate(self):
-        """If the bundle has expired, re-generate it."""
-        with patch.object(views, 'SnippetBundle') as SnippetBundle:
-            bundle = SnippetBundle.return_value
-            bundle.url = '/foo/bar'
-            bundle.expired = True
-            response = views.fetch_pregenerated_snippets(self.request, **self.client_kwargs)
-
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], '/foo/bar')
-
-        # Since the bundle was expired, ensure it was re-generated.
-        self.assertTrue(SnippetBundle.return_value.generate.called)
-
-
-class FetchSnippetsTests(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.request = self.factory.get('/')
-
-    @override_settings(SERVE_SNIPPET_BUNDLES=False)
-    def test_flag_off(self):
-        with patch.object(views, 'fetch_render_snippets') as fetch_render_snippets:
-            self.assertEqual(views.fetch_snippets(self.request, foo='bar'),
-                             fetch_render_snippets.return_value)
-            fetch_render_snippets.assert_called_with(self.request, foo='bar')
-
-    @override_settings(SERVE_SNIPPET_BUNDLES=True)
-    def test_flag_on(self):
-        with patch.object(views, 'fetch_pregenerated_snippets') as fetch_pregenerated_snippets:
-            self.assertEqual(views.fetch_snippets(self.request, foo='bar'),
-                             fetch_pregenerated_snippets.return_value)
-            fetch_pregenerated_snippets.assert_called_with(self.request, foo='bar')
 
 
 class HealthzViewTests(TestCase):
