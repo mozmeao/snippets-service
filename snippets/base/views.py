@@ -11,7 +11,7 @@ from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpRespo
 from django.shortcuts import get_object_or_404, render
 from django.utils.cache import patch_vary_headers
 from django.utils.functional import lazy
-from django.views.generic import TemplateView, View
+from django.views.generic import TemplateView
 from django.views.decorators.cache import cache_control, cache_page
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -23,14 +23,14 @@ from product_details.version_compare import version_list
 from raven.contrib.django.models import client as sentry_client
 
 from snippets.base.decorators import access_control
-from snippets.base.encoders import ActiveSnippetsEncoder, JSONSnippetEncoder
+from snippets.base.encoders import JSONSnippetEncoder
 from snippets.base.models import Client, JSONSnippet, Snippet, SnippetBundle, SnippetTemplate
 from snippets.base.util import get_object_or_none
 
 
 def _http_max_age():
     return getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 90)
-HTTP_MAX_AGE = lazy(_http_max_age, str)()
+HTTP_MAX_AGE = lazy(_http_max_age, str)()  # noqa
 
 
 class SnippetFilter(django_filters.FilterSet):
@@ -74,7 +74,7 @@ class SnippetIndexView(IndexView):
     template_name = 'base/index.jinja'
 
     def get(self, request, *args, **kwargs):
-        self.snippets = (Snippet.cached_objects
+        self.snippets = (Snippet.objects
                          .filter(disabled=False)
                          .prefetch_related('locales', 'countries',
                                            'exclude_from_search_providers'))
@@ -86,7 +86,7 @@ class JSONSnippetIndexView(IndexView):
     template_name = 'base/index-json.jinja'
 
     def get(self, request, *args, **kwargs):
-        self.snippets = (JSONSnippet.cached_objects
+        self.snippets = (JSONSnippet.objects
                          .filter(disabled=False)
                          .prefetch_related('locales', 'countries'))
         self.snippetsfilter = JSONSnippetFilter(request.GET, self.snippets)
@@ -116,7 +116,7 @@ def fetch_pregenerated_snippets(request, **kwargs):
 def fetch_render_snippets(request, **kwargs):
     """Fetch snippets for the client and render them immediately."""
     client = Client(**kwargs)
-    matching_snippets = (Snippet.cached_objects
+    matching_snippets = (Snippet.objects
                          .filter(disabled=False)
                          .match_client(client)
                          .order_by('priority')
@@ -165,7 +165,7 @@ def fetch_snippets(request, **kwargs):
 def fetch_json_snippets(request, **kwargs):
     statsd.incr('serve.json_snippets')
     client = Client(**kwargs)
-    matching_snippets = (JSONSnippet.cached_objects
+    matching_snippets = (JSONSnippet.objects
                          .filter(disabled=False)
                          .match_client(client)
                          .order_by('priority')
@@ -234,14 +234,6 @@ def show_snippet(request, snippet_id):
         'preview': True,
         'current_firefox_version': current_firefox_version,
     })
-
-
-class ActiveSnippetsView(View):
-    def get(self, request):
-        snippets = (list(Snippet.cached_objects.filter(disabled=False)) +
-                    list(JSONSnippet.cached_objects.filter(disabled=False)))
-        return HttpResponse(json.dumps(snippets, cls=ActiveSnippetsEncoder),
-                            content_type='application/json')
 
 
 @csrf_exempt

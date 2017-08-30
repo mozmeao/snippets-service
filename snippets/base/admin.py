@@ -132,7 +132,9 @@ class BaseSnippetAdmin(VersionAdmin, DefaultFilterMixIn, admin.ModelAdmin):
     def change_view(self, request, *args, **kwargs):
         if request.method == 'POST' and '_saveasnew' in request.POST:
             # Always saved cloned snippets as disabled.
-            request.POST['disabled'] = u'on'
+            post_data = request.POST.copy()
+            post_data['disabled'] = u'on'
+            request.POST = post_data
         return super(BaseSnippetAdmin, self).change_view(request, *args, **kwargs)
 
     def locale_list(self, obj):

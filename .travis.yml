@@ -26,4 +26,4 @@ script:
   - docker run ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} flake8 snippets
   # Wait mysql to initialize.
   - docker run --link mariadb:db -e CHECK_PORT=3306 -e CHECK_HOST=db giorgos/takis
-  - docker run --env-file .env --link mariadb:db ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} ./manage.py test
+  - docker run --env-file .env --link mariadb:db ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} ./manage.py test --parallel

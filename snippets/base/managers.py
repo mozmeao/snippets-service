@@ -1,14 +1,13 @@
 from datetime import datetime
 
 from django.db.models import Manager
-
-from caching.base import CachingQuerySet
+from django.db.models.query import QuerySet
 
 from snippets.base import LANGUAGE_VALUES
 from snippets.base.util import first
 
 
-class ClientMatchRuleQuerySet(CachingQuerySet):
+class ClientMatchRuleQuerySet(QuerySet):
     def evaluate(self, client):
         passed_rules, failed_rules = [], []
         for rule in self:
@@ -24,7 +23,7 @@ class ClientMatchRuleManager(Manager):
         return ClientMatchRuleQuerySet(self.model)
 
 
-class SnippetQuerySet(CachingQuerySet):
+class SnippetQuerySet(QuerySet):
     def filter_by_available(self):
         """Datetime filtering of snippets.
 
@@ -84,7 +83,7 @@ class SnippetQuerySet(CachingQuerySet):
             filtering = {'snippet__in': snippets}
 
         # Filter based on ClientMatchRules
-        passed_rules, failed_rules = (ClientMatchRule.cached_objects
+        passed_rules, failed_rules = (ClientMatchRule.objects
                                       .filter(**filtering)
                                       .distinct()
                                       .evaluate(client))

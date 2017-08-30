@@ -2,9 +2,9 @@ hashin==0.4.1 \
     --hash=sha256:b26ace086e24d84152a7e6d7d12b336383e835110d5e2e30dfbf22fa336a2e58 \
     --hash=sha256:e0266d240d589f2419ff669528934db5876d34a19f516fa8b39c42d8221c0591 \
     --hash=sha256:745623e60c649a6092cdbbb62b758e89654f4d69ec88ad76be8c20685f8ea1ab
-Django==1.8.18 \
-    --hash=sha256:d8e2fd119756ab10b43a31052c3c8efbc262064b81eecb7871372de4d37b1a94 \
-    --hash=sha256:c7611cdd5e2539a443b7960c7cafd867d986c2720a1b44808deaa60ce3da50c7
+Django==1.11.4 \
+    --hash=sha256:6fd30e05dc9af265f7d7d10cfb0efa013e6236db0853c9f47c74c585587c5a57 \
+    --hash=sha256:abe86e67dda9897a1536a727ed57dbefb5a42b41943be3b116fe3edab4c07bb2
 dj-database-url==0.4.2 \
     --hash=sha256:a6832d8445ee9d788c5baa48aef8130bf61fdc442f7d9a548424d25cd85c9f08 \
     --hash=sha256:e16d94c382ea0564c48038fa7fe8d9c890ef1ab1a8ec4cb48e732c124b9482fd
@@ -13,8 +13,9 @@ MySQL-python==1.2.5 \
     --hash=sha256:811040b647e5d5686f84db415efd697e6250008b112b6909ba77ac059e140c74
 python-decouple==3.0 \
     --hash=sha256:99834c9ff7ce5c5b2f4a18bc0880753e54ea3aaabc3cfb16961a92d5046665df
-Jinja2==2.7.3 \
-    --hash=sha256:2e24ac5d004db5714976a04ac0e80c6df6e47e98c354cb2c0d82f8879d4f8fdb
+Jinja2==2.9.6 \
+    --hash=sha256:2231bace0dfd8d2bf1e5d7e41239c06c9e0ded46e70cc1094a0aa64b0afeb054 \
+    --hash=sha256:ddaa01a212cd6d641401cb01b605f4a4d9f37bfc93043d7f760ec70fb99ff9ff
 MarkupSafe==0.23 \
     --hash=sha256:a4ec1aff59b95a14b45eb2e23761a0179e98319da5a7eb76b56ea8cdc7b871c3
 gunicorn==19.7.1 \
@@ -42,12 +43,6 @@ Pygments==2.0.2 \
 django-jinja==2.3.1 \
     --hash=sha256:ebfde44cb716e57a9cdff6c1a4935fc49c7419ea4cd0b2b89bcecc696b9c0c86 \
     --hash=sha256:5e826a0cce967f40e6fdc037ea23667a2d3cd072807c4c87ffcc010b3c59121f
-django-session-csrf==0.5 \
-    --hash=sha256:44e4639ec057a6b6a9dddb869d4e3a4818fc9278ec490cce39aef08440592a93
-py-bcrypt==0.4 \
-    --hash=sha256:5fa13bce551468350d66c4883694850570f3da28d6866bb638ba44fe5eabda78
-django-cache-machine==0.9.1 \
-    --hash=sha256:b377709bfa60ca483645c29c77a673550cba4267fa2e06eee1a0f2f634619506
 django-ace==1.0.3 \
     --hash=sha256:770f523da854ba0fb89a67ec70a8d26cc6524cf1d45e3d82da37772e97ca9ab1
 bleach==1.4.2 \
@@ -153,9 +148,9 @@ msgpack-python==0.4.8 \
 django-redis==4.8.0 \
     --hash=sha256:5229da5b07ccb8d3e3e9ee098c0b7c03e20eba48634bc456697dd73d62c68b19 \
     --hash=sha256:9660332cf9de5689a7ebbe0c623c4a0de79e0916a6ae867b5d0b94759bba46c9
-django_filter==0.11.0 \
-    --hash=sha256:7d17547b65216cc5c6fbc04aee55088ccd5917c0775304d96f7017c26c789cd7 \
-    --hash=sha256:00cc47935afbbd83260fdd283b0aa790e658d2a71922049f6e467dca8a124537
+django_filter==1.0.4 \
+    --hash=sha256:e44620d4e707beaff7396ac8df765dc015a07467df813b9c1663fe4017934b58 \
+    --hash=sha256:6ef1611aeacfda8f13a075a992ff65687afbd5cc8fcb0f3f1563a9ad4fe2d1b0
 argparse==1.4.0 --hash=sha256:c31647edb69fd3d465a847ea3157d37bed1f95f19760b11a47aa91c04b666314
 cffi==1.10.0 \
     --hash=sha256:446699c10f3c390633d0722bc19edbc7ac4b94761918a4a4f7908a24e86ebbd0 \
@@ -252,7 +247,9 @@ pyasn1==0.3.1 \
 pycparser==2.18 \
     --hash=sha256:99a8ca03e29851d96616ad0404b4aad7d9ee16f25c9f9708a11faf2810f7b226
 pycrypto==2.6.1 --hash=sha256:f2ce1e989b272cfcb677616763e0a2e7ec659effa67a88aa92b3a65528f60a3c
-pyOpenSSL==0.15.1 --hash=sha256:88e45e6bb25dfed272a1ef2e728461d44b634c2cd689e989b6e56a349c5a3ae5
+pyOpenSSL==17.2.0 \
+    --hash=sha256:c8959e441c2d85d646f3d6e9024ec02b2fc8dda92596e44ce3460b3a476bc694 \
+    --hash=sha256:5d617ce36b07c51f330aa63b83bf7f25c40a0e95958876d54d1982f8c91b4834
 pysaml2==2.2.0 --hash=sha256:c769a150190a615be213e10eb421f838933ed78a47ef9ff49a6a91aec7ed8f28
 python-memcached==1.58 \
     --hash=sha256:2775829cb54b9e4c5b3bbd8028680f0c0ab695db154b9c46f0f074ff97540eb6
@@ -370,3 +367,6 @@ certifi==2017.7.27.1 \
 urllib3==1.22 \
     --hash=sha256:06330f386d6e4b195fbfc736b297f58c5a892e4440e54d294d7004e3a9bbea1b \
     --hash=sha256:cc44da8e1145637334317feebd728bd869a35285b93cbb4cca2577da7e62db4f
+tblib==1.3.2 \
+    --hash=sha256:9bae4b8c44b06af0e114bfc4d5f6aa3eafd2119af5a4dcab34f51f1665f16c59 \
+    --hash=sha256:436e4200e63d92316551179dc540906652878df4ff39b43db30fcf6400444fe7

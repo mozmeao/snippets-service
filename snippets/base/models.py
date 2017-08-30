@@ -24,7 +24,6 @@ from django.template.loader import render_to_string
 from django.utils.encoding import python_2_unicode_compatible
 
 import django_mysql.models
-from caching.base import CachingManager, CachingMixin
 from jinja2 import Markup
 from jinja2.utils import LRUCache
 from product_details import product_details
@@ -191,7 +190,7 @@ class SnippetBundle(object):
     def snippets(self):
         # Lazy-load snippets on first access.
         if self._snippets is None:
-            self._snippets = (Snippet.cached_objects
+            self._snippets = (Snippet.objects
                               .filter(disabled=False)
                               .match_client(self.client)
                               .order_by('priority')
@@ -229,7 +228,7 @@ class SnippetBundle(object):
         cache.set(self.cache_key, True, None)
 
 
-class SnippetTemplate(CachingMixin, models.Model):
+class SnippetTemplate(models.Model):
     """
     A template for the body of a snippet. Can have multiple variables that the
     snippet will fill in.
@@ -245,7 +244,6 @@ class SnippetTemplate(CachingMixin, models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     objects = models.Manager()
-    cached_objects = CachingManager()
 
     def render(self, ctx):
         ctx.setdefault('snippet_id', 0)
@@ -265,7 +263,7 @@ class SnippetTemplate(CachingMixin, models.Model):
         ordering = ('-priority', 'name')
 
 
-class SnippetTemplateVariable(CachingMixin, models.Model):
+class SnippetTemplateVariable(models.Model):
     """
     A variable for a template that an individual snippet can fill in with its
     own content.
@@ -290,7 +288,7 @@ class SnippetTemplateVariable(CachingMixin, models.Model):
         ordering = ('name',)
 
 
-class ClientMatchRule(CachingMixin, models.Model):
+class ClientMatchRule(models.Model):
     """Defines a rule that matches a snippet to certain clients."""
     description = models.CharField(max_length=255, unique=True)
     is_exclusion = models.BooleanField(default=False)
@@ -309,8 +307,7 @@ class ClientMatchRule(CachingMixin, models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    objects = models.Manager()
-    cached_objects = ClientMatchRuleManager()
+    objects = ClientMatchRuleManager()
 
     class Meta:
         ordering = ('description',)
@@ -349,17 +346,18 @@ class SnippetBaseModel(django_mysql.models.Model):
             datetime.strftime(datetime.now(), '%Y.%m.%d %H:%M:%S'))
         snippet_copy.save()
 
-        for field in self._meta.get_all_field_names():
-            if isinstance(getattr(self, field), Manager):
-                manager = getattr(self, field)
+        for field in self._meta.get_fields():
+            attr = getattr(self, field.name)
+            if isinstance(attr, Manager):
+                manager = attr
                 if manager.__class__.__name__ == 'RelatedManager':
                     for itm in manager.all():
                         itm_copy = copy.copy(itm)
                         itm_copy.id = None
-                        getattr(snippet_copy, field).add(itm_copy)
+                        getattr(snippet_copy, field.name).add(itm_copy)
                 elif manager.__class__.__name__ == 'ManyRelatedManager':
                     for snippet in manager.all():
-                        getattr(snippet_copy, field).add(snippet)
+                        getattr(snippet_copy, field.name).add(snippet)
 
         return snippet_copy
 
@@ -367,7 +365,7 @@ class SnippetBaseModel(django_mysql.models.Model):
         abstract = True
 
 
-class Snippet(CachingMixin, SnippetBaseModel):
+class Snippet(SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
     template = models.ForeignKey(SnippetTemplate)
     data = models.TextField(default='{}', validators=[validate_xml_variables])
@@ -424,8 +422,7 @@ class Snippet(CachingMixin, SnippetBaseModel):
         }
     )
 
-    objects = models.Manager()
-    cached_objects = SnippetManager()
+    objects = SnippetManager()
 
     class Meta:
         ordering = ('-modified',)
@@ -508,7 +505,7 @@ class Snippet(CachingMixin, SnippetBaseModel):
         return super(Snippet, self).save(*args, **kwargs)
 
 
-class JSONSnippet(CachingMixin, SnippetBaseModel):
+class JSONSnippet(SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
     priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)
@@ -542,8 +539,7 @@ class JSONSnippet(CachingMixin, SnippetBaseModel):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    objects = models.Manager()
-    cached_objects = SnippetManager()
+    objects = SnippetManager()
 
     class Meta:
         ordering = ('-modified',)
@@ -596,11 +592,9 @@ class UploadedFile(models.Model):
         )
 
 
-class SearchProvider(CachingMixin, models.Model):
+class SearchProvider(models.Model):
     name = models.CharField(max_length=255, unique=True)
     identifier = models.CharField(max_length=255)
-
-    objects = CachingManager()
 
     def __unicode__(self):
         return self.name
@@ -610,12 +604,10 @@ class SearchProvider(CachingMixin, models.Model):
 
 
 @python_2_unicode_compatible
-class TargetedCountry(CachingMixin, models.Model):
+class TargetedCountry(models.Model):
     code = models.CharField('Geolocation Country', max_length=16, unique=True)
     name = models.CharField(max_length=100)
     priority = models.BooleanField(default=False)
-
-    objects = CachingManager()
 
     def __str__(self):
         return u'{0} ({1})'.format(self.name, self.code)

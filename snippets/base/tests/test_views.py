@@ -420,24 +420,6 @@ class FetchSnippetsTests(TestCase):
             fetch_pregenerated_snippets.assert_called_with(self.request, foo='bar')
 
 
-class ActiveSnippetsViewTests(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.request = self.factory.get('/')
-
-    def test_base(self):
-        snippets = SnippetFactory.create_batch(2)
-        jsonsnippets = JSONSnippetFactory.create_batch(2)
-        SnippetFactory.create(disabled=True)
-        JSONSnippetFactory.create(disabled=True)
-        response = views.ActiveSnippetsView.as_view()(self.request)
-        self.assertEqual(response.get('content-type'), 'application/json')
-        data = json.loads(response.content)
-        self.assertEqual(
-            set([snippets[0].id, snippets[1].id, jsonsnippets[0].id, jsonsnippets[1].id]),
-            set([x['id'] for x in data]))
-
-
 class HealthzViewTests(TestCase):
     def test_ok(self):
         SnippetFactory.create()

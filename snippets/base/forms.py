@@ -5,7 +5,6 @@ from collections import defaultdict
 from django import forms
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from product_details import product_details
@@ -47,33 +46,28 @@ class TemplateSelect(forms.Select):
     <option> element detailing the template variables available in the
     corresponding template.
     """
-    def render(self, *args, **kwargs):
-        # Retrieve data about the currently available template variables from
-        # the database prior to rendering the options.
+    def __init__(self, *args, **kwargs):
         self.variables_for = defaultdict(list)
-        for variable in SnippetTemplateVariable.objects.all():
-            self.variables_for[variable.template.id].append({
-                'name': variable.name,
-                'type': variable.type,
-                'description': variable.description,
-            })
+        return super(TemplateSelect, self).__init__(*args, **kwargs)
 
-        return super(TemplateSelect, self).render(*args, **kwargs)
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        if not self.variables_for:
+            # We can't use the orm in init without having a fully working
+            # database which breaks management commands unrelated to the
+            # database like collectstatic.
+            for variable in SnippetTemplateVariable.objects.all():
+                self.variables_for[variable.template.id].append({
+                    'name': variable.name,
+                    'type': variable.type,
+                    'description': variable.description,
+                })
 
-    def render_option(self, selected_choices, option_value, option_label):
-        output = super(TemplateSelect, self).render_option(
-            selected_choices, option_value, option_label)
+        data = super(TemplateSelect, self).create_option(name, value, label, selected,
+                                                         index, subindex, attrs)
+        if value in self.variables_for:
+            data['attrs']['data-variables'] = json.dumps(self.variables_for[value])
 
-        # Attach a list of template variables for the template this option
-        # represents as a data attribute.
-        try:
-            attr_value = json.dumps(self.variables_for[int(option_value)])
-            attr = 'data-variables="{0}"'.format(escape(attr_value))
-            output = output.replace('<option', '<option {0}'.format(attr))
-        except ValueError:
-            pass  # Value wasn't an int, no need for an attribute.
-
-        return mark_safe(output)
+        return data
 
 
 class TemplateDataWidget(forms.TextInput):
