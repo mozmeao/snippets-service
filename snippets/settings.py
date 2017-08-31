@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django_mysql',
     'reversion',
     'raven.contrib.django.raven_compat',
+    'cachalot',
 
     # Django apps
     'django.contrib.admin',
@@ -225,6 +226,14 @@ CACHES = {
             'CULL_FREQUENCY':  4,  # 1/4 entries deleted if max reached
         }
 
+    },
+    'cachalot': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'cachalot',
+        'OPTIONS': {
+            'MAX_ENTRIES': 500,
+            'CULL_FREQUENCY':  4,  # 1/4 entries deleted if max reached
+        }
     }
 }
 
@@ -303,3 +312,7 @@ RAVEN_CONFIG = {
 
 ALTERNATE_METRICS_URL = config('ALTERNATE_METRICS_URL', default=None)
 ALTERNATE_METRICS_CHANNELS = config('ALTERNATE_METRICS_CHANNELS', default='', cast=Csv())
+
+CACHALOT_ENABLED = config('CACHALOT_ENABLED', default=not DEBUG, cast=bool)
+CACHALOT_TIMEOUT = config('CACHALOT_TIMEOUT', default=300, cast=int)  # 300 = 5 minutes
+CACHALOT_CACHE = 'cachalot'
