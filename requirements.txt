@@ -48,9 +48,9 @@ django-ace==1.0.3 \
 bleach==1.4.2 \
     --hash=sha256:58a2c153c0b5450695c34ce2eddc23fb3ee476b31a878e6a5c24c75fd1ed4d89 \
     --hash=sha256:56018a17d1488eb1a1e18e7cdddcaea24d3c7b3704172e356f6916c577f4fd9e
-django-mozilla-product-details==0.12.1 \
-    --hash=sha256:a31a51102e8c2f047f8aa62b8bdc552f7a31d9c69f2cb16393225c3ee0db72b5 \
-    --hash=sha256:25ac11bd4544fef3236f32439f6b1de3bcf931f8b34c7786ab40f0ec85626eeb
+django-mozilla-product-details==0.13 \
+    --hash=sha256:4ffa5a104f53645460a50c9342a41e3ea02d432851becf56e820d42faa94839f \
+    --hash=sha256:ce97fc2533aa06560d9b438ebba2522dc0b2ada86d6e0537cfb5ac06db1a6aa2
 mock==2.0.0 \
     --hash=sha256:5ce3c71c5545b472da17b72268978914d0252980348636840bd34a00b5cc96c1 \
     --hash=sha256:b158b6df76edd239b8208d481dc46b6afd45a846b7812ff0ce58971cf5bc8bba

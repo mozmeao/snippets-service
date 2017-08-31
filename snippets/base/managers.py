@@ -3,8 +3,12 @@ from datetime import datetime
 from django.db.models import Manager
 from django.db.models.query import QuerySet
 
-from snippets.base import LANGUAGE_VALUES
+from product_details import product_details
+
 from snippets.base.util import first
+
+
+LANGUAGE_VALUES = list(key.lower() for key in product_details.languages.keys())
 
 
 class ClientMatchRuleQuerySet(QuerySet):
