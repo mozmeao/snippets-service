@@ -64,7 +64,7 @@ conduit {
                             "-e 'SITE_URL=http://localhost:8000' " +
                             "-e 'CACHE_URL=dummy://' " +
                             "-e 'SECURE_SSL_REDIRECT=False'"),
-            "cmd": "coverage run ./manage.py test"
+            "cmd": "coverage run ./manage.py test --parallel"
           ]
           dockerRun(docker_image, args)
         }
