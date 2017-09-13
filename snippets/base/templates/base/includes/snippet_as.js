@@ -10,6 +10,11 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
 (function() {
     'use strict';
 
+    // If onboarding hasn't finished its tour, don't load snippets.
+    if (!gSnippetsMap.get('appData.onboardingFinished')) {
+      return;
+    }
+
     if (ABOUTHOME_SNIPPETS.length > 0) {
         ABOUTHOME_SHOWN_SNIPPET = chooseSnippet(ABOUTHOME_SNIPPETS);
     }
