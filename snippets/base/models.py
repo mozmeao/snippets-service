@@ -193,7 +193,6 @@ class SnippetBundle(object):
             self._snippets = (Snippet.objects
                               .filter(disabled=False)
                               .match_client(self.client)
-                              .order_by('priority')
                               .select_related('template')
                               .prefetch_related('countries', 'exclude_from_search_providers')
                               .filter_by_available())
@@ -370,7 +369,6 @@ class Snippet(SnippetBaseModel):
     template = models.ForeignKey(SnippetTemplate)
     data = models.TextField(default='{}', validators=[validate_xml_variables])
 
-    priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)
 
     countries = models.ManyToManyField(
@@ -507,7 +505,6 @@ class Snippet(SnippetBaseModel):
 
 class JSONSnippet(SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
-    priority = models.IntegerField(default=0, blank=True)
     disabled = models.BooleanField(default=True)
 
     icon = models.TextField(help_text='Icon should be a 96x96px PNG.')

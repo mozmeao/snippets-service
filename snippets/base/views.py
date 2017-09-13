@@ -119,7 +119,6 @@ def fetch_render_snippets(request, **kwargs):
     matching_snippets = (Snippet.objects
                          .filter(disabled=False)
                          .match_client(client)
-                         .order_by('priority')
                          .select_related('template')
                          .filter_by_available())
 
@@ -168,7 +167,6 @@ def fetch_json_snippets(request, **kwargs):
     matching_snippets = (JSONSnippet.objects
                          .filter(disabled=False)
                          .match_client(client)
-                         .order_by('priority')
                          .filter_by_available())
     return HttpResponse(json.dumps(matching_snippets, cls=JSONSnippetEncoder),
                         content_type='application/json')
