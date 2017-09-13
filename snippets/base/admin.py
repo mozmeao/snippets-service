@@ -159,8 +159,7 @@ class SnippetAdmin(BaseSnippetAdmin):
                          ('exclude_from_search_providers', 'client_match_rules'))
 
     fieldsets = (
-        (None, {'fields': ('name', 'priority', 'disabled', 'campaign',
-                           'created', 'modified')}),
+        (None, {'fields': ('name', 'disabled', 'campaign', 'created', 'modified')}),
         ('Content', {
             'fields': ('template', 'data'),
         }),
@@ -305,8 +304,7 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
     search_fields = ('name', 'client_match_rules__description')
 
     fieldsets = (
-        (None, {'fields': ('name', 'priority', 'disabled',
-                           'created', 'modified')}),
+        (None, {'fields': ('name', 'disabled', 'created', 'modified')}),
         ('Content', {
             'fields': ('icon', 'text', 'url'),
         }),
