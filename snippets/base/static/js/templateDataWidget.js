@@ -277,6 +277,7 @@
 
         this.$dataInput = this.$form.find('input[name="data"]');
         this.$templateIdInput = this.$form.find('input[name="template_id"]');
+        this.$activityStreamInput = this.$form.find('input[name="activity_stream"]');
 
         this.$form.submit(function() {
             self.onFormSubmit();
@@ -288,6 +289,7 @@
             var data = JSON.stringify(this.dataWidget.generateData());
             this.$dataInput.val(data);
             this.$templateIdInput.val(this.dataWidget.getTemplateId());
+            this.$activityStreamInput.val(document.querySelector('#id_on_startpage_5').checked);
         }
     };
 
