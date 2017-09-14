@@ -32,6 +32,9 @@ elif settings.ADMIN_REDIRECT_URL:
         url(r'^admin/', RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL))
     )
 
+if settings.OIDC_ENABLE:
+    urlpatterns.append(url(r'^oidc/', include('mozilla_django_oidc.urls')))
+
 # In DEBUG mode, serve media files through Django.
 if settings.DEBUG:
     # Use custom serve function that adds necessary headers.
