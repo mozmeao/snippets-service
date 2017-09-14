@@ -20,23 +20,17 @@ urlpatterns = [
     url(r'^(?P<path>contribute\.json)$', static_serve, {'document_root': settings.ROOT}),
 ]
 
-
 if settings.ENABLE_ADMIN:
     urlpatterns += [
         url(r'^admin/', include(admin.site.urls)),
     ]
     admin.site.site_header = 'Snippets Administration'
     admin.site.site_title = 'Mozilla Snippets'
+
 elif settings.ADMIN_REDIRECT_URL:
     urlpatterns.append(
         url(r'^admin/', RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL))
     )
-
-if settings.SAML_ENABLE:
-    urlpatterns += [
-        url(r'^saml2/', include('snippets.saml.urls'))
-        ]
-
 
 # In DEBUG mode, serve media files through Django.
 if settings.DEBUG:

@@ -36,7 +36,6 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 INSTALLED_APPS = [
     # Project specific apps
     'snippets.base',
-    'snippets.saml',
 
     # Third party apps
     'django_jinja',
@@ -244,12 +243,6 @@ GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-42
 PROD_DETAILS_CACHE_NAME = 'product-details'
 PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
                               default='product_details.storage.PDFileStorage')
-
-
-SAML_ENABLE = config('SAML_ENABLE', default=False, cast=bool)
-if SAML_ENABLE:
-    from saml.settings import *  # noqa
-
 
 DEFAULT_FILE_STORAGE = config('FILE_STORAGE', 'storages.backends.overwrite.OverwriteStorage')
 
