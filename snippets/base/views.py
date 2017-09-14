@@ -172,10 +172,6 @@ def fetch_json_snippets(request, **kwargs):
                         content_type='application/json')
 
 
-PREVIEW_CLIENT = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
-                        'release', 'default', 'default', 'default')
-
-
 @csrf_exempt
 @permission_required('base.change_snippet')
 def preview_snippet(request):
@@ -208,18 +204,28 @@ def preview_snippet(request):
     skip_boilerplate = strtobool(skip_boilerplate)
 
     template_name = 'base/preview_without_shell.jinja' if skip_boilerplate else 'base/preview.jinja'
+    preview_client = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
+                            'release', 'default', 'default', 'default')
+    if strtobool(request.POST.get('activity_stream', 'false')):
+        template_name = 'base/preview_as.jinja'
+        preview_client = Client('5', 'Firefox', '57.0', 'default', 'default', 'en-US',
+                                'release', 'default', 'default', 'default')
+
     current_firefox_version = (
         version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
 
     return render(request, template_name, {
         'snippets_json': json.dumps([snippet.to_dict()]),
-        'client': PREVIEW_CLIENT,
+        'client': preview_client,
         'preview': True,
         'current_firefox_version': current_firefox_version,
     })
 
 
 def show_snippet(request, snippet_id):
+    preview_client = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
+                            'release', 'default', 'default', 'default')
+
     snippet = get_object_or_404(Snippet, pk=snippet_id)
     if snippet.disabled and not request.user.is_authenticated():
         raise Http404()
@@ -228,7 +234,7 @@ def show_snippet(request, snippet_id):
         version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
     return render(request, 'base/preview.jinja', {
         'snippets_json': json.dumps([snippet.to_dict()]),
-        'client': PREVIEW_CLIENT,
+        'client': preview_client,
         'preview': True,
         'current_firefox_version': current_firefox_version,
     })
