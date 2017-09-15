@@ -36,7 +36,6 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 INSTALLED_APPS = [
     # Project specific apps
     'snippets.base',
-    'snippets.saml',
 
     # Third party apps
     'django_jinja',
@@ -49,6 +48,7 @@ INSTALLED_APPS = [
     'reversion',
     'raven.contrib.django.raven_compat',
     'cachalot',
+    'mozilla_django_oidc',
 
     # Django apps
     'django.contrib.admin',
@@ -245,12 +245,6 @@ PROD_DETAILS_CACHE_NAME = 'product-details'
 PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
                               default='product_details.storage.PDFileStorage')
 
-
-SAML_ENABLE = config('SAML_ENABLE', default=False, cast=bool)
-if SAML_ENABLE:
-    from saml.settings import *  # noqa
-
-
 DEFAULT_FILE_STORAGE = config('FILE_STORAGE', 'storages.backends.overwrite.OverwriteStorage')
 
 CDN_URL = config('CDN_URL', default='')
@@ -300,3 +294,18 @@ ALTERNATE_METRICS_CHANNELS = config('ALTERNATE_METRICS_CHANNELS', default='', ca
 CACHALOT_ENABLED = config('CACHALOT_ENABLED', default=not DEBUG, cast=bool)
 CACHALOT_TIMEOUT = config('CACHALOT_TIMEOUT', default=300, cast=int)  # 300 = 5 minutes
 CACHALOT_CACHE = 'cachalot'
+
+OIDC_ENABLE = config('OIDC_ENABLE', default=False, cast=bool)
+if OIDC_ENABLE:
+    AUTHENTICATION_BACKENDS = (
+        'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
+    )
+    OIDC_OP_AUTHORIZATION_ENDPOINT = config('OIDC_OP_AUTHORIZATION_ENDPOINT')
+    OIDC_OP_TOKEN_ENDPOINT = config('OIDC_OP_TOKEN_ENDPOINT')
+    OIDC_OP_USER_ENDPOINT = config('OIDC_OP_USER_ENDPOINT')
+
+    OIDC_RP_CLIENT_ID = config('OIDC_RP_CLIENT_ID')
+    OIDC_RP_CLIENT_SECRET = config('OIDC_RP_CLIENT_SECRET')
+    OIDC_CREATE_USER = config('OIDC_CREATE_USER', default=False, cast=bool)
+    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + ('mozilla_django_oidc.middleware.RefreshIDToken',)
+    LOGIN_REDIRECT_URL = '/admin/'
