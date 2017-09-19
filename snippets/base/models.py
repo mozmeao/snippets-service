@@ -161,7 +161,7 @@ class SnippetBundle(object):
 
     @property
     def cache_key(self):
-        return u'bundle_ng' + self.key
+        return u'bundle_' + self.key
 
     @property
     def expired(self):
