@@ -316,7 +316,7 @@ CACHALOT_CACHE = 'cachalot'
 OIDC_ENABLE = config('OIDC_ENABLE', default=False, cast=bool)
 if OIDC_ENABLE:
     AUTHENTICATION_BACKENDS = (
-        'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
+        'snippets.base.authentication.AuthBackend',
     )
     OIDC_OP_AUTHORIZATION_ENDPOINT = config('OIDC_OP_AUTHORIZATION_ENDPOINT')
     OIDC_OP_TOKEN_ENDPOINT = config('OIDC_OP_TOKEN_ENDPOINT')
