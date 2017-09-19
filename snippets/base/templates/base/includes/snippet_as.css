@@ -5,31 +5,42 @@
     left: 0;
     right: 0;
     border-top: solid 2px #E9E9E9;
-    background: rgba(255, 255, 255, 0.97);
-    height: 120px;
+    background: rgba(255, 255, 255, 0.95);
+    height: 100px;
 }
 
 #snippets {
-    max-width: 736px;
     margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+#snippets > div {
+    max-width: 736px;
 }
 
 .snippet .block-snippet-button {
-   position: absolute;
-   top: 50%;
-   right: 50px;
-   margin-top: -8px;
-   height: 16px;
-   width: 16px;
-   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMC43OCAxMC43OCI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiM0ZDRkNGQ7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5jbG9zZTwvdGl0bGU+PGcgaWQ9IkxheWVyXzIiIGRhdGEtbmFtZT0iTGF5ZXIgMiI+PGcgaWQ9IkxheWVyXzItMiIgZGF0YS1uYW1lPSJMYXllciAyIj48cG9seWdvbiBjbGFzcz0iY2xzLTEiIHBvaW50cz0iMTAuNzggMS4zMyA5LjQ1IDAgNS4zOSA0LjA2IDEuMzMgMCAwIDEuMzMgNC4wNiA1LjM5IDAgOS40NSAxLjMzIDEwLjc4IDUuMzkgNi43MiA5LjQ1IDEwLjc4IDEwLjc4IDkuNDUgNi43MiA1LjM5IDEwLjc4IDEuMzMiLz48L2c+PC9nPjwvc3ZnPg==");
-   background-repeat: no-repeat;
-   background-size: 16px 16px;
-   background-color: transparent;
-   border: 0;
-   cursor: pointer;
-   display: none;
+    position: absolute;
+    top: 50%;
+    right: 24px;
+    margin-top: -8px;
+    height: 12px;
+    width: 12px;
+    padding: 0;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMC43OCAxMC43OCI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiM0ZDRkNGQ7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5jbG9zZTwvdGl0bGU+PGcgaWQ9IkxheWVyXzIiIGRhdGEtbmFtZT0iTGF5ZXIgMiI+PGcgaWQ9IkxheWVyXzItMiIgZGF0YS1uYW1lPSJMYXllciAyIj48cG9seWdvbiBjbGFzcz0iY2xzLTEiIHBvaW50cz0iMTAuNzggMS4zMyA5LjQ1IDAgNS4zOSA0LjA2IDEuMzMgMCAwIDEuMzMgNC4wNiA1LjM5IDAgOS40NSAxLjMzIDEwLjc4IDUuMzkgNi43MiA5LjQ1IDEwLjc4IDEwLjc4IDkuNDUgNi43MiA1LjM5IDEwLjc4IDEuMzMiLz48L2c+PC9nPjwvc3ZnPg==");
+    background-repeat: no-repeat;
+    background-size: 12px;
+    background-position: center;
+    background-color: transparent;
+    padding: 2px;
+    box-sizing: content-box;
+    border: 0;
+    cursor: pointer;
+    display: none;
 }
 
 #snippets-container:hover .snippet .block-snippet-button {
-   display: block;
+    display: block;
 }
