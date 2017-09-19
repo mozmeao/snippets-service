@@ -1,18 +1,10 @@
 from django.test import TransactionTestCase
-from django.test.utils import override_settings
 
 import factory
 
 from snippets.base import models
 
 
-@override_settings(CACHALOT_ENABLED=False)
-@override_settings(
-    CACHES={
-        'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'},
-        'cachalot': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'},
-        'product-details': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'},
-    })
 class TestCase(TransactionTestCase):
     pass
 

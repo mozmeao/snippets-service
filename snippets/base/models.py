@@ -14,6 +14,8 @@ from xml.sax import ContentHandler
 from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.manager import Manager
@@ -133,7 +135,6 @@ class SnippetBundle(object):
     def __init__(self, client):
         self.client = client
         self._snippets = None
-        self._contents = None
 
     @property
     def key(self):
@@ -169,20 +170,21 @@ class SnippetBundle(object):
         If True, the code for this bundle should be re-generated before
         use.
         """
-        if self._contents:
-            return False
-
-        self._contents = cache.get(self.cache_key, None)
-        return self._contents is None
+        return not cache.get(self.cache_key)
 
     @property
-    def contents(self):
-        if self._contents is None:
-            self._contents = cache.get(self.cache_key, None)
-            if self._contents is None:
-                self._contents = self._generate()
+    def filename(self):
+        return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.html'.format(self.key))
 
-        return self._contents
+    @property
+    def url(self):
+        bundle_url = default_storage.url(self.filename)
+        full_url = urljoin(settings.SITE_URL, bundle_url).split('?')[0]
+        cdn_url = getattr(settings, 'CDN_URL', None)
+        if cdn_url:
+            full_url = urljoin(cdn_url, urlparse(bundle_url).path)
+
+        return full_url
 
     @property
     def snippets(self):
@@ -192,13 +194,11 @@ class SnippetBundle(object):
                               .filter(disabled=False)
                               .match_client(self.client)
                               .select_related('template')
-                              .prefetch_related('countries',
-                                                'exclude_from_search_providers',
-                                                'locales')
+                              .prefetch_related('countries', 'exclude_from_search_providers')
                               .filter_by_available())
         return self._snippets
 
-    def _generate(self):
+    def generate(self):
         """Generate and save the code for this snippet bundle."""
         current_firefox_version = (
             version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
@@ -221,8 +221,10 @@ class SnippetBundle(object):
             'metrics_url': metrics_url,
         })
 
-        cache.set(self.cache_key, bundle_content, None)
-        return bundle_content
+        if isinstance(bundle_content, unicode):
+            bundle_content = bundle_content.encode('utf-8')
+        default_storage.save(self.filename, ContentFile(bundle_content))
+        cache.set(self.cache_key, True, None)
 
 
 class SnippetTemplate(models.Model):

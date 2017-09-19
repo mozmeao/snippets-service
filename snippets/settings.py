@@ -148,6 +148,7 @@ if not DEBUG_TEMPLATE:
 MEDIA_URL = config('MEDIA_URL', '/media/')
 MEDIA_ROOT = config('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
 MEDIA_FILES_ROOT = config('MEDIA_FILES_ROOT', default='files/')
+MEDIA_BUNDLES_ROOT = config('MEDIA_BUNDLES_ROOT', default='bundles/')
 
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
 
@@ -238,6 +239,8 @@ CACHES = {
     }
 }
 
+SERVE_SNIPPET_BUNDLES = config('SERVE_SNIPPET_BUNDLES', default=not DEBUG, cast=bool)
+
 GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-4205-9a11-82feda9d83a3'  # noqa
 
 PROD_DETAILS_CACHE_NAME = 'product-details'
@@ -258,14 +261,17 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     AWS_S3_HOST = config('AWS_S3_HOST')
     AWS_CACHE_CONTROL_HEADERS = {
         MEDIA_FILES_ROOT: 'max-age=900',  # 15 Minutes
+        MEDIA_BUNDLES_ROOT: 'max-age=2592000',  # 1 Month
     }
 
 DEAD_MANS_SNITCH_URL = config('DEAD_MANS_SNITCH_URL', default=None)
 
-SNIPPET_HTTP_MAX_AGE = config('SNIPPET_HTTP_MAX_AGE', default=900)
+SNIPPET_HTTP_MAX_AGE = config('SNIPPET_HTTP_MAX_AGE', default=90)
 SNIPPETS_PER_PAGE = config('SNIPPETS_PER_PAGE', default=50)
 
 ENGAGE_ROBOTS = config('ENGAGE_ROBOTS', default=False)
+
+CACHE_EMPTY_QUERYSETS = True
 
 ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
 

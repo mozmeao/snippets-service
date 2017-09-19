@@ -7,7 +7,7 @@ from distutils.util import strtobool
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import Http404, HttpResponse, HttpResponseBadRequest
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.cache import patch_vary_headers
 from django.utils.functional import lazy
@@ -93,27 +93,70 @@ class JSONSnippetIndexView(IndexView):
         return self.render(request, *args, **kwargs)
 
 
-@cache_control(public=True, max_age=HTTP_MAX_AGE)
-@access_control(max_age=HTTP_MAX_AGE)
-def fetch_snippets(request, **kwargs):
-    """Return a bundle of snippets for the client. If the bundle in question is
-    expired, re-generate it.
-
+@cache_control(public=True, max_age=settings.SNIPPET_BUNDLE_TIMEOUT)
+@access_control(max_age=settings.SNIPPET_BUNDLE_TIMEOUT)
+def fetch_pregenerated_snippets(request, **kwargs):
     """
-    statsd.incr('serve.snippets')
+    Return a redirect to a pre-generated bundle of snippets for the
+    client. If the bundle in question is expired, re-generate it.
+    """
     client = Client(**kwargs)
     bundle = SnippetBundle(client)
     if bundle.expired:
+        bundle.generate()
         statsd.incr('bundle.generate')
     else:
         statsd.incr('bundle.cached')
 
-    response = HttpResponse(bundle.contents)
+    return HttpResponseRedirect(bundle.url)
+
+
+@cache_control(public=True, max_age=HTTP_MAX_AGE)
+@access_control(max_age=HTTP_MAX_AGE)
+def fetch_render_snippets(request, **kwargs):
+    """Fetch snippets for the client and render them immediately."""
+    client = Client(**kwargs)
+    matching_snippets = (Snippet.objects
+                         .filter(disabled=False)
+                         .match_client(client)
+                         .select_related('template')
+                         .filter_by_available())
+
+    current_firefox_version = (
+        version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
+
+    metrics_url = settings.METRICS_URL
+    if ((settings.ALTERNATE_METRICS_URL and
+         client.channel in settings.ALTERNATE_METRICS_CHANNELS)):
+        metrics_url = settings.ALTERNATE_METRICS_URL
+
+    template = 'base/fetch_snippets.jinja'
+
+    if client.startpage_version == '5':
+        template = 'base/fetch_snippets_as.jinja'
+    response = render(request, template, {
+        'snippet_ids': [snippet.id for snippet in matching_snippets],
+        'snippets_json': json.dumps([s.to_dict() for s in matching_snippets]),
+        'client': client,
+        'locale': client.locale,
+        'current_firefox_version': current_firefox_version,
+        'metrics_url': metrics_url,
+    })
+
     # ETag will be a hash of the response content.
     response['ETag'] = hashlib.sha256(response.content).hexdigest()
     patch_vary_headers(response, ['If-None-Match'])
 
     return response
+
+
+def fetch_snippets(request, **kwargs):
+    """Determine which snippet-fetching method to use."""
+    statsd.incr('serve.snippets')
+    if settings.SERVE_SNIPPET_BUNDLES:
+        return fetch_pregenerated_snippets(request, **kwargs)
+    else:
+        return fetch_render_snippets(request, **kwargs)
 
 
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
