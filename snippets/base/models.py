@@ -22,6 +22,7 @@ from django.db.models.manager import Manager
 from django.template import engines
 from django.template.loader import render_to_string
 from django.utils.encoding import python_2_unicode_compatible
+from django.utils.functional import cached_property
 
 import django_mysql.models
 from jinja2 import Markup
@@ -136,7 +137,7 @@ class SnippetBundle(object):
         self.client = client
         self._snippets = None
 
-    @property
+    @cached_property
     def key(self):
         """A unique key for this bundle as a sha1 hexdigest."""
         # Key should consist of snippets that are in the bundle plus any
