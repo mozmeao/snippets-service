@@ -211,7 +211,7 @@ ENABLE_ADMIN = config('ENABLE_ADMIN', default=True, cast=bool)
 
 ANON_ALWAYS = True
 
-SNIPPET_BUNDLE_TIMEOUT = 15 * 60  # 15 minutes
+SNIPPET_BUNDLE_TIMEOUT = config('SNIPPET_BUNDLE_TIMEOUT', default=15 * 60, cast=int)  # 15 minutes
 
 METRICS_URL = config('METRICS_URL', default='https://snippets-stats.mozilla.org/foo.html')
 METRICS_SAMPLE_RATE = config('METRICS_SAMPLE_RATE', default=0.1, cast=float)
