@@ -229,14 +229,10 @@ CACHES = {
         }
 
     },
-    'cachalot': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'cachalot',
-        'OPTIONS': {
-            'MAX_ENTRIES': 500,
-            'CULL_FREQUENCY':  4,  # 1/4 entries deleted if max reached
-        }
-    }
+    'cachalot': config(
+        'CACHALOT_CACHE_URL',
+        default='locmem://?location=cachalog&max_entries=500&cull_frequency=4',
+        cast=django_cache_url.parse),
 }
 
 SERVE_SNIPPET_BUNDLES = config('SERVE_SNIPPET_BUNDLES', default=not DEBUG, cast=bool)
