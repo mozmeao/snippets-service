@@ -3,10 +3,19 @@
     position: fixed;
     bottom: 0;
     left: 0;
-    right: 0;
-    border-top: solid 2px #E9E9E9;
-    background: rgba(255, 255, 255, 0.95);
-    height: 100px;
+    width: 100%;
+    padding: 12px;
+    background: white;
+    font-size: 13px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    min-height: 60px;
+    padding-inline-end: 36px;
+}
+
+@media (min-width: 766px) {
+  #snippets-container {
+    padding-inline-end: 12px;
+  }
 }
 
 #snippets {
@@ -14,7 +23,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
 }
 
 #snippets > div {
@@ -24,12 +32,12 @@
 .snippet .block-snippet-button {
     position: absolute;
     top: 50%;
-    right: 24px;
     margin-top: -8px;
     height: 12px;
     width: 12px;
     padding: 0;
-    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMC43OCAxMC43OCI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiM0ZDRkNGQ7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5jbG9zZTwvdGl0bGU+PGcgaWQ9IkxheWVyXzIiIGRhdGEtbmFtZT0iTGF5ZXIgMiI+PGcgaWQ9IkxheWVyXzItMiIgZGF0YS1uYW1lPSJMYXllciAyIj48cG9seWdvbiBjbGFzcz0iY2xzLTEiIHBvaW50cz0iMTAuNzggMS4zMyA5LjQ1IDAgNS4zOSA0LjA2IDEuMzMgMCAwIDEuMzMgNC4wNiA1LjM5IDAgOS40NSAxLjMzIDEwLjc4IDUuMzkgNi43MiA5LjQ1IDEwLjc4IDEwLjc4IDkuNDUgNi43MiA1LjM5IDEwLjc4IDEuMzMiLz48L2c+PC9nPjwvc3ZnPg==");
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSJjb250ZXh0LWZpbGwiIGQ9Ik05LjQxNCA4bDMuNTMxLTMuNTMxYTEgMSAwIDEgMC0xLjQxNC0xLjQxNEw4IDYuNTg2IDQuNDY5IDMuMDU1YTEgMSAwIDEgMC0xLjQxNCAxLjQxNEw2LjU4NiA4bC0zLjUzMSAzLjUzMWExIDEgMCAxIDAgMS40MTQgMS40MTRMOCA5LjQxNGwzLjUzMSAzLjUzMWExIDEgMCAxIDAgMS40MTQtMS40MTR6Ii8+PC9zdmc+");
+    opacity: 0.6;
     background-repeat: no-repeat;
     background-size: 12px;
     background-position: center;
@@ -38,9 +46,14 @@
     box-sizing: content-box;
     border: 0;
     cursor: pointer;
-    display: none;
+    offset-inline-end: 12px;
 }
-
-#snippets-container:hover .snippet .block-snippet-button {
+@media (min-width: 766px) {
+  .snippet .block-snippet-button {
+    offset-inline-end: 24px;
+    display: none;
+  }
+  #snippets-container:hover .snippet .block-snippet-button {
     display: block;
+  }
 }
