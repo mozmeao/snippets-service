@@ -311,7 +311,7 @@ ALTERNATE_METRICS_CHANNELS = config('ALTERNATE_METRICS_CHANNELS', default='', ca
 
 CACHALOT_ENABLED = config('CACHALOT_ENABLED', default=not DEBUG, cast=bool)
 CACHALOT_TIMEOUT = config('CACHALOT_TIMEOUT', default=300, cast=int)  # 300 = 5 minutes
-CACHALOT_CACHE = 'cachalot'
+CACHALOT_CACHE = config('CACHELOT_CACHE', default='cachalot')
 
 OIDC_ENABLE = config('OIDC_ENABLE', default=False, cast=bool)
 if OIDC_ENABLE:
