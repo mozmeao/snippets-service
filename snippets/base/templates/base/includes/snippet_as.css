@@ -7,9 +7,9 @@
     padding: 12px;
     background: white;
     font-size: 13px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
     min-height: 60px;
     padding-inline-end: 36px;
+    box-shadow: 0 -1px 4px 0 rgba(12, 12, 13, 0.1);
 }
 
 @media (min-width: 766px) {
@@ -51,9 +51,5 @@
 @media (min-width: 766px) {
   .snippet .block-snippet-button {
     offset-inline-end: 24px;
-    display: none;
-  }
-  #snippets-container:hover .snippet .block-snippet-button {
-    display: block;
   }
 }
