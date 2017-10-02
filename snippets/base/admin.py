@@ -259,7 +259,7 @@ class SnippetTemplateVariableInline(admin.TabularInline):
 RESERVED_VARIABLES = ('_', 'snippet_id')
 
 
-class SnippetTemplateAdmin(admin.ModelAdmin):
+class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
     save_on_top = True
     list_display = ('name', 'priority', 'hidden')
     list_filter = ('hidden',)
