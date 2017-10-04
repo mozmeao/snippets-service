@@ -35,6 +35,8 @@ from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 from snippets.base.util import hashfile
 
 
+ONE_DAY = 60 * 60 * 24
+
 JINJA_ENV = engines['backend']
 
 SNIPPET_JS_TEMPLATE_HASH = hashfile(
@@ -225,7 +227,7 @@ class SnippetBundle(object):
         if isinstance(bundle_content, unicode):
             bundle_content = bundle_content.encode('utf-8')
         default_storage.save(self.filename, ContentFile(bundle_content))
-        cache.set(self.cache_key, True, None)
+        cache.set(self.cache_key, True, ONE_DAY)
 
 
 class SnippetTemplate(models.Model):
