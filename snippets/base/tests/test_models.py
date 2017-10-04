@@ -8,7 +8,7 @@ from jinja2 import Markup
 from mock import ANY, MagicMock, Mock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.models import (Client, SnippetBundle, UploadedFile,
+from snippets.base.models import (ONE_DAY, Client, SnippetBundle, UploadedFile,
                                   validate_xml_template, validate_xml_variables, _generate_filename)
 from snippets.base.tests import (ClientMatchRuleFactory,
                                  JSONSnippetFactory,
@@ -495,3 +495,26 @@ class SnippetBundleTests(TestCase):
         # Check content of saved file.
         content_file = default_storage.save.call_args[0][1]
         self.assertEqual(content_file.read(), 'rendered snippet')
+
+    def test_cached_local(self):
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+        with patch('snippets.base.models.cache') as cache:
+            cache.get.return_value = True
+            self.assertTrue(bundle.cached)
+
+    def test_cached_remote(self):
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+        with patch('snippets.base.models.cache') as cache:
+            cache.get.return_value = False
+            with patch('snippets.base.models.default_storage') as default_storage:
+                default_storage.exists.return_value = True
+                self.assertTrue(bundle.cached)
+                cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
+
+    def test_not_cached(self):
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+        with patch('snippets.base.models.cache') as cache:
+            cache.get.return_value = False
+            with patch('snippets.base.models.default_storage') as default_storage:
+                default_storage.exists.return_value = False
+                self.assertFalse(bundle.cached)

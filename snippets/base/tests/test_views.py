@@ -390,7 +390,7 @@ class FetchPregeneratedSnippetsTests(TestCase):
         with patch.object(views, 'SnippetBundle') as SnippetBundle:
             bundle = SnippetBundle.return_value
             bundle.url = '/foo/bar'
-            bundle.expired = True
+            bundle.cached = False
             response = views.fetch_pregenerated_snippets(self.request, **self.client_kwargs)
 
         self.assertEqual(response.status_code, 302)

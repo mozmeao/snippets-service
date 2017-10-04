@@ -102,7 +102,7 @@ def fetch_pregenerated_snippets(request, **kwargs):
     """
     client = Client(**kwargs)
     bundle = SnippetBundle(client)
-    if bundle.expired:
+    if not bundle.cached:
         bundle.generate()
         statsd.incr('bundle.generate')
     else:

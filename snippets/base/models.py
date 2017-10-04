@@ -168,6 +168,18 @@ class SnippetBundle(object):
         return u'bundle_' + self.key
 
     @property
+    def cached(self):
+        if cache.get(self.cache_key):
+            return True
+
+        # Check if available on S3 already.
+        if default_storage.exists(self.filename):
+            cache.set(self.cache_key, True, ONE_DAY)
+            return True
+
+        return False
+
+    @property
     def expired(self):
         """
         If True, the code for this bundle should be re-generated before
