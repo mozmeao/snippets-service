@@ -22,6 +22,7 @@ from django.db.models.manager import Manager
 from django.template import engines
 from django.template.loader import render_to_string
 from django.utils.encoding import python_2_unicode_compatible
+from django.utils.functional import cached_property
 
 import django_mysql.models
 from jinja2 import Markup
@@ -33,6 +34,8 @@ from snippets.base.fields import RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 from snippets.base.util import hashfile
 
+
+ONE_DAY = 60 * 60 * 24
 
 JINJA_ENV = engines['backend']
 
@@ -136,7 +139,7 @@ class SnippetBundle(object):
         self.client = client
         self._snippets = None
 
-    @property
+    @cached_property
     def key(self):
         """A unique key for this bundle as a sha1 hexdigest."""
         # Key should consist of snippets that are in the bundle plus any
@@ -163,6 +166,18 @@ class SnippetBundle(object):
     @property
     def cache_key(self):
         return u'bundle_' + self.key
+
+    @property
+    def cached(self):
+        if cache.get(self.cache_key):
+            return True
+
+        # Check if available on S3 already.
+        if default_storage.exists(self.filename):
+            cache.set(self.cache_key, True, ONE_DAY)
+            return True
+
+        return False
 
     @property
     def expired(self):
@@ -224,7 +239,7 @@ class SnippetBundle(object):
         if isinstance(bundle_content, unicode):
             bundle_content = bundle_content.encode('utf-8')
         default_storage.save(self.filename, ContentFile(bundle_content))
-        cache.set(self.cache_key, True, None)
+        cache.set(self.cache_key, True, ONE_DAY)
 
 
 class SnippetTemplate(models.Model):
