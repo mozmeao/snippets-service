@@ -601,6 +601,8 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
     // about:account custom links.
     var topSection = document.getElementById('topSection');
     topSection.addEventListener('click', function(event) {
+        var callback;
+        var metric;
         var target = event.target;
         while (target.tagName && target.tagName.toLowerCase() !== 'a') {
             // Do not track clicks outside topSection.
@@ -609,38 +611,38 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             }
             target = target.parentNode;
         }
-
         // Count snippet clicks.
         if (target.dataset.eventCounted !== 'true') {
             target.dataset.eventCounted = 'true';
             // Fetch custom metric or default to 'click'
-            var metric = target.dataset.metric || 'click';
-            // If user is not opening a new tab, preventDefault action.
-            if (target.href && (event.button === 0 && !(event.metaKey || event.ctrlKey))) {
-                event.preventDefault();
-                var callback = function() {
-                    target.click();
-                };
+            metric = target.dataset.metric || 'click';
+            if (target.href) {
+                // First handle the special about:accounts links which have
+                // custom metric and need to call showFirefoxAccounts method.
+                // Due to the special nature of about:accounts we can only open
+                // in the same tab. For other links if user is not opening a new
+                // tab, preventDefault action.
+                if (target.href.indexOf('about:accounts') === 0) {
+                    // Custom metric for about:accounts links
+                    metric = target.dataset.metric || ABOUTHOME_SHOWN_SNIPPET.id + '-about-accounts-click';
+                    callback = function() {
+                        var event = new CustomEvent(
+                            'mozUITour',
+                            { bubbles: true, detail: { action:'showFirefoxAccounts', data: {}}}
+                        );
+                        document.dispatchEvent(event);
+                    };
+                }
+                else if (event.button === 0 && !(event.metaKey || event.ctrlKey)) {
+                    event.preventDefault();
+                    callback = function() {
+                        target.click();
+                    };
+                }
             }
             sendMetric(metric, callback, target.href);
         }
-
-        // Handle about:accounts clicks.
-        if (target.href && target.href.indexOf('about:accounts') === 0) {
-            var snippet_id = ABOUTHOME_SHOWN_SNIPPET.id;
-            var metric = snippet_id + '-about-accounts-click';
-            var fire_event = function() {
-                var event = new CustomEvent(
-                    'mozUITour',
-                    { bubbles: true, detail: { action:'showFirefoxAccounts', data: {}}}
-                );
-                document.dispatchEvent(event);
-            };
-            sendMetric(metric, fire_event, target.href);
-        }
     }, false);
-
-
 })(window.showDefaultSnippets);
 
 // Send impressions and other interactions to the service
