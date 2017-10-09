@@ -391,6 +391,8 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
     // Listen for clicks on links and send metrics.
     var snippetsContainer = document.getElementById('snippets-container');
     snippetsContainer.addEventListener('click', function(event) {
+        var callback;
+        var metric;
         var target = event.target;
         while (target.tagName && target.tagName.toLowerCase() !== 'a') {
             // Do not track clicks outside snippets-container.
@@ -404,20 +406,30 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
         if (target.dataset.eventCounted !== 'true') {
             target.dataset.eventCounted = 'true';
             // Fetch custom metric or default to 'click'
-            var metric = target.dataset.metric || 'click';
-            // If user is not opening a new tab, preventDefault action.
-            if (target.href && (event.button === 0 && !(event.metaKey || event.ctrlKey))) {
-                event.preventDefault();
-                var callback = function() {
-                    target.click();
-                };
+            metric = target.dataset.metric || 'click';
+            if (target.href) {
+                // First handle the special about:accounts links which have
+                // custom metric and need to call showFirefoxAccounts method.
+                // Due to the special nature of about:accounts we can only open
+                // in the same tab. For other links if user is not opening a new
+                // tab, preventDefault action.
+                if (target.href.indexOf('about:accounts') === 0) {
+                    // Custom metric for about:accounts links
+                    metric = target.dataset.metric || ABOUTHOME_SHOWN_SNIPPET.id + '-about-accounts-click';
+                    callback = function() {
+                        gSnippetsMap.showFirefoxAccounts();
+                    };
+                }
+                else if (event.button === 0 && !(event.metaKey || event.ctrlKey)) {
+                    event.preventDefault();
+                    callback = function() {
+                        target.click();
+                    };
+                }
             }
             sendMetric(metric, callback, target.href);
         }
-
     }, false);
-
-
 })();
 
 // Send impressions and other interactions to the service
