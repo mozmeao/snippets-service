@@ -18,6 +18,11 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
         return;
     }
 
+    // Hide snippets when the user disables snippets from the Preferences.
+    window.addEventListener("Snippets:Disabled", () => {
+        document.querySelector("#snippets-container").style.display = "none";
+    });
+
     // Inject the snippet onto the page.
     var snippetElement = document.createElement('div');
     snippetElement.innerHTML = ABOUTHOME_SHOWN_SNIPPET.code;
