@@ -10,6 +10,11 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
 (function() {
     'use strict';
 
+    // Fetch user country if we don't have it.
+    if (!haveUserCountry()) {
+        downloadUserCountry();
+    }
+
     if (ABOUTHOME_SNIPPETS.length > 0) {
         ABOUTHOME_SHOWN_SNIPPET = chooseSnippet(ABOUTHOME_SNIPPETS);
     }
@@ -48,11 +53,6 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
     var evt = document.createEvent('Event');
     evt.initEvent('show_snippet', true, true);
     snippetElement.querySelector('.snippet').dispatchEvent(evt);
-
-    // Fetch user country if we don't have it.
-    if (!haveUserCountry()) {
-        downloadUserCountry();
-    }
 
     {% if preview %}
     function chooseSnippet(snippets) {
