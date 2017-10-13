@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'raven.contrib.django.raven_compat',
     'cachalot',
     'mozilla_django_oidc',
+    'advanced_filters',
 
     # Django apps
     'django.contrib.admin',
