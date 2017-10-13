@@ -105,6 +105,7 @@ class BaseSnippetAdmin(VersionAdmin, DefaultFilterMixIn, admin.ModelAdmin):
         'disabled',
         'text',
         'locale_list',
+        'weight',
         'publish_start',
         'publish_end',
         'modified',
@@ -119,7 +120,8 @@ class BaseSnippetAdmin(VersionAdmin, DefaultFilterMixIn, admin.ModelAdmin):
     list_editable = (
         'disabled',
         'publish_start',
-        'publish_end'
+        'publish_end',
+        'weight',
     )
 
     readonly_fields = ('created', 'modified')
