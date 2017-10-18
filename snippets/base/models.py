@@ -31,25 +31,37 @@ from jinja2.utils import LRUCache
 from snippets.base import util
 from snippets.base.fields import RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
-from snippets.base.util import hashfile
 
 
 ONE_DAY = 60 * 60 * 24
 
 JINJA_ENV = engines['backend']
 
-SNIPPET_JS_TEMPLATE_HASH = hashfile(
-    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet.js'))
-SNIPPET_CSS_TEMPLATE_HASH = hashfile(
-    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet.css'))
-SNIPPET_FETCH_TEMPLATE_HASH = hashfile(
-    os.path.join(settings.ROOT, 'snippets/base/templates/base/fetch_snippets.jinja'))
-SNIPPET_JS_AS_TEMPLATE_HASH = hashfile(
-    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_as.js'))
-SNIPPET_CSS_AS_TEMPLATE_HASH = hashfile(
-    os.path.join(settings.ROOT, 'snippets/base/templates/base/includes/snippet_as.css'))
-SNIPPET_FETCH_AS_TEMPLATE_HASH = hashfile(
-    os.path.join(settings.ROOT, 'snippets/base/templates/base/fetch_snippets_as.jinja'))
+SNIPPET_FETCH_TEMPLATE_HASH = hashlib.sha1(
+    render_to_string(
+        'base/fetch_snippets.jinja',
+        {
+            'snippet_ids': [],
+            'snippets_json': '',
+            'locale': 'xx',
+            'settings': settings,
+            'current_firefox_major_version': '00',
+            'metrics_url': settings.METRICS_URL,
+        }
+    )).hexdigest()
+
+SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
+    render_to_string(
+        'base/fetch_snippets_as.jinja',
+        {
+            'snippet_ids': [],
+            'snippets_json': '',
+            'locale': 'xx',
+            'settings': settings,
+            'current_firefox_major_version': '00',
+            'metrics_url': settings.METRICS_URL,
+        }
+    )).hexdigest()
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly')
 FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4', '5')
@@ -152,12 +164,8 @@ class SnippetBundle(object):
 
         key_properties.extend(self.client)
         key_properties.extend([
-            SNIPPET_JS_TEMPLATE_HASH,
-            SNIPPET_CSS_TEMPLATE_HASH,
             SNIPPET_FETCH_TEMPLATE_HASH,
-            SNIPPET_JS_AS_TEMPLATE_HASH,
-            SNIPPET_CSS_AS_TEMPLATE_HASH,
-            SNIPPET_FETCH_AS_TEMPLATE_HASH,
+            SNIPPET_FETCH_TEMPLATE_AS_HASH,
         ])
 
         key_string = u'_'.join(key_properties)

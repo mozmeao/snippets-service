@@ -1,5 +1,3 @@
-import hashlib
-
 from product_details import product_details
 from product_details.version_compare import version_list
 
@@ -21,13 +19,6 @@ def first(collection, callback):
     True. Returns None if no such item is found.
     """
     return next((item for item in collection if callback(item)), None)
-
-
-def hashfile(filepath):
-    sha1 = hashlib.sha1()
-    with open(filepath, 'rb') as fp:
-        sha1.update(fp.read())
-    return sha1.hexdigest()
 
 
 def create_locales():

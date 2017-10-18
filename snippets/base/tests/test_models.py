@@ -478,8 +478,8 @@ class SnippetBundleTests(TestCase):
             with patch('snippets.base.models.render_to_string') as render_to_string:
                 with patch('snippets.base.models.default_storage') as default_storage:
                     with self.settings(SNIPPET_BUNDLE_TIMEOUT=10):
-                        with patch('snippets.base.models.version_list') as version_list:
-                            version_list.return_value = ['45.0']
+                        with patch('snippets.base.util.current_firefox_major_version') as cfmv:
+                            cfmv.return_value = '45'
                             render_to_string.return_value = 'rendered snippet'
                             bundle.generate()
 
@@ -512,8 +512,8 @@ class SnippetBundleTests(TestCase):
             with patch('snippets.base.models.render_to_string') as render_to_string:
                 with patch('snippets.base.models.default_storage') as default_storage:
                     with self.settings(SNIPPET_BUNDLE_TIMEOUT=10):
-                        with patch('snippets.base.models.version_list') as version_list:
-                            version_list.return_value = ['45.0']
+                        with patch('snippets.base.util.current_firefox_major_version') as cfmv:
+                            cfmv.return_value = '45'
                             render_to_string.return_value = 'rendered snippet'
                             bundle.generate()
 
