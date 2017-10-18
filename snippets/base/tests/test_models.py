@@ -439,6 +439,32 @@ class SnippetBundleTests(TestCase):
 
         self.assertEqual(bundle1.key, bundle2.key)
 
+    def test_key_snippet_modified(self):
+        client1 = self._client(locale='en-US', startpage_version='4')
+        bundle = SnippetBundle(client1)
+        bundle._snippets = [self.snippet1]
+        key_1 = bundle.key
+
+        # save snippet, touch modified
+        self.snippet1.save()
+        bundle = SnippetBundle(client1)
+        bundle._snippets = [self.snippet1]
+        key_2 = bundle.key
+        self.assertNotEqual(key_1, key_2)
+
+    def test_key_template_modified(self):
+        client1 = self._client(locale='en-US', startpage_version='4')
+        bundle = SnippetBundle(client1)
+        bundle._snippets = [self.snippet1]
+        key_1 = bundle.key
+
+        # save template, touch modified
+        self.snippet1.template.save()
+        bundle = SnippetBundle(client1)
+        bundle._snippets = [self.snippet1]
+        key_2 = bundle.key
+        self.assertNotEqual(key_1, key_2)
+
     def test_generate(self):
         """
         bundle.generate should render the snippets, save them to the

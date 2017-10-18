@@ -145,8 +145,11 @@ class SnippetBundle(object):
         # Key should consist of snippets that are in the bundle plus any
         # properties of the client that may change the snippet code
         # being sent.
-        key_properties = ['{id}-{date}'.format(id=snippet.id, date=snippet.modified.isoformat())
-                          for snippet in self.snippets]
+        key_properties = [
+            '{id}-{date}-{templatedate}'.format(id=snippet.id,
+                                                date=snippet.modified.isoformat(),
+                                                templatedate=snippet.template.modified.isoformat())
+            for snippet in self.snippets]
 
         key_properties.extend(self.client)
         key_properties.extend([
