@@ -27,9 +27,8 @@ from django.utils.functional import cached_property
 import django_mysql.models
 from jinja2 import Markup
 from jinja2.utils import LRUCache
-from product_details import product_details
-from product_details.version_compare import version_list
 
+from snippets.base import util
 from snippets.base.fields import RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
 from snippets.base.util import hashfile
@@ -216,9 +215,6 @@ class SnippetBundle(object):
 
     def generate(self):
         """Generate and save the code for this snippet bundle."""
-        current_firefox_version = (
-            version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
-
         template = 'base/fetch_snippets.jinja'
         if self.client.startpage_version == '5':
             template = 'base/fetch_snippets_as.jinja'
@@ -228,7 +224,7 @@ class SnippetBundle(object):
             'client': self.client,
             'locale': self.client.locale,
             'settings': settings,
-            'current_firefox_version': current_firefox_version,
+            'current_firefox_major_version': util.current_firefox_major_version(),
         })
 
         if isinstance(bundle_content, unicode):

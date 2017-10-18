@@ -18,10 +18,9 @@ from django.views.decorators.http import require_POST
 
 import django_filters
 from django_statsd.clients import statsd
-from product_details import product_details
-from product_details.version_compare import version_list
 from raven.contrib.django.models import client as sentry_client
 
+from snippets.base import util
 from snippets.base.decorators import access_control
 from snippets.base.encoders import JSONSnippetEncoder
 from snippets.base.models import Client, JSONSnippet, Snippet, SnippetBundle, SnippetTemplate
@@ -122,9 +121,6 @@ def fetch_render_snippets(request, **kwargs):
                          .select_related('template')
                          .filter_by_available())
 
-    current_firefox_version = (
-        version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
-
     template = 'base/fetch_snippets.jinja'
 
     if client.startpage_version == '5':
@@ -134,7 +130,7 @@ def fetch_render_snippets(request, **kwargs):
         'snippets_json': json.dumps([s.to_dict() for s in matching_snippets]),
         'client': client,
         'locale': client.locale,
-        'current_firefox_version': current_firefox_version,
+        'current_firefox_major_version': util.current_firefox_major_version(),
     })
 
     # ETag will be a hash of the response content.
@@ -205,14 +201,11 @@ def preview_snippet(request):
         preview_client = Client('5', 'Firefox', '57.0', 'default', 'default', 'en-US',
                                 'release', 'default', 'default', 'default')
 
-    current_firefox_version = (
-        version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
-
     return render(request, template_name, {
         'snippets_json': json.dumps([snippet.to_dict()]),
         'client': preview_client,
         'preview': True,
-        'current_firefox_version': current_firefox_version,
+        'current_firefox_major_version': util.current_firefox_major_version(),
     })
 
 
@@ -224,13 +217,11 @@ def show_snippet(request, snippet_id):
     if snippet.disabled and not request.user.is_authenticated():
         raise Http404()
 
-    current_firefox_version = (
-        version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
     return render(request, 'base/preview.jinja', {
         'snippets_json': json.dumps([snippet.to_dict()]),
         'client': preview_client,
         'preview': True,
-        'current_firefox_version': current_firefox_version,
+        'current_firefox_major_version': util.current_firefox_major_version(),
     })
 
 

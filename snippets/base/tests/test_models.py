@@ -489,7 +489,7 @@ class SnippetBundleTests(TestCase):
             'client': bundle.client,
             'locale': 'fr',
             'settings': settings,
-            'current_firefox_version': '45',
+            'current_firefox_major_version': '45',
         })
         default_storage.save.assert_called_with(bundle.filename, ANY)
         cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
@@ -523,7 +523,7 @@ class SnippetBundleTests(TestCase):
             'client': bundle.client,
             'locale': 'fr',
             'settings': settings,
-            'current_firefox_version': '45',
+            'current_firefox_major_version': '45',
         })
         default_storage.save.assert_called_with(bundle.filename, ANY)
         cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
