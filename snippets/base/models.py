@@ -166,6 +166,7 @@ class SnippetBundle(object):
         key_properties.extend([
             SNIPPET_FETCH_TEMPLATE_HASH,
             SNIPPET_FETCH_TEMPLATE_AS_HASH,
+            util.current_firefox_major_version(),
         ])
 
         key_string = u'_'.join(key_properties)

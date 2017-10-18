@@ -465,6 +465,19 @@ class SnippetBundleTests(TestCase):
         key_2 = bundle.key
         self.assertNotEqual(key_1, key_2)
 
+    def test_key_current_firefox_version(self):
+        client1 = self._client(locale='en-US', startpage_version='4')
+        bundle = SnippetBundle(client1)
+        bundle._snippets = [self.snippet1]
+        key_1 = bundle.key
+
+        with patch('snippets.base.util.current_firefox_major_version') as cfmv:
+            cfmv.return_value = 'xx'
+            bundle = SnippetBundle(client1)
+            bundle._snippets = [self.snippet1]
+            key_2 = bundle.key
+        self.assertNotEqual(key_1, key_2)
+
     def test_generate(self):
         """
         bundle.generate should render the snippets, save them to the
