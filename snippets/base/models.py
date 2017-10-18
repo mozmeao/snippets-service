@@ -218,11 +218,6 @@ class SnippetBundle(object):
         current_firefox_version = (
             version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
 
-        metrics_url = settings.METRICS_URL
-        if ((settings.ALTERNATE_METRICS_URL and
-             self.client.channel in settings.ALTERNATE_METRICS_CHANNELS)):
-            metrics_url = settings.ALTERNATE_METRICS_URL
-
         template = 'base/fetch_snippets.jinja'
         if self.client.startpage_version == '5':
             template = 'base/fetch_snippets_as.jinja'
@@ -233,7 +228,6 @@ class SnippetBundle(object):
             'locale': self.client.locale,
             'settings': settings,
             'current_firefox_version': current_firefox_version,
-            'metrics_url': metrics_url,
         })
 
         if isinstance(bundle_content, unicode):

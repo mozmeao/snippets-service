@@ -125,11 +125,6 @@ def fetch_render_snippets(request, **kwargs):
     current_firefox_version = (
         version_list(product_details.firefox_history_major_releases)[0].split('.', 1)[0])
 
-    metrics_url = settings.METRICS_URL
-    if ((settings.ALTERNATE_METRICS_URL and
-         client.channel in settings.ALTERNATE_METRICS_CHANNELS)):
-        metrics_url = settings.ALTERNATE_METRICS_URL
-
     template = 'base/fetch_snippets.jinja'
 
     if client.startpage_version == '5':
@@ -140,7 +135,6 @@ def fetch_render_snippets(request, **kwargs):
         'client': client,
         'locale': client.locale,
         'current_firefox_version': current_firefox_version,
-        'metrics_url': metrics_url,
     })
 
     # ETag will be a hash of the response content.

@@ -1,7 +1,7 @@
 'use strict';
 
 var SNIPPET_METRICS_SAMPLE_RATE = {{ settings.METRICS_SAMPLE_RATE }};
-var SNIPPET_METRICS_URL = '{{ metrics_url }}';
+var SNIPPET_METRICS_URL = '{{ settings.METRICS_URL }}';
 var ABOUTHOME_SHOWN_SNIPPET = null;
 var USER_COUNTRY = null;
 var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
