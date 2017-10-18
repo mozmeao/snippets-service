@@ -148,10 +148,8 @@ class SnippetBundle(object):
         key_properties = ['{id}-{date}'.format(id=snippet.id, date=snippet.modified.isoformat())
                           for snippet in self.snippets]
 
+        key_properties.extend(self.client)
         key_properties.extend([
-            self.client.startpage_version,
-            self.client.locale,
-            self.client.channel,
             SNIPPET_JS_TEMPLATE_HASH,
             SNIPPET_CSS_TEMPLATE_HASH,
             SNIPPET_FETCH_TEMPLATE_HASH,

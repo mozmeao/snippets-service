@@ -417,6 +417,18 @@ class SnippetBundleTests(TestCase):
 
         self.assertNotEqual(bundle1.key, bundle2.key)
 
+    def test_key_name(self):
+        """
+        bundle.key must be different between bundles if they have
+        different names.
+        """
+        client1 = self._client(name='firefox')
+        client2 = self._client(name='firefox-test')
+        bundle1 = SnippetBundle(client1)
+        bundle2 = SnippetBundle(client2)
+
+        self.assertNotEqual(bundle1.key, bundle2.key)
+
     def test_key_equal(self):
         client1 = self._client(locale='en-US', startpage_version='4')
         client2 = self._client(locale='en-US', startpage_version='4')
