@@ -417,6 +417,18 @@ class SnippetBundleTests(TestCase):
 
         self.assertNotEqual(bundle1.key, bundle2.key)
 
+    def test_key_name(self):
+        """
+        bundle.key must be different between bundles if they have
+        different names.
+        """
+        client1 = self._client(name='firefox')
+        client2 = self._client(name='firefox-test')
+        bundle1 = SnippetBundle(client1)
+        bundle2 = SnippetBundle(client2)
+
+        self.assertNotEqual(bundle1.key, bundle2.key)
+
     def test_key_equal(self):
         client1 = self._client(locale='en-US', startpage_version='4')
         client2 = self._client(locale='en-US', startpage_version='4')
@@ -426,6 +438,45 @@ class SnippetBundleTests(TestCase):
         bundle2._snippets = [self.snippet1, self.snippet2]
 
         self.assertEqual(bundle1.key, bundle2.key)
+
+    def test_key_snippet_modified(self):
+        client1 = self._client(locale='en-US', startpage_version='4')
+        bundle = SnippetBundle(client1)
+        bundle._snippets = [self.snippet1]
+        key_1 = bundle.key
+
+        # save snippet, touch modified
+        self.snippet1.save()
+        bundle = SnippetBundle(client1)
+        bundle._snippets = [self.snippet1]
+        key_2 = bundle.key
+        self.assertNotEqual(key_1, key_2)
+
+    def test_key_template_modified(self):
+        client1 = self._client(locale='en-US', startpage_version='4')
+        bundle = SnippetBundle(client1)
+        bundle._snippets = [self.snippet1]
+        key_1 = bundle.key
+
+        # save template, touch modified
+        self.snippet1.template.save()
+        bundle = SnippetBundle(client1)
+        bundle._snippets = [self.snippet1]
+        key_2 = bundle.key
+        self.assertNotEqual(key_1, key_2)
+
+    def test_key_current_firefox_version(self):
+        client1 = self._client(locale='en-US', startpage_version='4')
+        bundle = SnippetBundle(client1)
+        bundle._snippets = [self.snippet1]
+        key_1 = bundle.key
+
+        with patch('snippets.base.util.current_firefox_major_version') as cfmv:
+            cfmv.return_value = 'xx'
+            bundle = SnippetBundle(client1)
+            bundle._snippets = [self.snippet1]
+            key_2 = bundle.key
+        self.assertNotEqual(key_1, key_2)
 
     def test_generate(self):
         """
@@ -440,8 +491,8 @@ class SnippetBundleTests(TestCase):
             with patch('snippets.base.models.render_to_string') as render_to_string:
                 with patch('snippets.base.models.default_storage') as default_storage:
                     with self.settings(SNIPPET_BUNDLE_TIMEOUT=10):
-                        with patch('snippets.base.models.version_list') as version_list:
-                            version_list.return_value = ['45.0']
+                        with patch('snippets.base.util.current_firefox_major_version') as cfmv:
+                            cfmv.return_value = '45'
                             render_to_string.return_value = 'rendered snippet'
                             bundle.generate()
 
@@ -451,7 +502,7 @@ class SnippetBundleTests(TestCase):
             'client': bundle.client,
             'locale': 'fr',
             'settings': settings,
-            'current_firefox_version': '45',
+            'current_firefox_major_version': '45',
         })
         default_storage.save.assert_called_with(bundle.filename, ANY)
         cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
@@ -474,8 +525,8 @@ class SnippetBundleTests(TestCase):
             with patch('snippets.base.models.render_to_string') as render_to_string:
                 with patch('snippets.base.models.default_storage') as default_storage:
                     with self.settings(SNIPPET_BUNDLE_TIMEOUT=10):
-                        with patch('snippets.base.models.version_list') as version_list:
-                            version_list.return_value = ['45.0']
+                        with patch('snippets.base.util.current_firefox_major_version') as cfmv:
+                            cfmv.return_value = '45'
                             render_to_string.return_value = 'rendered snippet'
                             bundle.generate()
 
@@ -485,7 +536,7 @@ class SnippetBundleTests(TestCase):
             'client': bundle.client,
             'locale': 'fr',
             'settings': settings,
-            'current_firefox_version': '45',
+            'current_firefox_major_version': '45',
         })
         default_storage.save.assert_called_with(bundle.filename, ANY)
         cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)

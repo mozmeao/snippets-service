@@ -8,6 +8,6 @@
  //  - {{ id }}
  {% endfor %}
  var ABOUTHOME_SNIPPETS = JSON.parse("{{ snippets_json|escapejs|safe }}");
- var CURRENT_RELEASE = {{ current_firefox_version }};
+ var CURRENT_RELEASE = {{ current_firefox_major_version }};
  {% include 'base/includes/snippet_as.js' %}
 </script>

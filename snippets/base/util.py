@@ -1,6 +1,5 @@
-import hashlib
-
 from product_details import product_details
+from product_details.version_compare import version_list
 
 
 def get_object_or_none(model_class, **filters):
@@ -22,13 +21,6 @@ def first(collection, callback):
     return next((item for item in collection if callback(item)), None)
 
 
-def hashfile(filepath):
-    sha1 = hashlib.sha1()
-    with open(filepath, 'rb') as fp:
-        sha1.update(fp.read())
-    return sha1.hexdigest()
-
-
 def create_locales():
     from snippets.base.models import TargetedLocale
 
@@ -48,3 +40,10 @@ def create_countries():
         if country.name != name:
             country.name = name
             country.save()
+
+
+def current_firefox_major_version():
+    full_version = version_list(
+        product_details.firefox_history_major_releases)[0]
+
+    return full_version.split('.', 1)[0]
