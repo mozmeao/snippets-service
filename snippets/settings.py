@@ -213,7 +213,7 @@ ANON_ALWAYS = True
 
 SNIPPET_BUNDLE_TIMEOUT = config('SNIPPET_BUNDLE_TIMEOUT', default=15 * 60, cast=int)  # 15 minutes
 
-METRICS_URL = config('METRICS_URL', default='https://snippets-stats.mozilla.org/foo.html')
+METRICS_URL = config('METRICS_URL', default='https://snippets-stats.moz.works/foo')
 METRICS_SAMPLE_RATE = config('METRICS_SAMPLE_RATE', default=0.1, cast=float)
 
 SITE_URL = config('SITE_URL', default='')
@@ -301,9 +301,6 @@ RAVEN_CONFIG = {
         'site': '.'.join(x for x in [DEIS_APP, DEIS_DOMAIN] if x),
     }
 }
-
-ALTERNATE_METRICS_URL = config('ALTERNATE_METRICS_URL', default=None)
-ALTERNATE_METRICS_CHANNELS = config('ALTERNATE_METRICS_CHANNELS', default='', cast=Csv())
 
 CACHALOT_ENABLED = config('CACHALOT_ENABLED', default=not DEBUG, cast=bool)
 CACHALOT_TIMEOUT = config('CACHALOT_TIMEOUT', default=300, cast=int)  # 300 = 5 minutes
