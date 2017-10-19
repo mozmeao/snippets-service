@@ -86,7 +86,6 @@ conduit {
       deployStage = true
     }
     onTag(/\d{4}\d{2}\d{2}.\d{1,2}/) {
-      deployStage = true
       deployProd = true
     }
   }
@@ -110,9 +109,6 @@ conduit {
   if (deployProd) {
     for (deploy in config.deploy.prod) {
       stage ("Deploying to ${deploy.name}") {
-        timeout(time: 10, unit: 'MINUTES') {
-          input("Push to ${deploy.name}?")
-        }
         node {
           lock("push to ${deploy.name}") {
             deis_executable = deploy.deis_executable ?: "deis"
@@ -121,6 +117,13 @@ conduit {
             }
             newRelicDeployment(deploy.newrelic_app, env.GIT_COMMIT_SHORT,
                                "jenkins", "newrelic-api-key")
+          }
+        }
+      }
+      stage ("Acceptance tests against ${deploy.name}") {
+        node {
+          lock("push to ${deploy.name}") {
+            sh "bin/acceptance_tests.sh ${deploy.app_url}"
           }
         }
       }
