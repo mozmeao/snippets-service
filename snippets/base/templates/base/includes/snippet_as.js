@@ -12,17 +12,19 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
     // See https://github.com/mozilla/activity-stream/blob/master/docs/v2-system-addon/snippets.md
     // for documentation on the gSnippetsMap API
 
-    // If onboardingFinished is false, there may already be an onboarding snippet
-    // shown so we cannot show a snippet. However, .disableOnboarding() can be
-    // called so that it won't be shown on the *next* new tab
-    if (gSnippetsMap.get("appData.onboardingFinished") === false) {
-      return;
-    }
+    {% if not preview %}
+        // Fetch user country if we don't have it.
+        if (!haveUserCountry()) {
+            downloadUserCountry();
+        }
 
-    // Fetch user country if we don't have it.
-    if (!haveUserCountry()) {
-        downloadUserCountry();
-    }
+        // If onboardingFinished is false, there may already be an onboarding snippet
+        // shown so we cannot show a snippet. However, .disableOnboarding() can be
+        // called so that it won't be shown on the *next* new tab
+        if (gSnippetsMap.get("appData.onboardingFinished") === false) {
+          return;
+        }
+    {% endif %}
 
     if (ABOUTHOME_SNIPPETS.length > 0) {
         ABOUTHOME_SHOWN_SNIPPET = chooseSnippet(ABOUTHOME_SNIPPETS);
