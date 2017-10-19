@@ -6,9 +6,18 @@ var ABOUTHOME_SHOWN_SNIPPET = null;
 var USER_COUNTRY = null;
 var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
 
-
-(function() {
+(async function() {
     'use strict';
+
+    // See https://github.com/mozilla/activity-stream/blob/master/docs/v2-system-addon/snippets.md
+    // for documentation on the gSnippetsMap API
+
+    // If onboardingFinished is false, there may already be an onboarding snippet
+    // shown so we cannot show a snippet. However, .disableOnboarding() can be
+    // called so that it won't be shown on the *next* new tab
+    if (gSnippetsMap.get("appData.onboardingFinished") === false) {
+      return;
+    }
 
     // Fetch user country if we don't have it.
     if (!haveUserCountry()) {
