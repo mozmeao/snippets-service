@@ -241,7 +241,9 @@
             var confirmed;
             var self = this;
             this.$dataInput.val(JSON.stringify(this.generateData()));
-            var data = this.$dataInput.serialize() + '&template_id=' + this.$templateSelect.val() + '&skip_boilerplate=true';
+            this.$activityStreamInput = this.$form.find('input[name="activity_stream"]');
+            var data = (this.$dataInput.serialize() + '&template_id=' + this.$templateSelect.val() +
+                        '&skip_boilerplate=true' + '&activity_stream=' + $activityStreamInput);
             $.ajax({
                 type: 'POST',
                 url:'/preview/',

@@ -190,16 +190,19 @@ def preview_snippet(request):
     # Build a snippet that isn't saved so we can render it.
     snippet = Snippet(template=template, data=data)
 
-    skip_boilerplate = request.POST.get('skip_boilerplate', 'false')
-    skip_boilerplate = strtobool(skip_boilerplate)
-
-    template_name = 'base/preview_without_shell.jinja' if skip_boilerplate else 'base/preview.jinja'
-    preview_client = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
-                            'release', 'default', 'default', 'default')
     if strtobool(request.POST.get('activity_stream', 'false')):
         template_name = 'base/preview_as.jinja'
         preview_client = Client('5', 'Firefox', '57.0', 'default', 'default', 'en-US',
                                 'release', 'default', 'default', 'default')
+    else:
+        template_name = 'base/preview.jinja'
+        preview_client = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
+                                'release', 'default', 'default', 'default')
+
+    skip_boilerplate = request.POST.get('skip_boilerplate', 'false')
+    skip_boilerplate = strtobool(skip_boilerplate)
+    if skip_boilerplate:
+        template_name = 'base/preview_without_shell.jinja'
 
     return render(request, template_name, {
         'snippets_json': json.dumps([snippet.to_dict()]),

@@ -200,11 +200,29 @@ class PreviewSnippetTests(TestCase):
         """If template_id and data are both valid, return the preview page."""
         template = SnippetTemplateFactory.create()
         data = '{"a": "b"}'
-
         response = self._preview_snippet(template_id=template.id, data=data)
         self.assertEqual(response.status_code, 200)
-        snippet = response.context['snippets_json']
-        self.assertTrue(json.loads(snippet))
+        self.assertEqual(response.context['client'].startpage_version, '4')
+        self.assertTemplateUsed(response, 'base/preview.jinja')
+
+    def test_valid_args_activity_stream(self):
+        """If template_id and data are both valid, return the preview page."""
+        template = SnippetTemplateFactory.create()
+        data = '{"a": "b"}'
+        response = self._preview_snippet(template_id=template.id, activity_stream=True, data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['client'].startpage_version, '5')
+        self.assertTemplateUsed(response, 'base/preview_as.jinja')
+
+    def test_skip_boilerplate(self):
+        """If template_id and data are both valid, return the preview page."""
+        template = SnippetTemplateFactory.create()
+        data = '{"a": "b"}'
+        response = self._preview_snippet(template_id=template.id, skip_boilerplate=True,
+                                         activity_stream=True, data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['client'].startpage_version, '5')
+        self.assertTemplateUsed(response, 'base/preview_without_shell.jinja')
 
 
 class ShowSnippetTests(TestCase):
