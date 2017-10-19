@@ -107,7 +107,7 @@ conduit {
       stage ("Acceptance tests against ${deploy.name}") {
         node {
           lock("push to ${deploy.name}") {
-            sh "bin/acceptance_tests.sh ${deploy.app_url}"
+            sh "bin/acceptance-tests.sh ${deploy.app_url}"
           }
         }
       }
@@ -130,7 +130,7 @@ conduit {
       stage ("Acceptance tests against ${deploy.name}") {
         node {
           lock("push to ${deploy.name}") {
-            sh "bin/acceptance_tests.sh ${deploy.app_url}"
+            sh "bin/acceptance-tests.sh ${deploy.app_url}"
           }
         }
       }
