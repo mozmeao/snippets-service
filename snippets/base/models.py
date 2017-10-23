@@ -41,6 +41,7 @@ SNIPPET_FETCH_TEMPLATE_HASH = hashlib.sha1(
     render_to_string(
         'base/fetch_snippets.jinja',
         {
+            'date': '',
             'snippet_ids': [],
             'snippets_json': '',
             'locale': 'xx',
@@ -54,6 +55,7 @@ SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
     render_to_string(
         'base/fetch_snippets_as.jinja',
         {
+            'date': '',
             'snippet_ids': [],
             'snippets_json': '',
             'locale': 'xx',
