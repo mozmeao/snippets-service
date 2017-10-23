@@ -1,8 +1,8 @@
 import json
+from collections import OrderedDict
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 
@@ -17,89 +17,6 @@ from snippets.base.tests import (JSONSnippetFactory, SnippetFactory,
 
 snippets.base.models.CHANNELS = ('release', 'beta', 'aurora', 'nightly')
 snippets.base.models.FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4')
-
-
-@override_settings(SERVE_SNIPPET_BUNDLES=False)
-class FetchRenderSnippetsTests(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.client_items = [
-            ('startpage_version', '4'),
-            ('name', 'Firefox'),
-            ('version', '23.0a1'),
-            ('appbuildid', '20130510041606'),
-            ('build_target', 'Darwin_Universal-gcc3'),
-            ('locale', 'en-US'),
-            ('channel', 'nightly'),
-            ('os_version', 'Darwin 10.8.0'),
-            ('distribution', 'default'),
-            ('distribution_version', 'default_version'),
-        ]
-        self.client_params = [v[1] for v in self.client_items]
-        self.client_kwargs = dict(self.client_items)
-
-    def test_base(self):
-        # Matching snippets.
-        snippet_1 = SnippetFactory.create(on_nightly=True)
-
-        # Matching but disabled snippet.
-        SnippetFactory.create(on_nightly=True, disabled=True)
-
-        # Snippet that doesn't match.
-        SnippetFactory.create(on_nightly=False),
-
-        params = self.client_params
-        response = self.client.get('/{0}/'.format('/'.join(params)))
-
-        snippets_json = json.dumps([snippet_1.to_dict()])
-
-        self.assertTemplateUsed(response, 'base/fetch_snippets.jinja')
-        self.assertEqual(snippets_json, response.context['snippets_json'])
-        self.assertEqual(response.context['locale'], 'en-US')
-
-    @patch('snippets.base.views.Client', wraps=Client)
-    def test_client_construction(self, ClientMock):
-        """
-        Ensure that the client object is constructed correctly from the URL
-        arguments.
-        """
-        params = self.client_params
-        self.client.get('/{0}/'.format('/'.join(params)))
-
-        ClientMock.assert_called_with(**self.client_kwargs)
-
-    @override_settings(SNIPPET_HTTP_MAX_AGE=75)
-    def test_cache_headers(self):
-        """
-        fetch_snippets should always have Cache-control set to
-        'public, max-age={settings.SNIPPET_HTTP_MAX_AGE}' and a Vary
-        header for 'If-None-Match'.
-        """
-        params = self.client_params
-        response = self.client.get('/{0}/'.format('/'.join(params)))
-        cache_headers = [header.strip() for header in response['Cache-control'].split(',')]
-        self.assertEqual(set(cache_headers), set(['public', 'max-age=75']))
-        self.assertEqual(response['Vary'], 'If-None-Match')
-
-    def test_etag(self):
-        """
-        The response returned by fetch_snippets should have a ETag set
-        to the sha256 hash of the response content.
-        """
-        request = self.factory.get('/')
-
-        with patch.object(views, 'render') as mock_render:
-            mock_render.return_value = HttpResponse('asdf')
-            response = views.fetch_snippets(request, **self.client_kwargs)
-
-            # sha256 of 'asdf'
-            expected = 'f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b'
-            self.assertEqual(response['ETag'], expected)
-
-    def test_activity_stream(self):
-        params = ['5'] + self.client_params[1:]
-        response = self.client.get('/{0}/'.format('/'.join(params)))
-        self.assertTemplateUsed(response, 'base/fetch_snippets_as.jinja')
 
 
 class JSONSnippetsTests(TestCase):
@@ -144,11 +61,11 @@ class JSONSnippetsTests(TestCase):
                                       distribution='default',
                                       distribution_version='default_version')
 
-    @override_settings(SNIPPET_HTTP_MAX_AGE=75)
+    @override_settings(SNIPPET_BUNDLE_TIMEOUT=75)
     def test_cache_headers(self):
         """
         view_snippets should always have Cache-control set to
-        'public, max-age={settings.SNIPPET_HTTP_MAX_AGE}' and no Vary header,
+        'public, max-age={settings.SNIPPET_BUNDLE_TIMEOUT}'
         even after middleware is executed.
         """
         params = ('1', 'Fennec', '23.0a1', '20130510041606',
@@ -370,29 +287,29 @@ class IndexSnippetsTests(TestCase):
         self.assertEqual(len(pagination_range), 5)
 
 
-class FetchPregeneratedSnippetsTests(TestCase):
+class FetchSnippetsTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.request = self.factory.get('/')
-        self.client_kwargs = {
-            'startpage_version': '4',
-            'name': 'Firefox',
-            'version': '23.0a1',
-            'appbuildid': '20130510041606',
-            'build_target': 'Darwin_Universal-gcc3',
-            'locale': 'en-US',
-            'channel': 'nightly',
-            'os_version': 'Darwin 10.8.0',
-            'distribution': 'default',
-            'distribution_version': 'default_version',
-        }
+        self.client_kwargs = OrderedDict([
+            ('startpage_version', '4'),
+            ('name', 'Firefox'),
+            ('version', '23.0a1'),
+            ('appbuildid', '20130510041606'),
+            ('build_target', 'Darwin_Universal-gcc3'),
+            ('locale', 'en-US'),
+            ('channel', 'nightly'),
+            ('os_version', 'Darwin 10.8.0'),
+            ('distribution', 'default'),
+            ('distribution_version', 'default_version'),
+        ])
 
     def test_normal(self):
         with patch.object(views, 'SnippetBundle') as SnippetBundle:
             bundle = SnippetBundle.return_value
             bundle.url = '/foo/bar'
             bundle.expired = False
-            response = views.fetch_pregenerated_snippets(self.request, **self.client_kwargs)
+            response = views.fetch_snippets(self.request, **self.client_kwargs)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/foo/bar')
@@ -409,7 +326,7 @@ class FetchPregeneratedSnippetsTests(TestCase):
             bundle = SnippetBundle.return_value
             bundle.url = '/foo/bar'
             bundle.cached = False
-            response = views.fetch_pregenerated_snippets(self.request, **self.client_kwargs)
+            response = views.fetch_snippets(self.request, **self.client_kwargs)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/foo/bar')
@@ -417,25 +334,26 @@ class FetchPregeneratedSnippetsTests(TestCase):
         # Since the bundle was expired, ensure it was re-generated.
         self.assertTrue(SnippetBundle.return_value.generate.called)
 
+    @patch('snippets.base.views.Client', wraps=Client)
+    def test_client_construction(self, ClientMock):
+        """
+        Ensure that the client object is constructed correctly from the URL
+        arguments.
+        """
+        self.client.get('/{0}/'.format('/'.join(self.client_kwargs.values())))
 
-class FetchSnippetsTests(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.request = self.factory.get('/')
+        ClientMock.assert_called_with(**self.client_kwargs)
 
-    @override_settings(SERVE_SNIPPET_BUNDLES=False)
-    def test_flag_off(self):
-        with patch.object(views, 'fetch_render_snippets') as fetch_render_snippets:
-            self.assertEqual(views.fetch_snippets(self.request, foo='bar'),
-                             fetch_render_snippets.return_value)
-            fetch_render_snippets.assert_called_with(self.request, foo='bar')
-
-    @override_settings(SERVE_SNIPPET_BUNDLES=True)
-    def test_flag_on(self):
-        with patch.object(views, 'fetch_pregenerated_snippets') as fetch_pregenerated_snippets:
-            self.assertEqual(views.fetch_snippets(self.request, foo='bar'),
-                             fetch_pregenerated_snippets.return_value)
-            fetch_pregenerated_snippets.assert_called_with(self.request, foo='bar')
+    @override_settings(SNIPPET_BUNDLE_TIMEOUT=75)
+    def test_cache_headers(self):
+        """
+        fetch_snippets should always have Cache-control set to
+        'public, max-age={settings.SNIPPET_BUNDLE_TIMEOUT}'
+        """
+        params = self.client_kwargs.values()
+        response = self.client.get('/{0}/'.format('/'.join(params)))
+        cache_headers = [header.strip() for header in response['Cache-control'].split(',')]
+        self.assertEqual(set(cache_headers), set(['public', 'max-age=75']))
 
 
 class HealthzViewTests(TestCase):
