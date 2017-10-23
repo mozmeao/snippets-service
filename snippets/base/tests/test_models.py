@@ -379,9 +379,9 @@ class SnippetBundleTests(TestCase):
         """
         client = self._client()
         bundle1 = SnippetBundle(client)
-        bundle1._snippets = [self.snippet1, self.snippet2]
+        bundle1.snippets = [self.snippet1, self.snippet2]
         bundle2 = SnippetBundle(client)
-        bundle2._snippets = [self.snippet2]
+        bundle2.snippets = [self.snippet2]
 
         self.assertNotEqual(bundle1.key, bundle2.key)
 
@@ -433,48 +433,48 @@ class SnippetBundleTests(TestCase):
         client1 = self._client(locale='en-US', startpage_version='4')
         client2 = self._client(locale='en-US', startpage_version='4')
         bundle1 = SnippetBundle(client1)
-        bundle1._snippets = [self.snippet1, self.snippet2]
+        bundle1.snippets = [self.snippet1, self.snippet2]
         bundle2 = SnippetBundle(client2)
-        bundle2._snippets = [self.snippet1, self.snippet2]
+        bundle2.snippets = [self.snippet1, self.snippet2]
 
         self.assertEqual(bundle1.key, bundle2.key)
 
     def test_key_snippet_modified(self):
         client1 = self._client(locale='en-US', startpage_version='4')
         bundle = SnippetBundle(client1)
-        bundle._snippets = [self.snippet1]
+        bundle.snippets = [self.snippet1]
         key_1 = bundle.key
 
         # save snippet, touch modified
         self.snippet1.save()
         bundle = SnippetBundle(client1)
-        bundle._snippets = [self.snippet1]
+        bundle.snippets = [self.snippet1]
         key_2 = bundle.key
         self.assertNotEqual(key_1, key_2)
 
     def test_key_template_modified(self):
         client1 = self._client(locale='en-US', startpage_version='4')
         bundle = SnippetBundle(client1)
-        bundle._snippets = [self.snippet1]
+        bundle.snippets = [self.snippet1]
         key_1 = bundle.key
 
         # save template, touch modified
         self.snippet1.template.save()
         bundle = SnippetBundle(client1)
-        bundle._snippets = [self.snippet1]
+        bundle.snippets = [self.snippet1]
         key_2 = bundle.key
         self.assertNotEqual(key_1, key_2)
 
     def test_key_current_firefox_version(self):
         client1 = self._client(locale='en-US', startpage_version='4')
         bundle = SnippetBundle(client1)
-        bundle._snippets = [self.snippet1]
+        bundle.snippets = [self.snippet1]
         key_1 = bundle.key
 
         with patch('snippets.base.util.current_firefox_major_version') as cfmv:
             cfmv.return_value = 'xx'
             bundle = SnippetBundle(client1)
-            bundle._snippets = [self.snippet1]
+            bundle.snippets = [self.snippet1]
             key_2 = bundle.key
         self.assertNotEqual(key_1, key_2)
 
@@ -485,7 +485,7 @@ class SnippetBundleTests(TestCase):
         """
         bundle = SnippetBundle(self._client(locale='fr'))
         bundle.storage = Mock()
-        bundle._snippets = [self.snippet1, self.snippet2]
+        bundle.snippets = [self.snippet1, self.snippet2]
 
         with patch('snippets.base.models.cache') as cache:
             with patch('snippets.base.models.render_to_string') as render_to_string:
@@ -519,7 +519,7 @@ class SnippetBundleTests(TestCase):
         """
         bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
         bundle.storage = Mock()
-        bundle._snippets = [self.snippet1, self.snippet2]
+        bundle.snippets = [self.snippet1, self.snippet2]
 
         with patch('snippets.base.models.cache') as cache:
             with patch('snippets.base.models.render_to_string') as render_to_string:

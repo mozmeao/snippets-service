@@ -148,7 +148,6 @@ class SnippetBundle(object):
     """
     def __init__(self, client):
         self.client = client
-        self._snippets = None
 
     @cached_property
     def key(self):
@@ -210,17 +209,14 @@ class SnippetBundle(object):
 
         return full_url
 
-    @property
+    @cached_property
     def snippets(self):
-        # Lazy-load snippets on first access.
-        if self._snippets is None:
-            self._snippets = (Snippet.objects
-                              .filter(disabled=False)
-                              .match_client(self.client)
-                              .select_related('template')
-                              .prefetch_related('countries', 'exclude_from_search_providers')
-                              .filter_by_available())
-        return self._snippets
+        return (Snippet.objects
+                .filter(disabled=False)
+                .match_client(self.client)
+                .select_related('template')
+                .prefetch_related('countries', 'exclude_from_search_providers')
+                .filter_by_available())
 
     def generate(self):
         """Generate and save the code for this snippet bundle."""
