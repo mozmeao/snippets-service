@@ -1,7 +1,11 @@
 {% include 'base/includes/snippet.css' %}
 <script type="text/javascript">
  //<![CDATA[
- // Generated on {{ utcnow() }}
+{#
+ The date variable gets populated when we calculate the template hash for caching
+ and gets the default utcnow() time otherwise.
+#}
+ // Generated on {{ date|default(utcnow()) }}
  // Included snippets:
      {% for id in snippet_ids %}
  //  - {{ id }}

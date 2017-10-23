@@ -41,6 +41,7 @@ SNIPPET_FETCH_TEMPLATE_HASH = hashlib.sha1(
     render_to_string(
         'base/fetch_snippets.jinja',
         {
+            'date': '',
             'snippet_ids': [],
             'snippets_json': '',
             'locale': 'xx',
@@ -54,6 +55,7 @@ SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
     render_to_string(
         'base/fetch_snippets_as.jinja',
         {
+            'date': '',
             'snippet_ids': [],
             'snippets_json': '',
             'locale': 'xx',
@@ -152,21 +154,28 @@ class SnippetBundle(object):
     @cached_property
     def key(self):
         """A unique key for this bundle as a sha1 hexdigest."""
-        # Key should consist of snippets that are in the bundle plus any
-        # properties of the client that may change the snippet code
-        # being sent.
+        # Key should consist of snippets that are in the bundle. This part
+        # accounts for all the properties sent by the Client, since the
+        # self.snippets lists snippets are all filters and CMRs have been
+        # applied.
         key_properties = [
             '{id}-{date}-{templatedate}'.format(id=snippet.id,
                                                 date=snippet.modified.isoformat(),
                                                 templatedate=snippet.template.modified.isoformat())
             for snippet in self.snippets]
 
-        key_properties.extend(self.client)
+        # Additional values used to calculate the key are the templates and the
+        # variables used to render them besides snippets.
         key_properties.extend([
-            SNIPPET_FETCH_TEMPLATE_HASH,
-            SNIPPET_FETCH_TEMPLATE_AS_HASH,
+            self.client.startpage_version,
+            self.client.locale,
             util.current_firefox_major_version(),
+
         ])
+        if self.client.startpage_version == '5':
+            key_properties.append(SNIPPET_FETCH_TEMPLATE_AS_HASH)
+        else:
+            key_properties.append(SNIPPET_FETCH_TEMPLATE_HASH)
 
         key_string = u'_'.join(key_properties)
         return hashlib.sha1(key_string.encode('utf-8')).hexdigest()
