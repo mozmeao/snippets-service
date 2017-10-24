@@ -124,7 +124,7 @@ class BaseSnippetAdmin(VersionAdmin, DefaultFilterMixIn, admin.ModelAdmin):
         'weight',
     )
 
-    readonly_fields = ('created', 'modified')
+    readonly_fields = ('created', 'modified', 'uuid')
     save_on_top = True
     save_as = True
 
@@ -207,6 +207,10 @@ class SnippetAdmin(BaseSnippetAdmin):
             'description': ('Would you like to <strong>exclude</strong> '
                             'any search providers from this snippet?'),
             'fields': (('exclude_from_search_providers',),)
+        }),
+        ('Other Info', {
+            'fields': (('uuid',),),
+            'classes': ('collapse',)
         }),
     )
 
@@ -334,6 +338,10 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
         }),
         ('Startpage Versions', {
             'fields': (('on_startpage_1',),),
+            'classes': ('collapse',)
+        }),
+        ('Other Info', {
+            'fields': (('uuid',),),
             'classes': ('collapse',)
         }),
     )

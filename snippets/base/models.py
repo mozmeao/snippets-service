@@ -356,6 +356,8 @@ class ClientMatchRule(models.Model):
 
 
 class SnippetBaseModel(django_mysql.models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
     def duplicate(self):
         snippet_copy = copy.copy(self)
         snippet_copy.id = None
