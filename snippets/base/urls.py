@@ -18,6 +18,8 @@ urlpatterns = [
         views.fetch_json_snippets, name='base.fetch_json_snippets'),
     url(r'^preview/$', views.preview_snippet, name='base.preview'),
     url(r'^show/(?P<snippet_id>\d+)/$', views.show_snippet, name='base.show'),
+    url(r'^show/uuid/(?P<snippet_id>[\w-]+)/$', views.show_snippet,
+        {'uuid': True}, name='base.show_uuid'),
     url(r'^json-snippets/', views.JSONSnippetIndexView.as_view(), name='base.index_json'),
     url(r'^csp-violation-capture$', views.csp_violation_capture,
         name='csp-violation-capture'),

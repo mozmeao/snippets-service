@@ -212,15 +212,21 @@ def preview_snippet(request):
     })
 
 
-def show_snippet(request, snippet_id):
+def show_snippet(request, snippet_id, uuid=False):
     preview_client = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
                             'release', 'default', 'default', 'default')
 
-    snippet = get_object_or_404(Snippet, pk=snippet_id)
-    if snippet.disabled and not request.user.is_authenticated():
-        raise Http404()
+    if uuid:
+        snippet = get_object_or_404(Snippet, uuid=snippet_id)
+    else:
+        snippet = get_object_or_404(Snippet, pk=snippet_id)
+        if snippet.disabled and not request.user.is_authenticated():
+            raise Http404()
 
-    return render(request, 'base/preview.jinja', {
+    template = 'base/preview.jinja'
+    if snippet.on_startpage_5:
+        template = 'base/preview_as.jinja'
+    return render(request, template, {
         'snippets_json': json.dumps([snippet.to_dict()]),
         'client': preview_client,
         'preview': True,

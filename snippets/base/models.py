@@ -362,6 +362,7 @@ class SnippetBaseModel(django_mysql.models.Model):
         snippet_copy = copy.copy(self)
         snippet_copy.id = None
         snippet_copy.disabled = True
+        snippet_copy.uuid = uuid.uuid4()
         snippet_copy.name = '{0} - {1}'.format(
             self.name,
             datetime.strftime(datetime.now(), '%Y.%m.%d %H:%M:%S'))
@@ -513,11 +514,13 @@ class Snippet(SnippetBaseModel):
                 channels.append(channel)
         return channels
 
+    def get_preview_url(self):
+        url = reverse('base.show_uuid', kwargs={'snippet_id': self.uuid})
+        full_url = urljoin(settings.SITE_URL, url)
+        return full_url
+
     def __unicode__(self):
         return self.name
-
-    def get_absolute_url(self):
-        return reverse('base.show', kwargs={'snippet_id': self.id})
 
     def save(self, *args, **kwargs):
         if self.client_options is None:
