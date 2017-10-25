@@ -107,6 +107,9 @@ def fetch_pregenerated_snippets(request, **kwargs):
     else:
         statsd.incr('bundle.cached')
 
+    if len(bundle.snippets) == 0:
+        statsd.incr('bundle.empty')
+
     return HttpResponseRedirect(bundle.url)
 
 
