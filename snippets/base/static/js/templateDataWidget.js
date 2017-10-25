@@ -42,7 +42,7 @@
         this.$templateSelect = $('select[name="' + selectName + '"]');
         this.$dataInput = $('input[name="' + inputName + '"]');
 
-        this.snippetSizeThreshold = this.$container.data('snippetSizeLimit')
+        this.snippetSizeThreshold = this.$container.data('snippetSizeLimit');
         this.snippetImgSizeThreshold = this.$container.data('snippetImgSizeLimit');
 
         // Throw an error if we can't find the elements we need.
@@ -240,10 +240,11 @@
         onFormSubmit: function() {
             var confirmed;
             var self = this;
+
             this.$dataInput.val(JSON.stringify(this.generateData()));
-            this.$activityStreamInput = this.$form.find('input[name="activity_stream"]');
+            this.is_activity_stream = document.querySelector('input[name="on_startpage_5"]').checked;
             var data = (this.$dataInput.serialize() + '&template_id=' + this.$templateSelect.val() +
-                        '&skip_boilerplate=true' + '&activity_stream=' + $activityStreamInput);
+                        '&skip_boilerplate=true' + '&activity_stream=' + this.is_activity_stream);
             $.ajax({
                 type: 'POST',
                 url:'/preview/',
