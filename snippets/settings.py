@@ -235,8 +235,6 @@ CACHES = {
         cast=django_cache_url.parse),
 }
 
-SERVE_SNIPPET_BUNDLES = config('SERVE_SNIPPET_BUNDLES', default=not DEBUG, cast=bool)
-
 GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-4205-9a11-82feda9d83a3'  # noqa
 
 PROD_DETAILS_CACHE_NAME = 'product-details'
@@ -262,7 +260,6 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
 
 DEAD_MANS_SNITCH_URL = config('DEAD_MANS_SNITCH_URL', default=None)
 
-SNIPPET_HTTP_MAX_AGE = config('SNIPPET_HTTP_MAX_AGE', default=90)
 SNIPPETS_PER_PAGE = config('SNIPPETS_PER_PAGE', default=50)
 
 ENGAGE_ROBOTS = config('ENGAGE_ROBOTS', default=False)

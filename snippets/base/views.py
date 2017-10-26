@@ -1,4 +1,3 @@
-import hashlib
 import json
 import logging
 
@@ -9,7 +8,6 @@ from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from django.utils.cache import patch_vary_headers
 from django.utils.functional import lazy
 from django.views.generic import TemplateView
 from django.views.decorators.cache import cache_control, cache_page
@@ -27,9 +25,9 @@ from snippets.base.models import Client, JSONSnippet, Snippet, SnippetBundle, Sn
 from snippets.base.util import get_object_or_none
 
 
-def _http_max_age():
-    return getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 90)
-HTTP_MAX_AGE = lazy(_http_max_age, str)()  # noqa
+def _bundle_timeout():
+    return getattr(settings, 'SNIPPET_BUNDLE_TIMEOUT')
+SNIPPET_BUNDLE_TIMEOUT = lazy(_bundle_timeout, int)()  # noqa
 
 
 class SnippetFilter(django_filters.FilterSet):
@@ -92,13 +90,15 @@ class JSONSnippetIndexView(IndexView):
         return self.render(request, *args, **kwargs)
 
 
-@cache_control(public=True, max_age=settings.SNIPPET_BUNDLE_TIMEOUT)
-@access_control(max_age=settings.SNIPPET_BUNDLE_TIMEOUT)
-def fetch_pregenerated_snippets(request, **kwargs):
+@cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)
+@access_control(max_age=SNIPPET_BUNDLE_TIMEOUT)
+def fetch_snippets(request, **kwargs):
     """
     Return a redirect to a pre-generated bundle of snippets for the
     client. If the bundle in question is expired, re-generate it.
     """
+    statsd.incr('serve.snippets')
+
     client = Client(**kwargs)
     bundle = SnippetBundle(client)
     if not bundle.cached:
@@ -110,47 +110,8 @@ def fetch_pregenerated_snippets(request, **kwargs):
     return HttpResponseRedirect(bundle.url)
 
 
-@cache_control(public=True, max_age=HTTP_MAX_AGE)
-@access_control(max_age=HTTP_MAX_AGE)
-def fetch_render_snippets(request, **kwargs):
-    """Fetch snippets for the client and render them immediately."""
-    client = Client(**kwargs)
-    matching_snippets = (Snippet.objects
-                         .filter(disabled=False)
-                         .match_client(client)
-                         .select_related('template')
-                         .filter_by_available())
-
-    template = 'base/fetch_snippets.jinja'
-
-    if client.startpage_version == '5':
-        template = 'base/fetch_snippets_as.jinja'
-    response = render(request, template, {
-        'snippet_ids': [snippet.id for snippet in matching_snippets],
-        'snippets_json': json.dumps([s.to_dict() for s in matching_snippets]),
-        'client': client,
-        'locale': client.locale,
-        'current_firefox_major_version': util.current_firefox_major_version(),
-    })
-
-    # ETag will be a hash of the response content.
-    response['ETag'] = hashlib.sha256(response.content).hexdigest()
-    patch_vary_headers(response, ['If-None-Match'])
-
-    return response
-
-
-def fetch_snippets(request, **kwargs):
-    """Determine which snippet-fetching method to use."""
-    statsd.incr('serve.snippets')
-    if settings.SERVE_SNIPPET_BUNDLES:
-        return fetch_pregenerated_snippets(request, **kwargs)
-    else:
-        return fetch_render_snippets(request, **kwargs)
-
-
-@cache_control(public=True, max_age=HTTP_MAX_AGE)
-@access_control(max_age=HTTP_MAX_AGE)
+@cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)
+@access_control(max_age=SNIPPET_BUNDLE_TIMEOUT)
 def fetch_json_snippets(request, **kwargs):
     statsd.incr('serve.json_snippets')
     client = Client(**kwargs)
