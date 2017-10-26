@@ -308,7 +308,8 @@ class FetchSnippetsTests(TestCase):
         with patch.object(views, 'SnippetBundle') as SnippetBundle:
             bundle = SnippetBundle.return_value
             bundle.url = '/foo/bar'
-            bundle.expired = False
+            bundle.empty = False
+            bundle.cached = True
             response = views.fetch_snippets(self.request, **self.client_kwargs)
 
         self.assertEqual(response.status_code, 302)
@@ -325,6 +326,7 @@ class FetchSnippetsTests(TestCase):
         with patch.object(views, 'SnippetBundle') as SnippetBundle:
             bundle = SnippetBundle.return_value
             bundle.url = '/foo/bar'
+            bundle.empty = False
             bundle.cached = False
             response = views.fetch_snippets(self.request, **self.client_kwargs)
 
@@ -333,6 +335,15 @@ class FetchSnippetsTests(TestCase):
 
         # Since the bundle was expired, ensure it was re-generated.
         self.assertTrue(SnippetBundle.return_value.generate.called)
+
+    def test_empty(self):
+        """If the bundle is empty return 204. """
+        with patch.object(views, 'SnippetBundle') as SnippetBundle:
+            bundle = SnippetBundle.return_value
+            bundle.empty = True
+            response = views.fetch_snippets(self.request, **self.client_kwargs)
+
+        self.assertEqual(response.status_code, 204)
 
     @patch('snippets.base.views.Client', wraps=Client)
     def test_client_construction(self, ClientMock):

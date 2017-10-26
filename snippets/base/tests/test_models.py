@@ -555,3 +555,10 @@ class SnippetBundleTests(TestCase):
             with patch('snippets.base.models.default_storage') as default_storage:
                 default_storage.exists.return_value = False
                 self.assertFalse(bundle.cached)
+
+    def test_empty(self):
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+        self.assertTrue(bundle.empty)
+
+        bundle.snippets = [self.snippet1, self.snippet2]
+        self.assertFalse(bundle.empty)

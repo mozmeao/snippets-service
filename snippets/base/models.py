@@ -181,6 +181,10 @@ class SnippetBundle(object):
         return hashlib.sha1(key_string.encode('utf-8')).hexdigest()
 
     @property
+    def empty(self):
+        return len(self.snippets) == 0
+
+    @property
     def cache_key(self):
         return u'bundle_' + self.key
 
