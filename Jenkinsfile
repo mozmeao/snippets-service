@@ -82,11 +82,11 @@ conduit {
   def deployProd = false
 
   node {
-    if (onTag(/\d{4}\d{2}\d{2}.\d{1,2}/)) {
-       deployProd = true
-    }
-    else if (onBranch("master")) {
+    onBranch("master") {
        deployStage = true
+    }
+    onBranch("production") {
+       deployProd = true
     }
   }
 
