@@ -7,7 +7,8 @@ URLS=(
     "/robots.txt"
     "/contribute.json"
     "/4/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/en-US/release/Windows_NT%206.1/default/default/"
-    "/5/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/en-US/release/Windows_NT%206.1/default/default/"
+    # Re-enable when we launch AS to release.
+    # "/5/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/en-US/release/Windows_NT%206.1/default/default/"
     "/json/1/Fennec/55.0.2/20170815231002/Android_arm-eabi-gcc3/en-GB/release/Linux%2022/default/default/"
 )
 
@@ -30,5 +31,9 @@ done
 
 # Check a page that throws 404. Not ideal but will surface 500s
 check_http_code ${BASE_URL}/foo 404
+
+# Check empty bundles
+check_http_code ${BASE_URL}/4/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/xx/release/Windows_NT%206.1/default/default/ 204
+check_http_code ${BASE_URL}/5/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/xx/release/Windows_NT%206.1/default/default/ 204
 
 exit ${EXIT}
