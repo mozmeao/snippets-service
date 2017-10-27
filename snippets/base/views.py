@@ -94,18 +94,22 @@ class JSONSnippetIndexView(IndexView):
 @access_control(max_age=SNIPPET_BUNDLE_TIMEOUT)
 def fetch_snippets(request, **kwargs):
     """
-    Return a redirect to a pre-generated bundle of snippets for the
-    client. If the bundle in question is expired, re-generate it.
+    Return one of the following responses:
+    - 204 with the bundle is empty
+    - 302 to a bundle URL after generating it if not cached.
     """
     statsd.incr('serve.snippets')
 
     client = Client(**kwargs)
     bundle = SnippetBundle(client)
-    if not bundle.cached:
-        bundle.generate()
-        statsd.incr('bundle.generate')
-    else:
+    if bundle.empty:
+        statsd.incr('bundle.empty')
+        return HttpResponse(status=204)
+    elif bundle.cached:
         statsd.incr('bundle.cached')
+    else:
+        statsd.incr('bundle.generate')
+        bundle.generate()
 
     return HttpResponseRedirect(bundle.url)
 
