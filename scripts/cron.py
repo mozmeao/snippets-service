@@ -2,18 +2,22 @@ from __future__ import print_function
 import datetime
 import os
 import sys
+from subprocess import check_call
 
-from django.core.management import call_command
 from django.conf import settings
-from django.db import connections
 
-import requests
+import babis
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 from snippets.base.util import create_countries, create_locales
 
 
+MANAGE = os.path.join(settings.ROOT, 'manage.py')
 schedule = BlockingScheduler()
+
+
+def call_command(command):
+    check_call('python {0} {1}'.format(MANAGE, command), shell=True)
 
 
 class scheduled_job(object):
@@ -47,27 +51,18 @@ class scheduled_job(object):
         print(msg, file=sys.stderr)
 
 
-def ping_dms(function):
-    """Pings Dead Man's Snitch after job completion if URL is set."""
-    def _ping():
-        function()
-        if settings.DEAD_MANS_SNITCH_URL:
-            utcnow = datetime.datetime.utcnow()
-            payload = {'m': 'Run {} on {}'.format(function.__name__, utcnow.isoformat())}
-            requests.get(settings.DEAD_MANS_SNITCH_URL, params=payload)
-    _ping.__name__ = function.__name__
-    return _ping
-
-
 @scheduled_job('cron', month='*', day='*', hour='*/12', minute='10', max_instances=1, coalesce=True)
-@ping_dms
+@babis.decorator(ping_after=settings.DEAD_MANS_SNITCH_PRODUCT_DETAILS)
 def job_update_product_details():
     call_command('update_product_details')
     create_countries()
     create_locales()
-    # Django won't close db connections after call_command. Close them manually
-    # to prevent errors in case the DB goes away, e.g. during a failover event.
-    connections.close_all()
+
+
+@scheduled_job('cron', month='*', day='*', hour='*/12', minute='20', max_instances=1, coalesce=True)
+@babis.decorator(ping_after=settings.DEAD_MANS_SNITCH_DISABLE_SNIPPETS)
+def job_disable_snippets_past_publish_date():
+    call_command('disable_snippets_past_publish_date')
 
 
 def run():
