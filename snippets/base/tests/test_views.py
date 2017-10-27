@@ -168,6 +168,11 @@ class ShowSnippetTests(TestCase):
         response = self.client.get(reverse('base.show', kwargs={'snippet_id': snippet.id}))
         self.assertEqual(response.status_code, 200)
 
+    def test_uuid_snippet(self):
+        snippet = SnippetFactory.create(disabled=True)
+        response = self.client.get(reverse('base.show_uuid', kwargs={'snippet_id': snippet.uuid}))
+        self.assertEqual(response.status_code, 200)
+
 
 @override_settings(SNIPPETS_PER_PAGE=1)
 class JSONIndexSnippetsTests(TestCase):

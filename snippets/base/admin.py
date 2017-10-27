@@ -124,7 +124,7 @@ class BaseSnippetAdmin(VersionAdmin, DefaultFilterMixIn, admin.ModelAdmin):
         'weight',
     )
 
-    readonly_fields = ('created', 'modified')
+    readonly_fields = ('created', 'modified', 'uuid')
     save_on_top = True
     save_as = True
 
@@ -150,7 +150,7 @@ class BaseSnippetAdmin(VersionAdmin, DefaultFilterMixIn, admin.ModelAdmin):
 
 class SnippetAdmin(BaseSnippetAdmin):
     form = forms.SnippetAdminForm
-
+    readonly_fields = BaseSnippetAdmin.readonly_fields + ('preview_url',)
     search_fields = ('name', 'client_match_rules__description',
                      'template__name', 'campaign')
     list_filter = BaseSnippetAdmin.list_filter + (
@@ -161,7 +161,7 @@ class SnippetAdmin(BaseSnippetAdmin):
                          ('exclude_from_search_providers', 'client_match_rules'))
 
     fieldsets = (
-        (None, {'fields': ('name', 'disabled', 'campaign', 'created', 'modified')}),
+        (None, {'fields': ('name', 'disabled', 'campaign', 'preview_url', 'created', 'modified')}),
         ('Content', {
             'fields': ('template', 'data'),
         }),
@@ -208,6 +208,10 @@ class SnippetAdmin(BaseSnippetAdmin):
                             'any search providers from this snippet?'),
             'fields': (('exclude_from_search_providers',),)
         }),
+        ('Other Info', {
+            'fields': (('uuid',),),
+            'classes': ('collapse',)
+        }),
     )
 
     actions = (duplicate_snippets_action,)
@@ -233,6 +237,12 @@ class SnippetAdmin(BaseSnippetAdmin):
                         .values_list('name', flat=True))
 
         return ' '.join(wrap('\n'.join([data[key][:500] for key in text_keys if data.get(key)])))
+
+    def preview_url(self, obj):
+        url = obj.get_preview_url()
+        template = '<a href="{url}" target=_blank>{url}</a>'.format(url=url)
+        return template
+    preview_url.allow_tags = True
 
     def queryset(self, request):
         return (super(SnippetAdmin, self)
@@ -334,6 +344,10 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
         }),
         ('Startpage Versions', {
             'fields': (('on_startpage_1',),),
+            'classes': ('collapse',)
+        }),
+        ('Other Info', {
+            'fields': (('uuid',),),
             'classes': ('collapse',)
         }),
     )
