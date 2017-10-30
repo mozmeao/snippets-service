@@ -523,6 +523,9 @@ class Snippet(SnippetBaseModel):
         full_url = urljoin(settings.SITE_URL, url)
         return full_url
 
+    def get_absolute_url(self):
+        return reverse('base.show', kwargs={'snippet_id': self.id})
+
     def __unicode__(self):
         return self.name
 
