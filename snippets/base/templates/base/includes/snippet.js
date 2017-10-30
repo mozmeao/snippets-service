@@ -624,7 +624,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
                 // tab, preventDefault action.
                 if (target.href.indexOf('about:accounts') === 0) {
                     // Custom metric for about:accounts links
-                    metric = target.dataset.metric || ABOUTHOME_SHOWN_SNIPPET.id + '-about-accounts-click';
                     callback = function() {
                         var event = new CustomEvent(
                             'mozUITour',

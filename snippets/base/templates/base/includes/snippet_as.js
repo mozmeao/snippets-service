@@ -431,7 +431,6 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
                 // tab, preventDefault action.
                 if (target.href.indexOf('about:accounts') === 0) {
                     // Custom metric for about:accounts links
-                    metric = target.dataset.metric || ABOUTHOME_SHOWN_SNIPPET.id + '-about-accounts-click';
                     callback = function() {
                         gSnippetsMap.showFirefoxAccounts();
                     };
