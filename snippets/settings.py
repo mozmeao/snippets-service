@@ -65,8 +65,6 @@ INSTALLED_APPS = [
 for app in config('EXTRA_APPS', default='', cast=Csv()):
     INSTALLED_APPS.append(app)
 
-CSRF_USE_SESSIONS = True
-
 MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
@@ -208,9 +206,8 @@ if CSP_REPORT_ENABLE:
 SNIPPET_SIZE_LIMIT = 500
 SNIPPET_IMAGE_SIZE_LIMIT = 250
 
-ENABLE_ADMIN = config('ENABLE_ADMIN', default=True, cast=bool)
-
-ANON_ALWAYS = True
+ENABLE_ADMIN = config('ENABLE_ADMIN', default=False, cast=bool)
+CSRF_USE_SESSIONS = config('CSRF_USE_SESSIONS', default=True, cast=bool)
 
 SNIPPET_BUNDLE_TIMEOUT = config('SNIPPET_BUNDLE_TIMEOUT', default=15 * 60, cast=int)  # 15 minutes
 
