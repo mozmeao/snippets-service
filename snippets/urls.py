@@ -23,6 +23,8 @@ urlpatterns = [
 if settings.ENABLE_ADMIN:
     urlpatterns += [
         url(r'^admin/', include(admin.site.urls)),
+        url(r'advanced_filters/', include('advanced_filters.urls')),
+
     ]
     admin.site.site_header = 'Snippets Administration'
     admin.site.site_title = 'Mozilla Snippets'
