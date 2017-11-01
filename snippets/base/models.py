@@ -303,12 +303,13 @@ class SnippetTemplateVariable(models.Model):
     name = models.CharField(max_length=255)
     type = models.IntegerField(choices=TYPE_CHOICES, default=TEXT)
     description = models.TextField(blank=True, default='')
+    order = models.PositiveIntegerField(default=0)
 
     def __unicode__(self):
         return u'{0}: {1}'.format(self.template.name, self.name)
 
     class Meta:
-        ordering = ('name',)
+        ordering = ('order', 'name',)
 
 
 class ClientMatchRule(models.Model):

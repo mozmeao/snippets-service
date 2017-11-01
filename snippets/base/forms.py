@@ -59,6 +59,7 @@ class TemplateSelect(forms.Select):
                 self.variables_for[variable.template.id].append({
                     'name': variable.name,
                     'type': variable.type,
+                    'order': variable.order,
                     'description': variable.description,
                 })
 
