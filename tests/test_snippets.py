@@ -18,10 +18,7 @@ REQUESTS_TIMEOUT = 20
 
 class TestSnippets:
 
-    test_data = [
-        ('/3/Firefox/default/default/default/en-US/release/default/default/default/'),
-        ('/3/Firefox/default/default/default/en-US/aurora/default/default/default/'),
-        ('/3/Firefox/default/default/default/en-US/beta/default/default/default/')]
+    URL_TEMPLATE = '{}/{}/Firefox/default/default/default/en-US/{}/default/default/default/'
 
     _user_agent_firefox = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:10.0.1) Gecko/20100101 Firefox/10.0.1'
 
@@ -49,45 +46,59 @@ class TestSnippets:
                              allow_redirects=True, verify=False)
         except requests.exceptions.RequestException as e:
             raise AssertionError('Error connecting to {0} in {1}: {2}'.format(
-                url, path, e))
-        assert requests.codes.ok == r.status_code, \
-            'Bad URL {0} found in {1}'.format(url, path)
-        return True
+                url, e))
+        assert requests.codes.ok == r.status_code
 
     def _parse_response(self, content):
-        return BeautifulSoup(content)
+        return BeautifulSoup(content, 'html.parser')
 
-    @pytest.mark.parametrize(('path'), test_data)
-    def test_snippet_set_present(self, base_url, path):
-        full_url = base_url + path
+    @pytest.mark.parametrize(('version'), ['3', '5'])
+    @pytest.mark.parametrize(('channel'), ['aurora', 'beta', 'release'])
+    def test_response_codes(self, base_url, version, channel):
+        url = self.URL_TEMPLATE.format(base_url, version, channel)
+        r = self._get_redirect(url)
+        assert r.status_code in (requests.codes.ok, requests.codes.no_content)
 
-        r = self._get_redirect(full_url)
-        assert requests.codes.ok == r.status_code, full_url
-
-        soup = self._parse_response(r.content)
-        snippet_script = soup.find('script', type="text/javascript").text
-        snippet_json_string = re.search("JSON.parse\('(.+)'\)", snippet_script).groups()[0]
+    @pytest.mark.parametrize(('channel'), [
+        'aurora',
+        'beta',
+        pytest.param('release', marks=pytest.mark.xfail(
+            'mozilla' in pytest.config.getoption('base_url'),
+            reason='Activity Stream will be available after Firefox 57'))])
+    def test_activity_stream(self, base_url, channel):
+        url = self.URL_TEMPLATE.format(base_url, '5', channel)
+        soup = self._parse_response(self._get_redirect(url).content)
+        script = soup.find('script', type='application/javascript').text
+        snippet_json_string = re.search('JSON\.parse\("(.+)"\)', script).groups()[0]
         snippet_set = json.loads(snippet_json_string.replace('%u', r'\u').decode('unicode-escape'))
-
         assert isinstance(snippet_set, list), 'No snippet set found'
 
-    @pytest.mark.parametrize(('path'), test_data)
-    def test_all_links(self, base_url, path):
-        full_url = base_url + path
+    def test_legacy(self, base_url):
+        url = self.URL_TEMPLATE.format(base_url, '3', 'release')
+        soup = self._parse_response(self._get_redirect(url).content)
+        script = soup.find('script', type='text/javascript').text
+        snippet_json_string = re.search("JSON\.parse\('(.+)'\)", script).groups()[0]
+        snippet_set = json.loads(snippet_json_string.replace('%u', r'\u').decode('unicode-escape'))
+        assert isinstance(snippet_set, list), 'No snippet set found'
 
-        soup = self._parse_response(self._get_redirect(full_url).content)
+    @pytest.mark.parametrize(('version'), ['3', '5'])
+    @pytest.mark.parametrize(('channel'), ['aurora', 'beta', 'release'])
+    def test_all_links(self, base_url, version, channel):
+        url = self.URL_TEMPLATE.format(base_url, version, channel)
+
+        soup = self._parse_response(self._get_redirect(url).content)
         snippet_links = soup.select("a")
-
         for link in snippet_links:
-            self.assert_valid_url(link['href'], path)
+            self.assert_valid_url(link['href'])
 
-    @pytest.mark.parametrize(('path'), test_data)
-    def test_that_snippets_are_well_formed_xml(self, base_url, path):
-        full_url = base_url + path
+    @pytest.mark.parametrize(('channel'), ['aurora', 'beta', 'release'])
+    def test_that_snippets_are_well_formed_xml(self, base_url, channel):
+        url = self.URL_TEMPLATE.format(base_url, '3', channel)
 
-        r = self._get_redirect(full_url)
+        r = self._get_redirect(url)
         try:
+            print(r.content)
             parseString('<div>{}</div>'.format(r.content))
         except ExpatError as e:
             raise AssertionError('Snippets at {0} do not contain well formed '
-                                 'xml: {1}'.format(full_url, e))
+                                 'xml: {1}'.format(url, e))
