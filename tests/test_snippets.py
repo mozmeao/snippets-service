@@ -23,8 +23,7 @@ def _get_redirect(url, user_agent=_user_agent_firefox, locale='en-US'):
     headers = {'user-agent': user_agent,
                'accept-language': locale}
 
-    # verify=False ignores invalid certificate
-    return requests.get(url, headers=headers, verify=False, timeout=REQUESTS_TIMEOUT)
+    return requests.get(url, headers=headers, timeout=REQUESTS_TIMEOUT)
 
 
 def _parse_response(content):
