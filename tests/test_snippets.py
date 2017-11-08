@@ -31,7 +31,7 @@ def _parse_response(content):
     return BeautifulSoup(content, 'html.parser')
 
 
-@pytest.mark.parametrize(('version'), ['3', '5'])
+@pytest.mark.parametrize(('version'), ['3', '5'], ids=['legacy', 'activitystream'])
 @pytest.mark.parametrize(('channel'), ['aurora', 'beta', 'release'])
 def test_response_codes(base_url, version, channel):
     url = URL_TEMPLATE.format(base_url, version, channel)
