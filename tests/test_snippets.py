@@ -4,7 +4,6 @@
 
 import json
 import re
-from urlparse import urlparse
 from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 
@@ -29,25 +28,6 @@ class TestSnippets:
 
         # verify=False ignores invalid certificate
         return requests.get(url, headers=headers, verify=False, timeout=REQUESTS_TIMEOUT)
-
-    def assert_valid_url(self, url, path, user_agent=_user_agent_firefox, locale='en-US'):
-        """Checks if a URL returns a 200 OK response."""
-
-        # Only check http and https links
-        if not urlparse(url).scheme.startswith('http'):
-            return True
-
-        headers = {'user-agent': user_agent,
-                   'accept-language': locale}
-
-        # HEAD doesn't return page body.
-        try:
-            r = requests.get(url, headers=headers, timeout=REQUESTS_TIMEOUT,
-                             allow_redirects=True, verify=False)
-        except requests.exceptions.RequestException as e:
-            raise AssertionError('Error connecting to {0} in {1}: {2}'.format(
-                url, e))
-        assert requests.codes.ok == r.status_code
 
     def _parse_response(self, content):
         return BeautifulSoup(content, 'html.parser')
@@ -80,16 +60,6 @@ class TestSnippets:
         snippet_json_string = re.search("JSON\.parse\('(.+)'\)", script).groups()[0]
         snippet_set = json.loads(snippet_json_string.replace('%u', r'\u').decode('unicode-escape'))
         assert isinstance(snippet_set, list), 'No snippet set found'
-
-    @pytest.mark.parametrize(('version'), ['3', '5'])
-    @pytest.mark.parametrize(('channel'), ['aurora', 'beta', 'release'])
-    def test_all_links(self, base_url, version, channel):
-        url = self.URL_TEMPLATE.format(base_url, version, channel)
-
-        soup = self._parse_response(self._get_redirect(url).content)
-        snippet_links = soup.select("a")
-        for link in snippet_links:
-            self.assert_valid_url(link['href'])
 
     @pytest.mark.parametrize(('channel'), ['aurora', 'beta', 'release'])
     def test_that_snippets_are_well_formed_xml(self, base_url, channel):
