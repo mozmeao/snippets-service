@@ -20,6 +20,7 @@ from snippets.base.models import JINJA_ENV
 
 
 MATCH_LOCALE_REGEX = re.compile('(\w+(?:-\w+)*)')
+RESERVED_VARIABLES = ('_', 'snippet_id')
 
 
 @transaction.atomic
@@ -280,10 +281,7 @@ class SnippetTemplateVariableInline(admin.TabularInline):
     max_num = 0
     can_delete = False
     readonly_fields = ('name',)
-    fields = ('name', 'type', 'description')
-
-
-RESERVED_VARIABLES = ('_', 'snippet_id')
+    fields = ('name', 'type', 'order', 'description')
 
 
 class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
@@ -321,9 +319,12 @@ class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
         var_manager.filter(~Q(name__in=new_vars)).delete()
 
         # Create variables that don't exist.
-        for variable in new_vars:
-            models.SnippetTemplateVariable.objects.get_or_create(
+        for i, variable in enumerate(new_vars, start=1):
+            obj, _ = models.SnippetTemplateVariable.objects.get_or_create(
                 template=form.instance, name=variable)
+            if obj.order == 0:
+                obj.order = i * 10
+                obj.save()
 
 
 class JSONSnippetAdmin(BaseSnippetAdmin):

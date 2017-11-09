@@ -45,15 +45,18 @@ class TemplateSelectTests(TestCase):
         option1 = d('option:contains("t1")')
         variables = json.loads(option1.attr('data-variables'))
         self.assertEqual(len(variables), 2)
-        self.assertTrue({'name': variable1.name, 'type': variable1.type,
+
+        self.assertTrue({'name': variable1.name, 'type': variable1.type, 'order': variable1.order,
                          'description': variable1.description} in variables)
-        self.assertTrue({'name': variable2.name, 'type': variable2.type,
+        self.assertTrue({'name': variable2.name, 'type': variable2.type, 'order': variable2.order,
                          'description': variable1.description} in variables)
 
         # Option 2 should have just one variable.
         option2 = d('option:contains("t2")')
         variables = json.loads(option2.attr('data-variables'))
-        self.assertEqual(variables, [{'name': variable3.name, 'type': variable3.type,
+        self.assertEqual(variables, [{'name': variable3.name,
+                                      'type': variable3.type,
+                                      'order': variable3.order,
                                       'description': variable3.description}])
 
 
