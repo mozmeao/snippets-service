@@ -9,7 +9,10 @@ pipeline {
     timeout(time: 5, unit: 'MINUTES')
   }
   environment {
-    PYTEST_ADDOPTS = "-n=10 --color=yes"
+    PYTEST_PROCESSES = "${PYTEST_PROCESSES ?: "auto"}"
+    PYTEST_ADDOPTS =
+    "-n=${PYTEST_PROCESSES} " +
+    "--color=yes"
     PULSE = credentials('PULSE')
   }
   stages {
