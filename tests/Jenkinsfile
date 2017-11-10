@@ -11,8 +11,8 @@ pipeline {
   environment {
     PYTEST_PROCESSES = "${PYTEST_PROCESSES ?: "auto"}"
     PYTEST_ADDOPTS =
-    "-n=${PYTEST_PROCESSES} " +
-    "--color=yes"
+      "-n=${PYTEST_PROCESSES} " +
+      "--color=yes"
     PULSE = credentials('PULSE')
   }
   stages {
