@@ -38,12 +38,7 @@ def test_response_codes(base_url, version, channel):
     assert r.status_code in (requests.codes.ok, requests.codes.no_content)
 
 
-@pytest.mark.parametrize(('channel'), [
-    'aurora',
-    'beta',
-    pytest.param('release', marks=pytest.mark.xfail(
-        'mozilla' in pytest.config.getoption('base_url'),
-        reason='Activity Stream will be available after Firefox 57'))])
+@pytest.mark.parametrize(('channel'), ['aurora', 'beta', 'release'])
 def test_activity_stream(base_url, channel):
     url = URL_TEMPLATE.format(base_url, '5', channel)
     soup = _parse_response(_get_redirect(url).content)
