@@ -8,9 +8,8 @@ from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 
 import pytest
-from bs4 import BeautifulSoup
 import requests
-
+from bs4 import BeautifulSoup
 
 REQUESTS_TIMEOUT = 20
 URL_TEMPLATE = '{}/{}/Firefox/default/default/default/en-US/{}/default/default/default/'
