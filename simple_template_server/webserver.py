@@ -13,6 +13,7 @@ except ValueError:
     raise Exception('Invalid startpage version: {}'.format(os.getenv('SNIPPETS_STARTPAGE_VERSION')))
 
 
+
 jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader('templates'),
     autoescape=True,
@@ -66,6 +67,7 @@ def render_snippet(snippet_code, data):
 @route('<:re:.*>')
 def home():
     data = []
+
     if STARTPAGE_VERSION == 5:
         directory = 'snippets_as'
     else:
@@ -115,8 +117,7 @@ def home():
         'client': Client(),
         'locale': Client().locale,
         'settings': Settings(),
-        'current_firefox_version': 56,
-        'metrics_url': Settings().METRICS_URL,
+        'current_firefox_major_version': 57,
     })
 
 

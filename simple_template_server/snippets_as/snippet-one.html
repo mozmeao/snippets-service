@@ -1,0 +1,113 @@
+{#
+Simple Snippet for Activity Stream with button option.
+
+Variables:
+
+@blockable: checkbox - Check to allow user to block this snippet.
+@rtl: checkbox, optional - If checked change text direction to support RTL languages.
+@icon: image, optional - Snippet icon. 64x64px. SVG or PNG preferred.
+@button_label: text, optional - Text for a button next to main snippet text that links to button_url. Requires button_url.
+@button_url: text, optional - A url, button_label links to this.
+@text: text - Text of snippet.
+@title: text, optional - Snippet title displayed above snippet text.
+@title_icon: image, optional - Title icon. 16x16px. SVG or PNG preferred. Grayscale.
+
+#}
+<style>
+ #snippet {
+     display: flex;
+     justify-content: center;
+     align-items: center;
+ }
+
+ .snippet section {
+     color: #000000;
+     font-size: 12px;
+ }
+
+ .snippet h1 {
+     margin: 0;
+     font-weight: bold;
+     color: #0f1126;
+     font-size: inherit;
+     display: inline;
+ }
+
+ {% if title_icon %}
+ .snippet h1::before {
+     content: "";
+     background-repeat: no-repeat;
+     background-size: 14px;
+     height: 16px;
+     width: 16px;
+     margin-top: 2px;
+     margin-inline-end: 2px;
+     background-image: url("{{ title_icon }}");
+     display: inline-block;
+     vertical-align: top;
+ }
+ {% endif %}
+
+ .snippet p {
+     margin: 0;
+     line-height: 16px;
+     display: inline;
+ }
+
+ .snippet img {
+     display: none;
+     width: 42px;
+     height: 42px;
+     margin-inline-end: 12px;
+ }
+ @media (min-width: 766px) {
+     .snippet img {
+         display: block;
+     }
+ }
+
+
+ .snippet section p a {
+     text-decoration: underline;
+ }
+
+ .snippet .button-link {
+     white-space: nowrap;
+     background: #fbfbfb;
+     border: 1px solid #c1c1c1;
+     border-radius: 2px;
+     padding: 8px 11px;
+     font-weight: 600;
+     line-height: 14px;
+     color: #202340;
+     min-width: 100px;
+     margin-inline-start: 5px;
+ }
+ @media (min-width: 766px) {
+     .snippet .button-link {
+         margin-inline-start: 18px;
+     }
+ }
+</style>
+
+<div class="snippet" id="snippet">
+  {% if icon %}
+    <img alt="snippet icon" height="42" width="42" src="{{ icon }}" />
+  {% endif %}
+
+  <section>
+    {% if title %}
+      <h1>{{ title }}</h1>
+    {% endif %}
+    <p>{{ text|safe }}</p>
+  </section>
+
+  {% if button_label and button_url %}
+    <a class="button-link" href="{{ button_url|safe }}">{{ button_label }}</a>
+  {% endif %}
+
+  {% if blockable %}
+    <button class="block-snippet-button" title="{{ block_button_text|default('Remove this', true) }}">
+    </button>
+  {% endif %}
+</div>
