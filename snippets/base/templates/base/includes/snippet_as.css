@@ -47,7 +47,13 @@
     border: 0;
     cursor: pointer;
     offset-inline-end: 12px;
+    display: none;
 }
+
+#snippets-container:hover .snippet .block-snippet-button {
+    display: block;
+}
+
 @media (min-width: 766px) {
   .snippet .block-snippet-button {
     offset-inline-end: 24px;
