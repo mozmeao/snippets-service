@@ -41,9 +41,8 @@ def test_response_codes(base_url, version, channel):
     assert r.status_code in (requests.codes.ok, requests.codes.no_content)
 
 
-@pytest.mark.parametrize(('channel'), ['aurora', 'beta', 'release'])
-def test_activity_stream(base_url, channel):
-    url = URL_TEMPLATE.format(base_url, '5', channel)
+def test_activity_stream(base_url):
+    url = URL_TEMPLATE.format(base_url, '5', 'release')
     soup = _parse_response(_get_redirect(url).content)
     script = soup.find('script', type='application/javascript').text
     snippet_json_string = re.search('JSON\.parse\("(.+)"\)', script).groups()[0]
