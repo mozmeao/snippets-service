@@ -16,10 +16,6 @@ URL_TEMPLATE = '{}/{}/Firefox/default/default/default/en-US/{}/default/default/d
 
 _user_agent_firefox = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:10.0.1) Gecko/20100101 Firefox/10.0.1'
 
-pytestmark = pytest.mark.xfail(
-    'allizom' in pytest.config.getoption('base_url'),
-    reason='Bug 1427736 - Certificate expired for https://snippets.allizom.org/')
-
 
 def _get_redirect(url, user_agent=_user_agent_firefox, locale='en-US'):
 
