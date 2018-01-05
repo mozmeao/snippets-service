@@ -348,7 +348,8 @@ class FetchSnippetsTests(TestCase):
             bundle.empty = True
             response = views.fetch_snippets(self.request, **self.client_kwargs)
 
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, '')
 
     @patch('snippets.base.views.Client', wraps=Client)
     def test_client_construction(self, ClientMock):
