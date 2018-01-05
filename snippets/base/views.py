@@ -104,7 +104,9 @@ def fetch_snippets(request, **kwargs):
     bundle = SnippetBundle(client)
     if bundle.empty:
         statsd.incr('bundle.empty')
-        return HttpResponse(status=204)
+        # This is not a 204 because Activity Stream expects content, even if
+        # it's empty.
+        return HttpResponse(status=200, content='')
     elif bundle.cached:
         statsd.incr('bundle.cached')
     else:
