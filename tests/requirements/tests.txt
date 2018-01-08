@@ -1,8 +1,8 @@
 beautifulsoup4==4.6.0
-mozlog==3.5
-pytest==3.3.1
+mozlog==3.7
+pytest==3.3.2
 pytest-base-url==1.4.1
-pytest-html==1.16.0
+pytest-html==1.16.1
 pytest-metadata==1.5.1
-pytest-xdist==1.20.1
+pytest-xdist==1.21.0
 requests==2.18.4
