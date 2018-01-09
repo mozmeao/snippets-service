@@ -8,10 +8,9 @@ import yaml
 from bottle import route, run, hook, response
 
 try:
-    STARTPAGE_VERSION = int(os.getenv('SNIPPETS_STARTPAGE_VERSION', 4))
+    STARTPAGE_VERSION = int(os.getenv('SNIPPETS_STARTPAGE_VERSION', 5))
 except ValueError:
     raise Exception('Invalid startpage version: {}'.format(os.getenv('SNIPPETS_STARTPAGE_VERSION')))
-
 
 
 jinja_env = jinja2.Environment(
