@@ -9,6 +9,13 @@ deploy:
       app: "snippets-stage"
       app_url: "https://snippets-stage.us-west.moz.works"
       newrelic_app: "snippets-stage-us-west"
+    - name: "Oregon-b Stage"
+      url: "https://deis.oregon-b.moz.works"
+      credentials: jenkins-deis-2
+      app: "snippets-stage"
+      app_url: "https://snippets-stage.oregon-b.moz.works"
+      newrelic_app: "snippets-stage-oregon-b"
+      deis_executable: "deis2"
   prod:
     - name: "US-West Admin"
       url: "https://deis.us-west.moz.works"
@@ -35,6 +42,13 @@ deploy:
       app: "snippets-prod"
       app_url: "https://snippets-prod.frankfurt.moz.works"
       newrelic_app: "snippets-prod-frankfurt"
+      deis_executable: "deis2"
+    - name: "Oregon-b Prod"
+      url: "https://deis.oregon-b.moz.works"
+      credentials: jenkins-deis-2
+      app: "snippets-prod"
+      app_url: "https://snippets-prod.oregon-b.moz.works"
+      newrelic_app: "snippets-prod-oregon-b"
       deis_executable: "deis2"
 notifications:
   irc:
