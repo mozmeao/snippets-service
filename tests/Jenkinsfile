@@ -1,53 +1,70 @@
 pipeline {
   agent any
   libraries {
-    lib('fxtest@1.9')
+    lib('fxtest@1.10')
   }
   options {
     ansiColor('xterm')
     timestamps()
     timeout(time: 5, unit: 'MINUTES')
   }
-  environment {
-    PYTEST_PROCESSES = "${PYTEST_PROCESSES ?: "auto"}"
-    PYTEST_ADDOPTS =
-      "-n=${PYTEST_PROCESSES} " +
-      "--color=yes"
-    PULSE = credentials('PULSE')
-  }
   stages {
     stage('Lint') {
+      agent {
+        dockerfile {
+          dir 'tests'
+        }
+      }
       steps {
-        sh "tox -c tests/tox.ini -e flake8"
+        sh "flake8 tests/"
       }
     }
     stage('Test') {
+      agent {
+        dockerfile {
+          dir 'tests'
+        }
+      }
+      environment {
+        PYTEST_PROCESSES = "${PYTEST_PROCESSES ?: "auto"}"
+        PULSE = credentials('PULSE')
+      }
       steps {
-        sh "tox -c tests/tox.ini -e py27"
+        sh "pytest " +
+          "-n=${PYTEST_PROCESSES} " +
+          "--color=yes " + 
+          "--junit-xml=tests/results/junit.xml --html=tests/results/index.html --self-contained-html " +
+          "--log-raw=tests/results/raw.txt " +
+          "--log-tbpl=tests/results/tbpl.txt " +
+          "tests"
       }
       post {
         always {
+          stash includes: 'tests/results/*', name: 'results'
           archiveArtifacts 'tests/results/*'
           junit 'tests/results/*.xml'
-          submitToActiveData('tests/results/py27_raw.txt')
-          submitToTreeherder('snippets-service', 'e2e', 'End-to-end integration tests', 'tests/results/*', 'tests/results/py27_tbpl.txt')
+          submitToActiveData('tests/results/raw.txt')
+          submitToTreeherder('snippets-service', 'e2e', 'End-to-end integration tests', 'tests/results/*', 'tests/results/tbpl.txt')
         }
       }
     }
   }
   post {
-    failure {
-      emailext(
-        attachLog: true,
-        attachmentsPattern: 'tests/results/py27.html',
-        body: '$BUILD_URL\n\n$FAILED_TESTS',
-        replyTo: '$DEFAULT_REPLYTO',
-        subject: '$DEFAULT_SUBJECT',
-        to: '$DEFAULT_RECIPIENTS')
+    always {
+      unstash 'results'
     }
     changed {
       ircNotification('#snippets')
       ircNotification('#fx-test-alerts')
+    }
+    failure {
+      emailext(
+        attachLog: true,
+        attachmentsPattern: 'tests/results/index.html',
+        body: '$BUILD_URL\n\n$FAILED_TESTS',
+        replyTo: '$DEFAULT_REPLYTO',
+        subject: '$DEFAULT_SUBJECT',
+        to: '$DEFAULT_RECIPIENTS')
     }
   }
 }

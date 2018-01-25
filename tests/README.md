@@ -1,24 +1,23 @@
-Snippet-tests
-=====================
+# Tests for Snippets
 
-Automated tests for the Snippets web app
+Automated tests for the Snippets web app.
 
-Running Tests
--------------
+## How to run the tests
 
-___Running the tests against staging___
+By default, the tests will run against the **staging** environment.
 
-* [Install Tox](https://tox.readthedocs.io/en/latest/install.html)
-* Run `tox`
+You can run the tests using [Docker][]:
+```bash
+  $ cd tests
+  $ docker build -t snippets-tests .
+  $ docker run -it snippets-tests
+  ```
 
-___Running the tests against production___
+To run the tests against the **production** or another environment, change the last command as shown:
 
-* Set `export PYTEST_BASE_URL="https://snippets.mozilla.com"`
-* Run `tox`
-
-Or:
-
-* Run `tox -e py27 -- --base-url=https://snippets.mozilla.com`
+```bash
+  $ docker run -t snippets-tests pytest --base-url=https://snippets.mozilla.com
+```
 
 License
 -------
@@ -28,4 +27,5 @@ This software is licensed under the [MPL] 2.0:
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+[Docker]: https://www.docker.com
 [MPL]: http://www.mozilla.org/MPL/2.0/

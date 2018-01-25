@@ -1,5 +1,4 @@
-.cache
 __pycache__
-*.tox
+.cache
 *.pyc
 results/
