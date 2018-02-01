@@ -2,9 +2,9 @@ beautifulsoup4==4.6.0
 flake8==3.5.0
 flake8-isort==2.3
 mozlog==3.7
-pytest==3.3.2
+pytest==3.4.0
 pytest-base-url==1.4.1
 pytest-html==1.16.1
 pytest-metadata==1.5.1
-pytest-xdist==1.21.0
+pytest-xdist==1.22.0
 requests==2.18.4
