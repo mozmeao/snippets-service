@@ -232,6 +232,17 @@ block functionality to all elements of snippet with class
      </div>
 
 
+By default the system reports blocked snippets with the `snippet-blocked`
+metric. You can customize the reported metric with the `data-metric` attribute
+like this:
+
+  .. code-block:: html
+
+     <button type="button" data-metric="snippet-scene2-blocked" class="block-snippet-button">
+       Remove this snippet
+     </button>
+
+
 If you need more control you can directly access the low-level function `addToBlockList`:
 
   .. code-block:: html

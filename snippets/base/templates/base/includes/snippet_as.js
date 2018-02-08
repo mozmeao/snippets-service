@@ -376,9 +376,11 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
     // Add links to buttons that block snippets.
     function addSnippetBlockLinks(elements) {
         var blockSnippet = function (event) {
+            var metric;
             event.preventDefault();
             event.stopPropagation();
-            sendMetric('snippet-blocked');
+            metric = event.target.dataset.metric || 'snippet-blocked';
+            sendMetric(metric);
             addToBlockList();
 
             // Hide #snippets-container for this tab.
