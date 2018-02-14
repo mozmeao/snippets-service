@@ -509,7 +509,7 @@ function addToBlockList(snippetID) {
     {% if preview %}
     console.log("[preview mode] Blocked snippet: " + snippetID);
     return;
-    {% else %}
+    {% endif %}
 
     var blockList = getBlockList();
     if (snippetID === undefined) {
