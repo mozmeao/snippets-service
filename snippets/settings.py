@@ -14,6 +14,7 @@ import struct
 
 import dj_database_url
 import django_cache_url
+import requests
 from decouple import Csv, config
 
 
@@ -32,6 +33,14 @@ DEBUG = config('DEBUG', cast=bool)
 DEBUG_TEMPLATE = config('DEBUG_TEMPLATE', default=DEBUG, cast=bool),
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+
+# Add AWS internal IP to allowed hosts for ELB health check to work.
+try:
+    EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4',
+                                  timeout=0.2).text
+    ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
+except requests.exceptions.RequestException:
+    pass
 
 # Application definition
 
