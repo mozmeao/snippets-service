@@ -37,15 +37,6 @@ def test_response_codes(base_url, version, channel):
     assert r.status_code in (requests.codes.ok, requests.codes.no_content)
 
 
-def test_activity_stream(base_url):
-    url = URL_TEMPLATE.format(base_url, '5', 'release')
-    soup = _parse_response(_get_redirect(url).content)
-    script = soup.find('script', type='application/javascript').text
-    snippet_json_string = re.search('JSON\.parse\("(.+)"\)', script).groups()[0]
-    snippet_set = json.loads(snippet_json_string.replace('%u', r'\u').decode('unicode-escape'))
-    assert isinstance(snippet_set, list), 'No snippet set found'
-
-
 def test_legacy(base_url):
     url = URL_TEMPLATE.format(base_url, '3', 'release')
     soup = _parse_response(_get_redirect(url).content)
