@@ -517,7 +517,7 @@ function addToBlockList(snippetID) {
     }
     if (blockList.indexOf(snippetID) === -1) {
         blockList = [snippetID].concat(blockList);
-        gSnippetsMap.set('blockList', blockList);
+        gSnippetsMap.blockSnippetById(snippetID);
     }
 }
 
