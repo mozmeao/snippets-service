@@ -1,5 +1,7 @@
 from django.conf.urls import url
 
+from watchman import views as watchman_views
+
 from snippets.base import views
 from snippets.base.feed import EnabledSnippetsFeed
 
@@ -23,6 +25,7 @@ urlpatterns = [
     url(r'^json-snippets/', views.JSONSnippetIndexView.as_view(), name='base.index_json'),
     url(r'^csp-violation-capture$', views.csp_violation_capture,
         name='csp-violation-capture'),
-    url(r'^healthz/$', views.healthz, name='base.healthz'),
+    url(r'^healthz/$', watchman_views.ping, name="watchman.ping"),
+    url(r'^readiness/$', watchman_views.status, name="watchman.status"),
     url(r'^feeds/snippets-enabled.ics$', EnabledSnippetsFeed()),
 ]

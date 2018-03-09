@@ -4,6 +4,7 @@ BASE_URL=${1:-https://snippets.mozilla.com}
 URLS=(
     "/"
     "/healthz/"
+    "/readiness/"
     "/robots.txt"
     "/contribute.json"
     "/4/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/en-US/release/Windows_NT%206.1/default/default/"

@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'cachalot',
     'mozilla_django_oidc',
     'advanced_filters',
+    'watchman',
 
     # Django apps
     'django.contrib.admin',
@@ -163,7 +164,15 @@ SECURE_CONTENT_TYPE_NOSNIFF = config('SECURE_CONTENT_TYPE_NOSNIFF', default=Fals
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_REDIRECT_EXEMPT = [
     r'^healthz/$',
+    r'^readiness/$',
 ]
+
+# watchman
+WATCHMAN_DISABLE_APM = True
+WATCHMAN_CHECKS = (
+    'watchman.checks.caches',
+    'watchman.checks.databases',
+)
 
 TEMPLATES = [
     {
