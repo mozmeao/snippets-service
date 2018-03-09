@@ -511,14 +511,10 @@ function addToBlockList(snippetID) {
     return;
     {% endif %}
 
-    var blockList = getBlockList();
     if (snippetID === undefined) {
         snippetID = ABOUTHOME_SHOWN_SNIPPET.campaign || ABOUTHOME_SHOWN_SNIPPET.id;
     }
-    if (blockList.indexOf(snippetID) === -1) {
-        blockList = [snippetID].concat(blockList);
-        gSnippetsMap.set('blockList', blockList);
-    }
+    gSnippetsMap.blockSnippetById(snippetID);
 }
 
 function getBlockList() {
