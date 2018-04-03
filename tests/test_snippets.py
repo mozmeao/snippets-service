@@ -37,15 +37,6 @@ def test_response_codes(base_url, version, channel):
     assert r.status_code in (requests.codes.ok, requests.codes.no_content)
 
 
-def test_legacy(base_url):
-    url = URL_TEMPLATE.format(base_url, '3', 'release')
-    soup = _parse_response(_get_redirect(url).content)
-    script = soup.find('script', type='text/javascript').text
-    snippet_json_string = re.search("JSON\.parse\('(.+)'\)", script).groups()[0]
-    snippet_set = json.loads(snippet_json_string.replace('%u', r'\u').decode('unicode-escape'))
-    assert isinstance(snippet_set, list), 'No snippet set found'
-
-
 @pytest.mark.parametrize(('channel'), ['aurora', 'beta', 'release'])
 def test_that_snippets_are_well_formed_xml(base_url, channel):
     url = URL_TEMPLATE.format(base_url, '3', channel)
