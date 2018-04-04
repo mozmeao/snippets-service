@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import json
-import re
 from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 
@@ -35,15 +33,6 @@ def test_response_codes(base_url, version, channel):
     url = URL_TEMPLATE.format(base_url, version, channel)
     r = _get_redirect(url)
     assert r.status_code in (requests.codes.ok, requests.codes.no_content)
-
-
-def test_legacy(base_url):
-    url = URL_TEMPLATE.format(base_url, '3', 'release')
-    soup = _parse_response(_get_redirect(url).content)
-    script = soup.find('script', type='text/javascript').text
-    snippet_json_string = re.search("JSON\.parse\('(.+)'\)", script).groups()[0]
-    snippet_set = json.loads(snippet_json_string.replace('%u', r'\u').decode('unicode-escape'))
-    assert isinstance(snippet_set, list), 'No snippet set found'
 
 
 @pytest.mark.parametrize(('channel'), ['aurora', 'beta', 'release'])
