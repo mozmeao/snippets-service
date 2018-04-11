@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 REQUESTS_TIMEOUT = 20
 URL_TEMPLATE = '{}/{}/Firefox/default/default/default/en-US/{}/default/default/default/'
 
-_user_agent_firefox = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:10.0.1) Gecko/20100101 Firefox/10.0.1'
+_user_agent_firefox = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0'
 
 
 def _get_redirect(url, user_agent=_user_agent_firefox, locale='en-US'):
