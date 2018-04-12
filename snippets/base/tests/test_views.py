@@ -371,14 +371,3 @@ class FetchSnippetsTests(TestCase):
         response = self.client.get('/{0}/'.format('/'.join(params)))
         cache_headers = [header.strip() for header in response['Cache-control'].split(',')]
         self.assertEqual(set(cache_headers), set(['public', 'max-age=75']))
-
-
-class HealthzViewTests(TestCase):
-    def test_ok(self):
-        SnippetFactory.create()
-        response = self.client.get(reverse('base.healthz'))
-        self.assertEqual(response.status_code, 200)
-
-    def test_fail(self):
-        with self.assertRaises(AssertionError):
-            self.client.get(reverse('base.healthz'))
