@@ -15,7 +15,7 @@ URLS=(
 
 function check_http_code {
     echo -n "Checking URL ${1} "
-    curl -k -H "Host: snippets.mozilla.com" -L -s -o /dev/null -I -w "%{http_code}" $1 | grep ${2:-200} > /dev/null
+    curl -k -L -s -o /dev/null -I -w "%{http_code}" $1 | grep ${2:-200} > /dev/null
     if [ $? -eq 0 ];
     then
         echo "OK"
