@@ -3,12 +3,6 @@ project:
   docker_name: mozorg/snippets
 deploy:
   stage:
-    - name: "US-West Stage"
-      url: "https://deis.us-west.moz.works"
-      credentials: jenkins-deis
-      app: "snippets-stage"
-      app_url: "https://snippets-stage.us-west.moz.works"
-      newrelic_app: "snippets-stage-us-west"
     - name: "Oregon-b Stage"
       url: "https://deis.oregon-b.moz.works"
       credentials: jenkins-deis-2
@@ -17,18 +11,6 @@ deploy:
       newrelic_app: "snippets-stage-oregon-b"
       deis_executable: "deis2"
   prod:
-    - name: "US-West Admin"
-      url: "https://deis.us-west.moz.works"
-      credentials: jenkins-deis
-      app: "snippets-admin"
-      app_url: "https://snippets-admin.us-west.moz.works"
-      newrelic_app: "snippets-admin-us-west"
-    - name: "US-West Prod"
-      url: "https://deis.us-west.moz.works"
-      credentials: jenkins-deis
-      app: "snippets-prod"
-      app_url: "https://snippets-prod.us-west.moz.works"
-      newrelic_app: "snippets-prod-us-west"
     - name: "Tokyo Prod"
       url: "https://deis.tokyo.moz.works"
       credentials: jenkins-deis-2
@@ -49,6 +31,13 @@ deploy:
       app: "snippets-prod"
       app_url: "https://snippets-prod.oregon-b.moz.works"
       newrelic_app: "snippets-prod-oregon-b"
+      deis_executable: "deis2"
+    - name: "Oregon-b Admin"
+      url: "https://deis.oregon-b.moz.works"
+      credentials: jenkins-deis-2
+      app: "snippets-admin"
+      app_url: "https://snippets-admin.moz.works"
+      newrelic_app: "snippets-admin-oregon-b"
       deis_executable: "deis2"
 notifications:
   irc:
