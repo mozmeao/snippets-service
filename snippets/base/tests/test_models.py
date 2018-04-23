@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test.utils import override_settings
 
+import brotli
 from jinja2 import Markup
 from mock import ANY, MagicMock, Mock, patch
 from pyquery import PyQuery as pq
@@ -466,6 +467,7 @@ class SnippetBundleTests(TestCase):
             key_2 = bundle.key
         self.assertNotEqual(key_1, key_2)
 
+    @override_settings(BUNDLE_BROTLI_COMPRESS=True)
     def test_generate(self):
         """
         bundle.generate should render the snippets, save them to the
@@ -479,10 +481,11 @@ class SnippetBundleTests(TestCase):
             with patch('snippets.base.models.render_to_string') as render_to_string:
                 with patch('snippets.base.models.default_storage') as default_storage:
                     with self.settings(SNIPPET_BUNDLE_TIMEOUT=10):
-                        with patch('snippets.base.util.current_firefox_major_version') as cfmv:
-                            cfmv.return_value = '45'
-                            render_to_string.return_value = 'rendered snippet'
-                            bundle.generate()
+                        with patch('snippets.base.models.brotli', wraps=brotli) as brotli_mock:
+                            with patch('snippets.base.util.current_firefox_major_version') as cfmv:
+                                cfmv.return_value = '45'
+                                render_to_string.return_value = 'rendered snippet'
+                                bundle.generate()
 
         render_to_string.assert_called_with('base/fetch_snippets.jinja', {
             'snippet_ids': [s.id for s in [self.snippet1, self.snippet2]],
@@ -495,10 +498,14 @@ class SnippetBundleTests(TestCase):
         default_storage.save.assert_called_with(bundle.filename, ANY)
         cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
 
+        # Brotli must not be used in non-AS requests.
+        self.assertFalse(brotli_mock.called)
+
         # Check content of saved file.
         content_file = default_storage.save.call_args[0][1]
         self.assertEqual(content_file.read(), 'rendered snippet')
 
+    @override_settings(BUNDLE_BROTLI_COMPRESS=False)
     def test_generate_activity_stream(self):
         """
         bundle.generate should render the snippets, save them to the
@@ -532,6 +539,33 @@ class SnippetBundleTests(TestCase):
         # Check content of saved file.
         content_file = default_storage.save.call_args[0][1]
         self.assertEqual(content_file.read(), 'rendered snippet')
+
+    @override_settings(BUNDLE_BROTLI_COMPRESS=True)
+    def test_generate_brotli(self):
+        """
+        bundle.generate should render the snippets, save them to the
+        filesystem, and mark the bundle as not-expired in the cache for
+        activity stream!
+        """
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+        bundle.storage = Mock()
+        bundle.snippets = [self.snippet1, self.snippet2]
+
+        with patch('snippets.base.models.cache') as cache:
+            with patch('snippets.base.models.render_to_string') as render_to_string:
+                with patch('snippets.base.models.default_storage') as default_storage:
+                    with patch('snippets.base.models.brotli', wraps=brotli) as brotli_mock:
+                        render_to_string.return_value = 'rendered snippet'
+                        bundle.generate()
+
+        brotli_mock.compress.assert_called_with('rendered snippet')
+        default_storage.save.assert_called_with(bundle.filename, ANY)
+        cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
+
+        # Check content of saved file.
+        content_file = default_storage.save.call_args[0][1]
+        self.assertEqual(content_file.content_encoding, 'br')
+        self.assertEqual(content_file.read(), '\x8b\x07\x80rendered snippet\x03')
 
     def test_cached_local(self):
         bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
