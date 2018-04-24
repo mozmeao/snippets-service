@@ -24,6 +24,7 @@ from django.template.loader import render_to_string
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 
+import brotli
 import django_mysql.models
 from jinja2 import Markup
 from jinja2.utils import LRUCache
@@ -170,7 +171,7 @@ class SnippetBundle(object):
             self.client.startpage_version,
             self.client.locale,
             util.current_firefox_major_version(),
-
+            str(settings.BUNDLE_BROTLI_COMPRESS),
         ])
         if self.client.startpage_version == '5':
             key_properties.append(SNIPPET_FETCH_TEMPLATE_AS_HASH)
@@ -247,7 +248,14 @@ class SnippetBundle(object):
 
         if isinstance(bundle_content, unicode):
             bundle_content = bundle_content.encode('utf-8')
-        default_storage.save(self.filename, ContentFile(bundle_content))
+
+        if settings.BUNDLE_BROTLI_COMPRESS and self.client.startpage_version == '5':
+            content_file = ContentFile(brotli.compress(bundle_content))
+            content_file.content_encoding = 'br'
+        else:
+            content_file = ContentFile(bundle_content)
+
+        default_storage.save(self.filename, content_file)
         cache.set(self.cache_key, True, ONE_DAY)
 
 

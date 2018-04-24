@@ -226,6 +226,8 @@ CSRF_USE_SESSIONS = config('CSRF_USE_SESSIONS', default=True, cast=bool)
 
 SNIPPET_BUNDLE_TIMEOUT = config('SNIPPET_BUNDLE_TIMEOUT', default=15 * 60, cast=int)  # 15 minutes
 
+BUNDLE_BROTLI_COMPRESS = config('BUNDLE_BROTLI_COMPRESS', default=False, cast=bool)
+
 METRICS_URL = config('METRICS_URL', default='https://snippets-stats.moz.works/foo')
 METRICS_SAMPLE_RATE = config('METRICS_SAMPLE_RATE', default=0.1, cast=float)
 
