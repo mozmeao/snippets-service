@@ -137,6 +137,30 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
             );
         }
 
+        // Filter Snippets based on appData.isDevtoolsUser
+        var is_developer = gSnippetsMap.get('appData.isDevtoolsUser');
+        if (is_developer === true) {
+            snippets = snippets.filter(
+                function(snippet) {
+                    return (snippet.client_options.is_developer == 'yes' ||
+                            snippet.client_options.is_developer == 'any');
+                }
+            );
+        } else if (is_developer === false) {
+            snippets = snippets.filter(
+                function(snippet) {
+                    return (snippet.client_options.is_developer == 'no' ||
+                            snippet.client_options.is_developer == 'any');
+                }
+            );
+        } else {
+            snippets = snippets.filter(
+                function(snippet) {
+                    return (snippet.client_options.is_developer == 'any');
+                }
+            );
+        }
+
         // Filter Snippets based on whether Firefox is the default browser or not.
         var defaultBrowser = gSnippetsMap.get('appData.defaultBrowser');
         if (defaultBrowser === true || defaultBrowser === undefined) {

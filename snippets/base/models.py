@@ -441,6 +441,7 @@ class Snippet(SnippetBaseModel):
             'version_upper_bound': unicode,
             'has_fxaccount': unicode,
             'has_testpilot': unicode,
+            'is_developer': unicode,
             'is_default_browser': unicode,
             'screen_resolutions': unicode,
             'profileage_lower_bound': int,
