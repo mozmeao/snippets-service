@@ -11,6 +11,20 @@ deploy:
       newrelic_app: "snippets-stage-oregon-b"
       deis_executable: "deis2"
   prod:
+    - name: "Oregon-b Admin"
+      url: "https://deis.oregon-b.moz.works"
+      credentials: jenkins-deis-2
+      app: "snippets-admin"
+      app_url: "https://snippets-admin.moz.works"
+      newrelic_app: "snippets-admin-oregon-b"
+      deis_executable: "deis2"
+    - name: "Oregon-b Prod"
+      url: "https://deis.oregon-b.moz.works"
+      credentials: jenkins-deis-2
+      app: "snippets-prod"
+      app_url: "https://snippets-prod.oregon-b.moz.works"
+      newrelic_app: "snippets-prod-oregon-b"
+      deis_executable: "deis2"
     - name: "Tokyo Prod"
       url: "https://deis.tokyo.moz.works"
       credentials: jenkins-deis-2
@@ -24,20 +38,6 @@ deploy:
       app: "snippets-prod"
       app_url: "https://snippets-prod.frankfurt.moz.works"
       newrelic_app: "snippets-prod-frankfurt"
-      deis_executable: "deis2"
-    - name: "Oregon-b Prod"
-      url: "https://deis.oregon-b.moz.works"
-      credentials: jenkins-deis-2
-      app: "snippets-prod"
-      app_url: "https://snippets-prod.oregon-b.moz.works"
-      newrelic_app: "snippets-prod-oregon-b"
-      deis_executable: "deis2"
-    - name: "Oregon-b Admin"
-      url: "https://deis.oregon-b.moz.works"
-      credentials: jenkins-deis-2
-      app: "snippets-admin"
-      app_url: "https://snippets-admin.moz.works"
-      newrelic_app: "snippets-admin-oregon-b"
       deis_executable: "deis2"
 notifications:
   irc:
