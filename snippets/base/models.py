@@ -65,7 +65,7 @@ SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
         }
     )).hexdigest()
 
-CHANNELS = ('release', 'beta', 'aurora', 'nightly')
+CHANNELS = ('release', 'beta', 'aurora', 'nightly', 'esr')
 FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4', '5')
 FENNEC_STARTPAGE_VERSIONS = ('1',)
 SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
@@ -410,6 +410,7 @@ class Snippet(SnippetBaseModel):
     on_beta = models.BooleanField(default=False, verbose_name='Beta')
     on_aurora = models.BooleanField(default=False, verbose_name='Aurora')
     on_nightly = models.BooleanField(default=False, verbose_name='Nightly')
+    on_esr = models.BooleanField(default=False, verbose_name='Enterprise')
 
     on_startpage_1 = models.BooleanField(default=False, verbose_name='Version 1')
     on_startpage_2 = models.BooleanField(default=True, verbose_name='Version 2')
@@ -556,6 +557,7 @@ class JSONSnippet(SnippetBaseModel):
     on_beta = models.BooleanField(default=False, verbose_name='Beta')
     on_aurora = models.BooleanField(default=False, verbose_name='Aurora')
     on_nightly = models.BooleanField(default=False, verbose_name='Nightly')
+    on_esr = models.BooleanField(default=False, verbose_name='Enterprise')
 
     on_startpage_1 = models.BooleanField(default=True, verbose_name='Version 1')
 

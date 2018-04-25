@@ -34,7 +34,7 @@ class SnippetFilter(django_filters.FilterSet):
 
     class Meta:
         model = Snippet
-        fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly',
+        fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr',
                   'template']
 
 
@@ -42,7 +42,7 @@ class JSONSnippetFilter(django_filters.FilterSet):
 
     class Meta:
         model = JSONSnippet
-        fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly']
+        fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr']
 
 
 class IndexView(TemplateView):

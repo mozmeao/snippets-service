@@ -72,6 +72,7 @@ class ReleaseFilter(admin.SimpleListFilter):
             ('on_beta', 'Beta'),
             ('on_aurora', 'Aurora'),
             ('on_nightly', 'Nightly'),
+            ('on_esr', 'Enterprise'),
         )
 
     def queryset(self, request, queryset):
@@ -141,6 +142,7 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
         ('on_beta', 'Channel Beta'),
         ('on_aurora', 'Channel Aurora'),
         ('on_nightly', 'Channel Nightly'),
+        ('on_esr', 'Channel Enterprise'),
         ('on_startpage_4', 'Page About:Home'),
         ('on_startpage_5', 'Page Activity Stream'),
         ('countries__name', 'Country'),
@@ -193,7 +195,7 @@ class SnippetAdmin(BaseSnippetAdmin):
         }),
         ('Product channels', {
             'description': 'What channels will this snippet be available in?',
-            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
+            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
         }),
         ('Startpage Versions', {
             'fields': (('on_startpage_1', 'on_startpage_2', 'on_startpage_3',
@@ -348,7 +350,7 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
         }),
         ('Product channels', {
             'description': 'What channels will this snippet be available in?',
-            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly'),)
+            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
         }),
         ('Country and Locale', {
             'description': ('What country and locales will this snippet be '

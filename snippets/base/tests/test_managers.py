@@ -226,22 +226,3 @@ class SnippetManagerTests(TestCase):
         # are the same snippets. Just `nightly_snippet` in this case.
         self.assertEqual(set([nightly_snippet]), set(nightly_snippets))
         self.assertEqual(set([nightly_snippet]), set(default_snippets))
-
-    def test_esr_is_same_as_release(self):
-        """ Make sure that esr channel follows release. """
-        # Snippets matching nightly (and therefor should match default).
-        release_snippet = SnippetFactory.create(on_release=True)
-
-        # Snippets that don't match nightly
-        SnippetFactory.create(on_release=False, on_beta=True)
-
-        release_client = self._build_client(channel='release')
-        release_snippets = Snippet.objects.match_client(release_client)
-
-        esr_client = self._build_client(channel='esr')
-        esr_snippets = Snippet.objects.match_client(esr_client)
-
-        # Assert that both the snippets returned from release and from esr
-        # are the same snippets. Just `release_snippet` in this case.
-        self.assertEqual(set([release_snippet]), set(release_snippets))
-        self.assertEqual(set([release_snippet]), set(esr_snippets))

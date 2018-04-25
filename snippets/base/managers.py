@@ -53,8 +53,6 @@ class SnippetQuerySet(QuerySet):
         # Allows things like "release-cck-mozilla14" to match "release".
         if client.channel == 'default':
             client_channel = 'nightly'
-        elif client.channel == 'esr':
-            client_channel = 'release'
         else:
             client_channel = first(CHANNELS, client.channel.startswith)
 
