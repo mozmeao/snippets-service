@@ -55,7 +55,7 @@ class SnippetQuerySetTests(TestCase):
 
 class SnippetManagerTests(TestCase):
     def _build_client(self, **client_attrs):
-        params = {'startpage_version': '4',
+        params = {'startpage_version': '5',
                   'name': 'Firefox',
                   'version': '23.0a1',
                   'appbuildid': '20130510041606',
