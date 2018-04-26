@@ -457,6 +457,8 @@ class Snippet(SnippetBaseModel):
             'profileage_upper_bound': int,
             'sessionage_lower_bound': int,
             'sessionage_upper_bound': int,
+            'bookmarks_count_lower_bound': int,
+            'bookmarks_count_upper_bound': int,
         }
     )
 
