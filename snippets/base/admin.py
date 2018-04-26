@@ -205,6 +205,7 @@ class SnippetAdmin(BaseSnippetAdmin):
                 'client_option_version_upper_bound',
                 'client_option_has_fxaccount',
                 'client_option_has_testpilot',
+                'client_option_is_developer',
                 'client_option_is_default_browser',
                 'client_option_screen_resolutions',
                 'client_option_profileage_lower_bound',

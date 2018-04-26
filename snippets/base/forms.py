@@ -169,6 +169,15 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         choices=(('any', 'Show to all users'),
                  ('yes', 'Show only to users with TestPilot'),
                  ('no', 'Show only to users without TestPilot')))
+    client_option_is_developer = forms.ChoiceField(
+        label='Is Developer',
+        choices=(('any', 'Show to all users'),
+                 ('yes', 'Show only to Developers (i.e. users who have opened Dev Tools)'),
+                 ('no', 'Show only to non Developers (i.e. users who haven\'t opened Dev Tools')),
+        help_text=('This filter works for browsers version >= 60. Older browsers will not '
+                   'display snippets with this option set, unless "Show to all users" '
+                   'is selected.'),
+    )
     client_option_is_default_browser = forms.ChoiceField(
         label='Default Browser',
         help_text=('If we cannot determine the status we will act '
