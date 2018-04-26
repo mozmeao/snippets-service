@@ -193,6 +193,22 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         choices=(('0-1024',  'Screens with less than 1024 vertical pixels. (low)'),
                  ('1024-1920',  'Screens with less than 1920 vertical pixels. (hd)'),
                  ('1920-50000', 'Screens with more than 1920 vertical pixels (full-hd, 4k)')))
+    client_option_sessionage_lower_bound = forms.ChoiceField(
+        label='Previous session closed at least',
+        choices=PROFILE_AGE_CHOICES,
+        validators=[
+            MinValueValidator(
+                -1, message='Select a value or "No limit" to disable this filter.')
+        ],
+    )
+    client_option_sessionage_upper_bound = forms.ChoiceField(
+        label='Previous session closed less than',
+        choices=PROFILE_AGE_CHOICES,
+        validators=[
+            MinValueValidator(
+                -1, message='Select a value or "No limit" to disable this filter.')
+        ],
+    )
     client_option_profileage_lower_bound = forms.ChoiceField(
         label='Profile age at least',
         choices=PROFILE_AGE_CHOICES,
@@ -261,6 +277,16 @@ class SnippetAdminForm(BaseSnippetAdminForm):
 
         if ((profileage_lower_bound > -1 and profileage_upper_bound > -1 and
              profileage_upper_bound <= profileage_lower_bound)):
+            raise forms.ValidationError('Profile age upper bound must be bigger than lower bound.')
+
+        sessionage_lower_bound = int(cleaned_data.get('client_option_sessionage_lower_bound', -1))
+        sessionage_upper_bound = int(cleaned_data.get('client_option_sessionage_upper_bound', -1))
+
+        cleaned_data['client_option_sessionage_lower_bound'] = sessionage_lower_bound
+        cleaned_data['client_option_sessionage_upper_bound'] = sessionage_upper_bound
+
+        if ((sessionage_lower_bound > -1 and sessionage_upper_bound > -1 and
+             sessionage_upper_bound <= sessionage_lower_bound)):
             raise forms.ValidationError('Profile age upper bound must be bigger than lower bound.')
 
         if not any([cleaned_data['on_release'], cleaned_data['on_beta'],

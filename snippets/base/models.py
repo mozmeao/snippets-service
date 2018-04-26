@@ -455,6 +455,8 @@ class Snippet(SnippetBaseModel):
             'screen_resolutions': unicode,
             'profileage_lower_bound': int,
             'profileage_upper_bound': int,
+            'sessionage_lower_bound': int,
+            'sessionage_upper_bound': int,
         }
     )
 
