@@ -254,6 +254,39 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
             }
         );
 
+        // Filter Snippets based on appData.previousSessionEnd
+        var prevSessionEnd = gSnippetsMap.get('appData.previousSessionEnd');
+        if (prevSessionEnd !== undefined) {
+            // weeks (604800000 is num milliseconds in a week)
+            var sessionEndWeeksAgo = (Date.now() - prevSessionEnd) / 604800000;
+            snippets = snippets.filter(
+                function(snippet) {
+                    let lower_bound = snippet.client_options.sessionage_lower_bound;
+                    let upper_bound = snippet.client_options.sessionage_upper_bound;
+                    if (lower_bound > -1 && sessionEndWeeksAgo < lower_bound) {
+                        return false;
+                    }
+                    if (upper_bound > -1 && sessionEndWeeksAgo >= upper_bound) {
+                        return false;
+                    }
+                    return true;
+                }
+            );
+        }
+        else {
+            // Remove all snippets that use session age since this information
+            // is not available.
+            snippets = snippets.filter(
+                function(snippet) {
+                    if (snippet.client_options.sessionage_lower_bound > -1
+                        || snippet.client_options.sessionage_upper_bound > -1) {
+                        return false;
+                    }
+                    return true;
+                }
+            );
+        }
+
         // Filter based on Profile age
         //
         // profileCreatedWeeksAgo can be either undefined for Firefox
