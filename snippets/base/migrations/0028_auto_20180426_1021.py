@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('base', '0026_snippettemplatevariable_order'),
+        ('base', '0027_auto_20180425_1041'),
     ]
 
     operations = [
