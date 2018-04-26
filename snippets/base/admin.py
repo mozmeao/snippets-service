@@ -223,6 +223,8 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
                 'client_option_profileage_upper_bound',
                 'client_option_addon_check_type',
                 'client_option_addon_name',
+                'client_option_bookmarks_count_lower_bound',
+                'client_option_bookmarks_count_upper_bound',
             )
         }),
         ('Country and Locale', {
