@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
@@ -26,7 +27,7 @@ def noop(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('base', '0028_auto_20180426_1021'),
+        ('base', '0029_auto_20180426_0605'),
     ]
 
     operations = [
