@@ -421,10 +421,10 @@ class Snippet(SnippetBaseModel):
     on_esr = models.BooleanField(default=False, verbose_name='Enterprise')
 
     on_startpage_1 = models.BooleanField(default=False, verbose_name='Version 1')
-    on_startpage_2 = models.BooleanField(default=True, verbose_name='Version 2')
-    on_startpage_3 = models.BooleanField(default=True, verbose_name='Version 3')
-    on_startpage_4 = models.BooleanField(default=True, verbose_name='Version 4')
-    on_startpage_5 = models.BooleanField(default=False, verbose_name='Activity Stream')
+    on_startpage_2 = models.BooleanField(default=False, verbose_name='Version 2')
+    on_startpage_3 = models.BooleanField(default=False, verbose_name='Version 3')
+    on_startpage_4 = models.BooleanField(default=False, verbose_name='Version 4')
+    on_startpage_5 = models.BooleanField(default=True, verbose_name='Activity Stream')
 
     weight = models.IntegerField(
         'Prevalence', choices=SNIPPET_WEIGHTS, default=100,
