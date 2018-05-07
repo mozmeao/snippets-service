@@ -45,7 +45,8 @@
     height: 12px;
     width: 12px;
     padding: 0;
-    background-image: url("resource://activity-stream/data/content/assets/glyph-dismiss-16.svg");
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSJjb250ZXh0LWZpbGwiIGQ9Ik05LjQxNCA4bDMuNTMxLTMuNTMxYTEgMSAwIDEgMC0xLjQxNC0xLjQxNEw4IDYuNTg2IDQuNDY5IDMuMDU1YTEgMSAwIDEgMC0xLjQxNCAxLjQxNEw2LjU4NiA4bC0zLjUzMSAzLjUzMWExIDEgMCAxIDAgMS40MTQgMS40MTRMOCA5LjQxNGwzLjUzMSAzLjUzMWExIDEgMCAxIDAgMS40MTQtMS40MTR6Ii8+PC9zdmc+");
+    opacity: 0.6;
     background-repeat: no-repeat;
     background-size: 12px;
     background-position: center;
@@ -56,8 +57,11 @@
     cursor: pointer;
     offset-inline-end: 12px;
     display: none;
-    -moz-context-properties: fill;
-    fill: var(--newtab-icon-primary-color, rgba(0,0,0,0.6));
+}
+
+.dark-theme .snippet .block-snippet-button {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSIjRjlGOUZBIiBkPSJNOS40MTQgOGwzLjUzMS0zLjUzMWExIDEgMCAxIDAtMS40MTQtMS40MTRMOCA2LjU4NiA0LjQ2OSAzLjA1NWExIDEgMCAxIDAtMS40MTQgMS40MTRMNi41ODYgOGwtMy41MzEgMy41MzFhMSAxIDAgMSAwIDEuNDE0IDEuNDE0TDggOS40MTRsMy41MzEgMy41MzFhMSAxIDAgMSAwIDEuNDE0LTEuNDE0eiIvPjwvc3ZnPg==");
+  opacity: 0.8;
 }
 
 #snippets-container:hover .snippet .block-snippet-button {
