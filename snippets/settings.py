@@ -9,8 +9,6 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 """
 import os
 import platform
-import socket
-import struct
 
 import dj_database_url
 import django_cache_url
@@ -284,23 +282,7 @@ CACHE_EMPTY_QUERYSETS = True
 
 ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
 
-
-# via http://stackoverflow.com/a/6556951/107114
-def get_default_gateway_linux():
-    """Read the default gateway directly from /proc."""
-    try:
-        with open("/proc/net/route") as fh:
-            for line in fh:
-                fields = line.strip().split()
-                if fields[1] != '00000000' or not int(fields[3], 16) & 2:
-                    continue
-
-                return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
-    except IOError:
-        return 'localhost'
-
-
-STATSD_HOST = config('STATSD_HOST', get_default_gateway_linux())
+STATSD_HOST = config('STATSD_HOST', default='localhost')
 STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
 STATSD_PREFIX = config('STATSD_PREFIX', DEIS_APP)
 STATSD_CLIENT = config('STATSD_CLIENT', 'django_statsd.clients.null')
