@@ -21,14 +21,14 @@ Variables:
  }
 
  .snippet section {
-     color: #000000;
+     color: var(--newtab-text-primary-color, #000000);
      font-size: 12px;
  }
 
  .snippet h1 {
      margin: 0;
      font-weight: bold;
-     color: #0f1126;
+     color: var(--newtab-text-primary-color, #0f1126);
      font-size: inherit;
      display: inline;
  }
@@ -73,8 +73,8 @@ Variables:
 
  .snippet .button-link {
      white-space: nowrap;
-     background: #fbfbfb;
-     border: 1px solid #c1c1c1;
+     background: var(--newtab-button-secondary-color, #fbfbfb);
+     border: 1px solid var(--newtab-border-primary-color, #c1c1c1);
      border-radius: 2px;
      padding: 8px 11px;
      font-weight: 600;
