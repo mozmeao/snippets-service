@@ -220,6 +220,8 @@ class SnippetAdmin(BaseSnippetAdmin):
                 'client_option_sessionage_upper_bound',
                 'client_option_profileage_lower_bound',
                 'client_option_profileage_upper_bound',
+                'client_option_addon_check_type',
+                'client_option_addon_name',
             )
         }),
         ('Country and Locale', {

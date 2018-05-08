@@ -119,24 +119,6 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
             );
         }
 
-        // Filter Snippets based on TestPilot addon existence.
-        var has_testpilot = Boolean(window.navigator.testpilotAddon);
-        if (has_testpilot === true) {
-            snippets = snippets.filter(
-                function(snippet) {
-                    return (snippet.client_options.has_testpilot == 'yes' ||
-                            snippet.client_options.has_testpilot == 'any');
-                }
-            );
-        } else {
-            snippets = snippets.filter(
-                function(snippet) {
-                    return (snippet.client_options.has_testpilot == 'no' ||
-                            snippet.client_options.has_testpilot == 'any');
-                }
-            );
-        }
-
         // Filter Snippets based on appData.isDevtoolsUser
         var is_developer = gSnippetsMap.get('appData.isDevtoolsUser');
         if (is_developer === true) {
@@ -317,6 +299,39 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
                         return false;
                     }
                     return true;
+                }
+            );
+        }
+
+        // Filter base on installed addons
+        var installedAddons = gSnippetsMap.get('appData.addonInfo');
+        if (installedAddons !== undefined) {
+            snippets = snippets.filter(
+                function(snippet) {
+                    let addon_check = snippet.client_options.addon_check_type;
+                    let addon_name = snippet.client_options.addon_name;
+                    if (addon_check == 'any') {
+                        return true;
+                    }
+                    else if (addon_check == 'installed' && addon_name in installedAddons) {
+                        return true;
+                    }
+                    else if (addon_check == 'not_installed' && !(addon_name in installedAddons)) {
+                        return true;
+                    }
+                    return false;
+                }
+            );
+        }
+        else {
+            // Remove all snippets that use addon checks since this information
+            // is not available.
+            snippets = snippets.filter(
+                function(snippet) {
+                    if (snippet.client_options.addon_check_type === 'any') {
+                        return true;
+                    }
+                    return false;
                 }
             );
         }

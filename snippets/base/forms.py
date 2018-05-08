@@ -6,6 +6,7 @@ from django import forms
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.forms.widgets import Textarea
+
 from django.utils.safestring import mark_safe
 
 from product_details import product_details
@@ -253,6 +254,19 @@ class SnippetAdminForm(BaseSnippetAdminForm):
                 -1, message='Select a value or "No limit" to disable this filter.')
         ],
     )
+    client_option_addon_check_type = forms.ChoiceField(
+        label='Add-on Check',
+        choices=(
+            ('any', 'No check'),
+            ('installed', 'Installed'),
+            ('not_installed', 'Not installed')),
+    )
+    client_option_addon_name = forms.CharField(
+        label='Add-on Name',
+        required=False,
+        strip=True,
+        help_text='Add-on name. For example @testpilot-addon'
+    )
 
     def __init__(self, *args, **kwargs):
         super(SnippetAdminForm, self).__init__(*args, **kwargs)
@@ -332,6 +346,14 @@ class SnippetAdminForm(BaseSnippetAdminForm):
                     cleaned_data['on_startpage_2'], cleaned_data['on_startpage_1'],
                     cleaned_data['on_startpage_5']]):
             raise forms.ValidationError('Select at least one Startpage to publish this snippet on.')
+
+        if ((cleaned_data.get('client_option_addon_name') and
+             cleaned_data.get('client_option_addon_check_type') == 'any')):
+            raise forms.ValidationError('Select an add-on check or remove add-on name.')
+
+        if ((not cleaned_data.get('client_option_addon_name') and
+             cleaned_data.get('client_option_addon_check_type') != 'any')):
+            raise forms.ValidationError('Type add-on name to check or remove add-on check.')
 
         return cleaned_data
 
