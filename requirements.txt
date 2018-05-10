@@ -242,9 +242,9 @@ django-cachalot==2.0.0 \
     --hash=sha256:6afdeacf7b9e00b44eb9e740ed23063d14bbf8f5bc8b759bf00de3ec6ceaf4e6
 hiredis==0.2.0 \
     --hash=sha256:ca958e13128e49674aa4a96f02746f5de5973f39b57297b84d59fd44d314d5b5
-mozilla-django-oidc==0.4.2 \
-    --hash=sha256:77c29c47d67750d3c53fcd51f1aa496a2cdd65dd27a1f2a15e56ecc3c3714f19 \
-    --hash=sha256:650716143525bb4bae553dd8c740a1c5986baf6aeae115cba01f6a217ee5fa4f
+mozilla-django-oidc==1.0.0 \
+    --hash=sha256:1e29a3d448cde77f0a96d4274dd67bfe5749554a5d6220007507d05d91cd50df \
+    --hash=sha256:8d0336d0a1e628f148c045f6cfdec3f1259cf9060335e514f8dd6be8e337784b
 idna==2.6 \
     --hash=sha256:8c7309c718f94b3a625cb648ace320157ad16ff131ae0af362c9f21b80ef6ec4 \
     --hash=sha256:2c6a5de3089009e3da7c5dde64a141dbc8551d5b7f6cf4ed7c2568d0cc520a8f
