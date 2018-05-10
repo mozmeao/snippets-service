@@ -31,9 +31,9 @@ newrelic==3.2.0.91 \
 Pygments==2.2.0 \
     --hash=sha256:78f3f434bcc5d6ee09020f92ba487f95ba50f1e3ef83ae96b9d5ffa1bab25c5d \
     --hash=sha256:dbae1046def0efb574852fab9e90209b23f556367b5a320c0bcb871c77c3e8cc
-django-jinja==2.3.1 \
-    --hash=sha256:ebfde44cb716e57a9cdff6c1a4935fc49c7419ea4cd0b2b89bcecc696b9c0c86 \
-    --hash=sha256:5e826a0cce967f40e6fdc037ea23667a2d3cd072807c4c87ffcc010b3c59121f
+django-jinja==2.4.1 \
+    --hash=sha256:ceaa0eeebc4d91a5800967e50f4f087f0b6457503e3c2af85dc199bed8732a9a \
+    --hash=sha256:8a49d73de616a12075eee14c6d3bbab936261a463457d40348d8b8e2995cfbed
 django-ace==1.0.3 \
     --hash=sha256:770f523da854ba0fb89a67ec70a8d26cc6524cf1d45e3d82da37772e97ca9ab1
 django-mozilla-product-details==0.13 \
