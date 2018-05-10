@@ -165,8 +165,9 @@ futures==3.2.0 \
 six==1.11.0 \
     --hash=sha256:832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb \
     --hash=sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9
-html5lib==0.9999999 \
-    --hash=sha256:2612a191a8d5842bfa057e41ba50bbb9dcb722419d2408c78cff4758d0754868
+html5lib==1.0.1 \
+    --hash=sha256:20b159aa3badc9d5ee8f5c647e5efd02ed2a66ab8d354930bd9ff139fc1dc0a3 \
+    --hash=sha256:66cb0dcfdbbc4f9c3ba1a63fdb511ffdbd4f513b2b6d81b80cd26ce6b3fb3736
 django-mysql==2.1.0 \
     --hash=sha256:607cb542e4b5326205d3f033240dd0c711cdeacf0f927d13967b08c4e04acbd8 \
     --hash=sha256:10b3b1e4d5e403f96bc3ea89821d87d65d383a3bb03923e730a370f656e03474
