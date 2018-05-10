@@ -27,7 +27,7 @@ RESERVED_VARIABLES = ('_', 'snippet_id')
 def duplicate_snippets_action(modeladmin, request, queryset):
     for snippet in queryset:
         snippet.duplicate()
-duplicate_snippets_action.short_description = 'Duplicate selected snippets'
+duplicate_snippets_action.short_description = 'Duplicate selected snippets'  # noqa
 
 
 class ModifiedFilter(admin.SimpleListFilter):

@@ -190,8 +190,8 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         help_text='Select all the screen resolutions you want this snippet to appear on.',
         widget=forms.CheckboxSelectMultiple(),
         initial=['0-1024', '1024-1920', '1920-50000'],  # Show to all screens by default
-        choices=(('0-1024',  'Screens with less than 1024 vertical pixels. (low)'),
-                 ('1024-1920',  'Screens with less than 1920 vertical pixels. (hd)'),
+        choices=(('0-1024', 'Screens with less than 1024 vertical pixels. (low)'),
+                 ('1024-1920', 'Screens with less than 1920 vertical pixels. (hd)'),
                  ('1920-50000', 'Screens with more than 1920 vertical pixels (full-hd, 4k)')))
     client_option_sessionage_lower_bound = forms.ChoiceField(
         label='Previous session closed at least',

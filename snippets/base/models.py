@@ -92,7 +92,7 @@ def validate_xml_template(data):
         # we're wrapping contents into a div.
         error_msg = (
             'XML Error: {message} in line {line} column {column}').format(
-                message=e.getMessage(), line=e.getLineNumber()-1, column=e.getColumnNumber())
+                message=e.getMessage(), line=e.getLineNumber() - 1, column=e.getColumnNumber())
         raise ValidationError(error_msg)
     return data
 

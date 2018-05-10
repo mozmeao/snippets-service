@@ -238,7 +238,7 @@ CACHES = {
         'LOCATION': 'product-details',
         'OPTIONS': {
             'MAX_ENTRIES': 200,  # currently 104 json files
-            'CULL_FREQUENCY':  4,  # 1/4 entries deleted if max reached
+            'CULL_FREQUENCY': 4,  # 1/4 entries deleted if max reached
         }
 
     },
@@ -313,5 +313,5 @@ if OIDC_ENABLE:
     OIDC_RP_CLIENT_ID = config('OIDC_RP_CLIENT_ID')
     OIDC_RP_CLIENT_SECRET = config('OIDC_RP_CLIENT_SECRET')
     OIDC_CREATE_USER = config('OIDC_CREATE_USER', default=False, cast=bool)
-    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + ('mozilla_django_oidc.middleware.RefreshIDToken',)
+    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + ('mozilla_django_oidc.middleware.SessionRefresh',)
     LOGIN_REDIRECT_URL = '/admin/'
