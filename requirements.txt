@@ -170,9 +170,9 @@ html5lib==0.9999999 \
 django-mysql==2.1.0 \
     --hash=sha256:607cb542e4b5326205d3f033240dd0c711cdeacf0f927d13967b08c4e04acbd8 \
     --hash=sha256:10b3b1e4d5e403f96bc3ea89821d87d65d383a3bb03923e730a370f656e03474
-mariadb_dyncol==1.1.0 \
-    --hash=sha256:b4b2f9bf55a5444332f0b450372d9947c16bd68d1efe0c7410c6a224f9d64659 \
-    --hash=sha256:28ed5a6cb4d466f745c937bc4324baae9c9df816676e9309b501c017d40ff4d8
+mariadb_dyncol==1.2.1 \
+    --hash=sha256:25f0985264db818b78f4fbaa67ca38b9b8dfee81338cf8b396bb9fbadcaba134 \
+    --hash=sha256:7348b6c33be0328ea4288656bf60273391f9fe582e6ae56d9b639dbd887158ff
 django-reversion==2.0.10 \
     --hash=sha256:9ddadaa38589f6b68d02370f357d835150bb970b7725a01c4280b981d95a6136
 django-statsd-mozilla==0.3.16 \
