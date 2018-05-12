@@ -173,8 +173,9 @@ django-mysql==2.1.0 \
 mariadb_dyncol==1.1.0 \
     --hash=sha256:b4b2f9bf55a5444332f0b450372d9947c16bd68d1efe0c7410c6a224f9d64659 \
     --hash=sha256:28ed5a6cb4d466f745c937bc4324baae9c9df816676e9309b501c017d40ff4d8
-django-reversion==2.0.10 \
-    --hash=sha256:9ddadaa38589f6b68d02370f357d835150bb970b7725a01c4280b981d95a6136
+django-reversion==2.0.13 \
+    --hash=sha256:f27249218ac901ec219869c9618e01d8c30436a4e8da1a64fcb652209b11e47d \
+    --hash=sha256:2e105a2c74462ce7de97afdcfb187f27b88a547dda1216a8aab964d32a882edf
 django-statsd-mozilla==0.3.16 \
     --hash=sha256:925f0f13e5a1e7863e5ed1179fd0f6f1a519e5a0293714ba76745286aad7ed02
 statsd==3.1 \
