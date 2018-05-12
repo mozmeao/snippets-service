@@ -261,9 +261,9 @@ pycrypto==2.6.1 \
     --hash=sha256:f2ce1e989b272cfcb677616763e0a2e7ec659effa67a88aa92b3a65528f60a3c
 django-ical==1.4 \
     --hash=sha256:887458315f14633dd373961f63deb69a4e85d9008f7c1d75f91cdb02c8211155
-icalendar==3.11.7 \
-    --hash=sha256:9457f91bcba40cda68f5c48d6533d896dae98f6c7cfbe13fb1ac1dec9e96c98b \
-    --hash=sha256:ecadaec5b5ebbae19640dac65a11e0adeabfeb16fb342c1a853f4a8e520c0e2a
+icalendar==4.0.1 \
+    --hash=sha256:396ad75bc6c7cc23c97c69370a81c001aca06cf99da32e6bb40856ea0bdf7368 \
+    --hash=sha256:682a42023d3d43a3a83933b4e329d109aabb07c9e11cb94a4d83ca687c3a3e8d
 python-dateutil==2.6.1 \
     --hash=sha256:891c38b2a02f5bb1be3e4793866c8df49c7d19baabf9c1bad62547e0b4866aca \
     --hash=sha256:95511bae634d69bc7329ba55e646499a842bc4ec342ad54a8cdb65645a0aad3c
