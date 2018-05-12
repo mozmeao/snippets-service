@@ -10,8 +10,8 @@ dj-database-url==0.4.2 \
 MySQL-python==1.2.5 \
     --hash=sha256:ab22d1322099098730a57fd59d610f60738f95a1cb68dacca2d1c47cb0cbe8ee \
     --hash=sha256:811040b647e5d5686f84db415efd697e6250008b112b6909ba77ac059e140c74
-python-decouple==3.0 \
-    --hash=sha256:99834c9ff7ce5c5b2f4a18bc0880753e54ea3aaabc3cfb16961a92d5046665df
+python-decouple==3.1 \
+    --hash=sha256:1317df14b43efee4337a4aa02914bf004f010cd56d6c4bd894e6474ec8c4fe2d
 Jinja2==2.9.6 \
     --hash=sha256:2231bace0dfd8d2bf1e5d7e41239c06c9e0ded46e70cc1094a0aa64b0afeb054 \
     --hash=sha256:ddaa01a212cd6d641401cb01b605f4a4d9f37bfc93043d7f760ec70fb99ff9ff
