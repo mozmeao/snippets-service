@@ -249,9 +249,9 @@ mozilla-django-oidc==0.4.2 \
 idna==2.6 \
     --hash=sha256:8c7309c718f94b3a625cb648ace320157ad16ff131ae0af362c9f21b80ef6ec4 \
     --hash=sha256:2c6a5de3089009e3da7c5dde64a141dbc8551d5b7f6cf4ed7c2568d0cc520a8f
-python-jose==1.4.0 \
-    --hash=sha256:18e19f200f37a8ee6247921572807cc63ee034abdbf6854df1ae7c1f505cabcc \
-    --hash=sha256:fed56224664af0ebc3947853f1bed23b5609f90c7b02e3dce5ef5757d0301664
+python-jose==3.0.0 \
+    --hash=sha256:e06dd2e5e9125da79b519ff2652b8c666d64a5ea228fcd9862e0b29a534ccc53 \
+    --hash=sha256:e8255fb3cc524c04f4c790547a6215468f2a32d3a866424175523359e69f3aeb
 ecdsa==0.13 \
     --hash=sha256:40d002cf360d0e035cf2cb985e1308d41aaa087cbfc135b2dc2d844296ea546c \
     --hash=sha256:64cf1ee26d1cde3c73c6d7d107f835fed7c6a2904aef9eac223d57ad800c43fa
