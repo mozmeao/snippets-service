@@ -60,8 +60,9 @@ lxml==3.5.0 \
 django-cache-url==2.0.0 \
     --hash=sha256:d7e7d3f3fadaa38ab7c655afafc85c2a1b06a3ddc0002af4ae021c1948307f8b \
     --hash=sha256:f0009452c4d63468714c7ff59266085947f3f3cc0947b3b2e87121bb27538d6c
-pyquery==1.2.9 \
-    --hash=sha256:46c51eb878b787e814ee8f9737b0a62111034aeb4d1c06450ac5a8ea5a70e602
+pyquery==1.4.0 \
+    --hash=sha256:07987c2ed2aed5cba29ff18af95e56e9eb04a2249f42ce47bddfb37f487229a3 \
+    --hash=sha256:4771db76bd14352eba006463656aef990a0147a0eeaf094725097acfa90442bf
 fake-factory==0.5.3 \
     --hash=sha256:90f507891ad1073e08cf6908eb51d5e1debc3c5a5d554427e8c3fbf73cdf12ee
 factory_boy==2.6.0 \
