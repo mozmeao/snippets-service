@@ -77,11 +77,6 @@ class SnippetFactory(BaseSnippetFactory):
         model = models.Snippet
 
 
-class JSONSnippetFactory(BaseSnippetFactory):
-    class Meta:
-        model = models.JSONSnippet
-
-
 class ClientMatchRuleFactory(factory.django.DjangoModelFactory):
     description = factory.Sequence(lambda n: 'Client Match Rule {0}'.format(n))
 

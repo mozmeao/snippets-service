@@ -20,8 +20,7 @@ from raven.contrib.django.models import client as sentry_client
 
 from snippets.base import util
 from snippets.base.decorators import access_control
-from snippets.base.encoders import JSONSnippetEncoder
-from snippets.base.models import Client, JSONSnippet, Snippet, SnippetBundle, SnippetTemplate
+from snippets.base.models import Client, Snippet, SnippetBundle, SnippetTemplate
 from snippets.base.util import get_object_or_none
 
 
@@ -36,13 +35,6 @@ class SnippetFilter(django_filters.FilterSet):
         model = Snippet
         fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr',
                   'template']
-
-
-class JSONSnippetFilter(django_filters.FilterSet):
-
-    class Meta:
-        model = JSONSnippet
-        fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr']
 
 
 class IndexView(TemplateView):
@@ -79,17 +71,6 @@ class SnippetIndexView(IndexView):
         return self.render(request, *args, **kwargs)
 
 
-class JSONSnippetIndexView(IndexView):
-    template_name = 'base/index-json.jinja'
-
-    def get(self, request, *args, **kwargs):
-        self.snippets = (JSONSnippet.objects
-                         .filter(disabled=False)
-                         .prefetch_related('locales', 'countries'))
-        self.snippetsfilter = JSONSnippetFilter(request.GET, self.snippets)
-        return self.render(request, *args, **kwargs)
-
-
 @cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)
 @access_control(max_age=SNIPPET_BUNDLE_TIMEOUT)
 def fetch_snippets(request, **kwargs):
@@ -114,19 +95,6 @@ def fetch_snippets(request, **kwargs):
         bundle.generate()
 
     return HttpResponseRedirect(bundle.url)
-
-
-@cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)
-@access_control(max_age=SNIPPET_BUNDLE_TIMEOUT)
-def fetch_json_snippets(request, **kwargs):
-    statsd.incr('serve.json_snippets')
-    client = Client(**kwargs)
-    matching_snippets = (JSONSnippet.objects
-                         .filter(disabled=False)
-                         .match_client(client)
-                         .filter_by_available())
-    return HttpResponse(json.dumps(matching_snippets, cls=JSONSnippetEncoder),
-                        content_type='application/json')
 
 
 @csrf_exempt

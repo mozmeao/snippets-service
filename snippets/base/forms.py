@@ -11,8 +11,7 @@ from product_details import product_details
 from product_details.version_compare import Version, version_list
 
 from snippets.base.fields import MultipleChoiceFieldCSV
-from snippets.base.models import (JSONSnippet, Snippet, SnippetTemplate,
-                                  SnippetTemplateVariable, UploadedFile)
+from snippets.base.models import Snippet, SnippetTemplate, SnippetTemplateVariable, UploadedFile
 from snippets.base.validators import MinValueValidator
 
 
@@ -318,19 +317,6 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         snippet.save()
 
         return snippet
-
-
-class JSONSnippetAdminForm(BaseSnippetAdminForm):
-    class Meta:
-        model = JSONSnippet
-        fields = ('name', 'disabled', 'icon', 'text', 'url', 'countries',
-                  'publish_start', 'publish_end',
-                  'on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr',
-                  'on_startpage_1', 'weight', 'client_match_rules',)
-        widgets = {
-            'text': forms.Textarea,
-            'icon': IconWidget,
-        }
 
 
 class UploadedFileAdminForm(forms.ModelForm):

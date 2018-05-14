@@ -332,52 +332,6 @@ class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
                 obj.save()
 
 
-class JSONSnippetAdmin(BaseSnippetAdmin):
-    form = forms.JSONSnippetAdminForm
-    search_fields = ('name', 'client_match_rules__description')
-
-    fieldsets = (
-        (None, {'fields': ('name', 'disabled', 'created', 'modified')}),
-        ('Content', {
-            'fields': ('icon', 'text', 'url'),
-        }),
-        ('Publish Duration', {
-            'description': ('When will this snippet be available? (Optional)'
-                            '<br>Publish times are in UTC. '
-                            '<a href="http://time.is/UTC" target="_blank">'
-                            'Click here to see the current time in UTC</a>.'),
-            'fields': ('publish_start', 'publish_end'),
-        }),
-        ('Prevalence', {
-            'fields': ('weight',)
-        }),
-        ('Product channels', {
-            'description': 'What channels will this snippet be available in?',
-            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
-        }),
-        ('Country and Locale', {
-            'description': ('What country and locales will this snippet be '
-                            'available in?'),
-            'fields': (('countries', 'locales'))
-        }),
-        ('Client Match Rules', {
-            'fields': ('client_match_rules',),
-        }),
-        ('Startpage Versions', {
-            'fields': (('on_startpage_1',),),
-            'classes': ('collapse',)
-        }),
-        ('Other Info', {
-            'fields': (('uuid',),),
-            'classes': ('collapse',)
-        }),
-    )
-
-    def save_model(self, request, obj, form, change):
-        statsd.incr('save.json_snippet')
-        super(JSONSnippetAdmin, self).save_model(request, obj, form, change)
-
-
 class UploadedFileAdmin(admin.ModelAdmin):
     readonly_fields = ('url', 'preview', 'snippets')
     list_display = ('name', 'url', 'preview', 'modified')
@@ -420,7 +374,6 @@ class LogEntryAdmin(admin.ModelAdmin):
 admin.site.register(models.Snippet, SnippetAdmin)
 admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
-admin.site.register(models.JSONSnippet, JSONSnippetAdmin)
 admin.site.register(models.UploadedFile, UploadedFileAdmin)
 admin.site.register(models.SearchProvider, SearchProviderAdmin)
 admin.site.register(models.TargetedCountry, TargetedCountryAdmin)

@@ -12,7 +12,6 @@ from pyquery import PyQuery as pq
 from snippets.base.models import (ONE_DAY, Client, SnippetBundle, UploadedFile,
                                   validate_xml_template, validate_xml_variables, _generate_filename)
 from snippets.base.tests import (ClientMatchRuleFactory,
-                                 JSONSnippetFactory,
                                  SearchProviderFactory,
                                  SnippetFactory,
                                  SnippetTemplateFactory,
@@ -34,10 +33,6 @@ class DuplicateSnippetMixInTests(TestCase):
 
     def test_snippet(self):
         snippet = SnippetFactory.create()
-        self._dup_test(snippet)
-
-    def test_json_snippet(self):
-        snippet = JSONSnippetFactory.create()
         self._dup_test(snippet)
 
 

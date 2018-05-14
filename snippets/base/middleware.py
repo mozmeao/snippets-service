@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.urlresolvers import Resolver404, resolve
 
-from snippets.base.views import fetch_json_snippets, fetch_snippets
+from snippets.base.views import fetch_snippets
 
 
 class FetchSnippetsMiddleware(object):
@@ -21,7 +21,7 @@ class FetchSnippetsMiddleware(object):
         except Resolver404:
             return
 
-        if result.func in (fetch_snippets, fetch_json_snippets):
+        if result.func in (fetch_snippets, ):
             return result.func(request, *result.args, **result.kwargs)
 
 
