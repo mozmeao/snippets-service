@@ -531,6 +531,15 @@ class Snippet(SnippetBaseModel):
                 channels.append(channel)
         return channels
 
+    @property
+    def dict_data(self):
+        return json.loads(self.data)
+
+    def set_data_property(self, name, value):
+        data = json.loads(self.data)
+        data[name] = value
+        self.data = json.dumps(data)
+
     def get_preview_url(self):
         url = reverse('base.show_uuid', kwargs={'snippet_id': self.uuid})
         full_url = urljoin(settings.SITE_URL, url)

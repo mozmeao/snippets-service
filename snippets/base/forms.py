@@ -5,6 +5,7 @@ from collections import defaultdict
 from django import forms
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.forms.widgets import Textarea
 from django.utils.safestring import mark_safe
 
 from product_details import product_details
@@ -146,6 +147,33 @@ class IconWidget(forms.TextInput):
 
 class BaseSnippetAdminForm(forms.ModelForm):
     pass
+
+
+class SnippetChangeListForm(forms.ModelForm):
+    class Meta:
+        model = Snippet
+        fields = ('body',)
+
+    body = forms.CharField(required=False, widget=Textarea(attrs={'cols': '120', 'rows': '8'}))
+
+    def __init__(self, *args, **kwargs):
+        super(SnippetChangeListForm, self).__init__(*args, **kwargs)
+        instance = kwargs.get('instance')
+        if not instance:
+            return
+
+        try:
+            self.body_variable = (instance.template
+                                  .variable_set.get(type=SnippetTemplateVariable.BODY).name)
+        except SnippetTemplateVariable.DoesNotExist:
+            self.fields['body'].disabled = True
+        else:
+            text = instance.dict_data[self.body_variable]
+            self.fields['body'].initial = text
+
+    def save(self, *args, **kwargs):
+        self.instance.set_data_property(self.body_variable, self.cleaned_data['body'])
+        return super(SnippetChangeListForm, self).save(*args, **kwargs)
 
 
 class SnippetAdminForm(BaseSnippetAdminForm):
@@ -348,3 +376,12 @@ class UploadedFileAdminForm(forms.ModelForm):
     class Meta:
         model = UploadedFile
         fields = ('file', 'name')
+
+
+class SnippetTemplateVariableInlineFormset(forms.models.BaseInlineFormSet):
+    def clean(self):
+            main_body_count = sum([form.cleaned_data['type'] == SnippetTemplateVariable.BODY
+                                   for form in self.forms])
+            if main_body_count > 1:
+                raise forms.ValidationError(
+                    'There can be only one Main Text variable type per template')
