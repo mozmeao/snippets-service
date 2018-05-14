@@ -59,8 +59,8 @@ class IndexView(TemplateView):
 
         # Display links to the page before and after the current page when
         # applicable.
-        pagination_range = range(max(1, snippets.number-2),
-                                 min(snippets.number+3, paginator.num_pages+1))
+        pagination_range = range(max(1, snippets.number - 2),
+                                 min(snippets.number + 3, paginator.num_pages + 1))
         data = {'snippets': snippets,
                 'pagination_range': pagination_range,
                 'snippetsfilter': self.snippetsfilter}
