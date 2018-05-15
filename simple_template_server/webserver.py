@@ -101,6 +101,8 @@ def home():
                 'screen_resolutions': "0-1024;1024-1920;1920-50000",
                 'profileage_lower_bound': -1,
                 'profileage_upper_bound': -1,
+                'bookmarks_count_lower_bound': -1,
+                'bookmarks_count_upper_bound': -1,
             }
         })
 
