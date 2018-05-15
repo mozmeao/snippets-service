@@ -1,2 +1,2 @@
 requests
-pytest
+pytest==3.5.1
