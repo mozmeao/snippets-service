@@ -418,7 +418,7 @@ class Snippet(SnippetBaseModel):
     on_beta = models.BooleanField(default=False, verbose_name='Beta')
     on_aurora = models.BooleanField(default=False, verbose_name='Aurora')
     on_nightly = models.BooleanField(default=False, verbose_name='Nightly')
-    on_esr = models.BooleanField(default=False, verbose_name='Enterprise')
+    on_esr = models.BooleanField(default=False, verbose_name='ESR')
 
     on_startpage_1 = models.BooleanField(default=False, verbose_name='Version 1')
     on_startpage_2 = models.BooleanField(default=False, verbose_name='Version 2')
@@ -568,7 +568,7 @@ class JSONSnippet(SnippetBaseModel):
     on_beta = models.BooleanField(default=False, verbose_name='Beta')
     on_aurora = models.BooleanField(default=False, verbose_name='Aurora')
     on_nightly = models.BooleanField(default=False, verbose_name='Nightly')
-    on_esr = models.BooleanField(default=False, verbose_name='Enterprise')
+    on_esr = models.BooleanField(default=False, verbose_name='ESR')
 
     on_startpage_1 = models.BooleanField(default=True, verbose_name='Version 1')
 

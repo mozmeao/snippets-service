@@ -72,7 +72,7 @@ class ReleaseFilter(admin.SimpleListFilter):
             ('on_beta', 'Beta'),
             ('on_aurora', 'Aurora'),
             ('on_nightly', 'Nightly'),
-            ('on_esr', 'Enterprise'),
+            ('on_esr', 'ESR'),
         )
 
     def queryset(self, request, queryset):
@@ -142,7 +142,7 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
         ('on_beta', 'Channel Beta'),
         ('on_aurora', 'Channel Aurora'),
         ('on_nightly', 'Channel Nightly'),
-        ('on_esr', 'Channel Enterprise'),
+        ('on_esr', 'Channel ESR'),
         ('on_startpage_4', 'Page About:Home'),
         ('on_startpage_5', 'Page Activity Stream'),
         ('countries__name', 'Country'),
