@@ -154,9 +154,9 @@ django-clear-cache==0.3 \
 django-extensions==2.0.7 \
     --hash=sha256:3be3debf53c77ca795bdf713726c923aa3c3f895e1a42e2e31a68c1a562346a4 \
     --hash=sha256:94bfac99eb262c5ac27e53eda96925e2e53fe0b331af7dde37012d07639a649c
-requests==2.18.2 \
-    --hash=sha256:414459f05392835d4d653b57b8e58f98aea9c6ff2782e37de0a1ee92891ce900 \
-    --hash=sha256:5b26fcc5e72757a867e4d562333f841eddcef93548908a1bb1a9207260618da9
+requests==2.18.4 \
+    --hash=sha256:6a1b267aa90cac58ac3a765d067950e7dbbf75b1da07e895d1f594193a40a38b \
+    --hash=sha256:9c443e7324ba5b85070c4a818ade28bfabedf16ea10206da1132edaa6dda237e
 tzlocal==1.2 --hash=sha256:438f122d684c951b22cb98aecc80fdb961b84e69542bf878c6b9a9419de09a8b
 futures==3.0.3 \
     --hash=sha256:04afa2a06ab7dcca9d81717b420a7a14826061e9b2614a5c77dd24c75ccf97e4 \
