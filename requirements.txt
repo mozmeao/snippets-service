@@ -267,9 +267,9 @@ babis==0.2.1 \
 django-advanced-filters==1.0.7.1 \
     --hash=sha256:ed1b13c3ae320f45b3a2721a4f0fdbdc8fa5f605a976cb6a95468d784aa94d43 \
     --hash=sha256:45840def08562eade6fcb8dfb5b0b6a719c0e5d89ec09477ad5a32af75909ad9
-django-braces==1.11.0 \
-    --hash=sha256:5898ab2ce4ca7c85b21aedf789b96e90c59dc75d26db6d9a4dc0cff3fc7a7aca \
-    --hash=sha256:6be8277a535565e2140f7b1eb83ec26aa8d181acc8bb046875142a2792e4babe
+django-braces==1.13.0 \
+    --hash=sha256:a457d74ea29478123c0c4652272681b3cea0bf1232187fd9f9b6f1d97d32a890 \
+    --hash=sha256:ba68e98b817c6f01d71d10849f359979617b3fe4cefb7f289adefddced092ddc
 simplejson==3.15.0 \
     --hash=sha256:2fa4eafab7cb4f900ce7739129cef0da1f25acfa89089540ce6241a15a61df78 \
     --hash=sha256:1e651e49b91024e615267fe800ad094c1174800ff06a3b29652f4a656dc51228 \
