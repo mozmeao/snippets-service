@@ -175,13 +175,13 @@ class SnippetTemplateTests(TestCase):
 class SnippetTests(TestCase):
     def test_to_dict(self):
         snippet = SnippetFactory.create(weight=60, campaign='foo-campaign',
-                                        countries=['gr', 'it'], client_options={'foo': 'bar'})
+                                        countries=['gr', 'it'], client_options={u'foo': u'bar'})
         snippet.render = Mock()
         snippet.render.return_value = 'rendered'
 
         data = {
             'code': 'rendered',
-            'client_options': {'foo': 'bar'},
+            'client_options': {u'foo': u'bar'},
             'campaign': 'foo-campaign',
             'weight': 60,
             'countries': [u'gr', u'it'],
