@@ -168,9 +168,9 @@ six==1.11.0 \
 html5lib==1.0.1 \
     --hash=sha256:20b159aa3badc9d5ee8f5c647e5efd02ed2a66ab8d354930bd9ff139fc1dc0a3 \
     --hash=sha256:66cb0dcfdbbc4f9c3ba1a63fdb511ffdbd4f513b2b6d81b80cd26ce6b3fb3736
-django-mysql==2.1.0 \
-    --hash=sha256:607cb542e4b5326205d3f033240dd0c711cdeacf0f927d13967b08c4e04acbd8 \
-    --hash=sha256:10b3b1e4d5e403f96bc3ea89821d87d65d383a3bb03923e730a370f656e03474
+django-mysql==2.2.2 \
+    --hash=sha256:ebd28bd17840a2bea0941e189a4111b491449d794272c15f035bed8b03f94c36 \
+    --hash=sha256:b462fdd28f01c721fa7242a2c06afb5a5d3d14896f0da7c7b07b711eb37f6fdd
 mariadb_dyncol==1.1.0 \
     --hash=sha256:b4b2f9bf55a5444332f0b450372d9947c16bd68d1efe0c7410c6a224f9d64659 \
     --hash=sha256:28ed5a6cb4d466f745c937bc4324baae9c9df816676e9309b501c017d40ff4d8
