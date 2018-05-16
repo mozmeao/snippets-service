@@ -417,7 +417,7 @@ Brotli==1.0.4 \
 django-storages==1.6.6 \
     --hash=sha256:7339070cf0c8042f5a885783a0a909175a8dbb68e7f5697d597571c830a460c4 \
     --hash=sha256:f1dd5668a4df9a23aff56c8321ea3aac3fda23d9d17473158d308d1b13e5363e
-pycodestyle==2.3.0 \
+pycodestyle==2.3.0 \  # pyup: <= 2.3.0
     --hash=sha256:a5910db118cf7e66ff92fb281a203c19ca2b5134620dd2538a794e636253863b \
     --hash=sha256:ae308be77310759b722965cfe4a81b69c10aacaecb2db2c874ceb1720cc8f1aa
 configparser==3.5.0 \
