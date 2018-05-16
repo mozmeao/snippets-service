@@ -4,7 +4,7 @@ hashin==0.13.0 \
 Django==1.11.12 \
     --hash=sha256:056fe5b9e1f8f7fed9bb392919d64f6b33b3a71cfb0f170a90ee277a6ed32bc2 \
     --hash=sha256:4d398c7b02761e234bbde490aea13ea94cb539ceeb72805b72303f348682f2eb \
-    # pyup: <= 2.0.0
+    # pyup: < 2.0.0
 dj-database-url==0.5.0 \
     --hash=sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9
