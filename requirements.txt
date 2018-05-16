@@ -180,9 +180,9 @@ django-reversion==2.0.13 \
 django-statsd-mozilla==0.4.0 \
     --hash=sha256:81084f3d426f5184f0a0f1dbfe035cc26b66f041d2184559d916a228d856f0d3 \
     --hash=sha256:0d87cb63de8107279cbb748caad9aa74c6a44e7e96ccc5dbf07b89f77285a4b8
-statsd==3.1 \
-    --hash=sha256:788ffa29dfb754900e08b90881f7ea16c3c25ca2949548eea7b43d2ca739e33f \
-    --hash=sha256:fbae5feb33ae9394c275bc834ab94684b94de03acc8f36387bd0bf0c51ef28ee
+statsd==3.2.2 \
+    --hash=sha256:50e0e7b34e5c01e78e270f17ccbd6bcc334f1a81ac5cb0b19050f7dd24d72c3e \
+    --hash=sha256:84f2427ef7b8ffab28cdb717933f6889d248d710eee32b5eb79e3fdac0e374dd
 raven==5.21.0 \
     --hash=sha256:feae5e8a7189d3ff8e92bdcb8ccd51dd0b3e2ee22bde6dd730c423f27932d91b \
     --hash=sha256:11ed9ed0c0759c608455861dc52a91ca634ace7bee536e61b7d04ad827eeabca
