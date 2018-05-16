@@ -1,0 +1,5 @@
+update: all
+branch: master
+schedule: "every day"
+search: True
+close_prs: False
