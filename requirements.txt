@@ -264,9 +264,9 @@ python-dateutil==2.7.3 \
 babis==0.2.1 \
     --hash=sha256:610416de748d0708a153dd7e2a42c95b4938689e033eb96b92e92b0a0049dc24 \
     --hash=sha256:d900322567fe7acd5898f91e1e9a21dff47b4d29a38c28c98f2e6e6745b5108b
-django-advanced-filters==1.0.6 \
-    --hash=sha256:7e3061f470d6b1be10dd368810133c9fbe3d01a6299975752bef891c00061dc4 \
-    --hash=sha256:67e52a6f4016ab14e7995d4968b91e72a835e8199e44296d42806d0f481b1105
+django-advanced-filters==1.0.7.1 \
+    --hash=sha256:ed1b13c3ae320f45b3a2721a4f0fdbdc8fa5f605a976cb6a95468d784aa94d43 \
+    --hash=sha256:45840def08562eade6fcb8dfb5b0b6a719c0e5d89ec09477ad5a32af75909ad9
 django-braces==1.11.0 \
     --hash=sha256:5898ab2ce4ca7c85b21aedf789b96e90c59dc75d26db6d9a4dc0cff3fc7a7aca \
     --hash=sha256:6be8277a535565e2140f7b1eb83ec26aa8d181acc8bb046875142a2792e4babe
