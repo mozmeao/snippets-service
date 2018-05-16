@@ -3,3 +3,8 @@ branch: master
 schedule: "every day"
 search: True
 close_prs: False
+requirements:
+  - tests/requirements.txt:
+      update: False
+  - simple_template_server/requirements.txt:
+      update: False
