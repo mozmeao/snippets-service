@@ -457,6 +457,8 @@ class Snippet(SnippetBaseModel):
             'profileage_upper_bound': int,
             'sessionage_lower_bound': int,
             'sessionage_upper_bound': int,
+            'addon_check_type': unicode,
+            'addon_name': unicode,
         }
     )
 
