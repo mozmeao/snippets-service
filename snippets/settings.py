@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'advanced_filters',
     'watchman',
     'quickedit',
+    'django_admin_listfilter_dropdown',
 
     # Django apps
     'django.contrib.admin',

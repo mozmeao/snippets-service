@@ -9,6 +9,7 @@ from django.utils.encoding import force_text
 
 from advanced_filters.admin import AdminAdvancedFiltersMixin
 from django_ace import AceWidget
+from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 from django_statsd.clients import statsd
 from jinja2.meta import find_undeclared_variables
 from reversion.admin import VersionAdmin
@@ -113,13 +114,6 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
         'locale_list',
         'modified',
     )
-    list_filter = (
-        ModifiedFilter,
-        'disabled',
-        ReleaseFilter,
-        ('locales', admin.RelatedOnlyFieldListFilter),
-        ('client_match_rules', admin.RelatedOnlyFieldListFilter),
-    )
     list_editable = (
         'disabled',
     )
@@ -169,9 +163,13 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     readonly_fields = BaseSnippetAdmin.readonly_fields + ('preview_url',)
     search_fields = ('name', 'client_match_rules__description',
                      'template__name', 'campaign')
-    list_filter = BaseSnippetAdmin.list_filter + (
-        ('template', admin.RelatedOnlyFieldListFilter),
-        'exclude_from_search_providers',
+    list_filter = (
+        ModifiedFilter,
+        'disabled',
+        ReleaseFilter,
+        ('locales', RelatedDropdownFilter),
+        ('client_match_rules', RelatedDropdownFilter),
+        ('template', RelatedDropdownFilter),
     )
     change_list_template = 'quickedit/change_list.html'
     quick_editable = (
@@ -334,6 +332,13 @@ class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
 class JSONSnippetAdmin(BaseSnippetAdmin):
     form = forms.JSONSnippetAdminForm
     search_fields = ('name', 'client_match_rules__description')
+    list_filter = (
+        ModifiedFilter,
+        'disabled',
+        ReleaseFilter,
+        ('locales', RelatedDropdownFilter),
+        ('client_match_rules', RelatedDropdownFilter),
+    )
 
     fieldsets = (
         (None, {'fields': ('name', 'disabled', 'created', 'modified')}),
