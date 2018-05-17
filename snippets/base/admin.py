@@ -100,7 +100,7 @@ class DefaultFilterMixIn(admin.ModelAdmin):
 
 
 class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
-                       DefaultFilterMixIn, QuickEditAdmin, admin.ModelAdmin):
+                       DefaultFilterMixIn, admin.ModelAdmin):
     default_filters = ('last_modified=336',)
     list_display_links = (
         'id',
@@ -123,17 +123,9 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
     list_editable = (
         'disabled',
     )
-    quick_editable = (
-        'name',
-        'weight',
-        'publish_start',
-        'publish_end',
-        'body',
-    )
     readonly_fields = ('created', 'modified', 'uuid')
     save_on_top = True
     save_as = True
-    change_list_template = 'quickedit/change_list.html'
 
     filter_horizontal = ('client_match_rules', 'locales', 'countries')
     actions = (duplicate_snippets_action,)
@@ -169,7 +161,7 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
         return active_locales
 
 
-class SnippetAdmin(BaseSnippetAdmin):
+class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     def get_changelist_form(self, request, **kwargs):
         return forms.SnippetChangeListForm
 
@@ -180,6 +172,14 @@ class SnippetAdmin(BaseSnippetAdmin):
     list_filter = BaseSnippetAdmin.list_filter + (
         ('template', admin.RelatedOnlyFieldListFilter),
         'exclude_from_search_providers',
+    )
+    change_list_template = 'quickedit/change_list.html'
+    quick_editable = (
+        'name',
+        'weight',
+        'publish_start',
+        'publish_end',
+        'body',
     )
     filter_horizontal = (BaseSnippetAdmin.filter_horizontal +
                          ('exclude_from_search_providers', 'client_match_rules'))
