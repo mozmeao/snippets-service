@@ -1,6 +1,4 @@
-import json
 import re
-from textwrap import wrap
 from datetime import datetime, timedelta
 
 from django.contrib import admin
@@ -14,6 +12,7 @@ from django_ace import AceWidget
 from django_statsd.clients import statsd
 from jinja2.meta import find_undeclared_variables
 from reversion.admin import VersionAdmin
+from quickedit.admin import QuickEditAdmin
 
 from snippets.base import forms, models
 from snippets.base.models import JINJA_ENV
@@ -101,17 +100,17 @@ class DefaultFilterMixIn(admin.ModelAdmin):
 
 
 class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
-                       DefaultFilterMixIn, admin.ModelAdmin):
+                       DefaultFilterMixIn, QuickEditAdmin, admin.ModelAdmin):
     default_filters = ('last_modified=336',)
-    list_display = (
-        'name',
+    list_display_links = (
         'id',
+        'name',
+    )
+    list_display = (
+        'id',
+        'name',
         'disabled',
-        'text',
         'locale_list',
-        'weight',
-        'publish_start',
-        'publish_end',
         'modified',
     )
     list_filter = (
@@ -123,14 +122,18 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
     )
     list_editable = (
         'disabled',
+    )
+    quick_editable = (
+        'name',
+        'weight',
         'publish_start',
         'publish_end',
-        'weight',
+        'body',
     )
-
     readonly_fields = ('created', 'modified', 'uuid')
     save_on_top = True
     save_as = True
+    change_list_template = 'quickedit/change_list.html'
 
     filter_horizontal = ('client_match_rules', 'locales', 'countries')
     actions = (duplicate_snippets_action,)
@@ -167,6 +170,9 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
 
 
 class SnippetAdmin(BaseSnippetAdmin):
+    def get_changelist_form(self, request, **kwargs):
+        return forms.SnippetChangeListForm
+
     form = forms.SnippetAdminForm
     readonly_fields = BaseSnippetAdmin.readonly_fields + ('preview_url',)
     search_fields = ('name', 'client_match_rules__description',
@@ -251,14 +257,6 @@ class SnippetAdmin(BaseSnippetAdmin):
             return True
         return super(SnippetAdmin, self).lookup_allowed(key, value)
 
-    def text(self, obj):
-        data = json.loads(obj.data)
-        text_keys = (obj.template.variable_set
-                        .filter(type=models.SnippetTemplateVariable.BODY)
-                        .values_list('name', flat=True))
-
-        return ' '.join(wrap('\n'.join([data[key][:500] for key in text_keys if data.get(key)])))
-
     def preview_url(self, obj):
         url = obj.get_preview_url()
         template = '<a href="{url}" target=_blank>{url}</a>'.format(url=url)
@@ -283,6 +281,7 @@ class ClientMatchRuleAdmin(VersionAdmin, admin.ModelAdmin):
 
 class SnippetTemplateVariableInline(admin.TabularInline):
     model = models.SnippetTemplateVariable
+    formset = forms.SnippetTemplateVariableInlineFormset
     max_num = 0
     can_delete = False
     readonly_fields = ('name',)

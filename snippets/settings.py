@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'mozilla_django_oidc',
     'advanced_filters',
     'watchman',
+    'quickedit',
 
     # Django apps
     'django.contrib.admin',
