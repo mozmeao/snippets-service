@@ -16,7 +16,7 @@ def migrate_has_testpilot(apps, schema_editor):
                 'addon_name': AsType('@testpilot-addon', 'CHAR'),
             })
     )
-    Snippet.objects.filter(client_options__has_testpilot_CHAR='not').update(
+    Snippet.objects.filter(client_options__has_testpilot_CHAR='no').update(
         client_options=ColumnAdd(
             'client_options', {
                 'addon_check_type': AsType('not_installed', 'CHAR'),
