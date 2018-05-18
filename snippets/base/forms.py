@@ -193,11 +193,6 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         choices=(('any', 'Show to all users'),
                  ('yes', 'Show only to users with an enabled Firefox Account'),
                  ('no', 'Show only to users without an enabled Firefox Account')))
-    client_option_has_testpilot = forms.ChoiceField(
-        label='Test Pilot',
-        choices=(('any', 'Show to all users'),
-                 ('yes', 'Show only to users with TestPilot'),
-                 ('no', 'Show only to users without TestPilot')))
     client_option_is_developer = forms.ChoiceField(
         label='Is Developer',
         choices=(('any', 'Show to all users'),
