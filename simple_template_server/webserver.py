@@ -94,13 +94,14 @@ def home():
             'exclude_from_search_engines': [],
             'client_options': {
                 'has_fxaccount': 'any',
-                'has_testpilot': 'any',
                 'version_lower_bound': 'any',
                 'version_upper_bound': 'any',
                 'is_default_browser': 'any',
                 'screen_resolutions': "0-1024;1024-1920;1920-50000",
                 'profileage_lower_bound': -1,
                 'profileage_upper_bound': -1,
+                'addon_check_type': 'any',
+                'addon_name': '',
             }
         })
 
