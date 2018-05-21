@@ -72,7 +72,7 @@ class SnippetIndexView(IndexView):
 
     def get(self, request, *args, **kwargs):
         self.snippets = (Snippet.objects
-                         .filter(disabled=False)
+                         .filter(published=True)
                          .prefetch_related('locales', 'countries',
                                            'exclude_from_search_providers'))
         self.snippetsfilter = SnippetFilter(request.GET, self.snippets)
@@ -84,7 +84,7 @@ class JSONSnippetIndexView(IndexView):
 
     def get(self, request, *args, **kwargs):
         self.snippets = (JSONSnippet.objects
-                         .filter(disabled=False)
+                         .filter(published=True)
                          .prefetch_related('locales', 'countries'))
         self.snippetsfilter = JSONSnippetFilter(request.GET, self.snippets)
         return self.render(request, *args, **kwargs)
@@ -122,7 +122,7 @@ def fetch_json_snippets(request, **kwargs):
     statsd.incr('serve.json_snippets')
     client = Client(**kwargs)
     matching_snippets = (JSONSnippet.objects
-                         .filter(disabled=False)
+                         .filter(published=True)
                          .match_client(client)
                          .filter_by_available())
     return HttpResponse(json.dumps(matching_snippets, cls=JSONSnippetEncoder),
@@ -187,7 +187,7 @@ def show_snippet(request, snippet_id, uuid=False):
         snippet = get_object_or_404(Snippet, uuid=snippet_id)
     else:
         snippet = get_object_or_404(Snippet, pk=snippet_id)
-        if snippet.disabled and not request.user.is_authenticated():
+        if not snippet.published and not request.user.is_authenticated():
             raise Http404()
 
     template = 'base/preview.jinja'
