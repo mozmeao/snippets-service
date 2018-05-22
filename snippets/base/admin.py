@@ -114,10 +114,7 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
         'locale_list',
         'modified',
     )
-    list_editable = (
-        'published',
-    )
-    readonly_fields = ('created', 'modified', 'uuid')
+    readonly_fields = ('created', 'modified', 'uuid', 'published')
     save_on_top = True
     save_as = True
 
