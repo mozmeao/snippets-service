@@ -6,6 +6,47 @@ var ABOUTHOME_SHOWN_SNIPPET = null;
 var USER_COUNTRY = null;
 var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
 
+// Start MozUITour
+// Copy from https://hg.mozilla.org/mozilla-central/file/tip/browser/components/uitour/UITour-lib.js
+if (typeof Mozilla == 'undefined') {
+    var Mozilla = {};
+}
+
+if (typeof Mozilla.UITour == 'undefined') {
+    Mozilla.UITour = {};
+}
+
+function _sendEvent(action, data) {
+    var event = new CustomEvent('mozUITour', {
+        bubbles: true,
+        detail: {
+            action: action,
+            data: data || {}
+        }
+    });
+
+    document.dispatchEvent(event);
+}
+
+Mozilla.UITour.showMenu = function(name, callback) {
+    var showCallbackID;
+    if (callback)
+        showCallbackID = _waitForCallback(callback);
+
+    _sendEvent('showMenu', {
+        name: name,
+        showCallbackID: showCallbackID
+    });
+};
+
+Mozilla.UITour.hideMenu = function(name) {
+    _sendEvent('hideMenu', {
+        name: name
+    });
+};
+// End MozUITour
+
+
 (async function() {
     'use strict';
 
@@ -492,31 +533,51 @@ var GEO_CACHE_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
             target = target.parentNode;
         }
 
+        if (target.href) {
+            // First handle the special about:accounts links that call
+            // showFirefoxAccounts method. Due to the special nature of
+            // about:accounts we can only open in the same tab.
+            if (target.href.indexOf('about:accounts') === 0) {
+                event.preventDefault();
+                callback = function() {
+                    gSnippetsMap.showFirefoxAccounts();
+                };
+            }
+            // Handle UITour showMenu appMenu
+            else if (target.href.indexOf('uitour:showMenu:appMenu') === 0) {
+                event.preventDefault();
+                callback = function() {
+                    Mozilla.UITour.showMenu('appMenu');
+                };
+                target.href = 'uitour:hideMenu:appMenu';
+            }
+            // Handle UITour hideMenu appMenu
+            else if (target.href.indexOf('uitour:hideMenu:appMenu') === 0) {
+                event.preventDefault();
+                callback = function() {
+                    Mozilla.UITour.hideMenu('appMenu');
+                };
+                target.href = 'uitour:showMenu:appMenu';
+            }
+            // For other links if user is not opening a new tab, preventDefault
+            // action.
+            else if (event.button === 0 && !(event.metaKey || event.ctrlKey)) {
+                event.preventDefault();
+                callback = function() {
+                    target.click();
+                };
+            }
+        }
+
         // Count snippet clicks.
         if (target.dataset.eventCounted !== 'true') {
             target.dataset.eventCounted = 'true';
             // Fetch custom metric or default to 'click'
             metric = target.dataset.metric || 'click';
-            if (target.href) {
-                // First handle the special about:accounts links which have
-                // custom metric and need to call showFirefoxAccounts method.
-                // Due to the special nature of about:accounts we can only open
-                // in the same tab. For other links if user is not opening a new
-                // tab, preventDefault action.
-                if (target.href.indexOf('about:accounts') === 0) {
-                    // Custom metric for about:accounts links
-                    callback = function() {
-                        gSnippetsMap.showFirefoxAccounts();
-                    };
-                }
-                else if (event.button === 0 && !(event.metaKey || event.ctrlKey)) {
-                    event.preventDefault();
-                    callback = function() {
-                        target.click();
-                    };
-                }
-            }
             sendMetric(metric, callback, target.href);
+        }
+        else {
+            callback();
         }
     }, false);
 })();

@@ -185,6 +185,9 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     fieldsets = (
         (None, {'fields': ('name', 'disabled', 'campaign', 'preview_url', 'created', 'modified')}),
         ('Content', {
+            'description': ('In Activity Stream Templates you can use the special links:<br/>'
+                            '<ol><li>about:accounts : To open Firefox Accounts</li>'
+                            '<li>uitour:showMenu:appMenu : To open the hamburger menu</li></ol>'),
             'fields': ('template', 'data'),
         }),
         ('Publish Duration', {
