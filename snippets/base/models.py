@@ -226,7 +226,7 @@ class SnippetBundle(object):
     @cached_property
     def snippets(self):
         return (Snippet.objects
-                .filter(disabled=False)
+                .filter(published=True)
                 .match_client(self.client)
                 .select_related('template')
                 .prefetch_related('countries', 'exclude_from_search_providers')
@@ -374,7 +374,7 @@ class SnippetBaseModel(django_mysql.models.Model):
     def duplicate(self):
         snippet_copy = copy.copy(self)
         snippet_copy.id = None
-        snippet_copy.disabled = True
+        snippet_copy.published = False
         snippet_copy.uuid = uuid.uuid4()
         snippet_copy.name = '{0} - {1}'.format(
             self.name,
@@ -406,6 +406,7 @@ class Snippet(SnippetBaseModel):
     data = models.TextField(default='{}', validators=[validate_xml_variables])
 
     disabled = models.BooleanField(default=True)
+    published = models.BooleanField(default=False)
 
     countries = models.ManyToManyField(
         'TargetedCountry', blank=True, verbose_name='Targeted Countries')
@@ -562,6 +563,7 @@ class Snippet(SnippetBaseModel):
 class JSONSnippet(SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
     disabled = models.BooleanField(default=True)
+    published = models.BooleanField(default=False)
 
     icon = models.TextField(help_text='Icon should be a 96x96px PNG.')
     text = models.CharField(max_length=140,

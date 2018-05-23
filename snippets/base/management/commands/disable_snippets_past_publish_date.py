@@ -13,11 +13,10 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         now = datetime.utcnow()
-        snippets = Snippet.objects.filter(disabled=False, publish_end__lte=now)
-        disabled = snippets.update(disabled=True)
-        running = Snippet.objects.filter(disabled=False).count()
+        snippets = Snippet.objects.filter(published=True, publish_end__lte=now)
+        disabled = snippets.update(published=False)
+        running = Snippet.objects.filter(published=True).count()
 
         self.stdout.write(
-            'Snippets Disabled: {disabled}\n'
-            'Snippets Running: {running}\n'.format(disabled=disabled,
-                                                   running=running))
+            'Snippets Unpublished: {disabled}\n'
+            'Snippets Running: {running}\n'.format(disabled=disabled, running=running))

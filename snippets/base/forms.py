@@ -167,7 +167,7 @@ class SnippetChangeListForm(forms.ModelForm):
             self.body_variable = (instance.template
                                   .variable_set.get(type=SnippetTemplateVariable.BODY).name)
         except SnippetTemplateVariable.DoesNotExist:
-            self.fields['body'].disabled = True
+            self.fields['body'].published = False
         else:
             text = instance.dict_data[self.body_variable]
             self.fields['body'].initial = text
@@ -280,7 +280,7 @@ class SnippetAdminForm(BaseSnippetAdminForm):
 
     class Meta:
         model = Snippet
-        fields = ('name', 'template', 'data', 'disabled', 'countries',
+        fields = ('name', 'template', 'data', 'published', 'countries',
                   'publish_start', 'publish_end', 'on_release', 'on_beta',
                   'on_aurora', 'on_nightly', 'on_esr', 'on_startpage_1',
                   'on_startpage_2', 'on_startpage_3', 'on_startpage_4',
@@ -368,7 +368,7 @@ class SnippetAdminForm(BaseSnippetAdminForm):
 class JSONSnippetAdminForm(BaseSnippetAdminForm):
     class Meta:
         model = JSONSnippet
-        fields = ('name', 'disabled', 'icon', 'text', 'url', 'countries',
+        fields = ('name', 'published', 'icon', 'text', 'url', 'countries',
                   'publish_start', 'publish_end',
                   'on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr',
                   'on_startpage_1', 'weight', 'client_match_rules',)
