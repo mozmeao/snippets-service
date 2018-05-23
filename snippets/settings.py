@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'watchman',
     'quickedit',
     'django_admin_listfilter_dropdown',
+    'django_object_actions',
 
     # Django apps
     'django.contrib.admin',

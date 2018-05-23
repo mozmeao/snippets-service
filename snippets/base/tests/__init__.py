@@ -39,6 +39,16 @@ class BaseSnippetFactory(factory.django.DjangoModelFactory):
     on_release = True
 
     @factory.post_generation
+    def published(self, create, extracted, **kwargs):
+        """New snippets are forcefully save as unpublished, publish them."""
+        if not create:
+            return
+
+        self.published = True
+        if extracted is not None:
+            self.published = extracted
+
+    @factory.post_generation
     def client_match_rules(self, create, extracted, **kwargs):
         if not create:
             return

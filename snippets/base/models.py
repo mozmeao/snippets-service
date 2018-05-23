@@ -557,6 +557,10 @@ class Snippet(SnippetBaseModel):
     def save(self, *args, **kwargs):
         if self.client_options is None:
             self.client_options = {}
+        # Save duplicated or save-as-new snippet un-published
+        if self.id is None:
+            self.published = False
+
         return super(Snippet, self).save(*args, **kwargs)
 
 
