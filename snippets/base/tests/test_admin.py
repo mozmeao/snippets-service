@@ -3,47 +3,35 @@ from django.test.client import RequestFactory
 
 from mock import Mock, patch
 
-from snippets.base.admin import SnippetAdmin, SnippetTemplateAdmin
-from snippets.base.models import Snippet, SnippetTemplate, SnippetTemplateVariable
-from snippets.base.tests import SnippetTemplateFactory, SnippetTemplateVariableFactory, TestCase
+from snippets.base.admin import SnippetTemplateAdmin
+from snippets.base.models import SnippetTemplate, SnippetTemplateVariable
+from snippets.base.tests import (SnippetFactory, SnippetTemplateFactory,
+                                 SnippetTemplateVariableFactory, TestCase)
 
 
 class SnippetAdminTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.model_admin = SnippetAdmin(Snippet, None)
-        self.model_admin.admin_site = Mock()
-        self.user = User.objects.get_or_create(username='foo', email='foo@example.com')[0]
+        User.objects.create_superuser(username='admin',
+                                      email='foo@example.com',
+                                      password='admin')
+        self.client.login(username='admin', password='admin')
 
-    def test_save_as_published(self):
-        request = self.factory.post('/', data={
-            'name': 'test',
-            'template': 'foo',
-            'published': u'on',
-            '_saveasnew': True
-        })
-        request.user = self.user
+    def test_action_publish_snippet(self):
+        snippet = SnippetFactory(published=False)
+        self.assertFalse(snippet.published)
+        snippet_action_url = '/admin/base/snippet/{}/actions/publish_object/'.format(snippet.pk,)
+        self.client.get(snippet_action_url)
+        snippet.refresh_from_db()
+        self.assertTrue(snippet.published)
 
-        with patch('snippets.base.admin.admin.ModelAdmin.change_view') as change_view_mock:
-            self.model_admin.change_view(request, 999)
-            change_view_mock.assert_called_with(request, 999, '', None)
-            request = change_view_mock.call_args[0][0]
-            self.assertEqual(request.POST['published'], u'off')
-
-    def test_normal_save_published(self):
-        """Test that normal save doesn't alter 'published' attribute."""
-        request = self.factory.post('/', data={
-            'name': 'test',
-            'template': 'foo',
-            'published': u'foo'
-        })
-        request.user = self.user
-
-        with patch('snippets.base.admin.admin.ModelAdmin.change_view') as change_view_mock:
-            self.model_admin.change_view(request, 999)
-            change_view_mock.assert_called_with(request, 999, '', None)
-            request = change_view_mock.call_args[0][0]
-            self.assertEqual(request.POST['published'], u'foo')
+    def test_action_unpublish_snippet(self):
+        snippet = SnippetFactory(published=True)
+        self.assertTrue(snippet.published)
+        snippet_action_url = '/admin/base/snippet/{}/actions/unpublish_object/'.format(snippet.pk,)
+        self.client.get(snippet_action_url)
+        snippet.refresh_from_db()
+        self.assertFalse(snippet.published)
 
 
 class SnippetTemplateAdminTests(TestCase):

@@ -17,3 +17,11 @@ td.field-description .vLargeTextField {
     width: 60em;
     height: 3em;
 }
+
+.object-tools [data-tool-name="publish_object"] a {
+    background: green;
+}
+
+.object-tools [data-tool-name="unpublish_object"] a {
+    background: #a41515;
+}

@@ -432,3 +432,6 @@ django-quickedit-ng==0.2.0 \
     --hash=sha256:be09d4ffd2c56b79a2ec167f125ef4dbd779c66dbf12910bdb1a856399e34de6
 django-admin-list-filter-dropdown==1.0.1 \
     --hash=sha256:e79856c790224c5a466bf222bb99d5a2a73f5e4ed954cb1b6fcc4a52f078b3b9
+django-object-actions==1.0.0 \
+    --hash=sha256:54151c8760cc3dc8627fdd0e66e5b1ae5391625756d7b301b939155a74f231a6 \
+    --hash=sha256:ac764e1fea91150160a9690c1cb5ae88d320da89cd06c65ec24c92247fb0762c

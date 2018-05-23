@@ -10,6 +10,7 @@ from django.utils.encoding import force_text
 from advanced_filters.admin import AdminAdvancedFiltersMixin
 from django_ace import AceWidget
 from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
+from django_object_actions import DjangoObjectActions
 from django_statsd.clients import statsd
 from jinja2.meta import find_undeclared_variables
 from reversion.admin import VersionAdmin
@@ -114,10 +115,7 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
         'locale_list',
         'modified',
     )
-    list_editable = (
-        'published',
-    )
-    readonly_fields = ('created', 'modified', 'uuid')
+    readonly_fields = ('created', 'modified', 'uuid', 'published')
     save_on_top = True
     save_as = True
 
@@ -138,14 +136,6 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
         ('locales__name', 'Language'),
     )
 
-    def change_view(self, request, *args, **kwargs):
-        if request.method == 'POST' and '_saveasnew' in request.POST:
-            # Always saved cloned snippets as un-published.
-            post_data = request.POST.copy()
-            post_data['published'] = u'off'
-            request.POST = post_data
-        return super(BaseSnippetAdmin, self).change_view(request, *args, **kwargs)
-
     def locale_list(self, obj):
         num_locales = obj.locales.count()
         locales = obj.locales.all()[:3]
@@ -155,10 +145,7 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
         return active_locales
 
 
-class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
-    def get_changelist_form(self, request, **kwargs):
-        return forms.SnippetChangeListForm
-
+class SnippetAdmin(DjangoObjectActions, QuickEditAdmin, BaseSnippetAdmin):
     form = forms.SnippetAdminForm
     readonly_fields = BaseSnippetAdmin.readonly_fields + ('preview_url',)
     search_fields = ('name', 'client_match_rules__description',
@@ -181,6 +168,13 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     )
     filter_horizontal = (BaseSnippetAdmin.filter_horizontal +
                          ('exclude_from_search_providers', 'client_match_rules'))
+
+    actions = (duplicate_snippets_action,)
+
+    # All Change actions must be defined here but which ones are finally
+    # displayed to the use is controlled by the get_change_actions method,
+    # depending of the attributes of the obj and the permissions of the user.
+    change_actions = ('publish_object', 'unpublish_object')
 
     fieldsets = (
         (None, {'fields': ('name', 'published', 'campaign', 'preview_url', 'created', 'modified')}),
@@ -243,12 +237,14 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         }),
     )
 
-    actions = (duplicate_snippets_action,)
-
     class Media:
         css = {
             'all': ('css/admin.css',)
         }
+        js = ('js/admin-publish.js',)
+
+    def get_changelist_form(self, request, **kwargs):
+        return forms.SnippetChangeListForm
 
     def save_model(self, request, obj, form, change):
         statsd.incr('save.snippet')
@@ -268,6 +264,33 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     def queryset(self, request):
         return (super(SnippetAdmin, self)
                 .queryset(request).prefetch_related('locales').select_related('template'))
+
+    def publish_object(self, request, obj):
+        self.message_user(request, 'Published snippet')
+        obj.published = True
+        obj.save()
+    publish_object.label = 'Publish'
+    publish_object.short_description = 'Publish this snippet'
+
+    def unpublish_object(self, request, obj):
+        self.message_user(request, 'Unpublished snippet')
+        obj.published = False
+        obj.save()
+    unpublish_object.label = 'Unpublish'
+    unpublish_object.short_description = 'Unpublish this snippet'
+
+    def get_change_actions(self, request, object_id, form_url):
+        """Dynamically define object change actions based on object properties."""
+        actions = super(SnippetAdmin, self).get_change_actions(request, object_id, form_url)
+        actions = list(actions)
+
+        obj = self.model.objects.get(pk=object_id)
+        if obj.published:
+            actions.remove('publish_object')
+        else:
+            actions.remove('unpublish_object')
+
+        return actions
 
 
 class ClientMatchRuleAdmin(VersionAdmin, admin.ModelAdmin):
