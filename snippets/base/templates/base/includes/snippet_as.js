@@ -559,9 +559,11 @@ Mozilla.UITour.hideMenu = function(name) {
                 };
                 target.href = 'uitour:showMenu:appMenu';
             }
-            // For other links if user is not opening a new tab, preventDefault
-            // action.
-            else if (event.button === 0 && !(event.metaKey || event.ctrlKey)) {
+            // If normal click (i.e. no new tab) and not counted, prevent
+            // default to allow counting and re-trigger.
+            else if (event.button === 0 &&
+                     !(event.metaKey || event.ctrlKey) &&
+                     target.dataset.eventCounted !== 'true') {
                 event.preventDefault();
                 callback = function() {
                     target.click();
@@ -569,14 +571,16 @@ Mozilla.UITour.hideMenu = function(name) {
             }
         }
 
-        // Count snippet clicks.
+        // Count snippet clicks only one time.
         if (target.dataset.eventCounted !== 'true') {
             target.dataset.eventCounted = 'true';
             // Fetch custom metric or default to 'click'
             metric = target.dataset.metric || 'click';
             sendMetric(metric, callback, target.href);
         }
-        else {
+        // Call callback if defined, otherwise allow the click to propagate
+        // freely.
+        else if (callback) {
             callback();
         }
     }, false);
