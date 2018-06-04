@@ -1,13 +1,14 @@
 import json
 
+from django.contrib.auth.models import User, Permission
 from django.forms import ValidationError
 
-from mock import MagicMock, patch
+from mock import Mock, MagicMock, patch
 from pyquery import PyQuery as pq
 
 from snippets.base.forms import (IconWidget, SnippetAdminForm, SnippetNGAdminForm,
                                  TemplateDataWidget, TemplateSelect, UploadedFileAdminForm)
-from snippets.base.tests import (SnippetTemplateFactory,
+from snippets.base.tests import (SnippetFactory, SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase)
 
 
@@ -104,6 +105,17 @@ class SnippetAdminFormTests(TestCase):
             self.assertTrue(form.is_valid())
         self.assertTrue(validate_mock.called)
 
+    def test_permission_check_called(self):
+        data = self.data.copy()
+        data.update({
+            'on_startpage_5': 'on',
+        })
+        form = SnippetAdminForm(data)
+        check_mock = Mock()
+        form._publish_permission_check = check_mock
+        form.full_clean()
+        self.assertTrue(check_mock.called)
+
 
 class SnippetNGAdminFormTests(TestCase):
     def setUp(self):
@@ -121,6 +133,17 @@ class SnippetNGAdminFormTests(TestCase):
             form = SnippetNGAdminForm(self.data)
             self.assertTrue(form.is_valid())
         self.assertTrue(validate_mock.called)
+
+    def test_permission_check_called(self):
+        data = self.data.copy()
+        data.update({
+            'on_startpage_6': 'on',
+        })
+        form = SnippetNGAdminForm(data)
+        check_mock = Mock()
+        form._publish_permission_check = check_mock
+        form.full_clean()
+        self.assertTrue(check_mock.called)
 
 
 class TemplateDataWidgetTests(TestCase):
@@ -151,3 +174,125 @@ class UploadedFileAdminFormTests(TestCase):
         file_mock.name = 'bar.pdf'
         form.cleaned_data = {'file': file_mock}
         self.assertRaises(ValidationError, form.clean_file)
+
+
+class BaseSnippetAdminFormTests(TestCase):
+    def test_publish_permission_check(self):
+        variable1 = SnippetTemplateVariableFactory()
+        variable2 = SnippetTemplateVariableFactory()
+        self.template1 = SnippetTemplateFactory.create(
+            variable_set=[variable1, variable2])
+        user = User.objects.create_user(username='admin',
+                                        email='foo@example.com',
+                                        password='admin')
+
+        perm_beta = Permission.objects.get(codename='can_publish_on_beta')
+        user.user_permissions.add(perm_beta)
+
+        perm_nightly = Permission.objects.get(codename='can_publish_on_nightly')
+        user.user_permissions.add(perm_nightly)
+
+        data = {
+            'name': 'Test',
+            'weight': 100,
+            'client_option_is_developer': 'any',
+            'client_option_addon_check_type': 'any',
+            'client_option_sessionage_lower_bound': -1,
+            'client_option_sessionage_upper_bound': -1,
+            'client_option_profileage_lower_bound': -1,
+            'client_option_profileage_upper_bound': -1,
+            'client_option_version_lower_bound': 'any',
+            'client_option_version_upper_bound': 'any',
+            'client_option_is_default_browser': 'any',
+            'client_option_has_fxaccount': 'any',
+            'client_option_screen_resolutions': ['0-1024'],
+            'on_startpage_5': True,
+            'template': self.template1.id,
+            'data': '{}',
+        }
+
+        # User should get an error trying to publish on Release
+        new_data = data.copy()
+        new_data['published'] = True
+        new_data['on_release'] = True
+        form = SnippetAdminForm(new_data)
+        form.current_user = user
+        self.assertFalse(form.is_valid())
+        self.assertTrue(u'You are not allowed to edit or publish on Release channel.' in
+                        form.errors['__all__'][0])
+
+        # User should get an error trying to edit or publish  on Release even though Beta
+        # is selected too.
+        new_data = data.copy()
+        new_data['published'] = True
+        new_data['on_release'] = True
+        new_data['on_beta'] = True
+        form = SnippetAdminForm(new_data)
+        form.current_user = user
+        self.assertFalse(form.is_valid())
+        self.assertTrue(u'You are not allowed to edit or publish on Release channel.' in
+                        form.errors['__all__'][0])
+
+        # Form is valid if user tries to edit or publish on Beta.
+        new_data = data.copy()
+        new_data['published'] = True
+        new_data['on_beta'] = True
+        form = SnippetAdminForm(new_data)
+        form.current_user = user
+        self.assertTrue(form.is_valid())
+
+        # Form is valid if user tries to publish or edit on Beta and Nightly.
+        new_data = data.copy()
+        new_data['published'] = True
+        new_data['on_beta'] = True
+        new_data['on_nightly'] = True
+        form = SnippetAdminForm(new_data)
+        form.current_user = user
+        self.assertTrue(form.is_valid())
+
+        # Form is invalid if user tries edit published Snippet on Release.
+        instance = SnippetFactory.create(published=True, on_release=True)
+        new_data = data.copy()
+        new_data['on_release'] = True
+        new_data['on_beta'] = True
+        new_data['on_nightly'] = True
+        form = SnippetAdminForm(new_data, instance=instance)
+        form.current_user = user
+        self.assertFalse(form.is_valid())
+        self.assertTrue(u'You are not allowed to edit or publish on Release channel.' in
+                        form.errors['__all__'][0])
+
+        # User cannot unset Release channel and save.
+        instance = SnippetFactory.create(published=True, on_release=True)
+        new_data = data.copy()
+        new_data['on_release'] = False
+        new_data['on_beta'] = True
+        new_data['on_nightly'] = True
+        form = SnippetAdminForm(new_data, instance=instance)
+        form.current_user = user
+        self.assertFalse(form.is_valid())
+        self.assertTrue(u'You are not allowed to edit or publish on Release channel.' in
+                        form.errors['__all__'][0])
+
+        # User can un-publish if they have permission on all channels.
+        instance = SnippetFactory.create(published=True, on_release=False, on_beta=True,
+                                         on_nightly=True)
+        new_data = data.copy()
+        new_data['published'] = False
+        new_data['on_beta'] = True
+        new_data['on_nightly'] = True
+        form = SnippetAdminForm(new_data, instance=instance)
+        form.current_user = user
+        self.assertTrue(form.is_valid())
+
+        # User cannot un-publish if they don't have permission on all channels.
+        instance = SnippetFactory.create(published=True, on_release=True, on_nightly=True)
+        new_data = data.copy()
+        new_data['on_release'] = True
+        new_data['on_nightly'] = True
+        new_data['published'] = False
+        form = SnippetAdminForm(new_data, instance=instance)
+        form.current_user = user
+        self.assertFalse(form.is_valid())
+        self.assertTrue(u'You are not allowed to edit or publish on Release channel.' in
+                        form.errors['__all__'][0])

@@ -254,6 +254,11 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
             'all': ('css/admin.css',)
         }
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(SnippetAdmin, self).get_form(request, obj, **kwargs)
+        form.current_user = request.user
+        return form
+
     def save_model(self, request, obj, form, change):
         statsd.incr('save.snippet')
         super(SnippetAdmin, self).save_model(request, obj, form, change)
