@@ -292,7 +292,12 @@
             var data = JSON.stringify(this.dataWidget.generateData());
             this.$dataInput.val(data);
             this.$templateIdInput.val(this.dataWidget.getTemplateId());
-            this.$activityStreamInput.val(document.querySelector('#id_on_startpage_5').checked);
+            if (document.querySelector('#id_on_startpage_5')) {
+                this.$activityStreamInput.val(document.querySelector('#id_on_startpage_5').checked);
+            } else {
+                // This is Activity Stream NG, so always true
+                this.$activityStreamInput.val(true);
+            }
         }
     };
 

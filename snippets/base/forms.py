@@ -13,7 +13,7 @@ from product_details import product_details
 from product_details.version_compare import Version, version_list
 
 from snippets.base.fields import MultipleChoiceFieldCSV
-from snippets.base.models import (JSONSnippet, Snippet, SnippetTemplate,
+from snippets.base.models import (JSONSnippet, Snippet, SnippetNG, SnippetTemplate,
                                   SnippetTemplateVariable, UploadedFile)
 from snippets.base.validators import MinValueValidator
 
@@ -179,9 +179,34 @@ class SnippetChangeListForm(forms.ModelForm):
         return super(SnippetChangeListForm, self).save(*args, **kwargs)
 
 
+class SnippetNGAdminForm(BaseSnippetAdminForm):
+    template = forms.ModelChoiceField(queryset=SnippetTemplate.objects.exclude(hidden=True),
+                                      widget=TemplateSelect)
+    on_startpage_6 = forms.BooleanField(required=True, initial=True, label='Activity Stream Router')
+
+    class Meta:
+        model = SnippetNG
+        fields = ('name', 'template', 'data', 'disabled', 'publish_start', 'publish_end',
+                  'on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr',
+                  'on_startpage_6', 'campaign')
+        widgets = {
+            'data': TemplateDataWidget('template'),
+        }
+
+    def clean(self):
+        cleaned_data = super(SnippetNGAdminForm, self).clean()
+
+        if not any([cleaned_data['on_release'], cleaned_data['on_beta'],
+                    cleaned_data['on_aurora'], cleaned_data['on_nightly'], cleaned_data['on_esr']]):
+            raise forms.ValidationError('Select at least one channel to publish this snippet on.')
+
+        return cleaned_data
+
+
 class SnippetAdminForm(BaseSnippetAdminForm):
     template = forms.ModelChoiceField(queryset=SnippetTemplate.objects.exclude(hidden=True),
                                       widget=TemplateSelect)
+    on_startpage_5 = forms.BooleanField(required=False, initial=True, label='Activity Stream')
     client_option_version_lower_bound = forms.ChoiceField(
         label='Firefox Version at least',
         choices=[('any', 'No limit'),
@@ -295,8 +320,8 @@ class SnippetAdminForm(BaseSnippetAdminForm):
     def clean(self):
         cleaned_data = super(SnippetAdminForm, self).clean()
 
-        version_upper_bound = cleaned_data['client_option_version_upper_bound']
-        version_lower_bound = cleaned_data['client_option_version_lower_bound']
+        version_upper_bound = cleaned_data.get('client_option_version_upper_bound', 'any')
+        version_lower_bound = cleaned_data.get('client_option_version_lower_bound', 'any')
 
         if (version_upper_bound == 'older_than_current_release' and
                 version_lower_bound == 'current_release'):
@@ -332,16 +357,16 @@ class SnippetAdminForm(BaseSnippetAdminForm):
                     cleaned_data['on_aurora'], cleaned_data['on_nightly'], cleaned_data['on_esr']]):
             raise forms.ValidationError('Select at least one channel to publish this snippet on.')
 
-        if ((cleaned_data['on_startpage_5'] and
+        if ((cleaned_data.get('on_startpage_5') and
              any([cleaned_data['on_startpage_4'], cleaned_data['on_startpage_3'],
                   cleaned_data['on_startpage_2'], cleaned_data['on_startpage_1']]))):
 
             raise forms.ValidationError('Activity Stream cannot be combined '
                                         'with Startpage Versions 1-4.')
 
-        if not any([cleaned_data['on_startpage_4'], cleaned_data['on_startpage_3'],
-                    cleaned_data['on_startpage_2'], cleaned_data['on_startpage_1'],
-                    cleaned_data['on_startpage_5']]):
+        if not any([cleaned_data.get('on_startpage_4'), cleaned_data.get('on_startpage_3'),
+                    cleaned_data.get('on_startpage_2'), cleaned_data.get('on_startpage_1'),
+                    cleaned_data.get('on_startpage_5')]):
             raise forms.ValidationError('Select at least one Startpage to publish this snippet on.')
 
         if ((cleaned_data.get('client_option_addon_name') and
@@ -349,9 +374,8 @@ class SnippetAdminForm(BaseSnippetAdminForm):
             raise forms.ValidationError('Select an add-on check or remove add-on name.')
 
         if ((not cleaned_data.get('client_option_addon_name') and
-             cleaned_data.get('client_option_addon_check_type') != 'any')):
+             cleaned_data.get('client_option_addon_check_type', 'any') != 'any')):
             raise forms.ValidationError('Type add-on name to check or remove add-on check.')
-
         return cleaned_data
 
     def save(self, *args, **kwargs):

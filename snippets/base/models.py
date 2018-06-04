@@ -67,7 +67,7 @@ SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
     )).hexdigest()
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly', 'esr')
-FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4', '5')
+FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4', '5', '6')
 FENNEC_STARTPAGE_VERSIONS = ('1',)
 SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
                    (50, 'Appear half as often as an average snippet'),
@@ -211,6 +211,8 @@ class SnippetBundle(object):
 
     @property
     def filename(self):
+        if self.client.startpage_version == '6':
+            return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.json'.format(self.key))
         return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.html'.format(self.key))
 
     @property
@@ -234,22 +236,37 @@ class SnippetBundle(object):
 
     def generate(self):
         """Generate and save the code for this snippet bundle."""
-        template = 'base/fetch_snippets.jinja'
-        if self.client.startpage_version == '5':
-            template = 'base/fetch_snippets_as.jinja'
-        bundle_content = render_to_string(template, {
-            'snippet_ids': [snippet.id for snippet in self.snippets],
-            'snippets_json': json.dumps([s.to_dict() for s in self.snippets]),
-            'client': self.client,
-            'locale': self.client.locale,
-            'settings': settings,
-            'current_firefox_major_version': util.current_firefox_major_version(),
-        })
+        if self.client.startpage_version == '6':
+            # Generate the new AS Router bundle format
+            template = 'base/snippet_bundle_as_router.jinja'
+            data = [
+                {
+                    'id': snippet.id,
+                    'template': snippet.template.code_name,
+                    'template_version': snippet.template.version,
+                    'campaign': snippet.campaign,
+                    'content': json.loads(snippet.data),
+                }
+                for snippet in self.snippets]
+            bundle_content = json.dumps(data)
+        else:
+            template = 'base/fetch_snippets.jinja'
+            if self.client.startpage_version == '5':
+                template = 'base/fetch_snippets_as.jinja'
+            bundle_content = render_to_string(template, {
+                'snippet_ids': [snippet.id for snippet in self.snippets],
+                'snippets_json': json.dumps([s.to_dict() for s in self.snippets]),
+                'client': self.client,
+                'locale': self.client.locale,
+                'settings': settings,
+                'current_firefox_major_version': util.current_firefox_major_version(),
+            })
 
         if isinstance(bundle_content, unicode):
             bundle_content = bundle_content.encode('utf-8')
 
-        if settings.BUNDLE_BROTLI_COMPRESS and self.client.startpage_version == '5':
+        if ((settings.BUNDLE_BROTLI_COMPRESS and
+             (self.client.startpage_version == '5' or self.client.startpage_version == '6'))):
             content_file = ContentFile(brotli.compress(bundle_content))
             content_file.content_encoding = 'br'
         else:
@@ -426,7 +443,7 @@ class Snippet(SnippetBaseModel):
     on_startpage_2 = models.BooleanField(default=False, verbose_name='Version 2')
     on_startpage_3 = models.BooleanField(default=False, verbose_name='Version 3')
     on_startpage_4 = models.BooleanField(default=False, verbose_name='Version 4')
-    on_startpage_5 = models.BooleanField(default=True, verbose_name='Activity Stream')
+    on_startpage_5 = models.BooleanField(default=False, verbose_name='Activity Stream')
     on_startpage_6 = models.BooleanField(default=False, verbose_name='Activity Stream NG')
 
     weight = models.IntegerField(
@@ -560,6 +577,13 @@ class Snippet(SnippetBaseModel):
         if self.client_options is None:
             self.client_options = {}
         return super(Snippet, self).save(*args, **kwargs)
+
+
+class SnippetNG(Snippet):
+    class Meta:
+        proxy = True
+        verbose_name = 'Snippet NG'
+        verbose_name_plural = 'Snippets NG'
 
 
 class JSONSnippet(SnippetBaseModel):
