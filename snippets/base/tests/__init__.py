@@ -12,6 +12,7 @@ class TestCase(TransactionTestCase):
 class SnippetTemplateFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Test Template {0}'.format(n))
     code = factory.Sequence(lambda n: '<p>Test Snippet {0}</p>'.format(n))
+    code_name = factory.Sequence(lambda n: 'test_var_{0}'.format(n))
 
     @factory.post_generation
     def variable_set(self, create, extracted, **kwargs):
