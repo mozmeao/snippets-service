@@ -266,6 +266,7 @@ class SnippetTemplate(models.Model):
     """
     name = models.CharField(max_length=255, unique=True)
     code_name = models.CharField(max_length=255, unique=True)
+    version = models.CharField(max_length=10)
     priority = models.BooleanField(
         verbose_name='Priority template', default=False,
         help_text='Set to true to display first in dropdowns for faster selections')
