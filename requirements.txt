@@ -1,6 +1,6 @@
-hashin==0.13.1 \
-    --hash=sha256:cbef2f1d94b0cfb4ab0c1da1601cd584384833ccd749d22e0dc77f3e86a98751 \
-    --hash=sha256:f71f66b1de72c95b484983b8c62cd39db0a49f33130c98636e37f7b38e908559
+hashin==0.13.2 \
+    --hash=sha256:4aaa2890d63e0eff9e1038e8a602eccbfe2eb90aa8177ff2b2db018815e2be95 \
+    --hash=sha256:40c51ea166442889c1cedf0f909956e6ca1c4b39c28d121a9b22dc90b4b44b1d
 Django==1.11.13 \
     --hash=sha256:18986bcffe69653a84eaf1faa1fa5a7eded32cee41cfecc77fdc65a3e046404d \
     --hash=sha256:46adfe8e0abe4d1f026c1086889970b611aec492784fbdfbdaabc2457360a4a5    # pyup: < 2.0.0
