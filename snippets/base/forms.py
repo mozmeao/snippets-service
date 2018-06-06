@@ -167,7 +167,7 @@ class SnippetChangeListForm(forms.ModelForm):
             self.body_variable = (instance.template
                                   .variable_set.get(type=SnippetTemplateVariable.BODY).name)
         except SnippetTemplateVariable.DoesNotExist:
-            self.fields['body'].published = False
+            self.fields['body'].disabled = True
         else:
             text = instance.dict_data[self.body_variable]
             self.fields['body'].initial = text
