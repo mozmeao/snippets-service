@@ -168,12 +168,14 @@ class SnippetChangeListForm(forms.ModelForm):
                                   .variable_set.get(type=SnippetTemplateVariable.BODY).name)
         except SnippetTemplateVariable.DoesNotExist:
             self.fields['body'].disabled = True
+            self.body_variable = None
         else:
             text = instance.dict_data[self.body_variable]
             self.fields['body'].initial = text
 
     def save(self, *args, **kwargs):
-        self.instance.set_data_property(self.body_variable, self.cleaned_data['body'])
+        if self.body_variable:
+            self.instance.set_data_property(self.body_variable, self.cleaned_data['body'])
         return super(SnippetChangeListForm, self).save(*args, **kwargs)
 
 
