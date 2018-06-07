@@ -1,15 +1,10 @@
 snippets
 ==========
 
-[![Build Status](https://img.shields.io/travis/mozmeao/snippets-service/master.svg)](https://travis-ci.org/mozmeao/snippets-service)
-
-[![codecov.io](https://codecov.io/github/mozmeao/snippets-service/coverage.svg?branch=master)](https://codecov.io/github/mozmeao/snippets-service?branch=master)
-
 [What's deployed?](https://whatsdeployed.io/s-Lb4)
 
 [Documentation](http://abouthome-snippets-service.readthedocs.org/)
 
-[![webqa tests](https://img.shields.io/badge/WebQA-Treeherder-lightgrey.svg)](https://treeherder.mozilla.org/#/jobs?repo=snippets-service)
 
 Run the tests
 -------------
