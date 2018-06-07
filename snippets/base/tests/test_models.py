@@ -25,7 +25,7 @@ class DuplicateSnippetMixInTests(TestCase):
     def _dup_test(self, snippet):
         snippet.client_match_rules.add(*ClientMatchRuleFactory.create_batch(3))
         snippet_copy = snippet.duplicate()
-        self.assertEqual(snippet_copy.disabled, True)
+        self.assertEqual(snippet_copy.published, False)
         self.assertTrue(snippet_copy.id != snippet.id)
         self.assertEqual(snippet_copy.locales.count(), 1)
         self.assertTrue(snippet_copy.locales.all()[0] == snippet.locales.all()[0])

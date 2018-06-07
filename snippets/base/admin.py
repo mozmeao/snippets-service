@@ -110,12 +110,12 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
     list_display = (
         'id',
         'name',
-        'disabled',
+        'published',
         'locale_list',
         'modified',
     )
     list_editable = (
-        'disabled',
+        'published',
     )
     readonly_fields = ('created', 'modified', 'uuid')
     save_on_top = True
@@ -140,9 +140,9 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
 
     def change_view(self, request, *args, **kwargs):
         if request.method == 'POST' and '_saveasnew' in request.POST:
-            # Always saved cloned snippets as disabled.
+            # Always saved cloned snippets as un-published.
             post_data = request.POST.copy()
-            post_data['disabled'] = u'on'
+            post_data['published'] = u'off'
             request.POST = post_data
         return super(BaseSnippetAdmin, self).change_view(request, *args, **kwargs)
 
@@ -165,7 +165,7 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
                      'template__name', 'campaign')
     list_filter = (
         ModifiedFilter,
-        'disabled',
+        'published',
         ReleaseFilter,
         ('locales', RelatedDropdownFilter),
         ('client_match_rules', RelatedDropdownFilter),
@@ -183,7 +183,7 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
                          ('exclude_from_search_providers', 'client_match_rules'))
 
     fieldsets = (
-        (None, {'fields': ('name', 'disabled', 'campaign', 'preview_url', 'created', 'modified')}),
+        (None, {'fields': ('name', 'published', 'campaign', 'preview_url', 'created', 'modified')}),
         ('Content', {
             'description': ('In Activity Stream Templates you can use the special links:<br/>'
                             '<ol><li>about:accounts : To open Firefox Accounts</li>'
@@ -338,14 +338,14 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
     search_fields = ('name', 'client_match_rules__description')
     list_filter = (
         ModifiedFilter,
-        'disabled',
+        'published',
         ReleaseFilter,
         ('locales', RelatedDropdownFilter),
         ('client_match_rules', RelatedDropdownFilter),
     )
 
     fieldsets = (
-        (None, {'fields': ('name', 'disabled', 'created', 'modified')}),
+        (None, {'fields': ('name', 'published', 'created', 'modified')}),
         ('Content', {
             'fields': ('icon', 'text', 'url'),
         }),

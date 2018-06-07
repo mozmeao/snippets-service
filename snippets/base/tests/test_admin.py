@@ -15,11 +15,11 @@ class SnippetAdminTests(TestCase):
         self.model_admin.admin_site = Mock()
         self.user = User.objects.get_or_create(username='foo', email='foo@example.com')[0]
 
-    def test_save_as_disabled(self):
+    def test_save_as_published(self):
         request = self.factory.post('/', data={
             'name': 'test',
             'template': 'foo',
-            'disabled': u'off',
+            'published': u'on',
             '_saveasnew': True
         })
         request.user = self.user
@@ -28,14 +28,14 @@ class SnippetAdminTests(TestCase):
             self.model_admin.change_view(request, 999)
             change_view_mock.assert_called_with(request, 999, '', None)
             request = change_view_mock.call_args[0][0]
-            self.assertEqual(request.POST['disabled'], u'on')
+            self.assertEqual(request.POST['published'], u'off')
 
-    def test_normal_save_disabled(self):
-        """Test that normal save doesn't alter 'disabled' attribute."""
+    def test_normal_save_published(self):
+        """Test that normal save doesn't alter 'published' attribute."""
         request = self.factory.post('/', data={
             'name': 'test',
             'template': 'foo',
-            'disabled': u'foo'
+            'published': u'foo'
         })
         request.user = self.user
 
@@ -43,7 +43,7 @@ class SnippetAdminTests(TestCase):
             self.model_admin.change_view(request, 999)
             change_view_mock.assert_called_with(request, 999, '', None)
             request = change_view_mock.call_args[0][0]
-            self.assertEqual(request.POST['disabled'], u'foo')
+            self.assertEqual(request.POST['published'], u'foo')
 
 
 class SnippetTemplateAdminTests(TestCase):

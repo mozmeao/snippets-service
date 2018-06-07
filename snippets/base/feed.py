@@ -13,7 +13,7 @@ class EnabledSnippetsFeed(ICalFeed):
     title = 'Snippets (enabled)'
 
     def items(self):
-        return Snippet.objects.exclude(disabled=True).order_by('publish_start')
+        return Snippet.objects.exclude(published=False).order_by('publish_start')
 
     def item_title(self, item):
         return item.name

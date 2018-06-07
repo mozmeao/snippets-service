@@ -25,7 +25,7 @@ class JSONSnippetsTests(TestCase):
         snippet_1 = JSONSnippetFactory.create(on_nightly=True, weight=66)
 
         # Matching but disabled snippet.
-        JSONSnippetFactory.create(on_nightly=True, disabled=True)
+        JSONSnippetFactory.create(on_nightly=True, published=False)
 
         # Snippet that doesn't match.
         JSONSnippetFactory.create(on_nightly=False),
@@ -156,20 +156,20 @@ class ShowSnippetTests(TestCase):
 
     def test_valid_disabled_snippet_unauthenticated(self):
         """Test disabled snippet returns 404 to unauthenticated users."""
-        snippet = SnippetFactory.create(disabled=True)
+        snippet = SnippetFactory.create(published=False)
         response = self.client.get(reverse('base.show', kwargs={'snippet_id': snippet.id}))
         self.assertEqual(response.status_code, 404)
 
     def test_valid_disabled_snippet_authenticated(self):
         """Test disabled snippet returns 200 to authenticated users."""
-        snippet = SnippetFactory.create(disabled=True)
+        snippet = SnippetFactory.create(published=False)
         User.objects.create_superuser('admin', 'admin@example.com', 'asdf')
         self.client.login(username='admin', password='asdf')
         response = self.client.get(reverse('base.show', kwargs={'snippet_id': snippet.id}))
         self.assertEqual(response.status_code, 200)
 
     def test_uuid_snippet(self):
-        snippet = SnippetFactory.create(disabled=True)
+        snippet = SnippetFactory.create(published=False)
         response = self.client.get(reverse('base.show_uuid', kwargs={'snippet_id': snippet.uuid}))
         self.assertEqual(response.status_code, 200)
 
