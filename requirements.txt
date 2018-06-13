@@ -26,8 +26,8 @@ whitenoise==3.3.1 \
 pytz==2018.4 \
     --hash=sha256:65ae0c8101309c45772196b21b74c46b2e5d11b6275c45d251b150d5da334555 \
     --hash=sha256:c06425302f2cf668f1bba7a0a03f3c1d34d4ebeef2c72003da308b3947c7f749
-newrelic==3.2.1.93 \
-    --hash=sha256:e60204f6d6b41741021d078ad5145414c759ff2482e2136ce22c9957654d9ca7
+newrelic==3.2.2.94 \
+    --hash=sha256:916f96ded421efa1c5f97d24fa4131cce513039b6e875ccbd090b852dddc104e
 Pygments==2.2.0 \
     --hash=sha256:78f3f434bcc5d6ee09020f92ba487f95ba50f1e3ef83ae96b9d5ffa1bab25c5d \
     --hash=sha256:dbae1046def0efb574852fab9e90209b23f556367b5a320c0bcb871c77c3e8cc
@@ -151,9 +151,9 @@ django-clear-cache==0.3 \
 django-extensions==2.0.7 \
     --hash=sha256:3be3debf53c77ca795bdf713726c923aa3c3f895e1a42e2e31a68c1a562346a4 \
     --hash=sha256:94bfac99eb262c5ac27e53eda96925e2e53fe0b331af7dde37012d07639a649c
-requests==2.18.4 \
-    --hash=sha256:6a1b267aa90cac58ac3a765d067950e7dbbf75b1da07e895d1f594193a40a38b \
-    --hash=sha256:9c443e7324ba5b85070c4a818ade28bfabedf16ea10206da1132edaa6dda237e
+requests==2.19.0 \
+    --hash=sha256:421cfc8d9dde7d6aff68196420afd86b88c65d77d8da9cf83f4ecad785d7b9d6 \
+    --hash=sha256:cc408268d0e21589bcc2b2c248e42932b8c4d112f499c12c92e99e2178a6134c
 tzlocal==1.5.1 \
     --hash=sha256:4ebeb848845ac898da6519b9b31879cf13b6626f7184c496037b818e238f2c4e
 futures==3.2.0 \
@@ -236,9 +236,9 @@ hiredis==0.2.0 \
 mozilla-django-oidc==1.0.0 \
     --hash=sha256:1e29a3d448cde77f0a96d4274dd67bfe5749554a5d6220007507d05d91cd50df \
     --hash=sha256:8d0336d0a1e628f148c045f6cfdec3f1259cf9060335e514f8dd6be8e337784b
-idna==2.6 \
-    --hash=sha256:8c7309c718f94b3a625cb648ace320157ad16ff131ae0af362c9f21b80ef6ec4 \
-    --hash=sha256:2c6a5de3089009e3da7c5dde64a141dbc8551d5b7f6cf4ed7c2568d0cc520a8f
+idna==2.7 \
+    --hash=sha256:156a6814fb5ac1fc6850fb002e0852d56c0c8d2531923a51032d1b70760e186e \
+    --hash=sha256:684a38a6f903c1d71d6d5fac066b58d7768af4de2b832e426ec79c30daa94a16
 ecdsa==0.13 \
     --hash=sha256:40d002cf360d0e035cf2cb985e1308d41aaa087cbfc135b2dc2d844296ea546c \
     --hash=sha256:64cf1ee26d1cde3c73c6d7d107f835fed7c6a2904aef9eac223d57ad800c43fa
