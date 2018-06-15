@@ -180,8 +180,9 @@ class SnippetChangeListForm(forms.ModelForm):
 
 
 class SnippetNGAdminForm(BaseSnippetAdminForm):
-    template = forms.ModelChoiceField(queryset=SnippetTemplate.objects.exclude(hidden=True),
-                                      widget=TemplateSelect)
+    template = forms.ModelChoiceField(
+        queryset=SnippetTemplate.objects.exclude(hidden=True).filter(startpage=6),
+        widget=TemplateSelect)
     on_startpage_6 = forms.BooleanField(required=True, initial=True, label='Activity Stream Router')
 
     class Meta:
@@ -204,8 +205,9 @@ class SnippetNGAdminForm(BaseSnippetAdminForm):
 
 
 class SnippetAdminForm(BaseSnippetAdminForm):
-    template = forms.ModelChoiceField(queryset=SnippetTemplate.objects.exclude(hidden=True),
-                                      widget=TemplateSelect)
+    template = forms.ModelChoiceField(
+        queryset=SnippetTemplate.objects.exclude(hidden=True).filter(startpage__lt=6),
+        widget=TemplateSelect)
     on_startpage_5 = forms.BooleanField(required=False, initial=True, label='Activity Stream')
     client_option_version_lower_bound = forms.ChoiceField(
         label='Firefox Version at least',

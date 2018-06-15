@@ -283,6 +283,7 @@ class SnippetTemplate(models.Model):
     """
     name = models.CharField(max_length=255, unique=True)
     code_name = models.CharField(max_length=255, unique=True)
+    startpage = models.SmallIntegerField(default=4)
     version = models.CharField(max_length=10)
     priority = models.BooleanField(
         verbose_name='Priority template', default=False,
