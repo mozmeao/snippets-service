@@ -28,7 +28,7 @@ class SnippetAdminTests(TestCase):
             self.model_admin.change_view(request, 999)
             change_view_mock.assert_called_with(request, 999, '', None)
             request = change_view_mock.call_args[0][0]
-            self.assertEqual(request.POST['published'], u'off')
+            self.assertTrue('published' not in request.POST)
 
     def test_normal_save_published(self):
         """Test that normal save doesn't alter 'published' attribute."""

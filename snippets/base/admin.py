@@ -142,7 +142,7 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
         if request.method == 'POST' and '_saveasnew' in request.POST:
             # Always saved cloned snippets as un-published.
             post_data = request.POST.copy()
-            post_data['published'] = u'off'
+            post_data.pop('published', None)
             request.POST = post_data
         return super(BaseSnippetAdmin, self).change_view(request, *args, **kwargs)
 
