@@ -228,9 +228,9 @@ urllib3==1.22 \
 tblib==1.3.2 \
     --hash=sha256:9bae4b8c44b06af0e114bfc4d5f6aa3eafd2119af5a4dcab34f51f1665f16c59 \
     --hash=sha256:436e4200e63d92316551179dc540906652878df4ff39b43db30fcf6400444fe7
-django-cachalot==2.0.0 \
-    --hash=sha256:6afdeacf7b9e00b44eb9e740ed23063d14bbf8f5bc8b759bf00de3ec6ceaf4e6 \
-    --hash=sha256:c6d573f71edbb6057f91951d570afeb0f758c149ae9211d9af9c3f483e2ac03f
+django-cachalot==2.0.1 \
+    --hash=sha256:c6dd2d832f53aafdc6e3f3b9a073b9c499fd7d8e623bf619bdead26e8f52459f \
+    --hash=sha256:318fda95c97d07b5d2f13d4fca20a72afaf3e8fbb25ba4b43784f94bd79f0f4b
 hiredis==0.2.0 \
     --hash=sha256:ca958e13128e49674aa4a96f02746f5de5973f39b57297b84d59fd44d314d5b5
 mozilla-django-oidc==1.0.0 \
