@@ -2,7 +2,7 @@ update: all
 branch: master
 schedule: "every day"
 search: True
-close_prs: False
+close_prs: True
 requirements:
   - tests/requirements.txt:
       update: False
