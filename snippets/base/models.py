@@ -238,17 +238,8 @@ class SnippetBundle(object):
         """Generate and save the code for this snippet bundle."""
         if self.client.startpage_version == '6':
             # Generate the new AS Router bundle format
-            template = 'base/snippet_bundle_as_router.jinja'
-            data = [
-                {
-                    'id': snippet.id,
-                    'template': snippet.template.code_name,
-                    'template_version': snippet.template.version,
-                    'campaign': snippet.campaign,
-                    'content': json.loads(snippet.data),
-                }
-                for snippet in self.snippets]
-            bundle_content = json.dumps(data)
+            data = [snippet.render_to_as_router() for snippet in self.snippets]
+            bundle_content = json.dumps({'messages': data})
         else:
             template = 'base/fetch_snippets.jinja'
             if self.client.startpage_version == '5':
@@ -545,6 +536,31 @@ class Snippet(SnippetBaseModel):
         )
 
         return Markup(rendered_snippet)
+
+    def render_to_as_router(self):
+        """Render method for AS router snippets."""
+        data = json.loads(self.data)
+
+        # Add snippet ID to template variables.
+        for key, value in data.items():
+            if isinstance(value, basestring):
+                data[key] = value.replace(u'[[snippet_id]]', unicode(self.id))
+
+        # Will be replaced with a more generic solution when we develop more AS
+        # Router templates. See #565
+        text, links = util.fluent_link_extractor(data.get('text', ''))
+        data['text'] = text
+        data['links'] = links
+
+        rendered_snippet = {
+            'id': str(self.id),
+            'template': self.template.code_name,
+            'template_version': self.template.version,
+            'campaign': self.campaign,
+            'content': data,
+        }
+
+        return rendered_snippet
 
     @property
     def channels(self):
