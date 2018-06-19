@@ -4,16 +4,12 @@ import json
 import os
 import re
 import uuid
-import xml.sax
-from StringIO import StringIO
 from collections import namedtuple
 from datetime import datetime
 from urlparse import urljoin, urlparse
-from xml.sax import ContentHandler
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
@@ -32,6 +28,7 @@ from jinja2.utils import LRUCache
 from snippets.base import util
 from snippets.base.fields import RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
+from snippets.base.validators import validate_xml_template
 
 
 ONE_DAY = 60 * 60 * 24
@@ -76,52 +73,6 @@ SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
                    (150, 'Appear 1.5 times as often as an average snippet'),
                    (200, 'Appear twice as often as an average snippet'),
                    (300, 'Appear three times as often as an average snippet'))
-
-
-def validate_xml_template(data):
-    parser = xml.sax.make_parser()
-    parser.setContentHandler(ContentHandler())
-    parser.setFeature(xml.sax.handler.feature_external_ges, 0)
-
-    data = data.encode('utf-8')
-    xml_str = '<div>\n{0}</div>'.format(data)
-    try:
-        parser.parse(StringIO(xml_str))
-    except xml.sax.SAXParseException as e:
-        # getLineNumber() - 1 to get the correct line number because
-        # we're wrapping contents into a div.
-        error_msg = (
-            'XML Error: {message} in line {line} column {column}').format(
-                message=e.getMessage(), line=e.getLineNumber() - 1, column=e.getColumnNumber())
-        raise ValidationError(error_msg)
-    return data
-
-
-def validate_xml_variables(data):
-    data_dict = json.loads(data)
-
-    # set up a safer XML parser that does not resolve external
-    # entities
-    parser = xml.sax.make_parser()
-    parser.setContentHandler(ContentHandler())
-    parser.setFeature(xml.sax.handler.feature_external_ges, 0)
-
-    for name, value in data_dict.items():
-        # Skip over values that aren't strings.
-        if not isinstance(value, basestring):
-            continue
-
-        value = value.encode('utf-8')
-        xml_str = '<div>{0}</div>'.format(value)
-        try:
-            parser.parse(StringIO(xml_str))
-        except xml.sax.SAXParseException as e:
-            error_msg = (
-                'XML Error in value "{name}": {message} in column {column}'
-                .format(name=name, message=e.getMessage(),
-                        column=e.getColumnNumber()))
-            raise ValidationError(error_msg)
-    return data
 
 
 # NamedTuple that represents a user's client program.
@@ -414,7 +365,7 @@ class SnippetBaseModel(django_mysql.models.Model):
 class Snippet(SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
     template = models.ForeignKey(SnippetTemplate)
-    data = models.TextField(default='{}', validators=[validate_xml_variables])
+    data = models.TextField(default='{}')
 
     published = models.BooleanField(default=False)
 

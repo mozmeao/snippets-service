@@ -1,16 +1,14 @@
 import json
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.test.utils import override_settings
-
 import brotli
 from jinja2 import Markup
 from mock import ANY, MagicMock, Mock, patch
 from pyquery import PyQuery as pq
 
 from snippets.base.models import (ONE_DAY, Client, SnippetBundle, UploadedFile,
-                                  validate_xml_template, validate_xml_variables, _generate_filename)
+                                  _generate_filename)
 from snippets.base.tests import (ClientMatchRuleFactory,
                                  JSONSnippetFactory,
                                  SearchProviderFactory,
@@ -85,41 +83,6 @@ class ClientMatchRuleTests(TestCase):
 
         self.assertTrue(pass_rule.matches(client))
         self.assertTrue(not fail_rule.matches(client))
-
-
-class XMLVariablesValidatorTests(TestCase):
-    def test_valid_xml(self):
-        valid_xml = '{"foo": "<b>foobar</b>"}'
-        self.assertEqual(validate_xml_variables(valid_xml), valid_xml)
-
-    def test_invalid_xml(self):
-        invalid_xml = '{"foo": "<b><i>foobar<i></b>"}'
-        self.assertRaises(ValidationError, validate_xml_variables, invalid_xml)
-
-    def test_unicode(self):
-        unicode_xml = '{"foo": "<b>\u03c6\u03bf\u03bf</b>"}'
-        self.assertEqual(validate_xml_variables(unicode_xml), unicode_xml)
-
-    def test_non_string_values(self):
-        """
-        If a value isn't a string, skip over it and continue validating.
-        """
-        valid_xml = '{"foo": "<b>Bar</b>", "baz": true}'
-        self.assertEqual(validate_xml_variables(valid_xml), valid_xml)
-
-
-class XMLTemplateValidatorTests(TestCase):
-    def test_valid_xml(self):
-        valid_xml = '<div>yo</div>'
-        self.assertEqual(validate_xml_template(valid_xml), valid_xml)
-
-    def test_unicode(self):
-        valid_xml = '<div><b>\u03c6\u03bf\u03bf</b></div>'
-        self.assertEqual(validate_xml_template(valid_xml), valid_xml)
-
-    def test_invalid_xml(self):
-        invalid_xml = '<div><input type="text" name="foo"></div>'
-        self.assertRaises(ValidationError, validate_xml_template, invalid_xml)
 
 
 class SnippetTemplateTests(TestCase):

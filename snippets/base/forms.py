@@ -15,7 +15,7 @@ from product_details.version_compare import Version, version_list
 from snippets.base.fields import MultipleChoiceFieldCSV
 from snippets.base.models import (JSONSnippet, Snippet, SnippetNG, SnippetTemplate,
                                   SnippetTemplateVariable, UploadedFile)
-from snippets.base.validators import MinValueValidator
+from snippets.base.validators import MinValueValidator, validate_xml_variables
 
 
 PROFILE_AGE_CHOICES = (
@@ -321,6 +321,10 @@ class SnippetAdminForm(BaseSnippetAdminForm):
 
     def clean(self):
         cleaned_data = super(SnippetAdminForm, self).clean()
+
+        if any([cleaned_data['on_startpage_4'], cleaned_data['on_startpage_3'],
+                cleaned_data['on_startpage_2'], cleaned_data['on_startpage_1']]):
+            validate_xml_variables(cleaned_data['data'])
 
         version_upper_bound = cleaned_data.get('client_option_version_upper_bound', 'any')
         version_lower_bound = cleaned_data.get('client_option_version_lower_bound', 'any')
