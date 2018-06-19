@@ -5,8 +5,8 @@ from django.forms import ValidationError
 from mock import MagicMock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.forms import (IconWidget, SnippetAdminForm, TemplateDataWidget,
-                                 TemplateSelect, UploadedFileAdminForm)
+from snippets.base.forms import (IconWidget, SnippetAdminForm, SnippetNGAdminForm,
+                                 TemplateDataWidget, TemplateSelect, UploadedFileAdminForm)
 from snippets.base.tests import (SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase)
 
@@ -62,7 +62,6 @@ class TemplateSelectTests(TestCase):
 
 class SnippetAdminFormTests(TestCase):
     def setUp(self):
-        from snippets.base.tests import SnippetTemplateFactory
         template = SnippetTemplateFactory()
         self.data = {
             'name': 'Test Snippet',
@@ -100,6 +99,24 @@ class SnippetAdminFormTests(TestCase):
         })
         with patch('snippets.base.forms.validate_xml_variables') as validate_mock:
             form = SnippetAdminForm(data)
+            self.assertTrue(form.is_valid())
+        self.assertTrue(validate_mock.called)
+
+
+class SnippetNGAdminFormTests(TestCase):
+    def setUp(self):
+        template = SnippetTemplateFactory(startpage=6)
+        self.data = {
+            'name': 'Test Snippet',
+            'template': template.id,
+            'data': '{}',
+            'on_release': 'on',
+            'on_startpage_6': 'on',
+        }
+
+    def test_fluent_variables_validation(self):
+        with patch('snippets.base.forms.validate_as_router_fluent_variables') as validate_mock:
+            form = SnippetNGAdminForm(self.data)
             self.assertTrue(form.is_valid())
         self.assertTrue(validate_mock.called)
 

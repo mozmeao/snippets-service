@@ -15,7 +15,8 @@ from product_details.version_compare import Version, version_list
 from snippets.base.fields import MultipleChoiceFieldCSV
 from snippets.base.models import (JSONSnippet, Snippet, SnippetNG, SnippetTemplate,
                                   SnippetTemplateVariable, UploadedFile)
-from snippets.base.validators import MinValueValidator, validate_xml_variables
+from snippets.base.validators import (MinValueValidator, validate_as_router_fluent_variables,
+                                      validate_xml_variables)
 
 
 PROFILE_AGE_CHOICES = (
@@ -196,6 +197,8 @@ class SnippetNGAdminForm(BaseSnippetAdminForm):
 
     def clean(self):
         cleaned_data = super(SnippetNGAdminForm, self).clean()
+
+        validate_as_router_fluent_variables(cleaned_data['data'])
 
         if not any([cleaned_data['on_release'], cleaned_data['on_beta'],
                     cleaned_data['on_aurora'], cleaned_data['on_nightly'], cleaned_data['on_esr']]):

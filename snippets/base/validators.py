@@ -7,6 +7,11 @@ from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.utils.deconstruct import deconstructible
 
+import bleach
+
+ALLOWED_TAGS = ['a', 'i', 'b', 'u', 'strong', 'em', 'br']
+ALLOWED_ATTRIBUTES = {'a': ['href', 'data-metric']}
+
 
 @deconstructible
 class MinValueValidator(BaseValidator):
@@ -61,4 +66,18 @@ def validate_xml_variables(data):
                 .format(name=name, message=e.getMessage(),
                         column=e.getColumnNumber()))
             raise ValidationError(error_msg)
+    return data
+
+
+def validate_as_router_fluent_variables(data):
+    data_dict = json.loads(data)
+
+    # Will be replaced with a more generic solution when we develop more AS
+    # Router templates. See #565
+    text = data_dict['text']
+    bleached_text = bleach.clean(text, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
+    if text != bleached_text:
+        error_msg = ('Text contains unsupported tags.'
+                     'Only {} are supported'.format(', '.join(ALLOWED_TAGS)))
+        raise ValidationError(error_msg)
     return data
