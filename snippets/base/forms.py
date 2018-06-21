@@ -170,7 +170,7 @@ class SnippetChangeListForm(forms.ModelForm):
             self.fields['body'].disabled = True
             self.body_variable = None
         else:
-            text = instance.dict_data[self.body_variable]
+            text = instance.dict_data.get(self.body_variable, '')
             self.fields['body'].initial = text
 
     def save(self, *args, **kwargs):
