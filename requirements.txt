@@ -165,9 +165,9 @@ six==1.11.0 \
 html5lib==1.0.1 \
     --hash=sha256:20b159aa3badc9d5ee8f5c647e5efd02ed2a66ab8d354930bd9ff139fc1dc0a3 \
     --hash=sha256:66cb0dcfdbbc4f9c3ba1a63fdb511ffdbd4f513b2b6d81b80cd26ce6b3fb3736
-django-mysql==2.2.2 \
-    --hash=sha256:b462fdd28f01c721fa7242a2c06afb5a5d3d14896f0da7c7b07b711eb37f6fdd \
-    --hash=sha256:ebd28bd17840a2bea0941e189a4111b491449d794272c15f035bed8b03f94c36
+django-mysql==2.3.0 \
+    --hash=sha256:6983b47fd46f5dfe82182eff1e0e23561422d3e3249c8d2de89d6d7f38eb6b53 \
+    --hash=sha256:6813021a072cee15af1bc8cf353ca242d4ec4ac92affeeb2e5ea0df6c3a731c0
 django-reversion==2.0.13 \
     --hash=sha256:2e105a2c74462ce7de97afdcfb187f27b88a547dda1216a8aab964d32a882edf \
     --hash=sha256:f27249218ac901ec219869c9618e01d8c30436a4e8da1a64fcb652209b11e47d
@@ -246,9 +246,9 @@ future==0.16.0 \
     --hash=sha256:e39ced1ab767b5936646cedba8bcce582398233d6a627067d4c6a454c90cfedb
 django-ical==1.4 \
     --hash=sha256:887458315f14633dd373961f63deb69a4e85d9008f7c1d75f91cdb02c8211155
-icalendar==4.0.1 \
-    --hash=sha256:396ad75bc6c7cc23c97c69370a81c001aca06cf99da32e6bb40856ea0bdf7368 \
-    --hash=sha256:682a42023d3d43a3a83933b4e329d109aabb07c9e11cb94a4d83ca687c3a3e8d
+icalendar==4.0.2 \
+    --hash=sha256:2f7166b36ed52e7ab3f2c6aacabb4300095e10c3a6244a53e2f77410633989ae \
+    --hash=sha256:80362a9f3c2686b88791fdb78c063f33bd96451f7b1b12140c5aad2df81c008c
 python-dateutil==2.7.3 \
     --hash=sha256:1adb80e7a782c12e52ef9a8182bebeb73f1d7e24e374397af06fb4956c8dc5c0 \
     --hash=sha256:e27001de32f627c22380a688bcc43ce83504a7bc5da472209b4c70f02829f0b8
