@@ -242,8 +242,9 @@ ecdsa==0.13 \
     --hash=sha256:64cf1ee26d1cde3c73c6d7d107f835fed7c6a2904aef9eac223d57ad800c43fa
 future==0.16.0 \
     --hash=sha256:e39ced1ab767b5936646cedba8bcce582398233d6a627067d4c6a454c90cfedb
-django-ical==1.4 \
-    --hash=sha256:887458315f14633dd373961f63deb69a4e85d9008f7c1d75f91cdb02c8211155
+django-ical==1.5 \
+    --hash=sha256:afdf3020e6f7ed5955a4fc4d500283714b80bed16fcc3724a24e1fdae2bff7ed \
+    --hash=sha256:80071168c7113d8ddf5907bd02bc32af017cf2bfb401d3e988d657819bce4756
 icalendar==4.0.1 \
     --hash=sha256:396ad75bc6c7cc23c97c69370a81c001aca06cf99da32e6bb40856ea0bdf7368 \
     --hash=sha256:682a42023d3d43a3a83933b4e329d109aabb07c9e11cb94a4d83ca687c3a3e8d
