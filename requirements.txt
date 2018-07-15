@@ -141,9 +141,9 @@ msgpack-python==0.5.6 \
 django-redis==4.9.0 \
     --hash=sha256:15b47faef6aefaa3f47135a2aeb67372da300e4a4cf06809c66ab392686a2155 \
     --hash=sha256:a90343c33a816073b735f0bed878eaeec4f83b75fcc0dce2432189b8ea130424
-boto==2.48.0 \
-    --hash=sha256:13be844158d1bd80a94c972c806ec8381b9ea72035aa06123c5db6bc6a6f3ead \
-    --hash=sha256:deb8925b734b109679e3de65856018996338758f4b916ff4fe7bb62b6d7000d1
+boto==2.49.0 \
+    --hash=sha256:147758d41ae7240dc989f0039f27da8ca0d53734be0eb869ef16e3adcfa462e8 \
+    --hash=sha256:ea0d3b40a2d852767be77ca343b58a9e3a4b00d9db440efb8da74b4e58025e5a
 django-clear-cache==0.3 \
     --hash=sha256:fc9d27d6d7dd143917393484236bdf66a109d99bc64a4418cdf5a1127356d766
 django-extensions==2.0.7 \
