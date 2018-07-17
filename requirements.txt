@@ -146,9 +146,9 @@ boto==2.49.0 \
     --hash=sha256:ea0d3b40a2d852767be77ca343b58a9e3a4b00d9db440efb8da74b4e58025e5a
 django-clear-cache==0.3 \
     --hash=sha256:fc9d27d6d7dd143917393484236bdf66a109d99bc64a4418cdf5a1127356d766
-django-extensions==2.0.7 \
-    --hash=sha256:3be3debf53c77ca795bdf713726c923aa3c3f895e1a42e2e31a68c1a562346a4 \
-    --hash=sha256:94bfac99eb262c5ac27e53eda96925e2e53fe0b331af7dde37012d07639a649c
+django-extensions==2.1.0 \
+    --hash=sha256:e279344c6d825adb27694755aa924702d3cc401f8fad5ad9ef2d577948778a5f \
+    --hash=sha256:c3c8524056ab1174c6fc769b0599e60f7e7797ce34f38db2effc48885a0a982c
 requests==2.19.1 \
     --hash=sha256:63b52e3c866428a224f97cab011de738c36aec0185aa91cfacd418b5d58911d1 \
     --hash=sha256:ec22d826a36ed72a7358ff3fe56cbd4ba69dd7a6718ffd450ff0e9df7a47ce6a
