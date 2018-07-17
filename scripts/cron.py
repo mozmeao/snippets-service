@@ -5,6 +5,7 @@ import sys
 from subprocess import check_call
 
 from django.conf import settings
+from django.db import connection
 
 import babis
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -55,6 +56,7 @@ class scheduled_job(object):
 @babis.decorator(ping_after=settings.DEAD_MANS_SNITCH_PRODUCT_DETAILS)
 def job_update_product_details():
     call_command('update_product_details')
+    connection.close()
     create_countries()
     create_locales()
 
