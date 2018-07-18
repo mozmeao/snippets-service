@@ -405,7 +405,6 @@ class Snippet(SnippetBaseModel):
     template = models.ForeignKey(SnippetTemplate)
     data = models.TextField(default='{}', validators=[validate_xml_variables])
 
-    disabled = models.BooleanField(default=True)
     published = models.BooleanField(default=False)
 
     countries = models.ManyToManyField(
@@ -562,7 +561,6 @@ class Snippet(SnippetBaseModel):
 
 class JSONSnippet(SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
-    disabled = models.BooleanField(default=True)
     published = models.BooleanField(default=False)
 
     icon = models.TextField(help_text='Icon should be a 96x96px PNG.')
