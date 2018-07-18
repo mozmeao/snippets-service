@@ -64,6 +64,10 @@ SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
     )).hexdigest()
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly', 'esr')
+# StartPage 1-4: Different versions of the retro about home with the Firefox
+#                logo in the middle and a search bar bellow. (Fx < 57)
+# StartPage 5: Activity Stream (Fx >= 57 && Fx < 62)
+# StartPage 6: Activity Stream with JSON Endpoint (Fx >= 62)
 FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4', '5', '6')
 FENNEC_STARTPAGE_VERSIONS = ('1',)
 SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
@@ -207,8 +211,7 @@ class SnippetBundle(object):
         if isinstance(bundle_content, unicode):
             bundle_content = bundle_content.encode('utf-8')
 
-        if ((settings.BUNDLE_BROTLI_COMPRESS and
-             (self.client.startpage_version == '5' or self.client.startpage_version == '6'))):
+        if (settings.BUNDLE_BROTLI_COMPRESS and self.client.startpage_version in ['5', '6']):
             content_file = ContentFile(brotli.compress(bundle_content))
             content_file.content_encoding = 'br'
         else:

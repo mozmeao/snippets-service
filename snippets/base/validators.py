@@ -74,6 +74,9 @@ def validate_as_router_fluent_variables(data):
 
     # Will be replaced with a more generic solution when we develop more AS
     # Router templates. See #565
+    if 'text' not in data_dict:
+        return data
+
     text = data_dict['text']
     bleached_text = bleach.clean(text, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
     if text != bleached_text:

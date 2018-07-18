@@ -188,7 +188,7 @@ class SnippetNGAdminForm(BaseSnippetAdminForm):
 
     class Meta:
         model = SnippetNG
-        fields = ('name', 'template', 'data', 'disabled', 'publish_start', 'publish_end',
+        fields = ('name', 'template', 'data', 'published', 'publish_start', 'publish_end',
                   'on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr',
                   'on_startpage_6', 'campaign')
         widgets = {
