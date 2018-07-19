@@ -56,6 +56,7 @@
     border: 0;
     cursor: pointer;
     offset-inline-end: 12px;
+    inset-inline-end: 12px;
     display: none;
 }
 
@@ -71,5 +72,6 @@
 @media (min-width: 766px) {
   .snippet .block-snippet-button {
     offset-inline-end: 24px;
+    inset-inline-end: 24px;
   }
 }
