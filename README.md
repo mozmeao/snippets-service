@@ -35,7 +35,11 @@ Docker for development
 ----------------------
 
 0. Make sure you have [docker](https://docker.io) and [docker-compose](https://github.com/docker/compose)
-1. docker-compose up
+1. `docker-compose up`
+2. `docker-compose run web bash`
+3. `python manage.py migrate`
+4. `python manage.py createsuperuser` (enter any user/email/pass you wish)
+5. Navigate to `localhost:8000/admin` and log in with the admin account created in step #4
 
 
 Docker for deploying to production
