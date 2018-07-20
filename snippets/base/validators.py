@@ -79,6 +79,9 @@ def validate_as_router_fluent_variables(data):
 
     text = data_dict['text']
     bleached_text = bleach.clean(text, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
+    # Bleach escapes '&' to '&amp;'. We need to revert back to compare with
+    # text
+    bleached_text = bleached_text.replace('&amp;', '&')
     if text != bleached_text:
         error_msg = ('Text contains unsupported tags.'
                      'Only {} are supported'.format(', '.join(ALLOWED_TAGS)))
