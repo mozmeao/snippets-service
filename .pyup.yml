@@ -1,6 +1,6 @@
 update: all
 branch: master
-schedule: "every day"
+schedule: "biweekly on monday"
 search: True
 close_prs: True
 requirements:
