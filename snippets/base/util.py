@@ -1,3 +1,5 @@
+import re
+
 from product_details import product_details
 from product_details.version_compare import version_list
 
@@ -47,3 +49,43 @@ def current_firefox_major_version():
         product_details.firefox_history_major_releases)[0]
 
     return full_version.split('.', 1)[0]
+
+
+def fluent_link_extractor(text):
+    """Replaces all <a> elements with fluent.js link elements sequentially
+    numbered.
+
+    Returns a tuple with the new text and a dict of all the links with url and
+    custom metric where available.
+
+    """
+    class Replacer:
+        link_counter = 0
+        links = {}
+
+        def __call__(self, matchobj):
+            keyname = 'link{0}'.format(self.link_counter)
+            replacement = '<{keyname}>{text}</{keyname}>'.format(
+                keyname=keyname,
+                text=matchobj.group('innerText'))
+            # Find the URL
+            url_match = re.search('href="(?P<url>.+?)"', matchobj.group('attrs'))
+            url = ''
+
+            if url_match:
+                url = url_match.group('url')
+            self.links[keyname] = {
+                'url': url,
+            }
+
+            # Find the optional data-metric attrib
+            metric_match = re.search('data-metric="(?P<metric>.+?)"', matchobj.group('attrs'))
+            if metric_match:
+                self.links[keyname]['metric'] = metric_match.group('metric')
+
+            self.link_counter += 1
+            return replacement
+
+    replacer = Replacer()
+    final_text = re.sub('(<a(?P<attrs> .*?)>)(?P<innerText>.+?)(</a>)', replacer, text)
+    return final_text, replacer.links

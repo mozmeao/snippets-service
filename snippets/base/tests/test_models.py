@@ -1,16 +1,14 @@
 import json
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.test.utils import override_settings
-
 import brotli
 from jinja2 import Markup
 from mock import ANY, MagicMock, Mock, patch
 from pyquery import PyQuery as pq
 
 from snippets.base.models import (ONE_DAY, Client, SnippetBundle, UploadedFile,
-                                  validate_xml_template, validate_xml_variables, _generate_filename)
+                                  _generate_filename)
 from snippets.base.tests import (ClientMatchRuleFactory,
                                  JSONSnippetFactory,
                                  SearchProviderFactory,
@@ -85,41 +83,6 @@ class ClientMatchRuleTests(TestCase):
 
         self.assertTrue(pass_rule.matches(client))
         self.assertTrue(not fail_rule.matches(client))
-
-
-class XMLVariablesValidatorTests(TestCase):
-    def test_valid_xml(self):
-        valid_xml = '{"foo": "<b>foobar</b>"}'
-        self.assertEqual(validate_xml_variables(valid_xml), valid_xml)
-
-    def test_invalid_xml(self):
-        invalid_xml = '{"foo": "<b><i>foobar<i></b>"}'
-        self.assertRaises(ValidationError, validate_xml_variables, invalid_xml)
-
-    def test_unicode(self):
-        unicode_xml = '{"foo": "<b>\u03c6\u03bf\u03bf</b>"}'
-        self.assertEqual(validate_xml_variables(unicode_xml), unicode_xml)
-
-    def test_non_string_values(self):
-        """
-        If a value isn't a string, skip over it and continue validating.
-        """
-        valid_xml = '{"foo": "<b>Bar</b>", "baz": true}'
-        self.assertEqual(validate_xml_variables(valid_xml), valid_xml)
-
-
-class XMLTemplateValidatorTests(TestCase):
-    def test_valid_xml(self):
-        valid_xml = '<div>yo</div>'
-        self.assertEqual(validate_xml_template(valid_xml), valid_xml)
-
-    def test_unicode(self):
-        valid_xml = '<div><b>\u03c6\u03bf\u03bf</b></div>'
-        self.assertEqual(validate_xml_template(valid_xml), valid_xml)
-
-    def test_invalid_xml(self):
-        invalid_xml = '<div><input type="text" name="foo"></div>'
-        self.assertRaises(ValidationError, validate_xml_template, invalid_xml)
 
 
 class SnippetTemplateTests(TestCase):
@@ -318,6 +281,27 @@ class SnippetTests(TestCase):
         snippet.template.render.assert_called_with({'code': 'snippet id {0}'.format(snippet.id),
                                                     'snippet_id': snippet.id,
                                                     'foo': True})
+
+    def test_render_to_as_router(self):
+        """
+
+        """
+        snippet = SnippetFactory.create(
+            template__code='<p>{{ text }} {{ foo }}</p>',
+            data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}')
+        generated_result = snippet.render_to_as_router()
+        expected_result = {
+            'id': str(snippet.id),
+            'template': snippet.template.code_name,
+            'template_version': snippet.template.version,
+            'campaign': snippet.campaign,
+            'content': {
+                'text': 'snippet id {}'.format(snippet.id),
+                'foo': 'bar',
+                'links': {},
+            }
+        }
+        self.assertEqual(generated_result, expected_result)
 
 
 class UploadedFileTests(TestCase):
@@ -540,6 +524,33 @@ class SnippetBundleTests(TestCase):
         content_file = default_storage.save.call_args[0][1]
         self.assertEqual(content_file.read(), 'rendered snippet')
 
+    @override_settings(BUNDLE_BROTLI_COMPRESS=False)
+    def test_generate_activity_stream_router(self):
+        """
+        bundle.generate should render the snippets, save them to the
+        filesystem, and mark the bundle as not-expired in the cache for
+        activity stream!
+        """
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version='6'))
+        bundle.storage = Mock()
+        bundle.snippets = [self.snippet1, self.snippet2]
+        self.snippet1.render_to_as_router = Mock()
+        self.snippet1.render_to_as_router.return_value = 'snippet1'
+        self.snippet2.render_to_as_router = Mock()
+        self.snippet2.render_to_as_router.return_value = 'snippet2'
+
+        with patch('snippets.base.models.cache') as cache:
+            with patch('snippets.base.models.default_storage') as default_storage:
+                bundle.generate()
+
+        self.assertTrue(bundle.filename.endswith('.json'))
+        default_storage.save.assert_called_with(bundle.filename, ANY)
+        cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
+
+        # Check content of saved file.
+        content_file = default_storage.save.call_args[0][1]
+        self.assertEqual(content_file.read(), '{"messages": ["snippet1", "snippet2"]}')
+
     @override_settings(BUNDLE_BROTLI_COMPRESS=True)
     def test_generate_brotli(self):
         """
@@ -547,25 +558,28 @@ class SnippetBundleTests(TestCase):
         filesystem, and mark the bundle as not-expired in the cache for
         activity stream!
         """
-        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
-        bundle.storage = Mock()
-        bundle.snippets = [self.snippet1, self.snippet2]
+        def _test(client):
+            bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+            bundle.storage = Mock()
+            bundle.snippets = [self.snippet1, self.snippet2]
 
-        with patch('snippets.base.models.cache') as cache:
-            with patch('snippets.base.models.render_to_string') as render_to_string:
-                with patch('snippets.base.models.default_storage') as default_storage:
-                    with patch('snippets.base.models.brotli', wraps=brotli) as brotli_mock:
-                        render_to_string.return_value = 'rendered snippet'
-                        bundle.generate()
+            with patch('snippets.base.models.cache') as cache:
+                with patch('snippets.base.models.render_to_string') as render_to_string:
+                    with patch('snippets.base.models.default_storage') as default_storage:
+                        with patch('snippets.base.models.brotli', wraps=brotli) as brotli_mock:
+                            render_to_string.return_value = 'rendered snippet'
+                            bundle.generate()
 
-        brotli_mock.compress.assert_called_with('rendered snippet')
-        default_storage.save.assert_called_with(bundle.filename, ANY)
-        cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
+            brotli_mock.compress.assert_called_with('rendered snippet')
+            default_storage.save.assert_called_with(bundle.filename, ANY)
+            cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
 
-        # Check content of saved file.
-        content_file = default_storage.save.call_args[0][1]
-        self.assertEqual(content_file.content_encoding, 'br')
-        self.assertEqual(content_file.read(), '\x8b\x07\x80rendered snippet\x03')
+            # Check content of saved file.
+            content_file = default_storage.save.call_args[0][1]
+            self.assertEqual(content_file.content_encoding, 'br')
+            self.assertEqual(content_file.read(), '\x8b\x07\x80rendered snippet\x03')
+        _test(self._client(locale='fr', startpage_version='5'))
+        _test(self._client(locale='fr', startpage_version='6'))
 
     def test_cached_local(self):
         bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))

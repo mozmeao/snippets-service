@@ -5,8 +5,8 @@ from django.forms import ValidationError
 from mock import MagicMock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.forms import (IconWidget, TemplateDataWidget,
-                                 TemplateSelect, UploadedFileAdminForm)
+from snippets.base.forms import (IconWidget, SnippetAdminForm, SnippetNGAdminForm,
+                                 TemplateDataWidget, TemplateSelect, UploadedFileAdminForm)
 from snippets.base.tests import (SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase)
 
@@ -58,6 +58,67 @@ class TemplateSelectTests(TestCase):
                                       'type': variable3.type,
                                       'order': variable3.order,
                                       'description': variable3.description}])
+
+
+class SnippetAdminFormTests(TestCase):
+    def setUp(self):
+        template = SnippetTemplateFactory()
+        self.data = {
+            'name': 'Test Snippet',
+            'template': template.id,
+            'client_option_version_lower_bound': 'any',
+            'client_option_version_upper_bound': 'any',
+            'client_option_is_developer': 'any',
+            'client_option_is_default_browser': 'any',
+            'client_option_screen_resolutions': ['0-1024', '1024-1920', '1920-50000'],
+            'client_option_has_fxaccount': 'any',
+            'client_option_sessionage_lower_bound': -1,
+            'client_option_sessionage_upper_bound': -1,
+            'client_option_profileage_lower_bound': -1,
+            'client_option_profileage_upper_bound': -1,
+            'client_option_addon_check_type': 'any',
+            'data': '{}',
+            'weight': 100,
+            'on_release': 'on',
+        }
+
+    def test_no_xml_validation_for_startpage_5(self):
+        data = self.data.copy()
+        data.update({
+            'on_startpage_5': 'on',
+        })
+        with patch('snippets.base.validators.validate_xml_variables') as validate_mock:
+            form = SnippetAdminForm(data)
+            self.assertTrue(form.is_valid())
+        self.assertTrue(not validate_mock.called)
+
+    def test_xml_validation_for_startpage_4(self):
+        data = self.data.copy()
+        data.update({
+            'on_startpage_4': 'on',
+        })
+        with patch('snippets.base.forms.validate_xml_variables') as validate_mock:
+            form = SnippetAdminForm(data)
+            self.assertTrue(form.is_valid())
+        self.assertTrue(validate_mock.called)
+
+
+class SnippetNGAdminFormTests(TestCase):
+    def setUp(self):
+        template = SnippetTemplateFactory(startpage=6)
+        self.data = {
+            'name': 'Test Snippet',
+            'template': template.id,
+            'data': '{}',
+            'on_release': 'on',
+            'on_startpage_6': 'on',
+        }
+
+    def test_fluent_variables_validation(self):
+        with patch('snippets.base.forms.validate_as_router_fluent_variables') as validate_mock:
+            form = SnippetNGAdminForm(self.data)
+            self.assertTrue(form.is_valid())
+        self.assertTrue(validate_mock.called)
 
 
 class TemplateDataWidgetTests(TestCase):

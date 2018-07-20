@@ -4,16 +4,12 @@ import json
 import os
 import re
 import uuid
-import xml.sax
-from StringIO import StringIO
 from collections import namedtuple
 from datetime import datetime
 from urlparse import urljoin, urlparse
-from xml.sax import ContentHandler
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
@@ -32,6 +28,7 @@ from jinja2.utils import LRUCache
 from snippets.base import util
 from snippets.base.fields import RegexField
 from snippets.base.managers import ClientMatchRuleManager, SnippetManager
+from snippets.base.validators import validate_xml_template
 
 
 ONE_DAY = 60 * 60 * 24
@@ -67,7 +64,11 @@ SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
     )).hexdigest()
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly', 'esr')
-FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4', '5')
+# StartPage 1-4: Different versions of the retro about home with the Firefox
+#                logo in the middle and a search bar bellow. (Fx < 57)
+# StartPage 5: Activity Stream (Fx >= 57 && Fx < 62)
+# StartPage 6: Activity Stream with JSON Endpoint (Fx >= 62)
+FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4', '5', '6')
 FENNEC_STARTPAGE_VERSIONS = ('1',)
 SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
                    (50, 'Appear half as often as an average snippet'),
@@ -76,52 +77,6 @@ SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
                    (150, 'Appear 1.5 times as often as an average snippet'),
                    (200, 'Appear twice as often as an average snippet'),
                    (300, 'Appear three times as often as an average snippet'))
-
-
-def validate_xml_template(data):
-    parser = xml.sax.make_parser()
-    parser.setContentHandler(ContentHandler())
-    parser.setFeature(xml.sax.handler.feature_external_ges, 0)
-
-    data = data.encode('utf-8')
-    xml_str = '<div>\n{0}</div>'.format(data)
-    try:
-        parser.parse(StringIO(xml_str))
-    except xml.sax.SAXParseException as e:
-        # getLineNumber() - 1 to get the correct line number because
-        # we're wrapping contents into a div.
-        error_msg = (
-            'XML Error: {message} in line {line} column {column}').format(
-                message=e.getMessage(), line=e.getLineNumber() - 1, column=e.getColumnNumber())
-        raise ValidationError(error_msg)
-    return data
-
-
-def validate_xml_variables(data):
-    data_dict = json.loads(data)
-
-    # set up a safer XML parser that does not resolve external
-    # entities
-    parser = xml.sax.make_parser()
-    parser.setContentHandler(ContentHandler())
-    parser.setFeature(xml.sax.handler.feature_external_ges, 0)
-
-    for name, value in data_dict.items():
-        # Skip over values that aren't strings.
-        if not isinstance(value, basestring):
-            continue
-
-        value = value.encode('utf-8')
-        xml_str = '<div>{0}</div>'.format(value)
-        try:
-            parser.parse(StringIO(xml_str))
-        except xml.sax.SAXParseException as e:
-            error_msg = (
-                'XML Error in value "{name}": {message} in column {column}'
-                .format(name=name, message=e.getMessage(),
-                        column=e.getColumnNumber()))
-            raise ValidationError(error_msg)
-    return data
 
 
 # NamedTuple that represents a user's client program.
@@ -211,6 +166,8 @@ class SnippetBundle(object):
 
     @property
     def filename(self):
+        if self.client.startpage_version == '6':
+            return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.json'.format(self.key))
         return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.html'.format(self.key))
 
     @property
@@ -234,22 +191,27 @@ class SnippetBundle(object):
 
     def generate(self):
         """Generate and save the code for this snippet bundle."""
-        template = 'base/fetch_snippets.jinja'
-        if self.client.startpage_version == '5':
-            template = 'base/fetch_snippets_as.jinja'
-        bundle_content = render_to_string(template, {
-            'snippet_ids': [snippet.id for snippet in self.snippets],
-            'snippets_json': json.dumps([s.to_dict() for s in self.snippets]),
-            'client': self.client,
-            'locale': self.client.locale,
-            'settings': settings,
-            'current_firefox_major_version': util.current_firefox_major_version(),
-        })
+        if self.client.startpage_version == '6':
+            # Generate the new AS Router bundle format
+            data = [snippet.render_to_as_router() for snippet in self.snippets]
+            bundle_content = json.dumps({'messages': data})
+        else:
+            template = 'base/fetch_snippets.jinja'
+            if self.client.startpage_version == '5':
+                template = 'base/fetch_snippets_as.jinja'
+            bundle_content = render_to_string(template, {
+                'snippet_ids': [snippet.id for snippet in self.snippets],
+                'snippets_json': json.dumps([s.to_dict() for s in self.snippets]),
+                'client': self.client,
+                'locale': self.client.locale,
+                'settings': settings,
+                'current_firefox_major_version': util.current_firefox_major_version(),
+            })
 
         if isinstance(bundle_content, unicode):
             bundle_content = bundle_content.encode('utf-8')
 
-        if settings.BUNDLE_BROTLI_COMPRESS and self.client.startpage_version == '5':
+        if (settings.BUNDLE_BROTLI_COMPRESS and self.client.startpage_version in ['5', '6']):
             content_file = ContentFile(brotli.compress(bundle_content))
             content_file.content_encoding = 'br'
         else:
@@ -265,6 +227,9 @@ class SnippetTemplate(models.Model):
     snippet will fill in.
     """
     name = models.CharField(max_length=255, unique=True)
+    code_name = models.CharField(max_length=255, unique=True)
+    startpage = models.SmallIntegerField(default=4)
+    version = models.CharField(max_length=10)
     priority = models.BooleanField(
         verbose_name='Priority template', default=False,
         help_text='Set to true to display first in dropdowns for faster selections')
@@ -403,7 +368,7 @@ class SnippetBaseModel(django_mysql.models.Model):
 class Snippet(SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
     template = models.ForeignKey(SnippetTemplate)
-    data = models.TextField(default='{}', validators=[validate_xml_variables])
+    data = models.TextField(default='{}')
 
     published = models.BooleanField(default=False)
 
@@ -424,7 +389,8 @@ class Snippet(SnippetBaseModel):
     on_startpage_2 = models.BooleanField(default=False, verbose_name='Version 2')
     on_startpage_3 = models.BooleanField(default=False, verbose_name='Version 3')
     on_startpage_4 = models.BooleanField(default=False, verbose_name='Version 4')
-    on_startpage_5 = models.BooleanField(default=True, verbose_name='Activity Stream')
+    on_startpage_5 = models.BooleanField(default=False, verbose_name='Activity Stream')
+    on_startpage_6 = models.BooleanField(default=False, verbose_name='Activity Stream NG')
 
     weight = models.IntegerField(
         'Prevalence', choices=SNIPPET_WEIGHTS, default=100,
@@ -525,6 +491,31 @@ class Snippet(SnippetBaseModel):
 
         return Markup(rendered_snippet)
 
+    def render_to_as_router(self):
+        """Render method for AS router snippets."""
+        data = json.loads(self.data)
+
+        # Add snippet ID to template variables.
+        for key, value in data.items():
+            if isinstance(value, basestring):
+                data[key] = value.replace(u'[[snippet_id]]', unicode(self.id))
+
+        # Will be replaced with a more generic solution when we develop more AS
+        # Router templates. See #565
+        text, links = util.fluent_link_extractor(data.get('text', ''))
+        data['text'] = text
+        data['links'] = links
+
+        rendered_snippet = {
+            'id': str(self.id),
+            'template': self.template.code_name,
+            'template_version': self.template.version,
+            'campaign': self.campaign,
+            'content': data,
+        }
+
+        return rendered_snippet
+
     @property
     def channels(self):
         channels = []
@@ -557,6 +548,13 @@ class Snippet(SnippetBaseModel):
         if self.client_options is None:
             self.client_options = {}
         return super(Snippet, self).save(*args, **kwargs)
+
+
+class SnippetNG(Snippet):
+    class Meta:
+        proxy = True
+        verbose_name = 'Snippet NG'
+        verbose_name_plural = 'Snippets NG'
 
 
 class JSONSnippet(SnippetBaseModel):

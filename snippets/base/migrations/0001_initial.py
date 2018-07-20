@@ -91,7 +91,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(unique=True, max_length=255)),
-                ('data', models.TextField(default=b'{}', validators=[snippets.base.models.validate_xml_variables])),
+                ('data', models.TextField(default=b'{}', validators=[snippets.base.validators.validate_xml_variables])),
                 ('priority', models.IntegerField(default=0, blank=True)),
                 ('disabled', models.BooleanField(default=True)),
                 ('publish_start', models.DateTimeField(null=True, blank=True)),

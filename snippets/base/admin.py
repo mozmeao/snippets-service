@@ -193,7 +193,8 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         ('Publish Duration', {
             'description': ('When will this snippet be available? (Optional)'
                             '<br>Publish times are in UTC. '
-                            '<a href="http://time.is/UTC" target="_blank">'
+                            '<a href="http://time.is/UTC" target="_blank" '
+                            'rel="noopener noreferrer">'
                             'Click here to see the current time in UTC</a>.'),
             'fields': ('publish_start', 'publish_end'),
         }),
@@ -229,13 +230,14 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
                             'available in?'),
             'fields': (('countries', 'locales'))
         }),
-        ('Client Match Rules', {
-            'fields': ('client_match_rules',),
-        }),
         ('Search Providers', {
             'description': ('Would you like to <strong>exclude</strong> '
                             'any search providers from this snippet?'),
             'fields': (('exclude_from_search_providers',),)
+        }),
+        ('Client Match Rules', {
+            'fields': ('client_match_rules',),
+            'classes': ('collapse',)
         }),
         ('Other Info', {
             'fields': (('uuid',),),
@@ -265,9 +267,63 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         return template
     preview_url.allow_tags = True
 
-    def queryset(self, request):
-        return (super(SnippetAdmin, self)
-                .queryset(request).prefetch_related('locales').select_related('template'))
+    def get_queryset(self, request, filtr=True):
+        query = super(SnippetAdmin, self).get_queryset(request)
+        # When filtr it means that this is coming form the SnippetNG admin and
+        # will be filtered later to include only stage page 6 snippets.
+        if filtr:
+            query = query.exclude(on_startpage_6=True)
+        return query.prefetch_related('locales')
+
+
+class SnippetNGAdmin(SnippetAdmin):
+    form = forms.SnippetNGAdminForm
+
+    fieldsets = (
+        (None, {'fields': ('name', 'published', 'campaign', 'preview_url', 'created', 'modified')}),
+        ('Content', {
+            'fields': ('template', 'data'),
+        }),
+        ('Publish Duration', {
+            'description': ('When will this snippet be available? (Optional)'
+                            '<br>Publish times are in UTC. '
+                            '<a href="http://time.is/UTC" target="_blank" '
+                            'rel="noopener noreferrer">'
+                            'Click here to see the current time in UTC</a>.'),
+            'fields': ('publish_start', 'publish_end'),
+        }),
+        ('Product channels', {
+            'description': 'What channels will this snippet be available in?',
+            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
+        }),
+        ('Startpage Versions', {
+            'fields': (('on_startpage_6'),),
+        }),
+        ('Country and Locale', {
+            'description': ('What countries and locales will this snippet be '
+                            'available in?'),
+            'fields': (('locales',))
+        }),
+        ('Client Match Rules', {
+            'fields': ('client_match_rules',),
+            'classes': ('collapse',),
+        }),
+        ('Other Info', {
+            'fields': (('uuid',),),
+            'classes': ('collapse',)
+        }),
+    )
+
+    class Media:
+        css = {
+            'all': ('css/admin.css',)
+        }
+
+    def get_queryset(self, request):
+        return (super(SnippetNGAdmin, self)
+                .get_queryset(request, filtr=False)
+                .filter(on_startpage_6=True)
+                .prefetch_related('locales'))
 
 
 class ClientMatchRuleAdmin(VersionAdmin, admin.ModelAdmin):
@@ -352,7 +408,8 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
         ('Publish Duration', {
             'description': ('When will this snippet be available? (Optional)'
                             '<br>Publish times are in UTC. '
-                            '<a href="http://time.is/UTC" target="_blank">'
+                            '<a href="http://time.is/UTC" target="_blank" '
+                            'rel="noopener noreferrer">'
                             'Click here to see the current time in UTC</a>.'),
             'fields': ('publish_start', 'publish_end'),
         }),
@@ -426,6 +483,7 @@ class LogEntryAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.Snippet, SnippetAdmin)
+admin.site.register(models.SnippetNG, SnippetNGAdmin)
 admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
 admin.site.register(models.JSONSnippet, JSONSnippetAdmin)
