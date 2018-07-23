@@ -166,9 +166,9 @@ html5lib==1.0.1 \
 django-mysql==2.3.0 \
     --hash=sha256:6983b47fd46f5dfe82182eff1e0e23561422d3e3249c8d2de89d6d7f38eb6b53 \
     --hash=sha256:6813021a072cee15af1bc8cf353ca242d4ec4ac92affeeb2e5ea0df6c3a731c0
-django-reversion==2.0.13 \
-    --hash=sha256:2e105a2c74462ce7de97afdcfb187f27b88a547dda1216a8aab964d32a882edf \
-    --hash=sha256:f27249218ac901ec219869c9618e01d8c30436a4e8da1a64fcb652209b11e47d
+django-reversion==3.0.0 \
+    --hash=sha256:f2d5a34cc2c1c2f0f0ade0a79b71b1c15c6161053aacfa08f5b8b216982c3ae0 \
+    --hash=sha256:61e07432799a11734c5b9911de7a4c2ba2dd93f3d83861abeef3018ddf08a7b4
 django-statsd-mozilla==0.4.0 \
     --hash=sha256:0d87cb63de8107279cbb748caad9aa74c6a44e7e96ccc5dbf07b89f77285a4b8 \
     --hash=sha256:81084f3d426f5184f0a0f1dbfe035cc26b66f041d2184559d916a228d856f0d3
