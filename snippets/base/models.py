@@ -194,7 +194,12 @@ class SnippetBundle(object):
         if self.client.startpage_version == '6':
             # Generate the new AS Router bundle format
             data = [snippet.render_to_as_router() for snippet in self.snippets]
-            bundle_content = json.dumps({'messages': data})
+            bundle_content = json.dumps({
+                'messages': data,
+                'metadata': {
+                    'generated_at': datetime.utcnow().isoformat(),
+                }
+            })
         else:
             template = 'base/fetch_snippets.jinja'
             if self.client.startpage_version == '5':
