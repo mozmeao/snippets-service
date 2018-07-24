@@ -539,9 +539,11 @@ class SnippetBundleTests(TestCase):
         self.snippet2.render_to_as_router = Mock()
         self.snippet2.render_to_as_router.return_value = 'snippet2'
 
-        with patch('snippets.base.models.cache') as cache:
-            with patch('snippets.base.models.default_storage') as default_storage:
-                bundle.generate()
+        with patch('snippets.base.models.datetime') as datetime:
+            with patch('snippets.base.models.cache') as cache:
+                with patch('snippets.base.models.default_storage') as default_storage:
+                    datetime.utcnow.return_value.isoformat.return_value = 'now'
+                    bundle.generate()
 
         self.assertTrue(bundle.filename.endswith('.json'))
         default_storage.save.assert_called_with(bundle.filename, ANY)
@@ -549,7 +551,9 @@ class SnippetBundleTests(TestCase):
 
         # Check content of saved file.
         content_file = default_storage.save.call_args[0][1]
-        self.assertEqual(content_file.read(), '{"messages": ["snippet1", "snippet2"]}')
+        content_json = json.load(content_file)
+        self.assertEqual(content_json['messages'], ['snippet1', 'snippet2'])
+        self.assertEqual(content_json['metadata']['generated_at'], 'now')
 
     @override_settings(BUNDLE_BROTLI_COMPRESS=True)
     def test_generate_brotli(self):
