@@ -514,6 +514,11 @@ class Snippet(SnippetBaseModel):
             'content': data,
         }
 
+        if self.publish_start:
+            rendered_snippet['publish_start'] = util.to_unix_time_seconds(self.publish_start)
+        if self.publish_end:
+            rendered_snippet['publish_end'] = util.to_unix_time_seconds(self.publish_end)
+
         return rendered_snippet
 
     @property

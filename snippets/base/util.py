@@ -1,7 +1,10 @@
+import datetime
 import re
 
 from product_details import product_details
 from product_details.version_compare import version_list
+
+EPOCH = datetime.datetime.utcfromtimestamp(0)
 
 
 def get_object_or_none(model_class, **filters):
@@ -89,3 +92,7 @@ def fluent_link_extractor(text):
     replacer = Replacer()
     final_text = re.sub('(<a(?P<attrs> .*?)>)(?P<innerText>.+?)(</a>)', replacer, text)
     return final_text, replacer.links
+
+
+def to_unix_time_seconds(dt):
+    return int((dt - EPOCH).total_seconds())
