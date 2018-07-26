@@ -394,15 +394,18 @@ class SnippetAdminForm(BaseSnippetAdminForm):
              sessionage_upper_bound <= sessionage_lower_bound)):
             raise forms.ValidationError('Profile age upper bound must be bigger than lower bound.')
 
-        bookmarks_count_lower_bound = int(cleaned_data.get('client_option_bookmarks_count_lower_bound', -1))
-        bookmarks_count_upper_bound = int(cleaned_data.get('client_option_bookmarks_count_upper_bound', -1))
+        bookmarks_count_lower_bound = int(
+            cleaned_data.get('client_option_bookmarks_count_lower_bound', -1))
+        bookmarks_count_upper_bound = int(
+            cleaned_data.get('client_option_bookmarks_count_upper_bound', -1))
 
         cleaned_data['client_option_bookmarks_count_lower_bound'] = bookmarks_count_lower_bound
         cleaned_data['client_option_bookmarks_count_upper_bound'] = bookmarks_count_upper_bound
 
         if ((bookmarks_count_lower_bound > -1 and bookmarks_count_upper_bound > -1 and
              bookmarks_count_upper_bound <= bookmarks_count_lower_bound)):
-            raise forms.ValidationError('Bookmarks count upper bound must be bigger than lower bound.')
+            raise forms.ValidationError('Bookmarks count upper bound must be '
+                                        'bigger than lower bound.')
 
         if not any([cleaned_data['on_release'], cleaned_data['on_beta'],
                     cleaned_data['on_aurora'], cleaned_data['on_nightly'], cleaned_data['on_esr']]):

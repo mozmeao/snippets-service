@@ -76,6 +76,8 @@ class SnippetAdminFormTests(TestCase):
             'client_option_sessionage_upper_bound': -1,
             'client_option_profileage_lower_bound': -1,
             'client_option_profileage_upper_bound': -1,
+            'client_option_bookmarks_count_lower_bound': -1,
+            'client_option_bookmarks_count_upper_bound': -1,
             'client_option_addon_check_type': 'any',
             'data': '{}',
             'weight': 100,

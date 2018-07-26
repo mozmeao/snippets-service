@@ -347,8 +347,6 @@ Mozilla.UITour.hideMenu = function(name) {
             );
         }
 
-
-
         // Filter based on bookmarks count
         var total_bookmarks_count = gSnippetsMap.get('totalBookmarksCount');
         if (total_bookmarks_count !== undefined) {
@@ -363,17 +361,20 @@ Mozilla.UITour.hideMenu = function(name) {
                         return false;
                     }
                     return true;
-                    // Remove all snippets that use bookmark count since this information
-                    // is not available.
-                    snippets = snippets.filter(
-                        function(snippet) {
-                            if (snippet.client_options.bookmarks_count_lower_bound > -1
-                                || snippet.client_options.bookmarks_count_upper_bound > -1) {
-                                return false;
-                            }
-                            return true;
-                        });
                 });
+        }
+        else {
+            // Remove all snippets that use bookmark count since this information
+            // is not available.
+            snippets = snippets.filter(
+                function(snippet) {
+                    if (snippet.client_options.bookmarks_count_lower_bound > -1
+                        || snippet.client_options.bookmarks_count_upper_bound > -1) {
+                        return false;
+                    }
+                    return true;
+                }
+            );
         }
 
         // Filter base on installed addons
@@ -693,9 +694,6 @@ function getBlockList() {
     return gSnippetsMap.get('blockList');
 }
 
-function setBookmarksCount() {
-    if (gSnippetsMap.getTotalBookmarksCount !== undefined && !gSnippetsMap.get('totalBookmarksCount')) {
-        gSnippetsMap.getTotalBookmarksCount().then(count =>
-            gSnippetsMap.set('totalBookmarksCount', count));
-    }
+async function setBookmarksCount() {
+    gSnippetsMap.getTotalBookmarksCount().then(count => gSnippetsMap.set('totalBookmarksCount', count));
 }

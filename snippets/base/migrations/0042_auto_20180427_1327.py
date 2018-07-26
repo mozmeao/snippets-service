@@ -26,7 +26,7 @@ def noop(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('base', '0030_auto_20180426_1840'),
+        ('base', '0041_snippettemplate_startpage'),
     ]
 
     operations = [
