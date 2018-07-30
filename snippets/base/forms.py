@@ -267,6 +267,8 @@ class SnippetAdminForm(BaseSnippetAdminForm):
                  ('1920-50000', 'Screens with more than 1920 vertical pixels (full-hd, 4k)')))
     client_option_sessionage_lower_bound = forms.ChoiceField(
         label='Previous session closed at least',
+        help_text=('Available from Firefox version 61. '
+                   'Snippets using this option will be ignored on previous versions.'),
         choices=PROFILE_AGE_CHOICES,
         validators=[
             MinValueValidator(
@@ -275,6 +277,8 @@ class SnippetAdminForm(BaseSnippetAdminForm):
     )
     client_option_sessionage_upper_bound = forms.ChoiceField(
         label='Previous session closed less than',
+        help_text=('Available from Firefox version 61. '
+                   'Snippets using this option will be ignored on previous versions.'),
         choices=PROFILE_AGE_CHOICES,
         validators=[
             MinValueValidator(
@@ -283,6 +287,8 @@ class SnippetAdminForm(BaseSnippetAdminForm):
     )
     client_option_profileage_lower_bound = forms.ChoiceField(
         label='Profile age at least',
+        help_text=('Available from Firefox version 55. '
+                   'Snippets using this option will be ignored on previous versions.'),
         choices=PROFILE_AGE_CHOICES,
         validators=[
             MinValueValidator(
@@ -291,6 +297,8 @@ class SnippetAdminForm(BaseSnippetAdminForm):
     )
     client_option_profileage_upper_bound = forms.ChoiceField(
         label='Profile age less than',
+        help_text=('Available from Firefox version 55. '
+                   'Snippets using this option will be ignored on previous versions.'),
         choices=PROFILE_AGE_CHOICES,
         validators=[
             MinValueValidator(
@@ -299,6 +307,8 @@ class SnippetAdminForm(BaseSnippetAdminForm):
     )
     client_option_addon_check_type = forms.ChoiceField(
         label='Add-on Check',
+        help_text=('Available from Firefox version 60. '
+                   'Snippets using this option will be ignored on previous versions.'),
         choices=(
             ('any', 'No check'),
             ('installed', 'Installed'),
@@ -306,12 +316,15 @@ class SnippetAdminForm(BaseSnippetAdminForm):
     )
     client_option_addon_name = forms.CharField(
         label='Add-on Name',
+        help_text=('Add-on name. For example @testpilot-addon. Available from Firefox version 60. '
+                   'Snippets using this option will be ignored on previous versions.'),
         required=False,
         strip=True,
-        help_text='Add-on name. For example @testpilot-addon'
     )
     client_option_bookmarks_count_lower_bound = forms.ChoiceField(
         label='Bookmarks count at least',
+        help_text=('Available from Firefox version 61. '
+                   'Snippets using this option will be ignored on previous versions.'),
         choices=BOOKMARKS_COUNT_CHOICES,
         validators=[
             MinValueValidator(
@@ -320,6 +333,8 @@ class SnippetAdminForm(BaseSnippetAdminForm):
     )
     client_option_bookmarks_count_upper_bound = forms.ChoiceField(
         label='Bookmarks count less than',
+        help_text=('Available from Firefox version 61. '
+                   'Snippets using this option will be ignored on previous versions.'),
         choices=BOOKMARKS_COUNT_CHOICES,
         validators=[
             MinValueValidator(
