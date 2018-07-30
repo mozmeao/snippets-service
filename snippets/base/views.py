@@ -191,7 +191,7 @@ def show_snippet(request, snippet_id, uuid=False):
             raise Http404()
 
     template = 'base/preview.jinja'
-    if snippet.on_startpage_5:
+    if snippet.on_startpage_5 or snippet.on_startpage_6:
         template = 'base/preview_as.jinja'
     return render(request, template, {
         'snippets_json': json.dumps([snippet.to_dict()]),
