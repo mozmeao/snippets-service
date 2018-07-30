@@ -50,6 +50,22 @@ PROFILE_AGE_CHOICES = (
     (48, 'One Year'),
     (96, 'Two Years'),
 )
+BOOKMARKS_COUNT_CHOICES = (
+    (-1, 'No limit'),
+    (-2, '----------'),
+    (1, '1'),
+    (10, '10'),
+    (50, '50'),
+    (100, '100'),
+    (500, '500'),
+    (1000, '1,000'),
+    (5000, '5,000'),
+    (10000, '10,000'),
+    (50000, '50,000'),
+    (100000, '100,000'),
+    (500000, '500,000'),
+    (1000000, '1,000,000'),
+)
 
 
 class TemplateSelect(forms.Select):
@@ -294,6 +310,22 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         strip=True,
         help_text='Add-on name. For example @testpilot-addon'
     )
+    client_option_bookmarks_count_lower_bound = forms.ChoiceField(
+        label='Bookmarks count at least',
+        choices=BOOKMARKS_COUNT_CHOICES,
+        validators=[
+            MinValueValidator(
+                -1, message='Select a value or "No limit" to disable this filter.')
+        ],
+    )
+    client_option_bookmarks_count_upper_bound = forms.ChoiceField(
+        label='Bookmarks count less than',
+        choices=BOOKMARKS_COUNT_CHOICES,
+        validators=[
+            MinValueValidator(
+                -1, message='Select a value or "No limit" to disable this filter.')
+        ],
+    )
 
     def __init__(self, *args, **kwargs):
         super(SnippetAdminForm, self).__init__(*args, **kwargs)
@@ -361,6 +393,19 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         if ((sessionage_lower_bound > -1 and sessionage_upper_bound > -1 and
              sessionage_upper_bound <= sessionage_lower_bound)):
             raise forms.ValidationError('Profile age upper bound must be bigger than lower bound.')
+
+        bookmarks_count_lower_bound = int(
+            cleaned_data.get('client_option_bookmarks_count_lower_bound', -1))
+        bookmarks_count_upper_bound = int(
+            cleaned_data.get('client_option_bookmarks_count_upper_bound', -1))
+
+        cleaned_data['client_option_bookmarks_count_lower_bound'] = bookmarks_count_lower_bound
+        cleaned_data['client_option_bookmarks_count_upper_bound'] = bookmarks_count_upper_bound
+
+        if ((bookmarks_count_lower_bound > -1 and bookmarks_count_upper_bound > -1 and
+             bookmarks_count_upper_bound <= bookmarks_count_lower_bound)):
+            raise forms.ValidationError('Bookmarks count upper bound must be '
+                                        'bigger than lower bound.')
 
         if not any([cleaned_data['on_release'], cleaned_data['on_beta'],
                     cleaned_data['on_aurora'], cleaned_data['on_nightly'], cleaned_data['on_esr']]):

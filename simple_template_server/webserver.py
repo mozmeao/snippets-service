@@ -102,6 +102,8 @@ def home():
                 'profileage_upper_bound': -1,
                 'addon_check_type': 'any',
                 'addon_name': '',
+                'bookmarks_count_lower_bound': -1,
+                'bookmarks_count_upper_bound': -1,
             }
         })
 

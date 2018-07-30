@@ -430,6 +430,8 @@ class Snippet(SnippetBaseModel):
             'sessionage_upper_bound': int,
             'addon_check_type': unicode,
             'addon_name': unicode,
+            'bookmarks_count_lower_bound': int,
+            'bookmarks_count_upper_bound': int,
         }
     )
 

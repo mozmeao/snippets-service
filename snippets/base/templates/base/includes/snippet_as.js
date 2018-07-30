@@ -59,6 +59,9 @@ Mozilla.UITour.hideMenu = function(name) {
             downloadUserCountry();
         }
 
+        // Get the bookmarks count async
+        setBookmarksCount();
+
         // If onboardingFinished is false, there may already be an onboarding snippet
         // shown so we cannot show a snippet. However, .disableOnboarding() can be
         // called so that it won't be shown on the *next* new tab
@@ -337,6 +340,36 @@ Mozilla.UITour.hideMenu = function(name) {
                 function(snippet) {
                     if (snippet.client_options.profileage_lower_bound > -1
                         || snippet.client_options.profileage_upper_bound > -1) {
+                        return false;
+                    }
+                    return true;
+                }
+            );
+        }
+
+        // Filter based on bookmarks count
+        var total_bookmarks_count = gSnippetsMap.get('totalBookmarksCount');
+        if (total_bookmarks_count !== undefined) {
+            snippets = snippets.filter(
+                function(snippet) {
+                    let lower_bound = snippet.client_options.bookmarks_count_lower_bound;
+                    let upper_bound = snippet.client_options.bookmarks_count_upper_bound;
+                    if (lower_bound > -1 && total_bookmarks_count < lower_bound) {
+                        return false;
+                    }
+                    if (upper_bound > -1 && total_bookmarks_count >= upper_bound) {
+                        return false;
+                    }
+                    return true;
+                });
+        }
+        else {
+            // Remove all snippets that use bookmark count since this information
+            // is not available.
+            snippets = snippets.filter(
+                function(snippet) {
+                    if (snippet.client_options.bookmarks_count_lower_bound > -1
+                        || snippet.client_options.bookmarks_count_upper_bound > -1) {
                         return false;
                     }
                     return true;
@@ -659,4 +692,8 @@ function getBlockList() {
         gSnippetsMap.set('blockList', []);
     }
     return gSnippetsMap.get('blockList');
+}
+
+async function setBookmarksCount() {
+    gSnippetsMap.getTotalBookmarksCount().then(count => gSnippetsMap.set('totalBookmarksCount', count));
 }
