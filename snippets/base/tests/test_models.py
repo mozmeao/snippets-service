@@ -1,7 +1,9 @@
 import json
+from datetime import datetime
 
 from django.conf import settings
 from django.test.utils import override_settings
+
 import brotli
 from jinja2 import Markup
 from mock import ANY, MagicMock, Mock, patch
@@ -302,6 +304,20 @@ class SnippetTests(TestCase):
             }
         }
         self.assertEqual(generated_result, expected_result)
+
+        # Check start date include
+        snippet.publish_start = datetime(2018, 04, 11, 0, 0)
+        snippet.publish_end = None
+        generated_result = snippet.render_to_as_router()
+        self.assertEqual(generated_result['publish_start'], 1523404800)
+        self.assertTrue('publish_end' not in generated_result)
+
+        # Check end date include
+        snippet.publish_start = None
+        snippet.publish_end = datetime(2018, 03, 23, 0, 0)
+        generated_result = snippet.render_to_as_router()
+        self.assertEqual(generated_result['publish_end'], 1521763200)
+        self.assertTrue('publish_start' not in generated_result)
 
 
 class UploadedFileTests(TestCase):
