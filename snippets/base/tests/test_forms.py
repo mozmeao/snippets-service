@@ -201,6 +201,8 @@ class BaseSnippetAdminFormTests(TestCase):
             'client_option_sessionage_upper_bound': -1,
             'client_option_profileage_lower_bound': -1,
             'client_option_profileage_upper_bound': -1,
+            'client_option_bookmarks_count_lower_bound': -1,
+            'client_option_bookmarks_count_upper_bound': -1,
             'client_option_version_lower_bound': 'any',
             'client_option_version_upper_bound': 'any',
             'client_option_is_default_browser': 'any',

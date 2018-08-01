@@ -163,7 +163,7 @@ class IconWidget(forms.TextInput):
               'js/iconWidget.js')
 
 
-class BaseSnippetAdminForm(forms.ModelForm):
+class PublishPermissionFormMixIn:
     def _publish_permission_check(self, cleaned_data):
         """If Snippet is Published or the current form sets it to Published verify that
         user has permission to publish on all the selected publication
@@ -178,12 +178,11 @@ class BaseSnippetAdminForm(forms.ModelForm):
         permissions on all selected publication channels are allowed to edit
         the Snippet, including editing content, un-publishing, alter targeting,
         etc.
-
         """
         if self.instance.published or cleaned_data.get('published'):
             for channel in CHANNELS:
                 on_channel = 'on_{}'.format(channel)
-                if ((cleaned_data[on_channel] is True or
+                if ((cleaned_data.get(on_channel) is True or
                      getattr(self.instance, on_channel, False) is True)):
                     if not self.current_user.has_perm('base.can_publish_on_{}'.format(channel)):
                         msg = ('You are not allowed to edit or publish '
@@ -191,7 +190,11 @@ class BaseSnippetAdminForm(forms.ModelForm):
                         raise forms.ValidationError(msg)
 
 
-class SnippetChangeListForm(forms.ModelForm):
+class BaseSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
+    pass
+
+
+class SnippetChangeListForm(forms.ModelForm, PublishPermissionFormMixIn):
     class Meta:
         model = Snippet
         fields = ('body',)
@@ -213,6 +216,11 @@ class SnippetChangeListForm(forms.ModelForm):
         else:
             text = instance.dict_data.get(self.body_variable, '')
             self.fields['body'].initial = text
+
+    def clean(self):
+        cleaned_data = super(SnippetChangeListForm, self).clean()
+        self._publish_permission_check(cleaned_data)
+        return cleaned_data
 
     def save(self, *args, **kwargs):
         if self.body_variable:
