@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'django_filters',
     'django_ace',
     'product_details',
-    'clear_cache',
     'django_extensions',
     'django_mysql',
     'reversion',
