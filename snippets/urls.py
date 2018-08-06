@@ -26,8 +26,8 @@ if settings.ENABLE_ADMIN:
         url(r'advanced_filters/', include('advanced_filters.urls')),
 
     ]
-    admin.site.site_header = 'Snippets Administration'
-    admin.site.site_title = 'Mozilla Snippets'
+    admin.site.site_header = settings.SITE_HEADER
+    admin.site.site_title = settings.SITE_TITLE
 
 elif settings.ADMIN_REDIRECT_URL:
     urlpatterns.append(

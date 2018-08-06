@@ -232,6 +232,8 @@ METRICS_URL = config('METRICS_URL', default='https://snippets-stats.moz.works/fo
 METRICS_SAMPLE_RATE = config('METRICS_SAMPLE_RATE', default=0.1, cast=float)
 
 SITE_URL = config('SITE_URL', default='')
+SITE_HEADER = config('SITE_HEADER', default='Snippets Administration')
+SITE_TITLE = config('SITE_TITLE', default='Mozilla Snippets')
 
 CACHES = {
     'default': config('CACHE_URL', default='locmem://', cast=django_cache_url.parse),
