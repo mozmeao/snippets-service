@@ -3,6 +3,13 @@ project:
   docker_name: mozorg/snippets
 deploy:
   dev:
+    - name: "Oregon-b Dev"
+      url: "https://deis.oregon-b.moz.works"
+      credentials: jenkins-deis-2
+      app: "snippets-dev"
+      app_url: "https://dev.snippets.moz.works"
+      newrelic_app: "snippets-dev-oregon-b"
+      deis_executable: "deis2"
   stage:
     - name: "Oregon-b Stage"
       url: "https://deis.oregon-b.moz.works"
