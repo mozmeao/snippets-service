@@ -439,6 +439,13 @@ class Snippet(SnippetBaseModel):
 
     class Meta:
         ordering = ('-modified',)
+        permissions = (
+            ('can_publish_on_release', 'Can publish snippets on Release'),
+            ('can_publish_on_beta', 'Can publish snippets on Beta'),
+            ('can_publish_on_aurora', 'Can publish snippets on Aurora'),
+            ('can_publish_on_nightly', 'Can publish snippets on Nightly'),
+            ('can_publish_on_esr', 'Can publish snippets on ESR'),
+        )
 
     def to_dict(self):
         data = {

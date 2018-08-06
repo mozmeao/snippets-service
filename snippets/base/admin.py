@@ -156,9 +156,6 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
 
 
 class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
-    def get_changelist_form(self, request, **kwargs):
-        return forms.SnippetChangeListForm
-
     form = forms.SnippetAdminForm
     readonly_fields = BaseSnippetAdmin.readonly_fields + ('preview_url',)
     search_fields = ('name', 'client_match_rules__description',
@@ -253,6 +250,16 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         css = {
             'all': ('css/admin.css',)
         }
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(SnippetAdmin, self).get_form(request, obj, **kwargs)
+        form.current_user = request.user
+        return form
+
+    def get_changelist_form(self, request, **kwargs):
+        form = forms.SnippetChangeListForm
+        form.current_user = request.user
+        return form
 
     def save_model(self, request, obj, form, change):
         statsd.incr('save.snippet')

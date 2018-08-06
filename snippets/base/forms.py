@@ -13,7 +13,7 @@ from product_details import product_details
 from product_details.version_compare import Version, version_list
 
 from snippets.base.fields import MultipleChoiceFieldCSV
-from snippets.base.models import (JSONSnippet, Snippet, SnippetNG, SnippetTemplate,
+from snippets.base.models import (CHANNELS, JSONSnippet, Snippet, SnippetNG, SnippetTemplate,
                                   SnippetTemplateVariable, UploadedFile)
 from snippets.base.validators import (MinValueValidator, validate_as_router_fluent_variables,
                                       validate_xml_variables)
@@ -163,11 +163,38 @@ class IconWidget(forms.TextInput):
               'js/iconWidget.js')
 
 
-class BaseSnippetAdminForm(forms.ModelForm):
+class PublishPermissionFormMixIn:
+    def _publish_permission_check(self, cleaned_data):
+        """If Snippet is Published or the current form sets it to Published verify that
+        user has permission to publish on all the selected publication
+        channels.
+
+        This permission model allows users without any publish permissions to
+        edit a Snippet and select the publication channels but prevents them
+        from publishing the snippets.
+
+        A user with publish permission will later review the snippet and set
+        Snippet.published to True. After this point, only users with publish
+        permissions on all selected publication channels are allowed to edit
+        the Snippet, including editing content, un-publishing, alter targeting,
+        etc.
+        """
+        if self.instance.published or cleaned_data.get('published'):
+            for channel in CHANNELS:
+                on_channel = 'on_{}'.format(channel)
+                if ((cleaned_data.get(on_channel) is True or
+                     getattr(self.instance, on_channel, False) is True)):
+                    if not self.current_user.has_perm('base.can_publish_on_{}'.format(channel)):
+                        msg = ('You are not allowed to edit or publish '
+                               'on {} channel.'.format(channel.title()))
+                        raise forms.ValidationError(msg)
+
+
+class BaseSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     pass
 
 
-class SnippetChangeListForm(forms.ModelForm):
+class SnippetChangeListForm(forms.ModelForm, PublishPermissionFormMixIn):
     class Meta:
         model = Snippet
         fields = ('body',)
@@ -189,6 +216,11 @@ class SnippetChangeListForm(forms.ModelForm):
         else:
             text = instance.dict_data.get(self.body_variable, '')
             self.fields['body'].initial = text
+
+    def clean(self):
+        cleaned_data = super(SnippetChangeListForm, self).clean()
+        self._publish_permission_check(cleaned_data)
+        return cleaned_data
 
     def save(self, *args, **kwargs):
         if self.body_variable:
@@ -219,6 +251,8 @@ class SnippetNGAdminForm(BaseSnippetAdminForm):
         if not any([cleaned_data['on_release'], cleaned_data['on_beta'],
                     cleaned_data['on_aurora'], cleaned_data['on_nightly'], cleaned_data['on_esr']]):
             raise forms.ValidationError('Select at least one channel to publish this snippet on.')
+
+        self._publish_permission_check(cleaned_data)
 
         return cleaned_data
 
@@ -445,6 +479,9 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         if ((not cleaned_data.get('client_option_addon_name') and
              cleaned_data.get('client_option_addon_check_type', 'any') != 'any')):
             raise forms.ValidationError('Type add-on name to check or remove add-on check.')
+
+        self._publish_permission_check(cleaned_data)
+
         return cleaned_data
 
     def save(self, *args, **kwargs):
