@@ -2,6 +2,7 @@ project:
   name: snippets
   docker_name: mozorg/snippets
 deploy:
+  dev:
   stage:
     - name: "Oregon-b Stage"
       url: "https://deis.oregon-b.moz.works"

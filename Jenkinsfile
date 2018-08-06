@@ -78,11 +78,15 @@ conduit {
 
   milestone()
 
+  def deployDev = false
   def deployStage = false
   def deployProd = false
 
   node {
     onBranch("master") {
+       deployDev = true
+    }
+    onBranch("staging") {
        deployStage = true
     }
     onBranch("production") {
@@ -90,6 +94,29 @@ conduit {
     }
   }
 
+  if (deployDev) {
+    for (deploy in config.deploy.dev) {
+      stage ("Deploying to ${deploy.name}") {
+        node {
+          lock("push to ${deploy.name}") {
+            deis_executable = deploy.deis_executable ?: "deis"
+            deisLogin(deploy.url, deploy.credentials, deis_executable) {
+              deisPull(deploy.app, docker_image, null, deis_executable)
+            }
+            newRelicDeployment(deploy.newrelic_app, env.GIT_COMMIT_SHORT,
+                               "jenkins", "newrelic-api-key")
+          }
+        }
+      }
+      stage ("Acceptance tests against ${deploy.name}") {
+        node {
+          lock("push to ${deploy.name}") {
+            sh "bin/acceptance-tests.sh ${deploy.app_url}"
+          }
+        }
+      }
+    }
+  }
   if (deployStage) {
     for (deploy in config.deploy.stage) {
       stage ("Deploying to ${deploy.name}") {
