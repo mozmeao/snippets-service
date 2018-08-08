@@ -116,18 +116,6 @@ if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
         'COLLATION': 'utf8_general_ci',
     }
 
-    # Dockerized MariaDB reports MySQL 5.5.5 as version. Need to
-    # override this to work with DynamicField.
-    if config('OVERRIDE_MARIADB_VERSION', default=False):
-        from django.utils.functional import cached_property
-        from django.db.backends.mysql.base import DatabaseWrapper
-
-        @cached_property
-        def mysql_version(self):
-            return config('OVERRIDE_MARIADB_VERSION', cast=tuple)
-
-        DatabaseWrapper.mysql_version = mysql_version
-
 SILENCED_SYSTEM_CHECKS = [
     'django_mysql.W003',
 ]
