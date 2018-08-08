@@ -8,7 +8,7 @@ from django.db import migrations
 def set_default_template_code_names(apps, schema_editor):
     SnippetTemplate = apps.get_model('base', 'SnippetTemplate')
     for template in SnippetTemplate.objects.all():
-        template.code_name = u'{}'.format(template.id)
+        template.code_name = '{}'.format(template.id)
         template.save()
 
 

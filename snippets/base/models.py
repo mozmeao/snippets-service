@@ -6,7 +6,7 @@ import re
 import uuid
 from collections import namedtuple
 from datetime import datetime
-from urlparse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
 from django.core.cache import cache
@@ -17,7 +17,6 @@ from django.db import models
 from django.db.models.manager import Manager
 from django.template import engines
 from django.template.loader import render_to_string
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 
 import brotli
@@ -47,7 +46,7 @@ SNIPPET_FETCH_TEMPLATE_HASH = hashlib.sha1(
             'current_firefox_major_version': '00',
             'metrics_url': settings.METRICS_URL,
         }
-    )).hexdigest()
+    ).encode('utf-8')).hexdigest()
 
 SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
     render_to_string(
@@ -61,7 +60,7 @@ SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
             'current_firefox_major_version': '00',
             'metrics_url': settings.METRICS_URL,
         }
-    )).hexdigest()
+    ).encode('utf-8')).hexdigest()
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly', 'esr')
 # StartPage 1-4: Different versions of the retro about home with the Firefox
@@ -133,7 +132,7 @@ class SnippetBundle(object):
         else:
             key_properties.append(SNIPPET_FETCH_TEMPLATE_HASH)
 
-        key_string = u'_'.join(key_properties)
+        key_string = '_'.join(key_properties)
         return hashlib.sha1(key_string.encode('utf-8')).hexdigest()
 
     @property
@@ -142,7 +141,7 @@ class SnippetBundle(object):
 
     @property
     def cache_key(self):
-        return u'bundle_' + self.key
+        return 'bundle_' + self.key
 
     @property
     def cached(self):
@@ -213,7 +212,7 @@ class SnippetBundle(object):
                 'current_firefox_major_version': util.current_firefox_major_version(),
             })
 
-        if isinstance(bundle_content, unicode):
+        if isinstance(bundle_content, str):
             bundle_content = bundle_content.encode('utf-8')
 
         if (settings.BUNDLE_BROTLI_COMPRESS and self.client.startpage_version in ['5', '6']):
@@ -250,14 +249,14 @@ class SnippetTemplate(models.Model):
         ctx.setdefault('snippet_id', 0)
 
         # Check if template is in cache, and cache it if it's not.
-        cache_key = hashlib.sha1(self.code).hexdigest()
+        cache_key = hashlib.sha1(self.code.encode('utf-8')).hexdigest()
         template = template_cache.get(cache_key)
         if not template:
             template = JINJA_ENV.from_string(self.code)
             template_cache[cache_key] = template
         return template.render(ctx)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -283,8 +282,8 @@ class SnippetTemplateVariable(models.Model):
     description = models.TextField(blank=True, default='')
     order = models.PositiveIntegerField(default=0)
 
-    def __unicode__(self):
-        return u'{0}: {1}'.format(self.template.name, self.name)
+    def __str__(self):
+        return '{0}: {1}'.format(self.template.name, self.name)
 
     class Meta:
         ordering = ('order', 'name',)
@@ -334,7 +333,7 @@ class ClientMatchRule(models.Model):
         # Exclusion rules match clients that do not match their rule.
         return not match if self.is_exclusion else match
 
-    def __unicode__(self):
+    def __str__(self):
         return self.description
 
 
@@ -417,19 +416,19 @@ class Snippet(SnippetBaseModel):
     client_options = django_mysql.models.DynamicField(
         default=None,
         spec={
-            'version_lower_bound': unicode,
-            'version_upper_bound': unicode,
-            'has_fxaccount': unicode,
-            'has_testpilot': unicode,
-            'is_developer': unicode,
-            'is_default_browser': unicode,
-            'screen_resolutions': unicode,
+            'version_lower_bound': str,
+            'version_upper_bound': str,
+            'has_fxaccount': str,
+            'has_testpilot': str,
+            'is_developer': str,
+            'is_default_browser': str,
+            'screen_resolutions': str,
             'profileage_lower_bound': int,
             'profileage_upper_bound': int,
             'sessionage_lower_bound': int,
             'sessionage_upper_bound': int,
-            'addon_check_type': unicode,
-            'addon_name': unicode,
+            'addon_check_type': str,
+            'addon_name': str,
             'bookmarks_count_lower_bound': int,
             'bookmarks_count_upper_bound': int,
         }
@@ -471,9 +470,9 @@ class Snippet(SnippetBaseModel):
         data.setdefault('snippet_id', snippet_id)
 
         # Add snippet ID to template variables.
-        for key, value in data.items():
-            if isinstance(value, basestring):
-                data[key] = value.replace(u'[[snippet_id]]', unicode(snippet_id))
+        for key, value in list(data.items()):
+            if isinstance(value, str):
+                data[key] = value.replace(u'[[snippet_id]]', str(snippet_id))
 
         # Use a list for attrs to make the output order predictable.
         attrs = [('data-snippet-id', self.id),
@@ -495,10 +494,10 @@ class Snippet(SnippetBaseModel):
                 attrs.append(('data-exclude-from-search-engines',
                               u','.join(search_engine_identifiers)))
 
-        attr_string = u' '.join(u'{0}="{1}"'.format(key, value) for key, value in
-                                attrs)
+        attr_string = ' '.join('{0}="{1}"'.format(key, value) for key, value in
+                               attrs)
 
-        rendered_snippet = u'<div {attrs}>{content}</div>'.format(
+        rendered_snippet = '<div {attrs}>{content}</div>'.format(
             attrs=attr_string,
             content=self.template.render(data)
         )
@@ -511,8 +510,8 @@ class Snippet(SnippetBaseModel):
 
         # Add snippet ID to template variables.
         for key, value in data.items():
-            if isinstance(value, basestring):
-                data[key] = value.replace(u'[[snippet_id]]', unicode(self.id))
+            if isinstance(value, str):
+                data[key] = value.replace('[[snippet_id]]', str(self.id))
 
         # Will be replaced with a more generic solution when we develop more AS
         # Router templates. See #565
@@ -560,7 +559,7 @@ class Snippet(SnippetBaseModel):
     def get_absolute_url(self):
         return reverse('base.show', kwargs={'snippet_id': self.id})
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
@@ -616,7 +615,7 @@ class JSONSnippet(SnippetBaseModel):
         ordering = ('-modified',)
         verbose_name = 'JSON Snippet'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -643,7 +642,7 @@ class UploadedFile(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     @property
@@ -667,28 +666,26 @@ class SearchProvider(models.Model):
     name = models.CharField(max_length=255, unique=True)
     identifier = models.CharField(max_length=255)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
         ordering = ('id',)
 
 
-@python_2_unicode_compatible
 class TargetedCountry(models.Model):
     code = models.CharField('Geolocation Country', max_length=16, unique=True)
     name = models.CharField(max_length=100)
     priority = models.BooleanField(default=False)
 
     def __str__(self):
-        return u'{0} ({1})'.format(self.name, self.code)
+        return '{} ({})'.format(self.name, self.code)
 
     class Meta:
         ordering = ('-priority', 'name', 'code',)
         verbose_name_plural = 'targeted countries'
 
 
-@python_2_unicode_compatible
 class TargetedLocale(models.Model):
     code = models.CharField(max_length=255)
     name = models.CharField(max_length=100)
@@ -698,4 +695,4 @@ class TargetedLocale(models.Model):
         ordering = ('-priority', 'name', 'code')
 
     def __str__(self):
-        return u'{} ({})'.format(self.name, self.code)
+        return '{} ({})'.format(self.name, self.code)

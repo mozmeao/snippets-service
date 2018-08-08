@@ -4,7 +4,7 @@
   float: left;
 }
 
- {% if client and client.startpage_version > 1 %}
+ {% if client and client.startpage_version|int > 1 %}
    .snippet {
        position: relative;
    }

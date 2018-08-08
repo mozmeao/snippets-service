@@ -38,16 +38,16 @@ class SnippetQuerySetTests(TestCase):
 
     def test_filter_by_available(self):
         snippet_match_1 = SnippetFactory.create()
-        snippet_match_2 = (SnippetFactory.create(publish_start=datetime(2012, 05, 15, 0, 0)))
+        snippet_match_2 = (SnippetFactory.create(publish_start=datetime(2012, 5, 15, 0, 0)))
 
         # Snippet that starts later.
-        SnippetFactory.create(publish_start=datetime(2012, 07, 01, 0, 0))
+        SnippetFactory.create(publish_start=datetime(2012, 7, 1, 0, 0))
 
         # Snippet that ended.
-        SnippetFactory.create(publish_end=datetime(2012, 05, 01, 0, 0))
+        SnippetFactory.create(publish_end=datetime(2012, 5, 1, 0, 0))
 
         with patch('snippets.base.managers.datetime') as datetime_mock:
-            datetime_mock.utcnow.return_value = datetime(2012, 06, 01, 0, 0)
+            datetime_mock.utcnow.return_value = datetime(2012, 6, 1, 0, 0)
             matching_snippets = self.manager.all().filter_by_available()
 
         self.assertEqual(set([snippet_match_1, snippet_match_2]), set(matching_snippets))

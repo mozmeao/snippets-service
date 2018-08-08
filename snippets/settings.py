@@ -112,6 +112,10 @@ if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
     DATABASES['default']['OPTIONS'] = {
         'init_command': "SET sql_mode='STRICT_TRANS_TABLES'; SET innodb_strict_mode=1;",
     }
+    DATABASES['default']['TEST'] = {
+        'CHARSET': 'utf8',
+        'COLLATION': 'utf8_general_ci',
+    }
 
     # Dockerized MariaDB reports MySQL 5.5.5 as version. Need to
     # override this to work with DynamicField.
@@ -258,7 +262,7 @@ PROD_DETAILS_CACHE_NAME = 'product-details'
 PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
                               default='product_details.storage.PDFileStorage')
 
-DEFAULT_FILE_STORAGE = config('FILE_STORAGE', 'storages.backends.overwrite.OverwriteStorage')
+DEFAULT_FILE_STORAGE = config('FILE_STORAGE', 'snippets.storages.OverwriteStorage')
 
 CDN_URL = config('CDN_URL', default='')
 

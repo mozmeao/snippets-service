@@ -220,7 +220,7 @@ class BaseSnippetAdminFormTests(TestCase):
         form = SnippetAdminForm(new_data)
         form.current_user = user
         self.assertFalse(form.is_valid())
-        self.assertTrue(u'You are not allowed to edit or publish on Release channel.' in
+        self.assertTrue('You are not allowed to edit or publish on Release channel.' in
                         form.errors['__all__'][0])
 
         # User should get an error trying to edit or publish  on Release even though Beta
@@ -232,7 +232,7 @@ class BaseSnippetAdminFormTests(TestCase):
         form = SnippetAdminForm(new_data)
         form.current_user = user
         self.assertFalse(form.is_valid())
-        self.assertTrue(u'You are not allowed to edit or publish on Release channel.' in
+        self.assertTrue('You are not allowed to edit or publish on Release channel.' in
                         form.errors['__all__'][0])
 
         # Form is valid if user tries to edit or publish on Beta.
@@ -261,7 +261,7 @@ class BaseSnippetAdminFormTests(TestCase):
         form = SnippetAdminForm(new_data, instance=instance)
         form.current_user = user
         self.assertFalse(form.is_valid())
-        self.assertTrue(u'You are not allowed to edit or publish on Release channel.' in
+        self.assertTrue('You are not allowed to edit or publish on Release channel.' in
                         form.errors['__all__'][0])
 
         # User cannot unset Release channel and save.
@@ -273,7 +273,7 @@ class BaseSnippetAdminFormTests(TestCase):
         form = SnippetAdminForm(new_data, instance=instance)
         form.current_user = user
         self.assertFalse(form.is_valid())
-        self.assertTrue(u'You are not allowed to edit or publish on Release channel.' in
+        self.assertTrue('You are not allowed to edit or publish on Release channel.' in
                         form.errors['__all__'][0])
 
         # User can un-publish if they have permission on all channels.
@@ -296,5 +296,5 @@ class BaseSnippetAdminFormTests(TestCase):
         form = SnippetAdminForm(new_data, instance=instance)
         form.current_user = user
         self.assertFalse(form.is_valid())
-        self.assertTrue(u'You are not allowed to edit or publish on Release channel.' in
+        self.assertTrue('You are not allowed to edit or publish on Release channel.' in
                         form.errors['__all__'][0])

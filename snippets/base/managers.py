@@ -8,7 +8,7 @@ from product_details import product_details
 from snippets.base.util import first
 
 
-LANGUAGE_VALUES = list(key.lower() for key in product_details.languages.keys())
+LANGUAGE_VALUES = list(key.lower() for key in list(product_details.languages.keys()))
 
 
 class ClientMatchRuleQuerySet(QuerySet):
@@ -70,7 +70,7 @@ class SnippetQuerySet(QuerySet):
                 **{'on_startpage_{0}'.format(startpage_version): True})
 
         # Only filter by locale if they pass a valid locale.
-        locales = filter(client.locale.lower().startswith, LANGUAGE_VALUES)
+        locales = list(filter(client.locale.lower().startswith, LANGUAGE_VALUES))
         if locales:
             filters.update(locales__code__in=locales)
         else:

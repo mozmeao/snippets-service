@@ -1,4 +1,4 @@
-FROM python:2.7-slim-stretch
+FROM python:3.6-slim-stretch
 
 EXPOSE 8000
 CMD ["./bin/run-prod.sh"]
