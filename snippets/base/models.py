@@ -470,7 +470,7 @@ class Snippet(SnippetBaseModel):
         data.setdefault('snippet_id', snippet_id)
 
         # Add snippet ID to template variables.
-        for key, value in list(data.items()):
+        for key, value in data.items():
             if isinstance(value, str):
                 data[key] = value.replace(u'[[snippet_id]]', str(snippet_id))
 

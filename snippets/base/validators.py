@@ -50,7 +50,7 @@ def validate_xml_variables(data):
     parser.setContentHandler(ContentHandler())
     parser.setFeature(xml.sax.handler.feature_external_ges, 0)
 
-    for name, value in list(data_dict.items()):
+    for name, value in data_dict.items():
         # Skip over values that aren't strings.
         if not isinstance(value, str):
             continue

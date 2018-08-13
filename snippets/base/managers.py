@@ -8,7 +8,7 @@ from product_details import product_details
 from snippets.base.util import first
 
 
-LANGUAGE_VALUES = list(key.lower() for key in list(product_details.languages.keys()))
+LANGUAGE_VALUES = [key.lower() for key in product_details.languages.keys()]
 
 
 class ClientMatchRuleQuerySet(QuerySet):

@@ -386,7 +386,7 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         self.fields['client_option_version_upper_bound'].choices += version_choices
 
         if self.instance.client_options:
-            for key in list(self.fields.keys()):
+            for key in self.fields:
                 if key.startswith('client_option_'):
                     self.fields[key].initial = self.instance.client_options.get(
                         key.split('client_option_', 1)[1], None)
@@ -488,7 +488,7 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         snippet = super(SnippetAdminForm, self).save(commit=False)
 
         client_options = {}
-        for key, value in list(self.cleaned_data.items()):
+        for key, value in self.cleaned_data.items():
             if key.startswith('client_option_'):
                 client_options[key.split('client_option_', 1)[1]] = value
         snippet.client_options = client_options
