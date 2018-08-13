@@ -34,7 +34,7 @@ class S3Storage(S3BotoStorage):
         # setting the content_type in the key object is not enough.
         headers.update({'Content-Type': content_type})
 
-        for filename_start, value in self.cache_control_headers.iteritems():
+        for filename_start, value in self.cache_control_headers.items():
             if name.startswith(filename_start):
                 headers['Cache-Control'] = value
 

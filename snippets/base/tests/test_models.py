@@ -111,7 +111,7 @@ class SnippetTemplateTests(TestCase):
         cache_key = mock_sha1.return_value.hexdigest.return_value
         self.assertEqual(mock_cache, {cache_key: jinja_template})
 
-        mock_sha1.assert_called_with('asdf')
+        mock_sha1.assert_called_with(b'asdf')
         mock_from_string.assert_called_with('asdf')
         jinja_template.render.assert_called_with({'snippet_id': 0})
         self.assertEqual(result, jinja_template.render.return_value)
@@ -131,7 +131,7 @@ class SnippetTemplateTests(TestCase):
         with patch('snippets.base.models.template_cache', mock_cache):
             result = template.render({})
 
-        mock_sha1.assert_called_with('asdf')
+        mock_sha1.assert_called_with(b'asdf')
         self.assertTrue(not mock_from_string.called)
         jinja_template.render.assert_called_with({'snippet_id': 0})
         self.assertEqual(result, jinja_template.render.return_value)
@@ -140,16 +140,16 @@ class SnippetTemplateTests(TestCase):
 class SnippetTests(TestCase):
     def test_to_dict(self):
         snippet = SnippetFactory.create(weight=60, campaign='foo-campaign',
-                                        countries=['gr', 'it'], client_options={u'foo': u'bar'})
+                                        countries=['gr', 'it'], client_options={'foo': 'bar'})
         snippet.render = Mock()
         snippet.render.return_value = 'rendered'
 
         data = {
             'code': 'rendered',
-            'client_options': {u'foo': u'bar'},
+            'client_options': {'foo': 'bar'},
             'campaign': 'foo-campaign',
             'weight': 60,
-            'countries': [u'gr', u'it'],
+            'countries': ['gr', 'it'],
             'exclude_from_search_engines': [],
             'id': snippet.id,
             'name': snippet.name,
@@ -248,10 +248,9 @@ class SnippetTests(TestCase):
         variable = SnippetTemplateVariableFactory(name='data')
         template = SnippetTemplateFactory.create(code='{{ data }}',
                                                  variable_set=[variable])
-        snippet = SnippetFactory(template=template,
-                                 data='{"data": "\u03c6\u03bf\u03bf"}')
+        snippet = SnippetFactory(template=template, data='{"data": "φοο"}')
         output = snippet.render()
-        self.assertEqual(pq(output)[0].text, u'\u03c6\u03bf\u03bf')
+        self.assertEqual(pq(output)[0].text, '\u03c6\u03bf\u03bf')
 
     def test_render_snippet_id(self):
         """Include the snippet ID in the template context when rendering."""
@@ -306,7 +305,7 @@ class SnippetTests(TestCase):
         self.assertEqual(generated_result, expected_result)
 
         # Check start date include
-        snippet.publish_start = datetime(2018, 04, 11, 0, 0)
+        snippet.publish_start = datetime(2018, 4, 11, 0, 0)
         snippet.publish_end = None
         generated_result = snippet.render_to_as_router()
         self.assertEqual(generated_result['publish_start'], 1523404800)
@@ -314,7 +313,7 @@ class SnippetTests(TestCase):
 
         # Check end date include
         snippet.publish_start = None
-        snippet.publish_end = datetime(2018, 03, 23, 0, 0)
+        snippet.publish_end = datetime(2018, 3, 23, 0, 0)
         generated_result = snippet.render_to_as_router()
         self.assertEqual(generated_result['publish_end'], 1521763200)
         self.assertTrue('publish_start' not in generated_result)
@@ -391,7 +390,7 @@ class SnippetBundleTests(TestCase):
         bundle.key should generate even when client contains strange unicode
         characters
         """
-        client = self._client(channel=u'release-cck- \xe2\x80\x9cubuntu\xe2\x80\x9d')
+        client = self._client(channel='release-cck- \xe2\x80\x9cubuntu\xe2\x80\x9d')
         SnippetBundle(client).key
 
     def test_key_startpage_version(self):
@@ -503,7 +502,7 @@ class SnippetBundleTests(TestCase):
 
         # Check content of saved file.
         content_file = default_storage.save.call_args[0][1]
-        self.assertEqual(content_file.read(), 'rendered snippet')
+        self.assertEqual(content_file.read(), b'rendered snippet')
 
     @override_settings(BUNDLE_BROTLI_COMPRESS=False)
     def test_generate_activity_stream(self):
@@ -538,7 +537,7 @@ class SnippetBundleTests(TestCase):
 
         # Check content of saved file.
         content_file = default_storage.save.call_args[0][1]
-        self.assertEqual(content_file.read(), 'rendered snippet')
+        self.assertEqual(content_file.read(), b'rendered snippet')
 
     @override_settings(BUNDLE_BROTLI_COMPRESS=False)
     def test_generate_activity_stream_router(self):
@@ -590,14 +589,14 @@ class SnippetBundleTests(TestCase):
                             render_to_string.return_value = 'rendered snippet'
                             bundle.generate()
 
-            brotli_mock.compress.assert_called_with('rendered snippet')
+            brotli_mock.compress.assert_called_with(b'rendered snippet')
             default_storage.save.assert_called_with(bundle.filename, ANY)
             cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
 
             # Check content of saved file.
             content_file = default_storage.save.call_args[0][1]
             self.assertEqual(content_file.content_encoding, 'br')
-            self.assertEqual(content_file.read(), '\x8b\x07\x80rendered snippet\x03')
+            self.assertEqual(content_file.read(), b'\x8b\x07\x80rendered snippet\x03')
         _test(self._client(locale='fr', startpage_version='5'))
         _test(self._client(locale='fr', startpage_version='6'))
 

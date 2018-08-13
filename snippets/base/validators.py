@@ -1,6 +1,7 @@
 import json
+from io import StringIO
+
 import xml.sax
-from StringIO import StringIO
 from xml.sax import ContentHandler
 
 from django.core.exceptions import ValidationError
@@ -27,7 +28,6 @@ def validate_xml_template(data):
     parser.setContentHandler(ContentHandler())
     parser.setFeature(xml.sax.handler.feature_external_ges, 0)
 
-    data = data.encode('utf-8')
     xml_str = '<div>\n{0}</div>'.format(data)
     try:
         parser.parse(StringIO(xml_str))
@@ -52,10 +52,9 @@ def validate_xml_variables(data):
 
     for name, value in data_dict.items():
         # Skip over values that aren't strings.
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             continue
 
-        value = value.encode('utf-8')
         xml_str = '<div>{0}</div>'.format(value)
         try:
             parser.parse(StringIO(xml_str))

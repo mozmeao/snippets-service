@@ -1,8 +1,5 @@
 import datetime
-try:
-    import urllib.parse as urlparse
-except ImportError:
-    import urlparse
+import urllib.parse as urlparse
 
 from django.template.defaultfilters import escapejs_filter
 

@@ -19,7 +19,7 @@ class SnippetAdminTests(TestCase):
         request = self.factory.post('/', data={
             'name': 'test',
             'template': 'foo',
-            'published': u'on',
+            'published': 'on',
             '_saveasnew': True
         })
         request.user = self.user
@@ -35,7 +35,7 @@ class SnippetAdminTests(TestCase):
         request = self.factory.post('/', data={
             'name': 'test',
             'template': 'foo',
-            'published': u'foo'
+            'published': 'foo'
         })
         request.user = self.user
 
@@ -43,7 +43,7 @@ class SnippetAdminTests(TestCase):
             self.model_admin.change_view(request, 999)
             change_view_mock.assert_called_with(request, 999, '', None)
             request = change_view_mock.call_args[0][0]
-            self.assertEqual(request.POST['published'], u'foo')
+            self.assertEqual(request.POST['published'], 'foo')
 
 
 class SnippetTemplateAdminTests(TestCase):

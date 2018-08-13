@@ -342,14 +342,14 @@ class FetchSnippetsTests(TestCase):
         self.assertTrue(SnippetBundle.return_value.generate.called)
 
     def test_empty(self):
-        """If the bundle is empty return 204. """
+        """If the bundle is empty return 200. """
         with patch.object(views, 'SnippetBundle') as SnippetBundle:
             bundle = SnippetBundle.return_value
             bundle.empty = True
             response = views.fetch_snippets(self.request, **self.client_kwargs)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, '')
+        self.assertEqual(response.content, b'')
 
     @patch('snippets.base.views.Client', wraps=Client)
     def test_client_construction(self, ClientMock):

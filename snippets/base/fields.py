@@ -34,6 +34,6 @@ def validate_regex(regex_str):
     if regex_str.startswith('/'):
         try:
             re.compile(regex_str[1:-1])
-        except re.error, exp:
+        except re.error as exp:
             raise ValidationError(str(exp))
     return regex_str

@@ -112,7 +112,7 @@ class TemplateDataWidget(forms.TextInput):
     def render(self, name, value, attrs=None):
         widget_code = super(TemplateDataWidget, self).render(
             name, value, attrs)
-        return mark_safe(u''.join([widget_code, u"""
+        return mark_safe(''.join([widget_code, """
             <div class="widget-container">
               <div class="template-data-widget"
                    data-select-name="{select_name}"
@@ -148,7 +148,7 @@ class IconWidget(forms.TextInput):
             attrs = {}
         attrs['style'] = 'display:none'
         original_widget_code = super(IconWidget, self).render(name, value, attrs)
-        widget_code = u"""
+        widget_code = """
         <div id="{name}-container">
           <img src="{value}">
           <input type="file" class="image-input">
@@ -386,7 +386,7 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         self.fields['client_option_version_upper_bound'].choices += version_choices
 
         if self.instance.client_options:
-            for key in self.fields.keys():
+            for key in self.fields:
                 if key.startswith('client_option_'):
                     self.fields[key].initial = self.instance.client_options.get(
                         key.split('client_option_', 1)[1], None)

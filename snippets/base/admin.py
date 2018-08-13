@@ -384,7 +384,7 @@ class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
         var_manager = form.instance.variable_set
 
         # Filter out reserved variable names.
-        new_vars = filter(lambda x: x not in RESERVED_VARIABLES, new_vars)
+        new_vars = [x for x in new_vars if x not in RESERVED_VARIABLES]
 
         # Delete variables not in the new set.
         var_manager.filter(~Q(name__in=new_vars)).delete()

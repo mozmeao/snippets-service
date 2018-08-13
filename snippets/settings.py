@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'django_filters',
     'django_ace',
     'product_details',
-    'clear_cache',
     'django_extensions',
     'django_mysql',
     'reversion',
@@ -112,18 +111,10 @@ if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
     DATABASES['default']['OPTIONS'] = {
         'init_command': "SET sql_mode='STRICT_TRANS_TABLES'; SET innodb_strict_mode=1;",
     }
-
-    # Dockerized MariaDB reports MySQL 5.5.5 as version. Need to
-    # override this to work with DynamicField.
-    if config('OVERRIDE_MARIADB_VERSION', default=False):
-        from django.utils.functional import cached_property
-        from django.db.backends.mysql.base import DatabaseWrapper
-
-        @cached_property
-        def mysql_version(self):
-            return config('OVERRIDE_MARIADB_VERSION', cast=tuple)
-
-        DatabaseWrapper.mysql_version = mysql_version
+    DATABASES['default']['TEST'] = {
+        'CHARSET': 'utf8',
+        'COLLATION': 'utf8_general_ci',
+    }
 
 SILENCED_SYSTEM_CHECKS = [
     'django_mysql.W003',
@@ -258,7 +249,7 @@ PROD_DETAILS_CACHE_NAME = 'product-details'
 PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
                               default='product_details.storage.PDFileStorage')
 
-DEFAULT_FILE_STORAGE = config('FILE_STORAGE', 'storages.backends.overwrite.OverwriteStorage')
+DEFAULT_FILE_STORAGE = config('FILE_STORAGE', 'snippets.storages.OverwriteStorage')
 
 CDN_URL = config('CDN_URL', default='')
 
