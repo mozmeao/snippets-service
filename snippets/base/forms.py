@@ -271,10 +271,10 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         choices=[('any', 'No limit'),
                  ('older_than_current_release', 'Older than current release')])
     client_option_has_fxaccount = forms.ChoiceField(
-        label='Firefox Account',
+        label='Firefox Account / Sync',
         choices=(('any', 'Show to all users'),
-                 ('yes', 'Show only to users with an enabled Firefox Account'),
-                 ('no', 'Show only to users without an enabled Firefox Account')))
+                 ('yes', 'Show only to FxA users with Sync enabled'),
+                 ('no', 'Show only to users without Sync enabled')))
     client_option_is_developer = forms.ChoiceField(
         label='Is Developer',
         choices=(('any', 'Show to all users'),
