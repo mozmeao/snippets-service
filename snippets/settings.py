@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     'raven.contrib.django.raven_compat',
     'cachalot',
     'mozilla_django_oidc',
-    'advanced_filters',
     'watchman',
     'quickedit',
     'django_admin_listfilter_dropdown',

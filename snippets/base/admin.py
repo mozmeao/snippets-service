@@ -7,7 +7,6 @@ from django.db.models import TextField, Q
 from django.template.loader import get_template
 from django.utils.encoding import force_text
 
-from advanced_filters.admin import AdminAdvancedFiltersMixin
 from django_ace import AceWidget
 from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 from django_statsd.clients import statsd
@@ -100,8 +99,7 @@ class DefaultFilterMixIn(admin.ModelAdmin):
         return super(DefaultFilterMixIn, self).changelist_view(request, *args, **kwargs)
 
 
-class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
-                       DefaultFilterMixIn, admin.ModelAdmin):
+class BaseSnippetAdmin(VersionAdmin, DefaultFilterMixIn, admin.ModelAdmin):
     default_filters = ('last_modified=336',)
     list_display_links = (
         'id',
@@ -123,20 +121,6 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
 
     filter_horizontal = ('client_match_rules', 'locales', 'countries')
     actions = (duplicate_snippets_action,)
-
-    advanced_filter_fields = (
-        ('name', 'Snippet Name'),
-        'campaign',
-        ('on_release', 'Channel Release'),
-        ('on_beta', 'Channel Beta'),
-        ('on_aurora', 'Channel Aurora'),
-        ('on_nightly', 'Channel Nightly'),
-        ('on_esr', 'Channel ESR'),
-        ('on_startpage_4', 'Page About:Home'),
-        ('on_startpage_5', 'Page Activity Stream'),
-        ('countries__name', 'Country'),
-        ('locales__name', 'Language'),
-    )
 
     def change_view(self, request, *args, **kwargs):
         if request.method == 'POST' and '_saveasnew' in request.POST:
