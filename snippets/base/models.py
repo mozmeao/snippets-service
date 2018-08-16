@@ -385,7 +385,7 @@ class Snippet(SnippetBaseModel):
 
     on_release = models.BooleanField(default=False, verbose_name='Release')
     on_beta = models.BooleanField(default=False, verbose_name='Beta')
-    on_aurora = models.BooleanField(default=False, verbose_name='Aurora')
+    on_aurora = models.BooleanField(default=False, verbose_name='Dev Edition (old Aurora)')
     on_nightly = models.BooleanField(default=False, verbose_name='Nightly')
     on_esr = models.BooleanField(default=False, verbose_name='ESR')
 
