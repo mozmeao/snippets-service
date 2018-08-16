@@ -43,9 +43,7 @@ class SnippetQuerySet(QuerySet):
         return matching_snippets
 
     def match_client(self, client):
-        from snippets.base.models import (
-            CHANNELS, FENNEC_STARTPAGE_VERSIONS, FIREFOX_STARTPAGE_VERSIONS,
-            JSONSnippet, ClientMatchRule)
+        from snippets.base.models import CHANNELS, JSONSnippet, ClientMatchRule
 
         filters = {}
 
@@ -59,15 +57,10 @@ class SnippetQuerySet(QuerySet):
         if client_channel:
             filters.update(**{'on_{0}'.format(client_channel): True})
 
-        # Same matching for the startpage version.
-        STARTPAGE_VERSIONS = FIREFOX_STARTPAGE_VERSIONS
-        if client.name.lower() == 'fennec':
-            STARTPAGE_VERSIONS = FENNEC_STARTPAGE_VERSIONS
-        startpage_version = first(STARTPAGE_VERSIONS,
-                                  client.startpage_version.startswith)
-        if startpage_version:
+        startpage_field = 'on_startpage_{0}'.format(client.startpage_version)
+        if hasattr(self.model, startpage_field):
             filters.update(
-                **{'on_startpage_{0}'.format(startpage_version): True})
+                **{startpage_field: True})
 
         # Only filter by locale if they pass a valid locale.
         locales = list(filter(client.locale.lower().startswith, LANGUAGE_VALUES))

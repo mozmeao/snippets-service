@@ -369,6 +369,7 @@ class SnippetBundleTests(TestCase):
 
     def _client(self, **kwargs):
         client_kwargs = dict((key, '') for key in Client._fields)
+        client_kwargs['startpage_version'] = 4
         client_kwargs.update(kwargs)
         return Client(**client_kwargs)
 
@@ -398,8 +399,8 @@ class SnippetBundleTests(TestCase):
         bundle.key must be different between bundles if they have
         different startpage versions.
         """
-        client1 = self._client(startpage_version='1')
-        client2 = self._client(startpage_version='2')
+        client1 = self._client(startpage_version=1)
+        client2 = self._client(startpage_version=2)
         bundle1 = SnippetBundle(client1)
         bundle2 = SnippetBundle(client2)
 
@@ -418,8 +419,8 @@ class SnippetBundleTests(TestCase):
         self.assertNotEqual(bundle1.key, bundle2.key)
 
     def test_key_equal(self):
-        client1 = self._client(locale='en-US', startpage_version='4')
-        client2 = self._client(locale='en-US', startpage_version='4')
+        client1 = self._client(locale='en-US', startpage_version=4)
+        client2 = self._client(locale='en-US', startpage_version=4)
         bundle1 = SnippetBundle(client1)
         bundle1.snippets = [self.snippet1, self.snippet2]
         bundle2 = SnippetBundle(client2)
@@ -428,7 +429,7 @@ class SnippetBundleTests(TestCase):
         self.assertEqual(bundle1.key, bundle2.key)
 
     def test_key_snippet_modified(self):
-        client1 = self._client(locale='en-US', startpage_version='4')
+        client1 = self._client(locale='en-US', startpage_version=4)
         bundle = SnippetBundle(client1)
         bundle.snippets = [self.snippet1]
         key_1 = bundle.key
@@ -441,7 +442,7 @@ class SnippetBundleTests(TestCase):
         self.assertNotEqual(key_1, key_2)
 
     def test_key_template_modified(self):
-        client1 = self._client(locale='en-US', startpage_version='4')
+        client1 = self._client(locale='en-US', startpage_version=4)
         bundle = SnippetBundle(client1)
         bundle.snippets = [self.snippet1]
         key_1 = bundle.key
@@ -454,7 +455,7 @@ class SnippetBundleTests(TestCase):
         self.assertNotEqual(key_1, key_2)
 
     def test_key_current_firefox_version(self):
-        client1 = self._client(locale='en-US', startpage_version='4')
+        client1 = self._client(locale='en-US', startpage_version=4)
         bundle = SnippetBundle(client1)
         bundle.snippets = [self.snippet1]
         key_1 = bundle.key
@@ -472,7 +473,7 @@ class SnippetBundleTests(TestCase):
         bundle.generate should render the snippets, save them to the
         filesystem, and mark the bundle as not-expired in the cache.
         """
-        bundle = SnippetBundle(self._client(locale='fr'))
+        bundle = SnippetBundle(self._client(startpage_version=4, locale='fr'))
         bundle.storage = Mock()
         bundle.snippets = [self.snippet1, self.snippet2]
 
@@ -511,7 +512,7 @@ class SnippetBundleTests(TestCase):
         filesystem, and mark the bundle as not-expired in the cache for
         activity stream!
         """
-        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version=5))
         bundle.storage = Mock()
         bundle.snippets = [self.snippet1, self.snippet2]
 
@@ -546,7 +547,7 @@ class SnippetBundleTests(TestCase):
         filesystem, and mark the bundle as not-expired in the cache for
         activity stream!
         """
-        bundle = SnippetBundle(self._client(locale='fr', startpage_version='6'))
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version=6))
         bundle.storage = Mock()
         bundle.snippets = [self.snippet1, self.snippet2]
         self.snippet1.render_to_as_router = Mock()
@@ -578,7 +579,7 @@ class SnippetBundleTests(TestCase):
         activity stream!
         """
         def _test(client):
-            bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+            bundle = SnippetBundle(self._client(locale='fr', startpage_version=5))
             bundle.storage = Mock()
             bundle.snippets = [self.snippet1, self.snippet2]
 
@@ -597,17 +598,17 @@ class SnippetBundleTests(TestCase):
             content_file = default_storage.save.call_args[0][1]
             self.assertEqual(content_file.content_encoding, 'br')
             self.assertEqual(content_file.read(), b'\x8b\x07\x80rendered snippet\x03')
-        _test(self._client(locale='fr', startpage_version='5'))
-        _test(self._client(locale='fr', startpage_version='6'))
+        _test(self._client(locale='fr', startpage_version=5))
+        _test(self._client(locale='fr', startpage_version=6))
 
     def test_cached_local(self):
-        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version=5))
         with patch('snippets.base.models.cache') as cache:
             cache.get.return_value = True
             self.assertTrue(bundle.cached)
 
     def test_cached_remote(self):
-        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version=5))
         with patch('snippets.base.models.cache') as cache:
             cache.get.return_value = False
             with patch('snippets.base.models.default_storage') as default_storage:
@@ -616,7 +617,7 @@ class SnippetBundleTests(TestCase):
                 cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
 
     def test_not_cached(self):
-        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version=5))
         with patch('snippets.base.models.cache') as cache:
             cache.get.return_value = False
             with patch('snippets.base.models.default_storage') as default_storage:
@@ -624,7 +625,7 @@ class SnippetBundleTests(TestCase):
                 self.assertFalse(bundle.cached)
 
     def test_empty(self):
-        bundle = SnippetBundle(self._client(locale='fr', startpage_version='5'))
+        bundle = SnippetBundle(self._client(locale='fr', startpage_version=5))
         self.assertTrue(bundle.empty)
 
         bundle.snippets = [self.snippet1, self.snippet2]

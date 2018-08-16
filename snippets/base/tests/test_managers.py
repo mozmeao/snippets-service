@@ -2,9 +2,8 @@ from datetime import datetime
 
 from mock import patch
 
-from snippets.base.models import Client, ClientMatchRule, JSONSnippet, Snippet
+from snippets.base.models import Client, ClientMatchRule, Snippet
 from snippets.base.tests import ClientMatchRuleFactory, SnippetFactory, TestCase
-from snippets.base.util import first
 
 
 class ClientMatchRuleQuerySetTests(TestCase):
@@ -55,7 +54,7 @@ class SnippetQuerySetTests(TestCase):
 
 class SnippetManagerTests(TestCase):
     def _build_client(self, **client_attrs):
-        params = {'startpage_version': '5',
+        params = {'startpage_version': 5,
                   'name': 'Firefox',
                   'version': '23.0a1',
                   'appbuildid': '20130510041606',
@@ -184,29 +183,6 @@ class SnippetManagerTests(TestCase):
         snippet = SnippetFactory.create(on_release=True, on_startpage_4=True, locales=[])
         SnippetFactory.create(on_release=True, on_startpage_4=True, locales=['en-us'])
         self._assert_client_matches_snippets(params, [snippet])
-
-    @patch('snippets.base.models.FIREFOX_STARTPAGE_VERSIONS', ['test-firefox'])
-    def test_match_client_startpage_firefox(self):
-
-        """
-        Test that FIREFOX_STARTPAGE_VERSIONS gets selected when client is
-        Firefox.
-        """
-        client = self._build_client()
-        with patch('snippets.base.managers.first', wraps=first) as first_mock:
-            Snippet.objects.match_client(client)
-        first_mock.assert_called_with(['test-firefox'], client.startpage_version.startswith)
-
-    @patch('snippets.base.models.FENNEC_STARTPAGE_VERSIONS', ['test-fennec'])
-    def test_match_client_startpage_fennec(self):
-        """
-        Test that FENNEC_STARTPAGE_VERSIONS gets selected when client is
-        Fennec.
-        """
-        client = self._build_client(name='fennec')
-        with patch('snippets.base.managers.first', wraps=first) as first_mock:
-            JSONSnippet.objects.match_client(client)
-        first_mock.assert_called_with(['test-fennec'], client.startpage_version.startswith)
 
     def test_default_is_same_as_nightly(self):
         """ Make sure that default channel follows nightly. """

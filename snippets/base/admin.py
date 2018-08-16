@@ -6,6 +6,7 @@ from django.db import transaction
 from django.db.models import TextField, Q
 from django.template.loader import get_template
 from django.utils.encoding import force_text
+from django.utils.safestring import mark_safe
 
 from django_ace import AceWidget
 from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
@@ -256,9 +257,8 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
 
     def preview_url(self, obj):
         url = obj.get_preview_url()
-        template = '<a href="{url}" target=_blank>{url}</a>'.format(url=url)
+        template = mark_safe('<a href="{url}" target=_blank>{url}</a>'.format(url=url))
         return template
-    preview_url.allow_tags = True
 
     def get_queryset(self, request, filtr=True):
         query = super(SnippetAdmin, self).get_queryset(request)
@@ -444,14 +444,12 @@ class UploadedFileAdmin(admin.ModelAdmin):
 
     def preview(self, obj):
         template = get_template('base/uploadedfile_preview.jinja')
-        return template.render({'file': obj})
-    preview.allow_tags = True
+        return mark_safe(template.render({'file': obj}))
 
     def snippets(self, obj):
         """Snippets using this file."""
         template = get_template('base/uploadedfile_snippets.jinja')
-        return template.render({'snippets': obj.snippets})
-    snippets.allow_tags = True
+        return mark_safe(template.render({'snippets': obj.snippets}))
 
 
 class SearchProviderAdmin(admin.ModelAdmin):

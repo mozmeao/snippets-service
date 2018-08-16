@@ -11,6 +11,7 @@ from django.utils.functional import lazy
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.views.generic import TemplateView
 
 from django_statsd.clients import statsd
 from raven.contrib.django.models import client as sentry_client
@@ -27,12 +28,16 @@ def _bundle_timeout():
 SNIPPET_BUNDLE_TIMEOUT = lazy(_bundle_timeout, int)()  # noqa
 
 
+class HomeView(TemplateView):
+    template_name = 'base/home.jinja'
+
+
 @cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)
 @access_control(max_age=SNIPPET_BUNDLE_TIMEOUT)
 def fetch_snippets(request, **kwargs):
     """
     Return one of the following responses:
-    - 204 with the bundle is empty
+    - 200 with empty body when the bundle is empty
     - 302 to a bundle URL after generating it if not cached.
     """
     statsd.incr('serve.snippets')
@@ -96,11 +101,11 @@ def preview_snippet(request):
 
     if strtobool(request.POST.get('activity_stream', 'false')):
         template_name = 'base/preview_as.jinja'
-        preview_client = Client('5', 'Firefox', '57.0', 'default', 'default', 'en-US',
+        preview_client = Client(5, 'Firefox', '57.0', 'default', 'default', 'en-US',
                                 'release', 'default', 'default', 'default')
     else:
         template_name = 'base/preview.jinja'
-        preview_client = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
+        preview_client = Client(4, 'Firefox', '24.0', 'default', 'default', 'en-US',
                                 'release', 'default', 'default', 'default')
 
     skip_boilerplate = request.POST.get('skip_boilerplate', 'false')
@@ -117,14 +122,14 @@ def preview_snippet(request):
 
 
 def show_snippet(request, snippet_id, uuid=False):
-    preview_client = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
+    preview_client = Client(4, 'Firefox', '24.0', 'default', 'default', 'en-US',
                             'release', 'default', 'default', 'default')
 
     if uuid:
         snippet = get_object_or_404(Snippet, uuid=snippet_id)
     else:
         snippet = get_object_or_404(Snippet, pk=snippet_id)
-        if not snippet.published and not request.user.is_authenticated():
+        if not snippet.published and not request.user.is_authenticated:
             raise Http404()
 
     template = 'base/preview.jinja'

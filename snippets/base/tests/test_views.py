@@ -2,21 +2,19 @@ import json
 from collections import OrderedDict
 
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
+from django.urls import reverse
 
 from mock import patch
 
 import snippets.base.models
 from snippets.base import views
 from snippets.base.models import Client
-from snippets.base.templatetags.helpers import urlparams
 from snippets.base.tests import (JSONSnippetFactory, SnippetFactory,
                                  SnippetTemplateFactory, TestCase)
 
 snippets.base.models.CHANNELS = ('release', 'beta', 'aurora', 'nightly')
-snippets.base.models.FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4')
 
 
 class JSONSnippetsTests(TestCase):
@@ -50,7 +48,7 @@ class JSONSnippetsTests(TestCase):
                   'Darwin%2010.8.0', 'default', 'default_version')
         self.client.get('/json/{0}/'.format('/'.join(params)))
 
-        ClientMock.assert_called_with(startpage_version='4',
+        ClientMock.assert_called_with(startpage_version=4,
                                       name='Fennec',
                                       version='23.0a1',
                                       appbuildid='20130510041606',
@@ -119,7 +117,7 @@ class PreviewSnippetTests(TestCase):
         data = '{"a": "b"}'
         response = self._preview_snippet(template_id=template.id, data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['client'].startpage_version, '4')
+        self.assertEqual(response.context['client'].startpage_version, 4)
         self.assertTemplateUsed(response, 'base/preview.jinja')
 
     def test_valid_args_activity_stream(self):
@@ -128,7 +126,7 @@ class PreviewSnippetTests(TestCase):
         data = '{"a": "b"}'
         response = self._preview_snippet(template_id=template.id, activity_stream=True, data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['client'].startpage_version, '5')
+        self.assertEqual(response.context['client'].startpage_version, 5)
         self.assertTemplateUsed(response, 'base/preview_as.jinja')
 
     def test_skip_boilerplate(self):
@@ -138,7 +136,7 @@ class PreviewSnippetTests(TestCase):
         response = self._preview_snippet(template_id=template.id, skip_boilerplate=True,
                                          activity_stream=True, data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['client'].startpage_version, '5')
+        self.assertEqual(response.context['client'].startpage_version, 5)
         self.assertTemplateUsed(response, 'base/preview_without_shell.jinja')
 
 
@@ -179,7 +177,7 @@ class FetchSnippetsTests(TestCase):
         self.factory = RequestFactory()
         self.request = self.factory.get('/')
         self.client_kwargs = OrderedDict([
-            ('startpage_version', '4'),
+            ('startpage_version', 4),
             ('name', 'Firefox'),
             ('version', '23.0a1'),
             ('appbuildid', '20130510041606'),
@@ -239,8 +237,8 @@ class FetchSnippetsTests(TestCase):
         Ensure that the client object is constructed correctly from the URL
         arguments.
         """
-        self.client.get('/{0}/'.format('/'.join(self.client_kwargs.values())))
-
+        params = self.client_kwargs.values()
+        self.client.get('/{0}/'.format('/'.join(['{}'.format(x) for x in params])))
         ClientMock.assert_called_with(**self.client_kwargs)
 
     @override_settings(SNIPPET_BUNDLE_TIMEOUT=75)
@@ -250,6 +248,6 @@ class FetchSnippetsTests(TestCase):
         'public, max-age={settings.SNIPPET_BUNDLE_TIMEOUT}'
         """
         params = self.client_kwargs.values()
-        response = self.client.get('/{0}/'.format('/'.join(params)))
+        response = self.client.get('/{0}/'.format('/'.join(['{}'.format(x) for x in params])))
         cache_headers = [header.strip() for header in response['Cache-control'].split(',')]
         self.assertEqual(set(cache_headers), set(['public', 'max-age=75']))

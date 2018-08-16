@@ -4,9 +4,9 @@ from collections import defaultdict
 
 from django import forms
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.forms.widgets import Textarea
 
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from product_details import product_details
@@ -109,7 +109,7 @@ class TemplateDataWidget(forms.TextInput):
         self.template_select_name = select_name
         return super(TemplateDataWidget, self).__init__(*args, **kwargs)
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         widget_code = super(TemplateDataWidget, self).render(
             name, value, attrs)
         return mark_safe(''.join([widget_code, """
@@ -143,7 +143,7 @@ class TemplateDataWidget(forms.TextInput):
 
 
 class IconWidget(forms.TextInput):
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if not attrs:
             attrs = {}
         attrs['style'] = 'display:none'

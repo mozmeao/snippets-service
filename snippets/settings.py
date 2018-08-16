@@ -1,12 +1,3 @@
-"""
-Django settings for snippets project.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/1.7/topics/settings/
-
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.7/ref/settings/
-"""
 import os
 import platform
 
@@ -65,7 +56,7 @@ INSTALLED_APPS = [
 for app in config('EXTRA_APPS', default='', cast=Csv()):
     INSTALLED_APPS.append(app)
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'allow_cidr.middleware.AllowCIDRMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
@@ -76,7 +67,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'csp.middleware.CSPMiddleware',
@@ -88,9 +78,9 @@ DEIS_DOMAIN = config('DEIS_DOMAIN', default=None)
 ENABLE_HOSTNAME_MIDDLEWARE = config('ENABLE_HOSTNAME_MIDDLEWARE',
                                     default=bool(DEIS_APP), cast=bool)
 if ENABLE_HOSTNAME_MIDDLEWARE:
-    MIDDLEWARE_CLASSES = (
+    MIDDLEWARE = (
         ('snippets.base.middleware.HostnameMiddleware',) +
-        MIDDLEWARE_CLASSES)
+        MIDDLEWARE)
 
 ROOT_URLCONF = 'snippets.urls'
 
@@ -306,5 +296,5 @@ if OIDC_ENABLE:
     OIDC_RP_CLIENT_ID = config('OIDC_RP_CLIENT_ID')
     OIDC_RP_CLIENT_SECRET = config('OIDC_RP_CLIENT_SECRET')
     OIDC_CREATE_USER = config('OIDC_CREATE_USER', default=False, cast=bool)
-    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + ('mozilla_django_oidc.middleware.SessionRefresh',)
+    MIDDLEWARE = MIDDLEWARE + ('mozilla_django_oidc.middleware.SessionRefresh',)
     LOGIN_REDIRECT_URL = '/admin/'
