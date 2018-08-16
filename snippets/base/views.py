@@ -5,16 +5,13 @@ from distutils.util import strtobool
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.functional import lazy
-from django.views.generic import TemplateView
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-import django_filters
 from django_statsd.clients import statsd
 from raven.contrib.django.models import client as sentry_client
 
@@ -28,66 +25,6 @@ from snippets.base.util import get_object_or_none
 def _bundle_timeout():
     return getattr(settings, 'SNIPPET_BUNDLE_TIMEOUT')
 SNIPPET_BUNDLE_TIMEOUT = lazy(_bundle_timeout, int)()  # noqa
-
-
-class SnippetFilter(django_filters.FilterSet):
-
-    class Meta:
-        model = Snippet
-        fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr',
-                  'template']
-
-
-class JSONSnippetFilter(django_filters.FilterSet):
-
-    class Meta:
-        model = JSONSnippet
-        fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr']
-
-
-class IndexView(TemplateView):
-    def render(self, request, *args, **kwargs):
-        paginator = Paginator(self.snippetsfilter.qs, settings.SNIPPETS_PER_PAGE)
-
-        page = request.GET.get('page', 1)
-        try:
-            snippets = paginator.page(page)
-        except PageNotAnInteger:
-            snippets = paginator.page(1)
-        except EmptyPage:
-            snippets = paginator.page(paginator.num_pages)
-
-        # Display links to the page before and after the current page when
-        # applicable.
-        pagination_range = range(max(1, snippets.number - 2),
-                                 min(snippets.number + 3, paginator.num_pages + 1))
-        data = {'snippets': snippets,
-                'pagination_range': pagination_range,
-                'snippetsfilter': self.snippetsfilter}
-        return render(request, self.template_name, data)
-
-
-class SnippetIndexView(IndexView):
-    template_name = 'base/index.jinja'
-
-    def get(self, request, *args, **kwargs):
-        self.snippets = (Snippet.objects
-                         .filter(published=True)
-                         .prefetch_related('locales', 'countries',
-                                           'exclude_from_search_providers'))
-        self.snippetsfilter = SnippetFilter(request.GET, self.snippets)
-        return self.render(request, *args, **kwargs)
-
-
-class JSONSnippetIndexView(IndexView):
-    template_name = 'base/index-json.jinja'
-
-    def get(self, request, *args, **kwargs):
-        self.snippets = (JSONSnippet.objects
-                         .filter(published=True)
-                         .prefetch_related('locales', 'countries'))
-        self.snippetsfilter = JSONSnippetFilter(request.GET, self.snippets)
-        return self.render(request, *args, **kwargs)
 
 
 @cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)

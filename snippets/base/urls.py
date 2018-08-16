@@ -7,7 +7,6 @@ from snippets.base.feed import EnabledSnippetsFeed
 
 
 urlpatterns = [
-    url(r'^$', views.SnippetIndexView.as_view(), name='base.index'),
     url(r'^(?P<startpage_version>[^/]+)/(?P<name>[^/]+)/(?P<version>[^/]+)/'
         '(?P<appbuildid>[^/]+)/(?P<build_target>[^/]+)/(?P<locale>[^/]+)/'
         '(?P<channel>[^/]+)/(?P<os_version>[^/]+)/(?P<distribution>[^/]+)/'
@@ -22,7 +21,6 @@ urlpatterns = [
     url(r'^show/(?P<snippet_id>\d+)/$', views.show_snippet, name='base.show'),
     url(r'^show/uuid/(?P<snippet_id>[\w-]+)/$', views.show_snippet,
         {'uuid': True}, name='base.show_uuid'),
-    url(r'^json-snippets/', views.JSONSnippetIndexView.as_view(), name='base.index_json'),
     url(r'^csp-violation-capture$', views.csp_violation_capture,
         name='csp-violation-capture'),
     url(r'^healthz/$', watchman_views.ping, name="watchman.ping"),
