@@ -1,10 +1,10 @@
 from django.conf import settings
-from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
 from django.views.generic import RedirectView
 from django.views.static import serve as static_serve
+from django.urls import include, path, re_path
 
 
 def robots_txt(request):
@@ -13,29 +13,28 @@ def robots_txt(request):
 
 
 urlpatterns = [
-    url(r'', include('snippets.base.urls')),
-    url(r'^robots\.txt$', robots_txt),
+    path('', include('snippets.base.urls')),
+    path('robots.txt', robots_txt),
 
     # contribute.json url
-    url(r'^(?P<path>contribute\.json)$', static_serve, {'document_root': settings.ROOT}),
+    re_path(r'^(?P<path>contribute\.json)$', static_serve, {'document_root': settings.ROOT}),
 ]
 
 if settings.ENABLE_ADMIN:
     urlpatterns += [
-        url(r'^admin/', include(admin.site.urls)),
-        url(r'advanced_filters/', include('advanced_filters.urls')),
-
+        path('admin/', admin.site.urls),
     ]
     admin.site.site_header = settings.SITE_HEADER
     admin.site.site_title = settings.SITE_TITLE
 
 elif settings.ADMIN_REDIRECT_URL:
     urlpatterns.append(
-        url(r'^admin/', RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL))
+        path('admin/', RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL))
     )
 
 if settings.OIDC_ENABLE:
-    urlpatterns.append(url(r'^oidc/', include('mozilla_django_oidc.urls')))
+    import mozilla_django_oidc
+    urlpatterns.append(path('oidc/', mozilla_django_oidc.urls))
 
 # In DEBUG mode, serve media files through Django.
 if settings.DEBUG:
@@ -48,7 +47,5 @@ if settings.DEBUG:
         return response
 
     urlpatterns += [
-        url(r'^media/(?P<path>.*)$', serve_media, {
-            'document_root': settings.MEDIA_ROOT,
-        }),
+        re_path(r'^media/(?P<path>.*)$', serve_media, {'document_root': settings.MEDIA_ROOT}),
     ] + staticfiles_urlpatterns()

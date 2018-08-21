@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.db.models.manager import Manager
 from django.template import engines
@@ -63,12 +63,6 @@ SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
     ).encode('utf-8')).hexdigest()
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly', 'esr')
-# StartPage 1-4: Different versions of the retro about home with the Firefox
-#                logo in the middle and a search bar bellow. (Fx < 57)
-# StartPage 5: Activity Stream (Fx >= 57 && Fx < 62)
-# StartPage 6: Activity Stream with JSON Endpoint (Fx >= 62)
-FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4', '5', '6')
-FENNEC_STARTPAGE_VERSIONS = ('1',)
 SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
                    (50, 'Appear half as often as an average snippet'),
                    (66, 'Appear 2/3rds as often as an average snippet'),
@@ -122,12 +116,12 @@ class SnippetBundle(object):
         # Additional values used to calculate the key are the templates and the
         # variables used to render them besides snippets.
         key_properties.extend([
-            self.client.startpage_version,
+            str(self.client.startpage_version),
             self.client.locale,
             util.current_firefox_major_version(),
             str(settings.BUNDLE_BROTLI_COMPRESS),
         ])
-        if self.client.startpage_version == '5':
+        if self.client.startpage_version >= 5:
             key_properties.append(SNIPPET_FETCH_TEMPLATE_AS_HASH)
         else:
             key_properties.append(SNIPPET_FETCH_TEMPLATE_HASH)
@@ -165,7 +159,7 @@ class SnippetBundle(object):
 
     @property
     def filename(self):
-        if self.client.startpage_version == '6':
+        if self.client.startpage_version == 6:
             return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.json'.format(self.key))
         return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.html'.format(self.key))
 
@@ -190,7 +184,7 @@ class SnippetBundle(object):
 
     def generate(self):
         """Generate and save the code for this snippet bundle."""
-        if self.client.startpage_version == '6':
+        if self.client.startpage_version == 6:
             # Generate the new AS Router bundle format
             data = [snippet.render_to_as_router() for snippet in self.snippets]
             bundle_content = json.dumps({
@@ -201,7 +195,7 @@ class SnippetBundle(object):
             })
         else:
             template = 'base/fetch_snippets.jinja'
-            if self.client.startpage_version == '5':
+            if self.client.startpage_version == 5:
                 template = 'base/fetch_snippets_as.jinja'
             bundle_content = render_to_string(template, {
                 'snippet_ids': [snippet.id for snippet in self.snippets],
@@ -215,7 +209,7 @@ class SnippetBundle(object):
         if isinstance(bundle_content, str):
             bundle_content = bundle_content.encode('utf-8')
 
-        if (settings.BUNDLE_BROTLI_COMPRESS and self.client.startpage_version in ['5', '6']):
+        if (settings.BUNDLE_BROTLI_COMPRESS and self.client.startpage_version >= 5):
             content_file = ContentFile(brotli.compress(bundle_content))
             content_file.content_encoding = 'br'
         else:
@@ -276,7 +270,8 @@ class SnippetTemplateVariable(models.Model):
     TYPE_CHOICES = ((BODY, 'Main Text'), (TEXT, 'Text'), (SMALLTEXT, 'Small Text'),
                     (IMAGE, 'Image'), (CHECKBOX, 'Checkbox'))
 
-    template = models.ForeignKey(SnippetTemplate, related_name='variable_set')
+    template = models.ForeignKey(SnippetTemplate, on_delete=models.CASCADE,
+                                 related_name='variable_set')
     name = models.CharField(max_length=255)
     type = models.IntegerField(choices=TYPE_CHOICES, default=TEXT)
     description = models.TextField(blank=True, default='')
@@ -371,7 +366,7 @@ class SnippetBaseModel(django_mysql.models.Model):
 
 class Snippet(SnippetBaseModel):
     name = models.CharField(max_length=255, unique=True)
-    template = models.ForeignKey(SnippetTemplate)
+    template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT)
     data = models.TextField(default='{}')
 
     published = models.BooleanField(default=False)

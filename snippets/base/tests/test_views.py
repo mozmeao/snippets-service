@@ -2,21 +2,19 @@ import json
 from collections import OrderedDict
 
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
+from django.urls import reverse
 
 from mock import patch
 
 import snippets.base.models
 from snippets.base import views
 from snippets.base.models import Client
-from snippets.base.templatetags.helpers import urlparams
 from snippets.base.tests import (JSONSnippetFactory, SnippetFactory,
                                  SnippetTemplateFactory, TestCase)
 
 snippets.base.models.CHANNELS = ('release', 'beta', 'aurora', 'nightly')
-snippets.base.models.FIREFOX_STARTPAGE_VERSIONS = ('1', '2', '3', '4')
 
 
 class JSONSnippetsTests(TestCase):
@@ -50,7 +48,7 @@ class JSONSnippetsTests(TestCase):
                   'Darwin%2010.8.0', 'default', 'default_version')
         self.client.get('/json/{0}/'.format('/'.join(params)))
 
-        ClientMock.assert_called_with(startpage_version='4',
+        ClientMock.assert_called_with(startpage_version=4,
                                       name='Fennec',
                                       version='23.0a1',
                                       appbuildid='20130510041606',
@@ -119,7 +117,7 @@ class PreviewSnippetTests(TestCase):
         data = '{"a": "b"}'
         response = self._preview_snippet(template_id=template.id, data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['client'].startpage_version, '4')
+        self.assertEqual(response.context['client'].startpage_version, 4)
         self.assertTemplateUsed(response, 'base/preview.jinja')
 
     def test_valid_args_activity_stream(self):
@@ -128,7 +126,7 @@ class PreviewSnippetTests(TestCase):
         data = '{"a": "b"}'
         response = self._preview_snippet(template_id=template.id, activity_stream=True, data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['client'].startpage_version, '5')
+        self.assertEqual(response.context['client'].startpage_version, 5)
         self.assertTemplateUsed(response, 'base/preview_as.jinja')
 
     def test_skip_boilerplate(self):
@@ -138,7 +136,7 @@ class PreviewSnippetTests(TestCase):
         response = self._preview_snippet(template_id=template.id, skip_boilerplate=True,
                                          activity_stream=True, data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['client'].startpage_version, '5')
+        self.assertEqual(response.context['client'].startpage_version, 5)
         self.assertTemplateUsed(response, 'base/preview_without_shell.jinja')
 
 
@@ -174,130 +172,12 @@ class ShowSnippetTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-@override_settings(SNIPPETS_PER_PAGE=1)
-class JSONIndexSnippetsTests(TestCase):
-    def setUp(self):
-        for i in range(10):
-            JSONSnippetFactory.create()
-
-    def test_base(self):
-        response = self.client.get(reverse('base.index_json'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['snippets'].number, 1)
-
-    def test_second_page(self):
-        response = self.client.get(urlparams(reverse('base.index_json'), page=2))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['snippets'].number, 2)
-        self.assertEqual(response.context['snippets'].paginator.num_pages, 10)
-
-    def test_empty_page_number(self):
-        """Test that empty page number returns the last page."""
-        response = self.client.get(urlparams(reverse('base.index_json'), page=20))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['snippets'].number, 10)
-        self.assertEqual(response.context['snippets'].paginator.num_pages, 10)
-
-    def test_non_integer_page_number(self):
-        """Test that a non integer page number returns the first page."""
-        response = self.client.get(urlparams(reverse('base.index_json'), page='k'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['snippets'].number, 1)
-        self.assertEqual(response.context['snippets'].paginator.num_pages, 10)
-
-    def test_filter(self):
-        JSONSnippetFactory.create(on_nightly=True)
-        response = self.client.get(urlparams(reverse('base.index_json'), on_nightly=2))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['snippets'].paginator.count, 1)
-
-    def test_pagination_range_first_page(self):
-        response = self.client.get(reverse('base.index_json'))
-        pagination_range = response.context['pagination_range']
-        self.assertEqual(pagination_range[0], 1)
-        self.assertEqual(pagination_range[-1], 3)
-        self.assertEqual(len(pagination_range), 3)
-
-    def test_pagination_range_last_page(self):
-        response = self.client.get(urlparams(reverse('base.index_json'), page=10))
-        pagination_range = response.context['pagination_range']
-        self.assertEqual(pagination_range[0], 8)
-        self.assertEqual(pagination_range[-1], 10)
-        self.assertEqual(len(pagination_range), 3)
-
-    def test_pagination_range_middle_page(self):
-        response = self.client.get(urlparams(reverse('base.index_json'), page=5))
-        pagination_range = response.context['pagination_range']
-        self.assertEqual(pagination_range[0], 3)
-        self.assertEqual(pagination_range[-1], 7)
-        self.assertEqual(len(pagination_range), 5)
-
-
-@override_settings(SNIPPETS_PER_PAGE=1)
-class IndexSnippetsTests(TestCase):
-    def setUp(self):
-        for i in range(10):
-            SnippetFactory.create()
-
-    def test_base(self):
-        response = self.client.get(reverse('base.index'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['snippets'].number, 1)
-
-    def test_second_page(self):
-        response = self.client.get(urlparams(reverse('base.index'), page=2))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['snippets'].number, 2)
-        self.assertEqual(response.context['snippets'].paginator.num_pages, 10)
-
-    def test_empty_page_number(self):
-        """Test that empty page number returns the last page."""
-        response = self.client.get(urlparams(reverse('base.index'), page=20))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['snippets'].number, 10)
-        self.assertEqual(response.context['snippets'].paginator.num_pages, 10)
-
-    def test_non_integer_page_number(self):
-        """Test that a non integer page number returns the first page."""
-        response = self.client.get(urlparams(reverse('base.index'), page='k'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['snippets'].number, 1)
-        self.assertEqual(response.context['snippets'].paginator.num_pages, 10)
-
-    def test_filter(self):
-        SnippetFactory.create(on_nightly=True)
-        response = self.client.get(urlparams(reverse('base.index'), on_nightly=2))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['snippets'].paginator.count, 1)
-
-    def test_pagination_range_first_page(self):
-        response = self.client.get(reverse('base.index'))
-        pagination_range = response.context['pagination_range']
-        self.assertEqual(pagination_range[0], 1)
-        self.assertEqual(pagination_range[-1], 3)
-        self.assertEqual(len(pagination_range), 3)
-
-    def test_pagination_range_last_page(self):
-        response = self.client.get(urlparams(reverse('base.index'), page=10))
-        pagination_range = response.context['pagination_range']
-        self.assertEqual(pagination_range[0], 8)
-        self.assertEqual(pagination_range[-1], 10)
-        self.assertEqual(len(pagination_range), 3)
-
-    def test_pagination_range_middle_page(self):
-        response = self.client.get(urlparams(reverse('base.index'), page=5))
-        pagination_range = response.context['pagination_range']
-        self.assertEqual(pagination_range[0], 3)
-        self.assertEqual(pagination_range[-1], 7)
-        self.assertEqual(len(pagination_range), 5)
-
-
 class FetchSnippetsTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.request = self.factory.get('/')
         self.client_kwargs = OrderedDict([
-            ('startpage_version', '4'),
+            ('startpage_version', 4),
             ('name', 'Firefox'),
             ('version', '23.0a1'),
             ('appbuildid', '20130510041606'),
@@ -357,8 +237,8 @@ class FetchSnippetsTests(TestCase):
         Ensure that the client object is constructed correctly from the URL
         arguments.
         """
-        self.client.get('/{0}/'.format('/'.join(self.client_kwargs.values())))
-
+        params = self.client_kwargs.values()
+        self.client.get('/{0}/'.format('/'.join(['{}'.format(x) for x in params])))
         ClientMock.assert_called_with(**self.client_kwargs)
 
     @override_settings(SNIPPET_BUNDLE_TIMEOUT=75)
@@ -368,6 +248,6 @@ class FetchSnippetsTests(TestCase):
         'public, max-age={settings.SNIPPET_BUNDLE_TIMEOUT}'
         """
         params = self.client_kwargs.values()
-        response = self.client.get('/{0}/'.format('/'.join(params)))
+        response = self.client.get('/{0}/'.format('/'.join(['{}'.format(x) for x in params])))
         cache_headers = [header.strip() for header in response['Cache-control'].split(',')]
         self.assertEqual(set(cache_headers), set(['public', 'max-age=75']))

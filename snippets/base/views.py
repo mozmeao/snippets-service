@@ -5,16 +5,14 @@ from distutils.util import strtobool
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.functional import lazy
-from django.views.generic import TemplateView
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.views.generic import TemplateView
 
-import django_filters
 from django_statsd.clients import statsd
 from raven.contrib.django.models import client as sentry_client
 
@@ -30,64 +28,8 @@ def _bundle_timeout():
 SNIPPET_BUNDLE_TIMEOUT = lazy(_bundle_timeout, int)()  # noqa
 
 
-class SnippetFilter(django_filters.FilterSet):
-
-    class Meta:
-        model = Snippet
-        fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr',
-                  'template']
-
-
-class JSONSnippetFilter(django_filters.FilterSet):
-
-    class Meta:
-        model = JSONSnippet
-        fields = ['on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr']
-
-
-class IndexView(TemplateView):
-    def render(self, request, *args, **kwargs):
-        paginator = Paginator(self.snippetsfilter.qs, settings.SNIPPETS_PER_PAGE)
-
-        page = request.GET.get('page', 1)
-        try:
-            snippets = paginator.page(page)
-        except PageNotAnInteger:
-            snippets = paginator.page(1)
-        except EmptyPage:
-            snippets = paginator.page(paginator.num_pages)
-
-        # Display links to the page before and after the current page when
-        # applicable.
-        pagination_range = range(max(1, snippets.number - 2),
-                                 min(snippets.number + 3, paginator.num_pages + 1))
-        data = {'snippets': snippets,
-                'pagination_range': pagination_range,
-                'snippetsfilter': self.snippetsfilter}
-        return render(request, self.template_name, data)
-
-
-class SnippetIndexView(IndexView):
-    template_name = 'base/index.jinja'
-
-    def get(self, request, *args, **kwargs):
-        self.snippets = (Snippet.objects
-                         .filter(published=True)
-                         .prefetch_related('locales', 'countries',
-                                           'exclude_from_search_providers'))
-        self.snippetsfilter = SnippetFilter(request.GET, self.snippets)
-        return self.render(request, *args, **kwargs)
-
-
-class JSONSnippetIndexView(IndexView):
-    template_name = 'base/index-json.jinja'
-
-    def get(self, request, *args, **kwargs):
-        self.snippets = (JSONSnippet.objects
-                         .filter(published=True)
-                         .prefetch_related('locales', 'countries'))
-        self.snippetsfilter = JSONSnippetFilter(request.GET, self.snippets)
-        return self.render(request, *args, **kwargs)
+class HomeView(TemplateView):
+    template_name = 'base/home.jinja'
 
 
 @cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)
@@ -95,7 +37,7 @@ class JSONSnippetIndexView(IndexView):
 def fetch_snippets(request, **kwargs):
     """
     Return one of the following responses:
-    - 204 with the bundle is empty
+    - 200 with empty body when the bundle is empty
     - 302 to a bundle URL after generating it if not cached.
     """
     statsd.incr('serve.snippets')
@@ -159,11 +101,11 @@ def preview_snippet(request):
 
     if strtobool(request.POST.get('activity_stream', 'false')):
         template_name = 'base/preview_as.jinja'
-        preview_client = Client('5', 'Firefox', '57.0', 'default', 'default', 'en-US',
+        preview_client = Client(5, 'Firefox', '57.0', 'default', 'default', 'en-US',
                                 'release', 'default', 'default', 'default')
     else:
         template_name = 'base/preview.jinja'
-        preview_client = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
+        preview_client = Client(4, 'Firefox', '24.0', 'default', 'default', 'en-US',
                                 'release', 'default', 'default', 'default')
 
     skip_boilerplate = request.POST.get('skip_boilerplate', 'false')
@@ -180,14 +122,14 @@ def preview_snippet(request):
 
 
 def show_snippet(request, snippet_id, uuid=False):
-    preview_client = Client('4', 'Firefox', '24.0', 'default', 'default', 'en-US',
+    preview_client = Client(4, 'Firefox', '24.0', 'default', 'default', 'en-US',
                             'release', 'default', 'default', 'default')
 
     if uuid:
         snippet = get_object_or_404(Snippet, uuid=snippet_id)
     else:
         snippet = get_object_or_404(Snippet, pk=snippet_id)
-        if not snippet.published and not request.user.is_authenticated():
+        if not snippet.published and not request.user.is_authenticated:
             raise Http404()
 
     template = 'base/preview.jinja'

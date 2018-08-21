@@ -74,6 +74,7 @@ class BaseSnippetFactory(factory.django.DjangoModelFactory):
 
 class SnippetFactory(BaseSnippetFactory):
     template = factory.SubFactory(SnippetTemplateFactory)
+    on_startpage_5 = True
 
     class Meta:
         model = models.Snippet

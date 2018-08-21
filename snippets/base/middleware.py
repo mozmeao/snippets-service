@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.urlresolvers import Resolver404, resolve
+from django.urls import resolve
 
 from snippets.base.views import fetch_json_snippets, fetch_snippets
 
@@ -15,21 +15,25 @@ class FetchSnippetsMiddleware(object):
     being added to the response) this middleware detects requests to that view
     and executes the view early, bypassing the rest of the middleware.
     """
-    def process_request(self, request):
-        try:
-            result = resolve(request.path)
-        except Resolver404:
-            return
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        result = resolve(request.path)
 
         if result.func in (fetch_snippets, fetch_json_snippets):
             return result.func(request, *result.args, **result.kwargs)
 
+        return self.get_response(request)
+
 
 class HostnameMiddleware(object):
-    def __init__(self):
+    def __init__(self, get_response):
         values = [getattr(settings, x) for x in ['HOSTNAME', 'DEIS_APP', 'DEIS_DOMAIN']]
         self.backend_server = '.'.join(x for x in values if x)
+        self.get_response = get_response
 
-    def process_response(self, request, response):
+    def __call__(self, request):
+        response = self.get_response(request)
         response['X-Backend-Server'] = self.backend_server
         return response

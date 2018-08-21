@@ -6,8 +6,8 @@ from django.db import transaction
 from django.db.models import TextField, Q
 from django.template.loader import get_template
 from django.utils.encoding import force_text
+from django.utils.safestring import mark_safe
 
-from advanced_filters.admin import AdminAdvancedFiltersMixin
 from django_ace import AceWidget
 from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 from django_statsd.clients import statsd
@@ -100,8 +100,7 @@ class DefaultFilterMixIn(admin.ModelAdmin):
         return super(DefaultFilterMixIn, self).changelist_view(request, *args, **kwargs)
 
 
-class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
-                       DefaultFilterMixIn, admin.ModelAdmin):
+class BaseSnippetAdmin(VersionAdmin, DefaultFilterMixIn, admin.ModelAdmin):
     default_filters = ('last_modified=336',)
     list_display_links = (
         'id',
@@ -123,20 +122,6 @@ class BaseSnippetAdmin(AdminAdvancedFiltersMixin, VersionAdmin,
 
     filter_horizontal = ('client_match_rules', 'locales', 'countries')
     actions = (duplicate_snippets_action,)
-
-    advanced_filter_fields = (
-        ('name', 'Snippet Name'),
-        'campaign',
-        ('on_release', 'Channel Release'),
-        ('on_beta', 'Channel Beta'),
-        ('on_aurora', 'Channel Aurora'),
-        ('on_nightly', 'Channel Nightly'),
-        ('on_esr', 'Channel ESR'),
-        ('on_startpage_4', 'Page About:Home'),
-        ('on_startpage_5', 'Page Activity Stream'),
-        ('countries__name', 'Country'),
-        ('locales__name', 'Language'),
-    )
 
     def change_view(self, request, *args, **kwargs):
         if request.method == 'POST' and '_saveasnew' in request.POST:
@@ -272,9 +257,8 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
 
     def preview_url(self, obj):
         url = obj.get_preview_url()
-        template = '<a href="{url}" target=_blank>{url}</a>'.format(url=url)
+        template = mark_safe('<a href="{url}" target=_blank>{url}</a>'.format(url=url))
         return template
-    preview_url.allow_tags = True
 
     def get_queryset(self, request, filtr=True):
         query = super(SnippetAdmin, self).get_queryset(request)
@@ -460,14 +444,12 @@ class UploadedFileAdmin(admin.ModelAdmin):
 
     def preview(self, obj):
         template = get_template('base/uploadedfile_preview.jinja')
-        return template.render({'file': obj})
-    preview.allow_tags = True
+        return mark_safe(template.render({'file': obj}))
 
     def snippets(self, obj):
         """Snippets using this file."""
         template = get_template('base/uploadedfile_snippets.jinja')
-        return template.render({'snippets': obj.snippets})
-    snippets.allow_tags = True
+        return mark_safe(template.render({'snippets': obj.snippets}))
 
 
 class SearchProviderAdmin(admin.ModelAdmin):
