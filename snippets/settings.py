@@ -62,7 +62,6 @@ MIDDLEWARE = (
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'snippets.base.middleware.FetchSnippetsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
