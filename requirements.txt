@@ -160,9 +160,9 @@ six==1.11.0 \
 html5lib==1.0.1 \
     --hash=sha256:20b159aa3badc9d5ee8f5c647e5efd02ed2a66ab8d354930bd9ff139fc1dc0a3 \
     --hash=sha256:66cb0dcfdbbc4f9c3ba1a63fdb511ffdbd4f513b2b6d81b80cd26ce6b3fb3736
-django-mysql==2.3.1 \
-    --hash=sha256:7c13e453535f20e12b01c2b8f452d67e9973721f30ffd296ae6f0e5af0b475fb \
-    --hash=sha256:53bf05dfa8e98db371adbd5b6c669a904e9f556f4ce7e3552cd42796c5f44841
+django-mysql==2.4.1 \
+    --hash=sha256:4093726c445aa618ced580fb9beb44fc52e76e870a58bff9aa20c83bcd57e906 \
+    --hash=sha256:ebcd6311df4a16abb47ff9ff6f52423191a22657c74233b49e72d176316905aa
 django-reversion==3.0.0 \
     --hash=sha256:f2d5a34cc2c1c2f0f0ade0a79b71b1c15c6161053aacfa08f5b8b216982c3ae0 \
     --hash=sha256:61e07432799a11734c5b9911de7a4c2ba2dd93f3d83861abeef3018ddf08a7b4
