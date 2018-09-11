@@ -33,8 +33,7 @@ elif settings.ADMIN_REDIRECT_URL:
     )
 
 if settings.OIDC_ENABLE:
-    import mozilla_django_oidc
-    urlpatterns.append(path('oidc/', mozilla_django_oidc.urls))
+    urlpatterns.append(path('oidc/', include('mozilla_django_oidc.urls')))
 
 # In DEBUG mode, serve media files through Django.
 if settings.DEBUG:
