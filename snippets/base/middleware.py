@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.urls import resolve
+from django.urls import Resolver404, resolve
 
 from snippets.base.views import fetch_json_snippets, fetch_snippets
 
@@ -19,7 +19,11 @@ class FetchSnippetsMiddleware(object):
         self.get_response = get_response
 
     def __call__(self, request):
-        result = resolve(request.path)
+        try:
+            result = resolve(request.path)
+        except Resolver404:
+            # If we cannot resolve, continue with the next middleware.
+            return self.get_response(request)
 
         if result.func in (fetch_snippets, fetch_json_snippets):
             return result.func(request, *result.args, **result.kwargs)
