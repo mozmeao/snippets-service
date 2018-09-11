@@ -1,7 +1,6 @@
 from mock import Mock, patch
 
 from django.test import RequestFactory
-from django.urls import Resolver404
 
 from snippets.base.middleware import FetchSnippetsMiddleware
 from snippets.base.tests import TestCase
@@ -49,7 +48,7 @@ class FetchSnippetsMiddlewareTests(TestCase):
     def test_resolve_no_match(self, fetch_snippets, resolve):
         """
         If resolve doesn't return a match to the fetch_snippets view, return
-        None.
+        get_response_mock
         """
         request = Mock()
         result = resolve.return_value
@@ -58,5 +57,8 @@ class FetchSnippetsMiddlewareTests(TestCase):
         self.assertEqual(self.middleware(request), self.get_response_mock())
 
     def test_unknown_url(self):
+        """
+        If resolve doesn't return a match a URL, return get_response_mock
+        """
         request = RequestFactory().get('/admin')
-        self.assertRaises(Resolver404, self.middleware, request)
+        self.assertEqual(self.middleware(request), self.get_response_mock())
