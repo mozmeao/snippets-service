@@ -116,7 +116,7 @@ class SnippetTemplateAdminTests(TestCase):
         self.assertFalse(SnippetTemplateVariable.objects
                          .filter(template=template, name='does_not_exist_2').exists())
 
-    @patch('snippets.base.admin.RESERVED_VARIABLES', ('reserved_name',))
+    @patch('snippets.base.admin.adminmodels.RESERVED_VARIABLES', ('reserved_name',))
     def test_save_related_reserved_name(self):
         """
         save_related should not add new TemplateVariables for variables that

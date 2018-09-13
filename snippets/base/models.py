@@ -18,6 +18,7 @@ from django.db.models.manager import Manager
 from django.template import engines
 from django.template.loader import render_to_string
 from django.utils.functional import cached_property
+from django.utils.html import format_html
 
 import brotli
 import django_mysql.models
@@ -691,3 +692,94 @@ class TargetedLocale(models.Model):
 
     def __str__(self):
         return '{} ({})'.format(self.name, self.code)
+
+
+class Target(models.Model):
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=255, unique=True)
+
+    on_release = models.BooleanField(default=False, verbose_name='Release', db_index=True)
+    on_beta = models.BooleanField(default=False, verbose_name='Beta', db_index=True)
+    on_aurora = models.BooleanField(default=False, verbose_name='Dev Edition (old Aurora)',
+                                    db_index=True)
+    on_nightly = models.BooleanField(default=False, verbose_name='Nightly', db_index=True)
+    on_esr = models.BooleanField(default=False, verbose_name='ESR', db_index=True)
+
+    on_startpage_6 = models.BooleanField(default=True, verbose_name='Activity Stream Router',
+                                         db_index=True)
+
+    client_match_rules = models.ManyToManyField(
+        ClientMatchRule, blank=True, verbose_name='Client Match Rules')
+
+    jexl = django_mysql.models.DynamicField(default={})
+    jexl_expr = models.TextField(blank=True, default='')
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def render_jexl(self):
+        return ' && '.join([expr for expr in self.jexl.values() if expr])
+
+    def save(self, *args, **kwargs):
+        self.jexl_expr = self.render_jexl()
+        super().save(*args, **kwargs)
+
+
+class Campaign(models.Model):
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(
+        max_length=255, blank=True, default='', unique=True,
+        help_text=('Optional campaign slug. Will be added in the stats ping. '
+                   'Will be used for snippet blocking if set.'))
+    publish_start = models.DateTimeField(
+        blank=True, null=True,
+        verbose_name='Publish Starts',
+        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
+    publish_end = models.DateTimeField(
+        blank=True, null=True,
+        verbose_name='Publish Ends',
+        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
+
+    target = models.ForeignKey(Target, on_delete=models.PROTECT,
+                               default=None, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+class ASRSnippet(django_mysql.models.Model):
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    name = models.CharField(max_length=255, unique=True)
+
+    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
+
+    template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT)
+    data = models.TextField(default='{}')
+
+    status = models.IntegerField(choices=((100, 'Draft'),
+                                          (200, 'Ready for review'),
+                                          (300, 'Disabled'),
+                                          (400, 'Enabled')),
+                                 db_index=True, default=100)
+
+    class Meta:
+        ordering = ['-modified']
+        verbose_name = 'ASR Snippet'
+        verbose_name_plural = 'ASR Snippets'
+
+    def __str__(self):
+        return self.name
