@@ -33,13 +33,6 @@ deploy:
       app_url: "https://snippets-prod.oregon-b.moz.works"
       newrelic_app: "snippets-prod-oregon-b"
       deis_executable: "deis2"
-    - name: "Tokyo Prod"
-      url: "https://deis.tokyo.moz.works"
-      credentials: jenkins-deis-2
-      app: "snippets-prod"
-      app_url: "https://snippets-prod.tokyo.moz.works"
-      newrelic_app: "snippets-prod-tokyo"
-      deis_executable: "deis2"
     - name: "Frankfurt Prod"
       url: "https://deis.frankfurt.moz.works"
       credentials: jenkins-deis-2
