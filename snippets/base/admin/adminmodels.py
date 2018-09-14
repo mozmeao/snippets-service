@@ -7,10 +7,13 @@ from django.utils.safestring import mark_safe
 
 from reversion.admin import VersionAdmin
 from django_ace import AceWidget
+from django_statsd.clients import statsd
 from jinja2.meta import find_undeclared_variables
+from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 
 from snippets.base import forms, models
 from snippets.base.models import JINJA_ENV
+from snippets.base.admin.filters import ModifiedFilter, ReleaseFilter
 
 
 MATCH_LOCALE_REGEX = re.compile('(\w+(?:-\w+)*)')
@@ -99,3 +102,97 @@ class UploadedFileAdmin(admin.ModelAdmin):
         """Snippets using this file."""
         template = get_template('base/uploadedfile_snippets.jinja')
         return mark_safe(template.render({'snippets': obj.snippets}))
+
+
+class ASRSnippetAdmin(admin.ModelAdmin):
+    list_display_links = (
+        'id',
+        'name',
+    )
+    list_display = (
+        'id',
+        'name',
+        'status',
+        'modified',
+    )
+    list_filter = (
+        ModifiedFilter,
+        'status',
+        ReleaseFilter,
+        ('template', RelatedDropdownFilter),
+    )
+    search_fields = (
+        'name',
+    )
+    autocomplete_fields = (
+        'campaign',
+    )
+    preserve_filters = True
+    readonly_fields = ('created', 'modified', 'uuid', 'creator',)
+    save_on_top = True
+    save_as = True
+    view_on_site = False
+
+    fieldsets = (
+        (None, {'fields': ('creator', 'name', 'status', 'campaign')}),
+        ('Content', {
+            'fields': ('template', 'data'),
+        }),
+        ('Other Info', {
+            'fields': ('uuid', ('created', 'modified')),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(ASRSnippetAdmin, self).get_form(request, obj, **kwargs)
+        form.current_user = request.user
+        return form
+
+    def save_model(self, request, obj, form, change):
+        obj.creator = request.user
+        statsd.incr('save.asrsnippet')
+        super().save_model(request, obj, form, change)
+
+
+class CampaignAdmin(admin.ModelAdmin):
+    readonly_fields = ('created', 'modified', 'creator',)
+    prepopulated_fields = {'slug': ('name',)}
+
+    fieldsets = (
+        ('ID', {'fields': ('name', 'slug')}),
+        ('Targeting', {
+            'fields': ('target', ('publish_start', 'publish_end')),
+        }),
+        ('Other Info', {
+            'fields': ('creator', ('created', 'modified')),
+        }),
+    )
+    search_fields = (
+        'name',
+    )
+
+    def save_model(self, request, obj, form, change):
+        obj.creator = request.user
+        statsd.incr('save.campaign')
+        super().save_model(request, obj, form, change)
+
+
+class TargetAdmin(admin.ModelAdmin):
+    readonly_fields = ('created', 'modified', 'creator',)
+
+    fieldsets = (
+        ('ID', {'fields': ('name',)}),
+        ('Product channels', {
+            'description': 'What channels will this snippet be available in?',
+            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
+        }),
+        ('Other Info', {
+            'fields': ('creator', ('created', 'modified')),
+        }),
+    )
+
+    def save_model(self, request, obj, form, change):
+        obj.creator = request.user
+        statsd.incr('save.target')
+        super().save_model(request, obj, form, change)
