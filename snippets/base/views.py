@@ -17,9 +17,10 @@ from django_statsd.clients import statsd
 from raven.contrib.django.models import client as sentry_client
 
 from snippets.base import util
+from snippets.base.bundles import SnippetBundle
 from snippets.base.decorators import access_control
 from snippets.base.encoders import JSONSnippetEncoder
-from snippets.base.models import Client, JSONSnippet, Snippet, SnippetBundle, SnippetTemplate
+from snippets.base.models import Client, JSONSnippet, Snippet, SnippetTemplate
 from snippets.base.util import get_object_or_none
 
 
