@@ -109,3 +109,19 @@ class SearchProviderFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = models.SearchProvider
+
+
+class UserFactory(factory.django.DjangoModelFactory):
+    username = factory.Sequence(lambda n: 'User {0}'.format(n))
+
+    class Meta:
+        model = 'auth.User'
+
+
+class TargetFactory(factory.django.DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Search Provider {0}'.format(n))
+    creator = factory.SubFactory(UserFactory)
+    on_release = True
+
+    class Meta:
+        model = models.Target

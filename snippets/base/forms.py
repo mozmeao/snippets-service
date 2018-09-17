@@ -12,9 +12,9 @@ from django.utils.safestring import mark_safe
 from product_details import product_details
 from product_details.version_compare import Version, version_list
 
-from snippets.base.fields import MultipleChoiceFieldCSV
-from snippets.base.models import (CHANNELS, JSONSnippet, Snippet, SnippetNG, SnippetTemplate,
-                                  SnippetTemplateVariable, UploadedFile)
+from snippets.base.admin import fields
+from snippets.base.models import (CHANNELS, ASRSnippet, JSONSnippet, Snippet, SnippetNG,
+                                  SnippetTemplate, SnippetTemplateVariable, Target, UploadedFile)
 from snippets.base.validators import (MinValueValidator, validate_as_router_fluent_variables,
                                       validate_xml_variables)
 
@@ -291,7 +291,7 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         choices=(('any', 'Show to all users'),
                  ('yes', 'Show only to users with Firefox as default browser'),
                  ('no', 'Show only to users with Firefox as second browser')))
-    client_option_screen_resolutions = MultipleChoiceFieldCSV(
+    client_option_screen_resolutions = fields.MultipleChoiceFieldCSV(
         label='Show on screens',
         help_text='Select all the screen resolutions you want this snippet to appear on.',
         widget=forms.CheckboxSelectMultiple(),
@@ -534,3 +534,51 @@ class SnippetTemplateVariableInlineFormset(forms.models.BaseInlineFormSet):
             if main_body_count > 1:
                 raise forms.ValidationError(
                     'There can be only one Main Text variable type per template')
+
+
+class ASRSnippetAdminForm(forms.ModelForm):
+    template = forms.ModelChoiceField(
+        queryset=SnippetTemplate.objects.exclude(hidden=True).filter(startpage__gte=6),
+        widget=TemplateSelect)
+
+    class Meta:
+        model = ASRSnippet
+        exclude = ['creator', 'created', 'modified']
+        widgets = {
+            'data': TemplateDataWidget('template'),
+        }
+
+
+class TargetAdminForm(forms.ModelForm):
+    filtr_is_default_browser = fields.JEXLChoiceField(
+        'isDefaultBrowser',
+        choices=((None, "I don't care"),
+                 ('true', 'Yes',),
+                 ('false', 'No')),
+        label_suffix='?',
+        label='Has Firefox set to be the default browser',
+        required=False)
+
+    class Meta:
+        model = Target
+        exclude = ['creator', 'created', 'modified']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.jexl:
+            for name, field in self.fields.items():
+                if name.startswith('filtr_'):
+                    field.initial = self.instance.jexl.get(name[6:])
+
+    def save(self, *args, **kwargs):
+        jexl = {}
+        jexl_expr_array = []
+
+        for name, field in self.fields.items():
+            if name.startswith('filtr_'):
+                jexl[name[6:]] = self.cleaned_data[name]
+                jexl_expr_array.append(field.to_jexl(self.cleaned_data[name]))
+        self.instance.jexl = jexl
+        self.instance.jexl_expr = ' && '.join([x for x in jexl_expr_array if x])
+
+        return super().save(*args, **kwargs)

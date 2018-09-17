@@ -105,6 +105,8 @@ class UploadedFileAdmin(admin.ModelAdmin):
 
 
 class ASRSnippetAdmin(admin.ModelAdmin):
+    form = forms.ASRSnippetAdminForm
+
     list_display_links = (
         'id',
         'name',
@@ -144,11 +146,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         }),
     )
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super(ASRSnippetAdmin, self).get_form(request, obj, **kwargs)
-        form.current_user = request.user
-        return form
-
     def save_model(self, request, obj, form, change):
         obj.creator = request.user
         statsd.incr('save.asrsnippet')
@@ -179,7 +176,8 @@ class CampaignAdmin(admin.ModelAdmin):
 
 
 class TargetAdmin(admin.ModelAdmin):
-    readonly_fields = ('created', 'modified', 'creator',)
+    form = forms.TargetAdminForm
+    readonly_fields = ('created', 'modified', 'creator', 'jexl_expr')
 
     fieldsets = (
         ('ID', {'fields': ('name',)}),
@@ -187,8 +185,11 @@ class TargetAdmin(admin.ModelAdmin):
             'description': 'What channels will this snippet be available in?',
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
         }),
+        ('Targeting', {
+            'fields': ('filtr_is_default_browser', )
+        }),
         ('Other Info', {
-            'fields': ('creator', ('created', 'modified')),
+            'fields': ('creator', ('created', 'modified'), 'jexl_expr'),
         }),
     )
 

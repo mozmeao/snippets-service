@@ -561,11 +561,7 @@ class Target(models.Model):
     def __str__(self):
         return self.name
 
-    def render_jexl(self):
-        return ' && '.join([expr for expr in self.jexl.values() if expr])
-
     def save(self, *args, **kwargs):
-        self.jexl_expr = self.render_jexl()
         super().save(*args, **kwargs)
 
 

@@ -1,3 +1,4 @@
+import re
 import json
 from io import StringIO
 
@@ -86,3 +87,12 @@ def validate_as_router_fluent_variables(data):
                      'Only {} are supported'.format(', '.join(ALLOWED_TAGS)))
         raise ValidationError(error_msg)
     return data
+
+
+def validate_regex(regex_str):
+    if regex_str.startswith('/'):
+        try:
+            re.compile(regex_str[1:-1])
+        except re.error as exp:
+            raise ValidationError(str(exp))
+    return regex_str
