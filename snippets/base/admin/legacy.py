@@ -1,106 +1,18 @@
-import re
-from datetime import datetime, timedelta
-
 from django.contrib import admin
-from django.db import transaction
-from django.db.models import TextField, Q
-from django.template.loader import get_template
-from django.utils.encoding import force_text
-from django.utils.safestring import mark_safe
 
-from django_ace import AceWidget
-from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
-from django_statsd.clients import statsd
-from jinja2.meta import find_undeclared_variables
 from reversion.admin import VersionAdmin
 from quickedit.admin import QuickEditAdmin
+from django.utils.safestring import mark_safe
 
-from snippets.base import forms, models
-from snippets.base.models import JINJA_ENV
+from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
+from django_statsd.clients import statsd
 
-
-MATCH_LOCALE_REGEX = re.compile('(\w+(?:-\w+)*)')
-RESERVED_VARIABLES = ('_', 'snippet_id')
-
-
-@transaction.atomic
-def duplicate_snippets_action(modeladmin, request, queryset):
-    for snippet in queryset:
-        snippet.duplicate()
-duplicate_snippets_action.short_description = 'Duplicate selected snippets'  # noqa
+from snippets.base import forms
+from snippets.base.admin.actions import duplicate_snippets_action
+from snippets.base.admin.filters import ModifiedFilter, ReleaseFilter
 
 
-class ModifiedFilter(admin.SimpleListFilter):
-    title = 'Last modified'
-    parameter_name = 'last_modified'
-
-    def lookups(self, request, model_admin):
-        return (
-            ('24', '24 hours'),
-            ('168', '7 days'),
-            ('336', '14 days'),
-            ('720', '30 days'),
-            ('all', 'All'),
-        )
-
-    def queryset(self, request, queryset):
-        value = self.value()
-        if not value or value == 'all':
-            return queryset
-
-        when = datetime.utcnow() - timedelta(hours=int(value))
-        return queryset.exclude(modified__lt=when)
-
-    def choices(self, cl):
-        for lookup, title in self.lookup_choices:
-            yield {
-                'selected': self.value() == force_text(lookup),
-                'query_string': cl.get_query_string({
-                    self.parameter_name: lookup,
-                }, []),
-                'display': title,
-            }
-
-
-class ReleaseFilter(admin.SimpleListFilter):
-    title = 'Release'
-    parameter_name = 'release'
-
-    def lookups(self, request, model_admin):
-        return (
-            ('on_release', 'Release'),
-            ('on_beta', 'Beta'),
-            ('on_aurora', 'Aurora'),
-            ('on_nightly', 'Nightly'),
-            ('on_esr', 'ESR'),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() is None:
-            return queryset
-
-        return queryset.filter(**{self.value(): True})
-
-
-class TemplateNameFilter(admin.AllValuesFieldListFilter):
-    def __init__(self, *args, **kwargs):
-        super(TemplateNameFilter, self).__init__(*args, **kwargs)
-        self.title = 'template'
-
-
-class DefaultFilterMixIn(admin.ModelAdmin):
-    def changelist_view(self, request, *args, **kwargs):
-        if self.default_filters and not request.GET:
-            q = request.GET.copy()
-            for filtr in self.default_filters:
-                key, value = filtr.split('=')
-                q[key] = value
-            request.GET = q
-            request.META['QUERY_STRING'] = request.GET.urlencode()
-        return super(DefaultFilterMixIn, self).changelist_view(request, *args, **kwargs)
-
-
-class BaseSnippetAdmin(VersionAdmin, DefaultFilterMixIn, admin.ModelAdmin):
+class BaseSnippetAdmin(VersionAdmin, admin.ModelAdmin):
     default_filters = ('last_modified=336',)
     list_display_links = (
         'id',
@@ -269,119 +181,6 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         return query.prefetch_related('locales')
 
 
-class SnippetNGAdmin(SnippetAdmin):
-    form = forms.SnippetNGAdminForm
-
-    fieldsets = (
-        (None, {'fields': ('name', 'published', 'campaign', 'preview_url', 'created', 'modified')}),
-        ('Content', {
-            'fields': ('template', 'data'),
-        }),
-        ('Publish Duration', {
-            'description': ('When will this snippet be available? (Optional)'
-                            '<br>Publish times are in UTC. '
-                            '<a href="http://time.is/UTC" target="_blank" '
-                            'rel="noopener noreferrer">'
-                            'Click here to see the current time in UTC</a>.'),
-            'fields': ('publish_start', 'publish_end'),
-        }),
-        ('Product channels', {
-            'description': 'What channels will this snippet be available in?',
-            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
-        }),
-        ('Startpage Versions', {
-            'fields': (('on_startpage_6'),),
-        }),
-        ('Country and Locale', {
-            'description': ('What countries and locales will this snippet be '
-                            'available in?'),
-            'fields': (('locales',))
-        }),
-        ('Client Match Rules', {
-            'fields': ('client_match_rules',),
-            'classes': ('collapse',),
-        }),
-        ('Other Info', {
-            'fields': (('uuid',),),
-            'classes': ('collapse',)
-        }),
-    )
-
-    class Media:
-        css = {
-            'all': ('css/admin.css',)
-        }
-
-    def get_queryset(self, request):
-        return (super(SnippetNGAdmin, self)
-                .get_queryset(request, filtr=False)
-                .filter(on_startpage_6=True)
-                .prefetch_related('locales'))
-
-
-class ClientMatchRuleAdmin(VersionAdmin, admin.ModelAdmin):
-    list_display = ('description', 'is_exclusion', 'startpage_version', 'name',
-                    'version', 'locale', 'appbuildid', 'build_target',
-                    'channel', 'os_version', 'distribution',
-                    'distribution_version', 'modified')
-    list_filter = ('name', 'version', 'os_version', 'appbuildid',
-                   'build_target', 'channel', 'distribution', 'locale')
-    save_on_top = True
-    search_fields = ('description',)
-
-
-class SnippetTemplateVariableInline(admin.TabularInline):
-    model = models.SnippetTemplateVariable
-    formset = forms.SnippetTemplateVariableInlineFormset
-    max_num = 0
-    can_delete = False
-    readonly_fields = ('name',)
-    fields = ('name', 'type', 'order', 'description')
-
-
-class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
-    save_on_top = True
-    list_display = ('name', 'priority', 'hidden')
-    list_filter = ('hidden',)
-    inlines = (SnippetTemplateVariableInline,)
-    formfield_overrides = {
-        TextField: {'widget': AceWidget(mode='html', theme='github',
-                                        width='1200px', height='500px')},
-    }
-
-    class Media:
-        css = {
-            'all': ('css/admin.css',)
-        }
-
-    def save_related(self, request, form, formsets, change):
-        """
-        After saving the related objects, remove and add
-        SnippetTemplateVariables depending on how the template code changed.
-        """
-        super(SnippetTemplateAdmin, self).save_related(request, form, formsets,
-                                                       change)
-
-        # Parse the template code and find any undefined variables.
-        ast = JINJA_ENV.env.parse(form.instance.code)
-        new_vars = find_undeclared_variables(ast)
-        var_manager = form.instance.variable_set
-
-        # Filter out reserved variable names.
-        new_vars = [x for x in new_vars if x not in RESERVED_VARIABLES]
-
-        # Delete variables not in the new set.
-        var_manager.filter(~Q(name__in=new_vars)).delete()
-
-        # Create variables that don't exist.
-        for i, variable in enumerate(new_vars, start=1):
-            obj, _ = models.SnippetTemplateVariable.objects.get_or_create(
-                template=form.instance, name=variable)
-            if obj.order == 0:
-                obj.order = i * 10
-                obj.save()
-
-
 class JSONSnippetAdmin(BaseSnippetAdmin):
     form = forms.JSONSnippetAdminForm
     search_fields = ('name', 'client_match_rules__description')
@@ -436,22 +235,6 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
         super(JSONSnippetAdmin, self).save_model(request, obj, form, change)
 
 
-class UploadedFileAdmin(admin.ModelAdmin):
-    readonly_fields = ('url', 'preview', 'snippets')
-    list_display = ('name', 'url', 'preview', 'modified')
-    prepopulated_fields = {'name': ('file',)}
-    form = forms.UploadedFileAdminForm
-
-    def preview(self, obj):
-        template = get_template('base/uploadedfile_preview.jinja')
-        return mark_safe(template.render({'file': obj}))
-
-    def snippets(self, obj):
-        """Snippets using this file."""
-        template = get_template('base/uploadedfile_snippets.jinja')
-        return mark_safe(template.render({'snippets': obj.snippets}))
-
-
 class SearchProviderAdmin(admin.ModelAdmin):
     list_display = ('name', 'identifier')
 
@@ -466,20 +249,3 @@ class TargetedLocaleAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'priority')
     list_filter = ('priority',)
     list_editable = ('priority',)
-
-
-class LogEntryAdmin(admin.ModelAdmin):
-    list_display = ('user', 'content_type', 'object_id', 'object_repr', 'change_message')
-    list_filter = ('user', 'content_type')
-
-
-admin.site.register(models.Snippet, SnippetAdmin)
-admin.site.register(models.SnippetNG, SnippetNGAdmin)
-admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
-admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
-admin.site.register(models.JSONSnippet, JSONSnippetAdmin)
-admin.site.register(models.UploadedFile, UploadedFileAdmin)
-admin.site.register(models.SearchProvider, SearchProviderAdmin)
-admin.site.register(models.TargetedCountry, TargetedCountryAdmin)
-admin.site.register(models.TargetedLocale, TargetedLocaleAdmin)
-admin.site.register(admin.models.LogEntry, LogEntryAdmin)

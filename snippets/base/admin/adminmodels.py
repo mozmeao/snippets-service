@@ -1,0 +1,198 @@
+import re
+
+from django.contrib import admin
+from django.db.models import TextField, Q
+from django.template.loader import get_template
+from django.utils.safestring import mark_safe
+
+from reversion.admin import VersionAdmin
+from django_ace import AceWidget
+from django_statsd.clients import statsd
+from jinja2.meta import find_undeclared_variables
+from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
+
+from snippets.base import forms, models
+from snippets.base.models import JINJA_ENV
+from snippets.base.admin.filters import ModifiedFilter, ReleaseFilter
+
+
+MATCH_LOCALE_REGEX = re.compile('(\w+(?:-\w+)*)')
+RESERVED_VARIABLES = ('_', 'snippet_id')
+
+
+class ClientMatchRuleAdmin(VersionAdmin, admin.ModelAdmin):
+    list_display = ('description', 'is_exclusion', 'startpage_version', 'name',
+                    'version', 'locale', 'appbuildid', 'build_target',
+                    'channel', 'os_version', 'distribution',
+                    'distribution_version', 'modified')
+    list_filter = ('name', 'version', 'os_version', 'appbuildid',
+                   'build_target', 'channel', 'distribution', 'locale')
+    save_on_top = True
+    search_fields = ('description',)
+
+
+class LogEntryAdmin(admin.ModelAdmin):
+    list_display = ('user', 'content_type', 'object_id', 'object_repr', 'change_message')
+    list_filter = ('user', 'content_type')
+
+
+class SnippetTemplateVariableInline(admin.TabularInline):
+    model = models.SnippetTemplateVariable
+    formset = forms.SnippetTemplateVariableInlineFormset
+    max_num = 0
+    can_delete = False
+    readonly_fields = ('name',)
+    fields = ('name', 'type', 'order', 'description')
+
+
+class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
+    save_on_top = True
+    list_display = ('name', 'priority', 'hidden')
+    list_filter = ('hidden',)
+    inlines = (SnippetTemplateVariableInline,)
+    formfield_overrides = {
+        TextField: {'widget': AceWidget(mode='html', theme='github',
+                                        width='1200px', height='500px')},
+    }
+
+    class Media:
+        css = {
+            'all': ('css/admin.css',)
+        }
+
+    def save_related(self, request, form, formsets, change):
+        """
+        After saving the related objects, remove and add
+        SnippetTemplateVariables depending on how the template code changed.
+        """
+        super(SnippetTemplateAdmin, self).save_related(request, form, formsets,
+                                                       change)
+
+        # Parse the template code and find any undefined variables.
+        ast = JINJA_ENV.env.parse(form.instance.code)
+        new_vars = find_undeclared_variables(ast)
+        var_manager = form.instance.variable_set
+
+        # Filter out reserved variable names.
+        new_vars = [x for x in new_vars if x not in RESERVED_VARIABLES]
+
+        # Delete variables not in the new set.
+        var_manager.filter(~Q(name__in=new_vars)).delete()
+
+        # Create variables that don't exist.
+        for i, variable in enumerate(new_vars, start=1):
+            obj, _ = models.SnippetTemplateVariable.objects.get_or_create(
+                template=form.instance, name=variable)
+            if obj.order == 0:
+                obj.order = i * 10
+                obj.save()
+
+
+class UploadedFileAdmin(admin.ModelAdmin):
+    readonly_fields = ('url', 'preview', 'snippets')
+    list_display = ('name', 'url', 'preview', 'modified')
+    prepopulated_fields = {'name': ('file',)}
+    form = forms.UploadedFileAdminForm
+
+    def preview(self, obj):
+        template = get_template('base/uploadedfile_preview.jinja')
+        return mark_safe(template.render({'file': obj}))
+
+    def snippets(self, obj):
+        """Snippets using this file."""
+        template = get_template('base/uploadedfile_snippets.jinja')
+        return mark_safe(template.render({'snippets': obj.snippets}))
+
+
+class ASRSnippetAdmin(admin.ModelAdmin):
+    list_display_links = (
+        'id',
+        'name',
+    )
+    list_display = (
+        'id',
+        'name',
+        'status',
+        'modified',
+    )
+    list_filter = (
+        ModifiedFilter,
+        'status',
+        ReleaseFilter,
+        ('template', RelatedDropdownFilter),
+    )
+    search_fields = (
+        'name',
+    )
+    autocomplete_fields = (
+        'campaign',
+    )
+    preserve_filters = True
+    readonly_fields = ('created', 'modified', 'uuid', 'creator',)
+    save_on_top = True
+    save_as = True
+    view_on_site = False
+
+    fieldsets = (
+        (None, {'fields': ('creator', 'name', 'status', 'campaign')}),
+        ('Content', {
+            'fields': ('template', 'data'),
+        }),
+        ('Other Info', {
+            'fields': ('uuid', ('created', 'modified')),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(ASRSnippetAdmin, self).get_form(request, obj, **kwargs)
+        form.current_user = request.user
+        return form
+
+    def save_model(self, request, obj, form, change):
+        obj.creator = request.user
+        statsd.incr('save.asrsnippet')
+        super().save_model(request, obj, form, change)
+
+
+class CampaignAdmin(admin.ModelAdmin):
+    readonly_fields = ('created', 'modified', 'creator',)
+    prepopulated_fields = {'slug': ('name',)}
+
+    fieldsets = (
+        ('ID', {'fields': ('name', 'slug')}),
+        ('Targeting', {
+            'fields': ('target', ('publish_start', 'publish_end')),
+        }),
+        ('Other Info', {
+            'fields': ('creator', ('created', 'modified')),
+        }),
+    )
+    search_fields = (
+        'name',
+    )
+
+    def save_model(self, request, obj, form, change):
+        obj.creator = request.user
+        statsd.incr('save.campaign')
+        super().save_model(request, obj, form, change)
+
+
+class TargetAdmin(admin.ModelAdmin):
+    readonly_fields = ('created', 'modified', 'creator',)
+
+    fieldsets = (
+        ('ID', {'fields': ('name',)}),
+        ('Product channels', {
+            'description': 'What channels will this snippet be available in?',
+            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
+        }),
+        ('Other Info', {
+            'fields': ('creator', ('created', 'modified')),
+        }),
+    )
+
+    def save_model(self, request, obj, form, change):
+        obj.creator = request.user
+        statsd.incr('save.target')
+        super().save_model(request, obj, form, change)
