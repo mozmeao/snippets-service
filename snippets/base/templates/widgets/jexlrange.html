@@ -1,0 +1,10 @@
+{% spaceless %}
+  From
+  {% with widget.subwidgets.0 as widget %}
+    {% include widget.template_name %}
+  {% endwith %}
+  To
+  {% with widget.subwidgets.1 as widget %}
+    {% include widget.template_name %}
+  {% endwith %}
+{% endspaceless %}
