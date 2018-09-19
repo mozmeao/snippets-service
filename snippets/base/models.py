@@ -21,7 +21,7 @@ from jinja2.utils import LRUCache
 
 from snippets.base import util
 from snippets.base.fields import RegexField
-from snippets.base.managers import ClientMatchRuleManager, SnippetManager
+from snippets.base.managers import ASRSnippetManager, ClientMatchRuleManager, SnippetManager
 from snippets.base.validators import validate_xml_template
 
 
@@ -338,36 +338,6 @@ class Snippet(SnippetBaseModel):
 
         return Markup(rendered_snippet)
 
-    def render_to_as_router(self):
-        """Render method for AS router snippets."""
-        data = json.loads(self.data)
-
-        # Add snippet ID to template variables.
-        for key, value in data.items():
-            if isinstance(value, str):
-                data[key] = value.replace('[[snippet_id]]', str(self.id))
-
-        # Will be replaced with a more generic solution when we develop more AS
-        # Router templates. See #565
-        text, links = util.fluent_link_extractor(data.get('text', ''))
-        data['text'] = text
-        data['links'] = links
-
-        rendered_snippet = {
-            'id': str(self.id),
-            'template': self.template.code_name,
-            'template_version': self.template.version,
-            'campaign': self.campaign,
-            'content': data,
-        }
-
-        if self.publish_start:
-            rendered_snippet['publish_start'] = util.to_unix_time_seconds(self.publish_start)
-        if self.publish_end:
-            rendered_snippet['publish_end'] = util.to_unix_time_seconds(self.publish_end)
-
-        return rendered_snippet
-
     @property
     def channels(self):
         channels = []
@@ -615,6 +585,8 @@ class ASRSnippet(django_mysql.models.Model):
 
     target = models.ForeignKey(Target, on_delete=models.PROTECT,
                                default=None, blank=True, null=True)
+
+    objects = ASRSnippetManager()
 
     class Meta:
         ordering = ['-modified']

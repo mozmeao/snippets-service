@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.conf import settings
 from django.test.utils import override_settings
 
@@ -280,41 +278,6 @@ class SnippetTests(TestCase):
         snippet.template.render.assert_called_with({'code': 'snippet id {0}'.format(snippet.id),
                                                     'snippet_id': snippet.id,
                                                     'foo': True})
-
-    def test_render_to_as_router(self):
-        """
-
-        """
-        snippet = SnippetFactory.create(
-            template__code='<p>{{ text }} {{ foo }}</p>',
-            data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}')
-        generated_result = snippet.render_to_as_router()
-        expected_result = {
-            'id': str(snippet.id),
-            'template': snippet.template.code_name,
-            'template_version': snippet.template.version,
-            'campaign': snippet.campaign,
-            'content': {
-                'text': 'snippet id {}'.format(snippet.id),
-                'foo': 'bar',
-                'links': {},
-            }
-        }
-        self.assertEqual(generated_result, expected_result)
-
-        # Check start date include
-        snippet.publish_start = datetime(2018, 4, 11, 0, 0)
-        snippet.publish_end = None
-        generated_result = snippet.render_to_as_router()
-        self.assertEqual(generated_result['publish_start'], 1523404800)
-        self.assertTrue('publish_end' not in generated_result)
-
-        # Check end date include
-        snippet.publish_start = None
-        snippet.publish_end = datetime(2018, 3, 23, 0, 0)
-        generated_result = snippet.render_to_as_router()
-        self.assertEqual(generated_result['publish_end'], 1521763200)
-        self.assertTrue('publish_start' not in generated_result)
 
 
 class UploadedFileTests(TestCase):
