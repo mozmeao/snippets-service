@@ -580,17 +580,6 @@ class Campaign(models.Model):
         max_length=255, blank=True, default='', unique=True,
         help_text=('Optional campaign slug. Will be added in the stats ping. '
                    'Will be used for snippet blocking if set.'))
-    publish_start = models.DateTimeField(
-        blank=True, null=True,
-        verbose_name='Publish Starts',
-        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
-    publish_end = models.DateTimeField(
-        blank=True, null=True,
-        verbose_name='Publish Ends',
-        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
-
-    target = models.ForeignKey(Target, on_delete=models.PROTECT,
-                               default=None, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -604,7 +593,7 @@ class ASRSnippet(django_mysql.models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=255, unique=True)
 
-    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT)
 
     template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT)
     data = models.TextField(default='{}')
@@ -614,6 +603,18 @@ class ASRSnippet(django_mysql.models.Model):
                                           (300, 'Disabled'),
                                           (400, 'Enabled')),
                                  db_index=True, default=100)
+
+    publish_start = models.DateTimeField(
+        blank=True, null=True,
+        verbose_name='Publish Starts',
+        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
+    publish_end = models.DateTimeField(
+        blank=True, null=True,
+        verbose_name='Publish Ends',
+        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
+
+    target = models.ForeignKey(Target, on_delete=models.PROTECT,
+                               default=None, blank=True, null=True)
 
     class Meta:
         ordering = ['-modified']

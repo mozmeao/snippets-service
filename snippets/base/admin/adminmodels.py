@@ -136,7 +136,10 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     view_on_site = False
 
     fieldsets = (
-        (None, {'fields': ('creator', 'name', 'status', 'campaign')}),
+        ('ID', {'fields': ('creator', 'name', 'status')}),
+        ('Publishing Options', {
+            'fields': ('campaign', 'target', ('publish_start', 'publish_end'))
+        }),
         ('Content', {
             'fields': ('template', 'data'),
         }),
@@ -158,9 +161,6 @@ class CampaignAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('ID', {'fields': ('name', 'slug')}),
-        ('Targeting', {
-            'fields': ('target', ('publish_start', 'publish_end')),
-        }),
         ('Other Info', {
             'fields': ('creator', ('created', 'modified')),
         }),
