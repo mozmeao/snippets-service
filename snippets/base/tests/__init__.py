@@ -119,7 +119,7 @@ class UserFactory(factory.django.DjangoModelFactory):
 
 
 class TargetFactory(factory.django.DjangoModelFactory):
-    name = factory.Sequence(lambda n: 'Search Provider {0}'.format(n))
+    name = factory.Sequence(lambda n: 'Target {0}'.format(n))
     creator = factory.SubFactory(UserFactory)
     on_release = True
 
