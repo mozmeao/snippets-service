@@ -8,7 +8,8 @@ from mock import MagicMock, Mock, patch
 from pyquery import PyQuery as pq
 
 from snippets.base.models import Client, UploadedFile, _generate_filename
-from snippets.base.tests import (ClientMatchRuleFactory,
+from snippets.base.tests import (ASRSnippetFactory,
+                                 ClientMatchRuleFactory,
                                  JSONSnippetFactory,
                                  SearchProviderFactory,
                                  SnippetFactory,
@@ -358,3 +359,26 @@ class UploadedFileTests(TestCase):
         template = SnippetTemplateFactory.create(code='<foo>{0}</foo>'.format(instance.url))
         more_snippets = SnippetFactory.create_batch(3, template=template)
         self.assertEqual(set(instance.snippets), set(list(snippets) + list(more_snippets)))
+
+
+class ASRSnippetTests(TestCase):
+    def test_render(self):
+        """
+
+        """
+        snippet = ASRSnippetFactory.create(
+            template__code='<p>{{ text }} {{ foo }}</p>',
+            data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}')
+        generated_result = snippet.render()
+        expected_result = {
+            'id': str(snippet.id),
+            'template': snippet.template.code_name,
+            'template_version': snippet.template.version,
+            'campaign': snippet.campaign.slug,
+            'content': {
+                'text': 'snippet id {}'.format(snippet.id),
+                'foo': 'bar',
+                'links': {},
+            }
+        }
+        self.assertEqual(generated_result, expected_result)

@@ -116,6 +116,7 @@ class UserFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'auth.User'
+        django_get_or_create = ('username',)
 
 
 class TargetFactory(factory.django.DjangoModelFactory):
@@ -125,3 +126,26 @@ class TargetFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = models.Target
+
+
+class CampaignFactory(factory.django.DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Campaign {0}'.format(n))
+    slug = factory.Sequence(lambda n: 'campaign_{0}'.format(n))
+    creator = factory.SubFactory(UserFactory)
+
+    class Meta:
+        model = models.Campaign
+
+
+class ASRSnippetFactory(factory.django.DjangoModelFactory):
+    creator = factory.SubFactory(UserFactory)
+    name = factory.Sequence(lambda n: 'ASRSnippet {0}'.format(n))
+    campaign = factory.SubFactory(CampaignFactory, creator=factory.SelfAttribute('..creator'))
+
+    template = factory.SubFactory(SnippetTemplateFactory)
+    status = 400  # Published
+
+    target = factory.SubFactory(TargetFactory, creator=factory.SelfAttribute('..creator'))
+
+    class Meta:
+        model = models.ASRSnippet

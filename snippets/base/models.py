@@ -623,3 +623,27 @@ class ASRSnippet(django_mysql.models.Model):
 
     def __str__(self):
         return self.name
+
+    def render(self):
+        data = json.loads(self.data)
+
+        # Add snippet ID to template variables.
+        for key, value in data.items():
+            if isinstance(value, str):
+                data[key] = value.replace('[[snippet_id]]', str(self.id))
+
+        # Will be replaced with a more generic solution when we develop more AS
+        # Router templates. See #565
+        text, links = util.fluent_link_extractor(data.get('text', ''))
+        data['text'] = text
+        data['links'] = links
+
+        rendered_snippet = {
+            'id': str(self.id),
+            'template': self.template.code_name,
+            'template_version': self.template.version,
+            'campaign': self.campaign.slug,
+            'content': data,
+        }
+
+        return rendered_snippet
