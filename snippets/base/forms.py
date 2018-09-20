@@ -588,7 +588,8 @@ class TargetAdminForm(forms.ModelForm):
                  ('true', 'Yes',),
                  ('false', 'No')),
         label_suffix='?',
-        label='Has Firefox set to be the default browser',
+        label='Is Firefox the default browser',
+        help_text='User has set Firefox as their default browser.',
         required=False)
     filtr_profile_age_created = fields.JEXLRangeField(
         'profileAgeCreated',
@@ -610,7 +611,20 @@ class TargetAdminForm(forms.ModelForm):
                  ('false', 'No')),
         label_suffix='?',
         label='Uses Firefox Sync',
-        help_text='User has a Firefox account which is connected to their browser',
+        help_text='User has a Firefox account which is connected to their browser.',
+        required=False)
+    filtr_is_developer = fields.JEXLChoiceField(
+        'devToolsOpenedCount',
+        # devToolsOpenedCount reads from devtools.selfxss.count which is capped
+        # to 5. We consider the user a developer if they have opened devtools
+        # at least 5 times, non-developer otherwise.
+        jexl='{attr_name} - 5 {value} 0',
+        choices=((None, "I don't care"),
+                 ('==', 'Yes',),
+                 ('<', 'No')),
+        label_suffix='?',
+        label='Is developer',
+        help_text='User has opened Developer Tools more than 5 times.',
         required=False)
 
     class Meta:

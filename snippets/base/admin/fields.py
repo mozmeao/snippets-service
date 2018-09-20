@@ -23,11 +23,13 @@ class MultipleChoiceFieldCSV(MultipleChoiceField):
 class JEXLChoiceField(ChoiceField):
     def __init__(self, attr_name, *args, **kwargs):
         self.attr_name = attr_name
+        self.jexl = '{attr_name} == {value}'
+        self.jexl = kwargs.pop('jexl', self.jexl)
         return super().__init__(*args, **kwargs)
 
     def to_jexl(self, value):
         if value:
-            return '{} == {}'.format(self.attr_name, value)
+            return self.jexl.format(attr_name=self.attr_name, value=value)
         return None
 
 

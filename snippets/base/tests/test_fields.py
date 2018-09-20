@@ -10,6 +10,11 @@ class JEXLChoiceFieldTests(TestCase):
         self.assertEqual(field.to_jexl(500), 'foo == 500')
         self.assertEqual(field.to_jexl(''), None)
 
+    def test_custom_jexl(self):
+        field = JEXLChoiceField('foo', jexl='{value} != {attr_name}')
+        self.assertEqual(field.to_jexl(500), '500 != foo')
+        self.assertEqual(field.to_jexl(''), None)
+
 
 class JEXLRangeFieldTests(TestCase):
     def setUp(self):
@@ -34,3 +39,8 @@ class JEXLRangeFieldTests(TestCase):
     def test_validate_min_max(self):
         with self.assertRaises(ValidationError):
             self.field.validate('3,1')
+
+    def test_custom_jexl(self):
+        field = JEXLChoiceField('foo', jexl='{value} != {attr_name}')
+        self.assertEqual(field.to_jexl(500), '500 != foo')
+        self.assertEqual(field.to_jexl(''), None)
