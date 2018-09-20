@@ -386,9 +386,9 @@ Brotli==1.0.4 \
     --hash=sha256:f7e8d43a533572a85ddeca0a747b2726e15482bd81b4a1e84ef04e138ff58b5e \
     --hash=sha256:faec94d0ced372b114280b532b0f74f71fcdde2493a4e85da2fdca67f6ebef9e \
     --hash=sha256:fe6fe495741d276f7d3cdffe8bd71daa06be0112a5ffbe05ee4f545224f83f21
-django-storages==1.6.6 \
-    --hash=sha256:7339070cf0c8042f5a885783a0a909175a8dbb68e7f5697d597571c830a460c4 \
-    --hash=sha256:f1dd5668a4df9a23aff56c8321ea3aac3fda23d9d17473158d308d1b13e5363e
+django-storages==1.7.1 \
+    --hash=sha256:8e35d2c7baeda5dc6f0b4f9a0fc142d25f9a1bf72b8cebfcbc5db4863abc552d \
+    --hash=sha256:b1a63cd5ea286ee5a9fb45de6c3c5c0ae132d58308d06f1ce9865cfcd5e470a7
 pycodestyle==2.3.0 \
     --hash=sha256:a5910db118cf7e66ff92fb281a203c19ca2b5134620dd2538a794e636253863b \
     --hash=sha256:ae308be77310759b722965cfe4a81b69c10aacaecb2db2c874ceb1720cc8f1aa \

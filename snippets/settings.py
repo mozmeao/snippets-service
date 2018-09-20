@@ -253,6 +253,8 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
         MEDIA_FILES_ROOT: 'max-age=900',  # 15 Minutes
         MEDIA_BUNDLES_ROOT: 'max-age=2592000',  # 1 Month
     }
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_BUCKET_ACL = 'public-read'
 
 DEAD_MANS_SNITCH_PRODUCT_DETAILS = config('DEAD_MANS_SNITCH_PRODUCT_DETAILS', default=None)
 DEAD_MANS_SNITCH_DISABLE_SNIPPETS = config('DEAD_MANS_SNITCH_DISABLE_SNIPPETS', default=None)
