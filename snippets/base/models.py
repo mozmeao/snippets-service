@@ -552,7 +552,12 @@ class Target(models.Model):
     client_match_rules = models.ManyToManyField(
         ClientMatchRule, blank=True, verbose_name='Client Match Rules')
 
-    jexl = django_mysql.models.DynamicField(default={})
+    jexl = django_mysql.models.DynamicField(
+        default={},
+        spec={
+            'filtr_is_default_browser': str,
+        }
+    )
     jexl_expr = models.TextField(blank=True, default='')
 
     class Meta:
@@ -561,11 +566,7 @@ class Target(models.Model):
     def __str__(self):
         return self.name
 
-    def render_jexl(self):
-        return ' && '.join([expr for expr in self.jexl.values() if expr])
-
     def save(self, *args, **kwargs):
-        self.jexl_expr = self.render_jexl()
         super().save(*args, **kwargs)
 
 

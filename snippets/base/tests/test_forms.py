@@ -6,10 +6,10 @@ from django.forms import ValidationError
 from mock import Mock, MagicMock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.forms import (IconWidget, SnippetAdminForm, SnippetNGAdminForm,
+from snippets.base.forms import (IconWidget, SnippetAdminForm, SnippetNGAdminForm, TargetAdminForm,
                                  TemplateDataWidget, TemplateSelect, UploadedFileAdminForm)
 from snippets.base.tests import (SnippetFactory, SnippetTemplateFactory,
-                                 SnippetTemplateVariableFactory, TestCase)
+                                 SnippetTemplateVariableFactory, TestCase, TargetFactory)
 
 
 class IconWidgetTests(TestCase):
@@ -298,3 +298,28 @@ class BaseSnippetAdminFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertTrue('You are not allowed to edit or publish on Release channel.' in
                         form.errors['__all__'][0])
+
+
+class TargetAdminFormTests(TestCase):
+    def setUp(self):
+        self.data = {
+            'name': 'foo-target',
+            'filtr_is_default_browser': 'true',
+        }
+
+    def test_set_initial_jexl(self):
+        data = self.data.copy()
+        instance = TargetFactory(jexl={'filtr_is_default_browser': 'false'})
+        form = TargetAdminForm(data, instance=instance)
+        self.assertEqual(form.fields['filtr_is_default_browser'].initial, 'false')
+
+    def test_save(self):
+        data = self.data.copy()
+        instance = TargetFactory()
+        form = TargetAdminForm(data, instance=instance)
+
+        self.assertTrue(form.is_valid())
+        form.save()
+        instance.refresh_from_db()
+        self.assertEqual(instance.jexl_expr, 'isDefaultBrowser == true')
+        self.assertEqual(instance.jexl, {'filtr_is_default_browser': 'true'})
