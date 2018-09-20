@@ -568,7 +568,7 @@ class TargetAdminForm(forms.ModelForm):
         if self.instance and self.instance.jexl:
             for name, field in self.fields.items():
                 if name.startswith('filtr_'):
-                    field.initial = self.instance.jexl.get(name[6:])
+                    field.initial = self.instance.jexl.get(name)
 
     def save(self, *args, **kwargs):
         jexl = {}
@@ -576,7 +576,7 @@ class TargetAdminForm(forms.ModelForm):
 
         for name, field in self.fields.items():
             if name.startswith('filtr_'):
-                jexl[name[6:]] = self.cleaned_data[name]
+                jexl[name] = self.cleaned_data[name]
                 jexl_expr_array.append(field.to_jexl(self.cleaned_data[name]))
         self.instance.jexl = jexl
         self.instance.jexl_expr = ' && '.join([x for x in jexl_expr_array if x])
