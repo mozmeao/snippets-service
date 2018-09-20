@@ -603,6 +603,15 @@ class TargetAdminForm(forms.ModelForm):
         label='Firefox Profile Age',
         help_text='The age of the browser profile must fall between those two limits.'
     )
+    filtr_uses_firefox_sync = fields.JEXLChoiceField(
+        'usesFirefoxSync',
+        choices=((None, "I don't care"),
+                 ('true', 'Yes',),
+                 ('false', 'No')),
+        label_suffix='?',
+        label='Uses Firefox Sync',
+        help_text='User has a Firefox account which is connected to their browser',
+        required=False)
 
     class Meta:
         model = Target
