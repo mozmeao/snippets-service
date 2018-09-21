@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.test.utils import override_settings
+from django.urls import reverse
 
 from jinja2 import Markup
 from mock import MagicMock, Mock, patch
@@ -345,3 +346,10 @@ class ASRSnippetTests(TestCase):
             }
         }
         self.assertEqual(generated_result, expected_result)
+
+    @override_settings(SITE_URL='http://example.com')
+    def test_get_preview_url(self):
+        snippet = ASRSnippetFactory.create()
+        expected_result = 'about:newtab?endpoint=http://example.com'
+        expected_result += reverse('asr-preview', kwargs={'uuid': snippet.uuid})
+        self.assertEqual(snippet.get_preview_url(), expected_result)

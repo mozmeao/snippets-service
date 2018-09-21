@@ -5,6 +5,7 @@ from distutils.util import strtobool
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
+from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.functional import lazy
@@ -20,7 +21,7 @@ from snippets.base import util
 from snippets.base.bundles import ASRSnippetBundle, SnippetBundle
 from snippets.base.decorators import access_control
 from snippets.base.encoders import JSONSnippetEncoder
-from snippets.base.models import Client, JSONSnippet, Snippet, SnippetTemplate
+from snippets.base.models import ASRSnippet, Client, JSONSnippet, Snippet, SnippetTemplate
 from snippets.base.util import get_object_or_none
 
 
@@ -73,6 +74,19 @@ def fetch_json_snippets(request, **kwargs):
                          .filter_by_available())
     return HttpResponse(json.dumps(matching_snippets, cls=JSONSnippetEncoder),
                         content_type='application/json')
+
+
+def preview_asr_snippet(request, uuid):
+    try:
+        snippet = get_object_or_404(ASRSnippet, uuid=uuid)
+    except ValidationError:
+        # Raised when UUID is a badly formed hexadecimal UUID string
+        raise Http404()
+
+    bundle_content = json.dumps({
+        'messages': [snippet.render()],
+    })
+    return HttpResponse(bundle_content, content_type='application/json')
 
 
 @csrf_exempt

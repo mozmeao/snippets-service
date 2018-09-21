@@ -130,13 +130,19 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'campaign',
     )
     preserve_filters = True
-    readonly_fields = ('created', 'modified', 'uuid', 'creator',)
+    readonly_fields = (
+        'created',
+        'modified',
+        'uuid',
+        'creator',
+        'preview_url',
+    )
     save_on_top = True
     save_as = True
     view_on_site = False
 
     fieldsets = (
-        ('ID', {'fields': ('creator', 'name', 'status')}),
+        ('ID', {'fields': ('creator', 'name', 'status', 'preview_url')}),
         ('Publishing Options', {
             'fields': ('campaign', 'target', ('publish_start', 'publish_end'))
         }),
@@ -153,6 +159,9 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         obj.creator = request.user
         statsd.incr('save.asrsnippet')
         super().save_model(request, obj, form, change)
+
+    def preview_url(self, obj):
+        return obj.get_preview_url()
 
 
 class CampaignAdmin(admin.ModelAdmin):
