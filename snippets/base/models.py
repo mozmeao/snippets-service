@@ -623,3 +623,8 @@ class ASRSnippet(django_mysql.models.Model):
         }
 
         return rendered_snippet
+
+    def get_preview_url(self):
+        url = reverse('asr-preview', kwargs={'uuid': self.uuid})
+        full_url = urljoin(settings.SITE_URL, url)
+        return 'about:newtab?endpoint=' + full_url

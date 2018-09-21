@@ -11,7 +11,7 @@ from mock import patch
 import snippets.base.models
 from snippets.base import views
 from snippets.base.models import Client
-from snippets.base.tests import (JSONSnippetFactory, SnippetFactory,
+from snippets.base.tests import (ASRSnippetFactory, JSONSnippetFactory, SnippetFactory,
                                  SnippetTemplateFactory, TestCase)
 
 snippets.base.models.CHANNELS = ('release', 'beta', 'aurora', 'nightly')
@@ -251,3 +251,24 @@ class FetchSnippetsTests(TestCase):
         response = self.client.get('/{0}/'.format('/'.join(['{}'.format(x) for x in params])))
         cache_headers = [header.strip() for header in response['Cache-control'].split(',')]
         self.assertEqual(set(cache_headers), set(['public', 'max-age=75']))
+
+
+class PreviewASRSnippetTests(TestCase):
+    def test_base(self):
+        snippet = ASRSnippetFactory()
+        url = reverse('asr-preview', kwargs={'uuid': snippet.uuid})
+        with patch('snippets.base.views.ASRSnippet.render') as render_mock:
+            render_mock.return_value = 'foo'
+            response = self.client.get(url)
+        self.assertTrue(render_mock.called)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+
+    def test_404(self):
+        url = reverse('asr-preview', kwargs={'uuid': 'foo'})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+        url = reverse('asr-preview', kwargs={'uuid': '804c062b-844f-4f33-80d3-9915514a14b4'})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
