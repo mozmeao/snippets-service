@@ -51,6 +51,13 @@ Client = namedtuple('Client', (
     'distribution_version'
 ))
 
+STATUS_CHOICES = {
+    'Draft': 100,
+    'Ready for review': 200,
+    'Approved': 300,
+    'Published': 400,
+}
+
 
 # Cache for compiled snippet templates. Using jinja's built in cache
 # requires either an extra trip to the database/cache or jumping through
@@ -568,10 +575,7 @@ class ASRSnippet(django_mysql.models.Model):
     template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT)
     data = models.TextField(default='{}')
 
-    status = models.IntegerField(choices=((100, 'Draft'),
-                                          (200, 'Ready for review'),
-                                          (300, 'Disabled'),
-                                          (400, 'Enabled')),
+    status = models.IntegerField(choices=[(y, x) for x, y in STATUS_CHOICES.items()],
                                  db_index=True, default=100)
 
     publish_start = models.DateTimeField(
