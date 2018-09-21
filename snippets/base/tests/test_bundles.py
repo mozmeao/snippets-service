@@ -4,11 +4,11 @@ from django.conf import settings
 from django.test.utils import override_settings
 
 import brotli
-from mock import ANY, Mock, patch
+from mock import ANY, DEFAULT, Mock, patch
 
-from snippets.base.bundles import ONE_DAY, SnippetBundle
+from snippets.base.bundles import ONE_DAY, ASRSnippetBundle, SnippetBundle
 from snippets.base.models import Client
-from snippets.base.tests import SnippetFactory, TestCase
+from snippets.base.tests import ASRSnippetFactory, SnippetFactory, TestCase
 
 
 class SnippetBundleTests(TestCase):
@@ -188,37 +188,6 @@ class SnippetBundleTests(TestCase):
         content_file = default_storage.save.call_args[0][1]
         self.assertEqual(content_file.read(), b'rendered snippet')
 
-    @override_settings(BUNDLE_BROTLI_COMPRESS=False)
-    def test_generate_activity_stream_router(self):
-        """
-        bundle.generate should render the snippets, save them to the
-        filesystem, and mark the bundle as not-expired in the cache for
-        activity stream!
-        """
-        bundle = SnippetBundle(self._client(locale='fr', startpage_version=6))
-        bundle.storage = Mock()
-        bundle.snippets = [self.snippet1, self.snippet2]
-        self.snippet1.render_to_as_router = Mock()
-        self.snippet1.render_to_as_router.return_value = 'snippet1'
-        self.snippet2.render_to_as_router = Mock()
-        self.snippet2.render_to_as_router.return_value = 'snippet2'
-
-        with patch('snippets.base.bundles.datetime') as datetime:
-            with patch('snippets.base.bundles.cache') as cache:
-                with patch('snippets.base.bundles.default_storage') as default_storage:
-                    datetime.utcnow.return_value.isoformat.return_value = 'now'
-                    bundle.generate()
-
-        self.assertTrue(bundle.filename.endswith('.json'))
-        default_storage.save.assert_called_with(bundle.filename, ANY)
-        cache.set.assert_called_with(bundle.cache_key, True, ONE_DAY)
-
-        # Check content of saved file.
-        content_file = default_storage.save.call_args[0][1]
-        content_json = json.load(content_file)
-        self.assertEqual(content_json['messages'], ['snippet1', 'snippet2'])
-        self.assertEqual(content_json['metadata']['generated_at'], 'now')
-
     @override_settings(BUNDLE_BROTLI_COMPRESS=True)
     def test_generate_brotli(self):
         """
@@ -278,3 +247,127 @@ class SnippetBundleTests(TestCase):
 
         bundle.snippets = [self.snippet1, self.snippet2]
         self.assertFalse(bundle.empty)
+
+
+class ASRSnippetBundleTests(TestCase):
+    def setUp(self):
+        self.snippet1, self.snippet2 = ASRSnippetFactory.create_batch(2)
+
+    def _client(self, **kwargs):
+        client_kwargs = dict((key, '') for key in Client._fields)
+        client_kwargs['startpage_version'] = 4
+        client_kwargs.update(kwargs)
+        return Client(**client_kwargs)
+
+    def test_key_snippets(self):
+        """
+        bundle.key must be different between bundles if they have
+        different snippets.
+        """
+        client = self._client()
+        bundle1 = ASRSnippetBundle(client)
+        bundle1.snippets = [self.snippet1, self.snippet2]
+        bundle2 = ASRSnippetBundle(client)
+        bundle2.snippets = [self.snippet2]
+
+        self.assertNotEqual(bundle1.key, bundle2.key)
+
+    def test_key_funny_characters(self):
+        """
+        bundle.key should generate even when client contains strange unicode
+        characters
+        """
+        client = self._client(channel='release-cck- \xe2\x80\x9cubuntu\xe2\x80\x9d')
+        ASRSnippetBundle(client).key
+
+    def test_key_startpage_version(self):
+        """
+        bundle.key must be different between bundles if they have
+        different startpage versions.
+        """
+        client1 = self._client(startpage_version=1)
+        client2 = self._client(startpage_version=2)
+        bundle1 = ASRSnippetBundle(client1)
+        bundle2 = ASRSnippetBundle(client2)
+
+        self.assertNotEqual(bundle1.key, bundle2.key)
+
+    def test_key_locale(self):
+        """
+        bundle.key must be different between bundles if they have
+        different locales.
+        """
+        client1 = self._client(locale='en-US')
+        client2 = self._client(locale='fr')
+        bundle1 = ASRSnippetBundle(client1)
+        bundle2 = ASRSnippetBundle(client2)
+
+        self.assertNotEqual(bundle1.key, bundle2.key)
+
+    def test_key_equal(self):
+        client1 = self._client(locale='en-US', startpage_version=4)
+        client2 = self._client(locale='en-US', startpage_version=4)
+        bundle1 = ASRSnippetBundle(client1)
+        bundle1.snippets = [self.snippet1, self.snippet2]
+        bundle2 = ASRSnippetBundle(client2)
+        bundle2.snippets = [self.snippet1, self.snippet2]
+
+        self.assertEqual(bundle1.key, bundle2.key)
+
+    def test_key_snippet_modified(self):
+        client1 = self._client(locale='en-US', startpage_version=4)
+        bundle = ASRSnippetBundle(client1)
+        bundle.snippets = [self.snippet1]
+        key_1 = bundle.key
+
+        # save snippet, touch modified
+        self.snippet1.save()
+        bundle = ASRSnippetBundle(client1)
+        bundle.snippets = [self.snippet1]
+        key_2 = bundle.key
+        self.assertNotEqual(key_1, key_2)
+
+    def test_key_template_modified(self):
+        client1 = self._client(locale='en-US', startpage_version=4)
+        bundle = ASRSnippetBundle(client1)
+        bundle.snippets = [self.snippet1]
+        key_1 = bundle.key
+
+        # save template, touch modified
+        self.snippet1.template.save()
+        bundle = ASRSnippetBundle(client1)
+        bundle.snippets = [self.snippet1]
+        key_2 = bundle.key
+        self.assertNotEqual(key_1, key_2)
+
+    @override_settings(BUNDLE_BROTLI_COMPRESS=False)
+    def test_generate(self):
+        """
+        bundle.generate should render the snippets, save them to the
+        filesystem, and mark the bundle as not-expired in the cache for
+        activity stream router!
+        """
+        bundle = ASRSnippetBundle(self._client(locale='fr', startpage_version=6))
+        bundle.storage = Mock()
+        bundle.snippets = [self.snippet1, self.snippet2]
+        self.snippet1.render = Mock()
+        self.snippet1.render.return_value = 'snippet1'
+        self.snippet2.render = Mock()
+        self.snippet2.render.return_value = 'snippet2'
+
+        datetime_mock = Mock()
+        datetime_mock.utcnow.return_value.isoformat.return_value = 'now'
+        with patch.multiple('snippets.base.bundles',
+                            datetime=datetime_mock,
+                            cache=DEFAULT, default_storage=DEFAULT) as mocks:
+            bundle.generate()
+
+        self.assertTrue(bundle.filename.endswith('.json'))
+        mocks['default_storage'].save.assert_called_with(bundle.filename, ANY)
+        mocks['cache'].set.assert_called_with(bundle.cache_key, True, ONE_DAY)
+
+        # Check content of saved file.
+        content_file = mocks['default_storage'].save.call_args[0][1]
+        content_json = json.load(content_file)
+        self.assertEqual(content_json['messages'], ['snippet1', 'snippet2'])
+        self.assertEqual(content_json['metadata']['generated_at'], 'now')

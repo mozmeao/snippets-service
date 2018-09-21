@@ -21,7 +21,7 @@ from jinja2.utils import LRUCache
 
 from snippets.base import util
 from snippets.base.fields import RegexField
-from snippets.base.managers import ClientMatchRuleManager, SnippetManager
+from snippets.base.managers import ASRSnippetManager, ClientMatchRuleManager, SnippetManager
 from snippets.base.validators import validate_xml_template
 
 
@@ -338,36 +338,6 @@ class Snippet(SnippetBaseModel):
 
         return Markup(rendered_snippet)
 
-    def render_to_as_router(self):
-        """Render method for AS router snippets."""
-        data = json.loads(self.data)
-
-        # Add snippet ID to template variables.
-        for key, value in data.items():
-            if isinstance(value, str):
-                data[key] = value.replace('[[snippet_id]]', str(self.id))
-
-        # Will be replaced with a more generic solution when we develop more AS
-        # Router templates. See #565
-        text, links = util.fluent_link_extractor(data.get('text', ''))
-        data['text'] = text
-        data['links'] = links
-
-        rendered_snippet = {
-            'id': str(self.id),
-            'template': self.template.code_name,
-            'template_version': self.template.version,
-            'campaign': self.campaign,
-            'content': data,
-        }
-
-        if self.publish_start:
-            rendered_snippet['publish_start'] = util.to_unix_time_seconds(self.publish_start)
-        if self.publish_end:
-            rendered_snippet['publish_end'] = util.to_unix_time_seconds(self.publish_end)
-
-        return rendered_snippet
-
     @property
     def channels(self):
         channels = []
@@ -580,17 +550,6 @@ class Campaign(models.Model):
         max_length=255, blank=True, default='', unique=True,
         help_text=('Optional campaign slug. Will be added in the stats ping. '
                    'Will be used for snippet blocking if set.'))
-    publish_start = models.DateTimeField(
-        blank=True, null=True,
-        verbose_name='Publish Starts',
-        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
-    publish_end = models.DateTimeField(
-        blank=True, null=True,
-        verbose_name='Publish Ends',
-        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
-
-    target = models.ForeignKey(Target, on_delete=models.PROTECT,
-                               default=None, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -604,7 +563,7 @@ class ASRSnippet(django_mysql.models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=255, unique=True)
 
-    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT)
 
     template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT)
     data = models.TextField(default='{}')
@@ -615,6 +574,20 @@ class ASRSnippet(django_mysql.models.Model):
                                           (400, 'Enabled')),
                                  db_index=True, default=100)
 
+    publish_start = models.DateTimeField(
+        blank=True, null=True,
+        verbose_name='Publish Starts',
+        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
+    publish_end = models.DateTimeField(
+        blank=True, null=True,
+        verbose_name='Publish Ends',
+        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
+
+    target = models.ForeignKey(Target, on_delete=models.PROTECT,
+                               default=None, blank=True, null=True)
+
+    objects = ASRSnippetManager()
+
     class Meta:
         ordering = ['-modified']
         verbose_name = 'ASR Snippet'
@@ -622,3 +595,27 @@ class ASRSnippet(django_mysql.models.Model):
 
     def __str__(self):
         return self.name
+
+    def render(self):
+        data = json.loads(self.data)
+
+        # Add snippet ID to template variables.
+        for key, value in data.items():
+            if isinstance(value, str):
+                data[key] = value.replace('[[snippet_id]]', str(self.id))
+
+        # Will be replaced with a more generic solution when we develop more AS
+        # Router templates. See #565
+        text, links = util.fluent_link_extractor(data.get('text', ''))
+        data['text'] = text
+        data['links'] = links
+
+        rendered_snippet = {
+            'id': str(self.id),
+            'template': self.template.code_name,
+            'template_version': self.template.version,
+            'campaign': self.campaign.slug,
+            'content': data,
+        }
+
+        return rendered_snippet

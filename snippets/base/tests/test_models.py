@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.conf import settings
 from django.test.utils import override_settings
 
@@ -8,7 +6,8 @@ from mock import MagicMock, Mock, patch
 from pyquery import PyQuery as pq
 
 from snippets.base.models import Client, UploadedFile, _generate_filename
-from snippets.base.tests import (ClientMatchRuleFactory,
+from snippets.base.tests import (ASRSnippetFactory,
+                                 ClientMatchRuleFactory,
                                  JSONSnippetFactory,
                                  SearchProviderFactory,
                                  SnippetFactory,
@@ -280,41 +279,6 @@ class SnippetTests(TestCase):
                                                     'snippet_id': snippet.id,
                                                     'foo': True})
 
-    def test_render_to_as_router(self):
-        """
-
-        """
-        snippet = SnippetFactory.create(
-            template__code='<p>{{ text }} {{ foo }}</p>',
-            data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}')
-        generated_result = snippet.render_to_as_router()
-        expected_result = {
-            'id': str(snippet.id),
-            'template': snippet.template.code_name,
-            'template_version': snippet.template.version,
-            'campaign': snippet.campaign,
-            'content': {
-                'text': 'snippet id {}'.format(snippet.id),
-                'foo': 'bar',
-                'links': {},
-            }
-        }
-        self.assertEqual(generated_result, expected_result)
-
-        # Check start date include
-        snippet.publish_start = datetime(2018, 4, 11, 0, 0)
-        snippet.publish_end = None
-        generated_result = snippet.render_to_as_router()
-        self.assertEqual(generated_result['publish_start'], 1523404800)
-        self.assertTrue('publish_end' not in generated_result)
-
-        # Check end date include
-        snippet.publish_start = None
-        snippet.publish_end = datetime(2018, 3, 23, 0, 0)
-        generated_result = snippet.render_to_as_router()
-        self.assertEqual(generated_result['publish_end'], 1521763200)
-        self.assertTrue('publish_start' not in generated_result)
-
 
 class UploadedFileTests(TestCase):
 
@@ -358,3 +322,26 @@ class UploadedFileTests(TestCase):
         template = SnippetTemplateFactory.create(code='<foo>{0}</foo>'.format(instance.url))
         more_snippets = SnippetFactory.create_batch(3, template=template)
         self.assertEqual(set(instance.snippets), set(list(snippets) + list(more_snippets)))
+
+
+class ASRSnippetTests(TestCase):
+    def test_render(self):
+        """
+
+        """
+        snippet = ASRSnippetFactory.create(
+            template__code='<p>{{ text }} {{ foo }}</p>',
+            data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}')
+        generated_result = snippet.render()
+        expected_result = {
+            'id': str(snippet.id),
+            'template': snippet.template.code_name,
+            'template_version': snippet.template.version,
+            'campaign': snippet.campaign.slug,
+            'content': {
+                'text': 'snippet id {}'.format(snippet.id),
+                'foo': 'bar',
+                'links': {},
+            }
+        }
+        self.assertEqual(generated_result, expected_result)

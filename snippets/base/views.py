@@ -17,7 +17,7 @@ from django_statsd.clients import statsd
 from raven.contrib.django.models import client as sentry_client
 
 from snippets.base import util
-from snippets.base.bundles import SnippetBundle
+from snippets.base.bundles import ASRSnippetBundle, SnippetBundle
 from snippets.base.decorators import access_control
 from snippets.base.encoders import JSONSnippetEncoder
 from snippets.base.models import Client, JSONSnippet, Snippet, SnippetTemplate
@@ -44,7 +44,10 @@ def fetch_snippets(request, **kwargs):
     statsd.incr('serve.snippets')
 
     client = Client(**kwargs)
-    bundle = SnippetBundle(client)
+    if client.startpage_version == 6:
+        bundle = ASRSnippetBundle(client)
+    else:
+        bundle = SnippetBundle(client)
     if bundle.empty:
         statsd.incr('bundle.empty')
         # This is not a 204 because Activity Stream expects content, even if
