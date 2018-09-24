@@ -170,10 +170,15 @@ class ASRSnippetBundle(SnippetBundle):
         # accounts for all the properties sent by the Client, since the
         # self.snippets lists snippets are all filters and CMRs have been
         # applied.
+        #
+        # Key must change when Snippet or related Template, Campaign or Target
+        # get updated.
         key_properties = [
-            '{id}-{date}-{templatedate}'.format(id=snippet.id,
-                                                date=snippet.modified.isoformat(),
-                                                templatedate=snippet.template.modified.isoformat())
+            '-'.join([str(x) for x in [snippet.id,
+                                       snippet.modified.isoformat(),
+                                       snippet.template.modified.isoformat(),
+                                       snippet.campaign.modified.isoformat(),
+                                       snippet.target.modified.isoformat()]])
             for snippet in self.snippets]
 
         # Additional values used to calculate the key are the templates and the
@@ -195,6 +200,7 @@ class ASRSnippetBundle(SnippetBundle):
     def snippets(self):
         return (ASRSnippet.objects
                 .filter(status=STATUS_CHOICES['Published'])
+                .select_related('template', 'campaign', 'target')
                 .match_client(self.client)
                 .filter_by_available())
 
