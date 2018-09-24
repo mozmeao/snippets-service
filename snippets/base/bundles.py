@@ -13,7 +13,7 @@ from django.utils.functional import cached_property
 import brotli
 
 from snippets.base import util
-from snippets.base.models import ASRSnippet, Snippet
+from snippets.base.models import STATUS_CHOICES, ASRSnippet, Snippet
 
 
 ONE_DAY = 60 * 60 * 24
@@ -194,7 +194,7 @@ class ASRSnippetBundle(SnippetBundle):
     @cached_property
     def snippets(self):
         return (ASRSnippet.objects
-                .filter(status=400)
+                .filter(status=STATUS_CHOICES['Published'])
                 .match_client(self.client)
                 .filter_by_available())
 
