@@ -48,7 +48,7 @@ class SnippetTemplateVariableInline(admin.TabularInline):
 class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
     save_on_top = True
     list_display = ('name', 'priority', 'hidden')
-    list_filter = ('hidden',)
+    list_filter = ('hidden', 'startpage')
     inlines = (SnippetTemplateVariableInline,)
     formfield_overrides = {
         TextField: {'widget': AceWidget(mode='html', theme='github',

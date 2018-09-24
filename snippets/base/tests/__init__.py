@@ -143,7 +143,7 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
     campaign = factory.SubFactory(CampaignFactory, creator=factory.SelfAttribute('..creator'))
 
     template = factory.SubFactory(SnippetTemplateFactory)
-    status = 400  # Published
+    status = models.STATUS_CHOICES['Published']
 
     target = factory.SubFactory(TargetFactory, creator=factory.SelfAttribute('..creator'))
 
