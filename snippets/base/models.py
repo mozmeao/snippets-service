@@ -600,7 +600,7 @@ class ASRSnippet(django_mysql.models.Model):
     def __str__(self):
         return self.name
 
-    def render(self):
+    def render(self, preview=False):
         data = json.loads(self.data)
 
         # Add snippet ID to template variables.
@@ -621,6 +621,9 @@ class ASRSnippet(django_mysql.models.Model):
             'campaign': self.campaign.slug,
             'content': data,
         }
+
+        if not preview:
+            rendered_snippet['targeting'] = self.target.jexl_expr
 
         return rendered_snippet
 
