@@ -633,6 +633,15 @@ class TargetAdminForm(forms.ModelForm):
         label='Is developer',
         help_text='User has opened Developer Tools more than 5 times.',
         required=False)
+    filtr_updates_enabled = fields.JEXLChoiceField(
+        'browserSettings.update.enabled',
+        choices=((None, "I don't care"),
+                 ('true', 'Yes',),
+                 ('false', 'No')),
+        required=False,
+        label='Has updates enabled',
+        label_suffix='?',
+    )
 
     class Meta:
         model = Target
