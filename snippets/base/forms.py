@@ -642,6 +642,15 @@ class TargetAdminForm(forms.ModelForm):
         label='Has updates enabled',
         label_suffix='?',
     )
+    filtr_updates_autodownload_enabled = fields.JEXLChoiceField(
+        'browserSettings.update.autoDownload',
+        choices=((None, "I don't care"),
+                 ('true', 'Yes',),
+                 ('false', 'No')),
+        required=False,
+        label='Is auto-downloading updates',
+        label_suffix='?',
+    )
 
     class Meta:
         model = Target

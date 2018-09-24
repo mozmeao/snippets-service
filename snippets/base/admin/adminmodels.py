@@ -198,6 +198,7 @@ class TargetAdmin(admin.ModelAdmin):
             'fields': (
                 'filtr_is_default_browser',
                 'filtr_updates_enabled',
+                'filtr_updates_autodownload_enabled',
                 'filtr_profile_age_created',
                 'filtr_uses_firefox_sync',
                 'filtr_is_developer',
