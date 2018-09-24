@@ -325,4 +325,6 @@ class TargetAdminFormTests(TestCase):
         self.assertEqual(instance.jexl, {
             'filtr_is_default_browser': 'true',
             'filtr_profile_age_created': '',
+            'filtr_uses_firefox_sync': '',
+            'filtr_is_developer': '',
         })

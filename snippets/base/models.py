@@ -533,6 +533,8 @@ class Target(models.Model):
         default={},
         spec={
             'filtr_is_default_browser': str,
+            'filtr_uses_firefox_sync': str,
+            'filtr_is_developer': str,
         }
     )
     jexl_expr = models.TextField(blank=True, default='')
