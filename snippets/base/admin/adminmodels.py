@@ -195,7 +195,10 @@ class TargetAdmin(admin.ModelAdmin):
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
         }),
         ('Targeting', {
-            'fields': ('filtr_is_default_browser', )
+            'fields': (
+                'filtr_is_default_browser',
+                'filtr_profile_age_created',
+            )
         }),
         ('Other Info', {
             'fields': ('creator', ('created', 'modified'), 'jexl_expr'),

@@ -322,4 +322,7 @@ class TargetAdminFormTests(TestCase):
         form.save()
         instance.refresh_from_db()
         self.assertEqual(instance.jexl_expr, 'isDefaultBrowser == true')
-        self.assertEqual(instance.jexl, {'filtr_is_default_browser': 'true'})
+        self.assertEqual(instance.jexl, {
+            'filtr_is_default_browser': 'true',
+            'filtr_profile_age_created': '',
+        })

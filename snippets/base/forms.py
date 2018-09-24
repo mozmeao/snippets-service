@@ -67,6 +67,38 @@ BOOKMARKS_COUNT_CHOICES = (
     (1000000, '1,000,000'),
 )
 
+PROFILE_AGE_CHOICES_AS = (
+    (None, 'No limit'),
+    (None, '----------'),
+    (1, 'One week'),
+    (2, 'Two weeks'),
+    (3, 'Three weeks'),
+    (4, 'Four weeks'),
+    (5, 'Five weeks'),
+    (6, 'Six weeks'),
+    (7, 'Seven weeks'),
+    (8, 'Eight weeks'),
+    (9, 'Nine weeks'),
+    (10, 'Ten weeks'),
+    (11, 'Eleven weeks'),
+    (12, 'Twelve weeks'),
+    (13, 'Thirteen weeks'),
+    (14, 'Fourteen weeks'),
+    (15, 'Fifteen weeks'),
+    (16, 'Sixteen weeks'),
+    (17, 'Seventeen weeks'),
+    (None, '-----------'),
+    (4, 'One Month'),
+    (9, 'Two Months'),
+    (13, 'Three Months'),
+    (17, 'Four Months'),
+    (21, 'Five Months'),
+    (26, 'Six Months'),
+    (None, '-----------'),
+    (52, 'One Year'),
+    (104, 'Two Years'),
+)
+
 
 class TemplateSelect(forms.Select):
     """
@@ -558,6 +590,19 @@ class TargetAdminForm(forms.ModelForm):
         label_suffix='?',
         label='Has Firefox set to be the default browser',
         required=False)
+    filtr_profile_age_created = fields.JEXLRangeField(
+        'profileAgeCreated',
+        # profileAgeCreated is in milliseconds. We first calculate the
+        # difference from currentDate and then we convert to week.
+        jexl={
+            'minimum': '((currentDate - profileAgeCreated) / 604800000) >= {value}',
+            'maximum': '((currentDate - profileAgeCreated) / 604800000) < {value}',
+        },
+        choices=PROFILE_AGE_CHOICES_AS,
+        required=False,
+        label='Firefox Profile Age',
+        help_text='The age of the browser profile must fall between those two limits.'
+    )
 
     class Meta:
         model = Target
