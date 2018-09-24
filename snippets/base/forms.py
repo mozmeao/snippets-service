@@ -105,14 +105,15 @@ class TemplateDataWidget(forms.TextInput):
     the template variables available for the currently selected template. These
     fields are combined into a JSON string when the form is submitted.
     """
-    def __init__(self, select_name, *args, **kwargs):
+    def __init__(self, select_name, include_preview_button=True, *args, **kwargs):
         self.template_select_name = select_name
+        self.include_preview_button = include_preview_button
         return super(TemplateDataWidget, self).__init__(*args, **kwargs)
 
     def render(self, name, value, attrs=None, renderer=None):
         widget_code = super(TemplateDataWidget, self).render(
             name, value, attrs)
-        return mark_safe(''.join([widget_code, """
+        extra_code = """
             <div class="widget-container">
               <div class="template-data-widget"
                    data-select-name="{select_name}"
@@ -120,15 +121,21 @@ class TemplateDataWidget(forms.TextInput):
                    data-snippet-size-limit="{size_limit}"
                    data-snippet-img-size-limit="{img_size_limit}">
               </div>
+        """
+        if self.include_preview_button:
+            extra_code += """
               <div class="snippet-preview-container"
                    data-preview-url="{preview_url}">
               </div>
-            </div>
-        """.format(select_name=self.template_select_name,
-                   input_name=name,
-                   preview_url=reverse('base.preview'),
-                   size_limit=settings.SNIPPET_SIZE_LIMIT,
-                   img_size_limit=settings.SNIPPET_IMAGE_SIZE_LIMIT)
+            """
+        extra_code += '</div>'
+        return mark_safe(''.join([
+            widget_code, extra_code.format(
+                select_name=self.template_select_name,
+                input_name=name,
+                preview_url=reverse('base.preview'),
+                size_limit=settings.SNIPPET_SIZE_LIMIT,
+                img_size_limit=settings.SNIPPET_IMAGE_SIZE_LIMIT)
         ]))
 
     class Media:
@@ -545,7 +552,7 @@ class ASRSnippetAdminForm(forms.ModelForm):
         model = ASRSnippet
         exclude = ['creator', 'created', 'modified']
         widgets = {
-            'data': TemplateDataWidget('template'),
+            'data': TemplateDataWidget('template', include_preview_button=False),
         }
 
 
