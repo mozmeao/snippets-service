@@ -45,15 +45,17 @@ class XMLTemplateValidatorTests(TestCase):
 
 
 class ASRouterFluentVariablesValidatorTests(TestCase):
-    @patch('snippets.base.validators.ALLOWED_TAGS', 'a')
+    @patch('snippets.base.validators.ALLOWED_TAGS', ['a', 'strong'])
     def test_valid(self):
-        data = json.dumps({'text': 'Link to <a href="http://example.com">example.com</a>.'})
-        self.assertEqual(validate_as_router_fluent_variables(data), data)
+        data = json.dumps({'text': 'Link to <a href="http://example.com">example.com</a>.',
+                           'foo': 'This is <strong>important</strong>',
+                           'bar': 'This is not rich text.'})
+        self.assertEqual(validate_as_router_fluent_variables(data, ['text', 'foo']), data)
 
     @patch('snippets.base.validators.ALLOWED_TAGS', 'a')
     def test_invalid(self):
         data = json.dumps({'text': '<strong>Strong</strong> text.'})
-        self.assertRaises(ValidationError, validate_as_router_fluent_variables, data)
+        self.assertRaises(ValidationError, validate_as_router_fluent_variables, data, ['text'])
 
 
 class RegexValidatorTests(TestCase):

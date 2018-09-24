@@ -85,6 +85,12 @@ class SnippetTemplate(models.Model):
 
     objects = models.Manager()
 
+    class Meta:
+        ordering = ('-priority', 'name')
+
+    def __str__(self):
+        return self.name
+
     def render(self, ctx):
         ctx.setdefault('snippet_id', 0)
 
@@ -96,11 +102,12 @@ class SnippetTemplate(models.Model):
             template_cache[cache_key] = template
         return template.render(ctx)
 
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        ordering = ('-priority', 'name')
+    def get_rich_text_variables(self):
+        variables = (self.variable_set
+                     .filter(type__in=[SnippetTemplateVariable.RICH_TEXT,
+                                       SnippetTemplateVariable.BODY])
+                     .values_list('name', flat=True))
+        return variables
 
 
 class SnippetTemplateVariable(models.Model):
@@ -113,8 +120,17 @@ class SnippetTemplateVariable(models.Model):
     SMALLTEXT = 2
     CHECKBOX = 3
     BODY = 4
-    TYPE_CHOICES = ((BODY, 'Main Text'), (TEXT, 'Text'), (SMALLTEXT, 'Small Text'),
-                    (IMAGE, 'Image'), (CHECKBOX, 'Checkbox'))
+    RICH_TEXT = 5
+    TYPE_CHOICES = (
+        # Main Text is also Rich Text
+        (BODY, 'Main Text'),
+        # Text field that allows some HTML tags and attributes.
+        (RICH_TEXT, 'Rich Text'),
+        (TEXT, 'Text'),
+        (SMALLTEXT, 'Small Text'),
+        (IMAGE, 'Image'),
+        (CHECKBOX, 'Checkbox'),
+    )
 
     template = models.ForeignKey(SnippetTemplate, on_delete=models.CASCADE,
                                  related_name='variable_set')
