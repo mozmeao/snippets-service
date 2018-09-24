@@ -624,11 +624,8 @@ class ASRSnippet(django_mysql.models.Model):
             if isinstance(value, str):
                 data[key] = value.replace('[[snippet_id]]', str(self.id))
 
-        # Will be replaced with a more generic solution when we develop more AS
-        # Router templates. See #565
-        text, links = util.fluent_link_extractor(data.get('text', ''))
-        data['text'] = text
-        data['links'] = links
+        # Convert inline links to fluent.js format.
+        data = util.fluent_link_extractor(data, self.template.get_rich_text_variables())
 
         rendered_snippet = {
             'id': str(self.id),

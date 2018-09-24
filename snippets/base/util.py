@@ -1,3 +1,4 @@
+import copy
 import datetime
 import re
 
@@ -54,7 +55,7 @@ def current_firefox_major_version():
     return full_version.split('.', 1)[0]
 
 
-def fluent_link_extractor(text):
+def fluent_link_extractor(data, variables):
     """Replaces all <a> elements with fluent.js link elements sequentially
     numbered.
 
@@ -89,9 +90,14 @@ def fluent_link_extractor(text):
             self.link_counter += 1
             return replacement
 
+    local_data = copy.deepcopy(data)
     replacer = Replacer()
-    final_text = re.sub('(<a(?P<attrs> .*?)>)(?P<innerText>.+?)(</a>)', replacer, text)
-    return final_text, replacer.links
+    for variable in variables:
+        local_data[variable] = re.sub('(<a(?P<attrs> .*?)>)(?P<innerText>.+?)(</a>)',
+                                      replacer, local_data[variable])
+
+    local_data['links'] = replacer.links
+    return local_data
 
 
 def to_unix_time_seconds(dt):
