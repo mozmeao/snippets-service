@@ -144,7 +144,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     fieldsets = (
         ('ID', {'fields': ('creator', 'name', 'status', 'preview_url')}),
         ('Publishing Options', {
-            'fields': ('campaign', 'target', ('publish_start', 'publish_end'))
+            'fields': ('campaign', 'target', ('publish_start', 'publish_end'), 'weight',)
         }),
         ('Content', {
             'fields': ('template', 'data'),

@@ -592,6 +592,10 @@ class ASRSnippet(django_mysql.models.Model):
     target = models.ForeignKey(Target, on_delete=models.PROTECT,
                                default=None, blank=True, null=True)
 
+    weight = models.IntegerField(
+        choices=SNIPPET_WEIGHTS, default=100,
+        help_text='How often should this snippet be shown to users?')
+
     objects = ASRSnippetManager()
 
     class Meta:
@@ -621,6 +625,7 @@ class ASRSnippet(django_mysql.models.Model):
             'template': self.template.code_name,
             'template_version': self.template.version,
             'campaign': self.campaign.slug,
+            'weight': self.weight,
             'content': data,
         }
 

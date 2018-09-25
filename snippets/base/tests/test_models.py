@@ -339,6 +339,7 @@ class ASRSnippetTests(TestCase):
             'template': snippet.template.code_name,
             'template_version': snippet.template.version,
             'campaign': snippet.campaign.slug,
+            'weight': snippet.weight,
             'content': {
                 'text': 'snippet id {}'.format(snippet.id),
                 'foo': 'bar',
