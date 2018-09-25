@@ -659,6 +659,19 @@ class TargetAdminForm(forms.ModelForm):
         label='Is auto-downloading updates',
         label_suffix='?',
     )
+    filtr_current_search_engine = fields.JEXLChoiceField(
+        'searchEngines.current',
+        jexl='{attr_name} == "{value}"',
+        choices=((None, "I don't care"),
+                 ('google', 'Google',),
+                 ('bing', 'Bing',),
+                 ('amazondotcom', 'Amazon',),
+                 ('ddg', 'DuckDuckGo',),
+                 ('twitter', 'Twitter',),
+                 ('wikipedia', 'Wikipedia',)),
+        label_suffix='?',
+        label='Currently used search engine',
+        required=False)
 
     class Meta:
         model = Target

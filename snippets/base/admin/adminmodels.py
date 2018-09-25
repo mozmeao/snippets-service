@@ -202,6 +202,7 @@ class TargetAdmin(admin.ModelAdmin):
                 'filtr_profile_age_created',
                 'filtr_uses_firefox_sync',
                 'filtr_is_developer',
+                'filtr_current_search_engine',
             )
         }),
         ('Other Info', {
