@@ -528,11 +528,11 @@ class Target(models.Model):
 
     client_match_rules = models.ManyToManyField(
         ClientMatchRule, blank=True, verbose_name='Client Match Rules')
-
     jexl = django_mysql.models.DynamicField(
         default={},
         spec={
             'filtr_is_default_browser': str,
+            'filtr_profile_age_created': int,
             'filtr_uses_firefox_sync': str,
             'filtr_is_developer': str,
         }
