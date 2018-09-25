@@ -1,7 +1,9 @@
 from django.core.exceptions import ValidationError
-from django.forms import ChoiceField, MultiValueField, MultipleChoiceField
+from django.forms import ChoiceField, ModelChoiceField, MultiValueField, MultipleChoiceField
 
-from .widgets import RangeWidget
+from snippets.base.models import Addon
+
+from .widgets import JEXLMultiWidget
 
 
 class MultipleChoiceFieldCSV(MultipleChoiceField):
@@ -45,8 +47,9 @@ class JEXLRangeField(MultiValueField):
             ChoiceField(choices=choices),
             ChoiceField(choices=choices),
         )
-        kwargs['widget'] = RangeWidget(choices=choices)
         super().__init__(fields, **kwargs)
+        self.widget = JEXLMultiWidget(widgets=[f.widget for f in self.fields],
+                                      template_name='widgets/jexlrange.html')
 
     def compress(self, data_list):
         return ','.join(data_list)
@@ -72,4 +75,51 @@ class JEXLRangeField(MultiValueField):
 
         if minimum and maximum and int(minimum) > int(maximum):
             raise ValidationError('Minimum value must be lower or equal to maximum value.')
+        return value
+
+
+class JEXLAddonField(MultiValueField):
+    def __init__(self, **kwargs):
+        choices = (
+            (None, "I don't care"),
+            ('not_installed', 'Not Installed'),
+            ('installed', 'Installed'),
+        )
+        fields = (
+            ChoiceField(choices=choices),
+            ModelChoiceField(queryset=Addon.objects.all(), required=False),
+        )
+        super().__init__(fields, **kwargs)
+        self.widget = JEXLMultiWidget(widgets=[f.widget for f in self.fields])
+
+    def compress(self, data_list):
+        if data_list:
+            return '{},{}'.format(data_list[0], getattr(data_list[1], 'id', ''))
+        return ''
+
+    def to_jexl(self, value):
+        check, addon_id = value.split(',')
+        if not check or not addon_id:
+            return ''
+
+        addon = Addon.objects.get(id=addon_id)
+        if check == 'not_installed':
+            jexl = '("{}" in addonsInfo.addons|keys) == false'.format(addon.guid)
+        elif check == 'installed':
+            jexl = '("{}" in addonsInfo.addons|keys) == true'.format(addon.guid)
+
+        return jexl
+
+    def validate(self, value):
+        check, addon_id = value.split(',')
+
+        self.fields[0].validate(check)
+        self.fields[1].validate(addon_id)
+
+        if check and not addon_id:
+            raise ValidationError('You must select an add-on')
+
+        if not check and addon_id:
+            raise ValidationError('You must select a check')
+
         return value

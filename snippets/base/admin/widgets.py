@@ -1,15 +1,11 @@
-from django.forms import Select, widgets
+from django.forms import widgets
 
 
-class RangeWidget(widgets.MultiWidget):
-    template_name = 'widgets/jexlrange.html'
+class JEXLMultiWidget(widgets.MultiWidget):
 
     def __init__(self, *args, **kwargs):
-        choices = kwargs.pop('choices')
-        kwargs['widgets'] = [
-            Select(choices=choices),
-            Select(choices=choices),
-        ]
+        if 'template_name' in kwargs:
+            self.template_name = kwargs.pop('template_name')
         super().__init__(*args, **kwargs)
 
     def decompress(self, value):

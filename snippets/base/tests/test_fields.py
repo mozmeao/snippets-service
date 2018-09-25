@@ -1,7 +1,9 @@
+from unittest.mock import DEFAULT, patch
+
 from django.core.exceptions import ValidationError
 
-from snippets.base.admin.fields import JEXLChoiceField, JEXLRangeField
-from snippets.base.tests import TestCase
+from snippets.base.admin.fields import JEXLAddonField, JEXLChoiceField, JEXLRangeField
+from snippets.base.tests import AddonFactory, TestCase
 
 
 class JEXLChoiceFieldTests(TestCase):
@@ -44,3 +46,54 @@ class JEXLRangeFieldTests(TestCase):
         field = JEXLChoiceField('foo', jexl='{value} != {attr_name}')
         self.assertEqual(field.to_jexl(500), '500 != foo')
         self.assertEqual(field.to_jexl(''), None)
+
+
+class JEXLAddonFieldTests(TestCase):
+    def setUp(self):
+        self.field = JEXLAddonField()
+        self.addon = AddonFactory()
+
+    def test_compress(self):
+        self.assertEqual(self.field.compress(data_list=[]), '')
+        self.assertEqual(self.field.compress(data_list=['installed', self.addon]),
+                         'installed,{}'.format(self.addon.id))
+
+    def test_to_jexl(self):
+        guid = self.addon.guid
+
+        value = 'installed,{}'.format(self.addon.id)
+        self.assertEqual(self.field.to_jexl(value),
+                         '("{}" in addonsInfo.addons|keys) == true'.format(guid))
+
+        value = 'not_installed,{}'.format(self.addon.id)
+        self.assertEqual(self.field.to_jexl(value),
+                         '("{}" in addonsInfo.addons|keys) == false'.format(guid))
+
+        value = ','
+        self.assertEqual(self.field.to_jexl(value), '')
+
+        value = 'installed,'
+        self.assertEqual(self.field.to_jexl(value), '')
+
+        value = ',3'
+        self.assertEqual(self.field.to_jexl(value), '')
+
+    def test_validate(self):
+        with patch.multiple('snippets.base.admin.fields',
+                            ChoiceField=DEFAULT, ModelChoiceField=DEFAULT):
+            field = JEXLAddonField()
+            field.validate('installed,{}'.format(self.addon.id))
+
+        field.fields[0].validate.assert_called_with('installed')
+        field.fields[1].validate.assert_called_with(str(self.addon.id))
+
+    def test_validate_no_selection(self):
+        self.assertEqual(self.field.validate(','), ',')
+
+    def test_validate_no_addon(self):
+        with self.assertRaises(ValidationError):
+            self.field.validate('installed,')
+
+    def test_validate_no_action(self):
+        with self.assertRaises(ValidationError):
+            self.field.validate(',3')

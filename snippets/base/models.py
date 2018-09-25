@@ -552,6 +552,7 @@ class Target(models.Model):
             'filtr_uses_firefox_sync': str,
             'filtr_is_developer': str,
             'filtr_current_search_engine': str,
+            'filtr_browser_addon': str,
         }
     )
     jexl_expr = models.TextField(blank=True, default='')
@@ -652,3 +653,18 @@ class ASRSnippet(django_mysql.models.Model):
         url = reverse('asr-preview', kwargs={'uuid': self.uuid})
         full_url = urljoin(settings.SITE_URL, url)
         return 'about:newtab?endpoint=' + full_url
+
+
+class Addon(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=255, unique=True)
+    url = models.URLField(unique=True)
+    guid = models.CharField(max_length=255, unique=True)
+
+    class Meta:
+        ordering = ('name', )
+
+    def __str__(self):
+        return self.name
