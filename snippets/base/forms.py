@@ -641,6 +641,19 @@ class TargetAdminForm(forms.ModelForm):
         label='Firefox Version',
         help_text='The version of the browser must fall between those two limits.'
     )
+    filtr_previous_session_end = fields.JEXLRangeField(
+        'previousSessionEnd',
+        # previousSessionEnd is in milliseconds. We first calculate the
+        # difference from currentDate and then we convert to week.
+        jexl={
+            'minimum': '((currentDate - previousSessionEnd) / 604800000) >= {value}',
+            'maximum': '((currentDate - previousSessionEnd) / 604800000) < {value}',
+        },
+        choices=PROFILE_AGE_CHOICES_AS,
+        required=False,
+        label='Previous Session End',
+        help_text='How many weeks since the last time Firefox was used?'
+    )
     filtr_uses_firefox_sync = fields.JEXLChoiceField(
         'usesFirefoxSync',
         choices=((None, "I don't care"),
