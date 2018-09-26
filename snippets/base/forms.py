@@ -67,6 +67,23 @@ BOOKMARKS_COUNT_CHOICES = (
     (1000000, '1,000,000'),
 )
 
+BOOKMARKS_COUNT_CHOICES_AS = (
+    (None, 'No limit'),
+    (None, '----------'),
+    (1, '1'),
+    (10, '10'),
+    (50, '50'),
+    (100, '100'),
+    (500, '500'),
+    (1000, '1,000'),
+    (5000, '5,000'),
+    (10000, '10,000'),
+    (50000, '50,000'),
+    (100000, '100,000'),
+    (500000, '500,000'),
+    (1000000, '1,000,000'),
+)
+
 PROFILE_AGE_CHOICES_AS = (
     (None, 'No limit'),
     (None, '----------'),
@@ -675,6 +692,13 @@ class TargetAdminForm(forms.ModelForm):
     filtr_browser_addon = fields.JEXLAddonField(
         label='Browser Add-on',
         required=False)
+    filtr_total_bookmarks_count = fields.JEXLRangeField(
+        'totalBookmarksCount',
+        choices=BOOKMARKS_COUNT_CHOICES_AS,
+        required=False,
+        label='Number of bookmarks',
+        help_text='The number of bookmarks must fall between those two limits.'
+    )
 
     class Meta:
         model = Target
