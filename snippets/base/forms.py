@@ -651,8 +651,10 @@ class TargetAdminForm(forms.ModelForm):
 
         for name, field in self.fields.items():
             if name.startswith('filtr_'):
-                jexl[name] = self.cleaned_data[name]
-                jexl_expr_array.append(field.to_jexl(self.cleaned_data[name]))
+                value = self.cleaned_data[name]
+                if value:
+                    jexl[name] = value
+                    jexl_expr_array.append(field.to_jexl(value))
         self.instance.jexl = jexl
         self.instance.jexl_expr = ' && '.join([x for x in jexl_expr_array if x])
 
