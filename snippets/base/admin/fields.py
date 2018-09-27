@@ -1,3 +1,6 @@
+from product_details import product_details
+from product_details.version_compare import Version, version_list
+
 from django.core.exceptions import ValidationError
 from django.forms import ChoiceField, ModelChoiceField, MultiValueField, MultipleChoiceField
 
@@ -39,8 +42,8 @@ class JEXLRangeField(MultiValueField):
     def __init__(self, attr_name, choices, **kwargs):
         self.attr_name = attr_name
         self.jexl = {
-            'minimum': '{minimum} <= {attr_name}',
-            'maximum': '{attr_name} < {maximum}'
+            'minimum': '{value} <= {attr_name}',
+            'maximum': '{attr_name} < {value}'
         }
         self.jexl = kwargs.pop('jexl', self.jexl)
         fields = (
@@ -74,6 +77,22 @@ class JEXLRangeField(MultiValueField):
         self.fields[1].validate(maximum)
 
         if minimum and maximum and int(minimum) > int(maximum):
+            raise ValidationError('Minimum value must be lower or equal to maximum value.')
+        return value
+
+
+class JEXLFirefoxRangeField(JEXLRangeField):
+    def __init__(self, **kwargs):
+        choices = ([(None, 'No limit')] +
+                   [(x, x) for x in version_list(product_details.firefox_history_major_releases)])
+        super().__init__('firefoxVersion', choices, **kwargs)
+
+    def validate(self, value):
+        minimum, maximum = value.split(',')
+        self.fields[0].validate(minimum)
+        self.fields[1].validate(maximum)
+
+        if minimum and maximum and Version(minimum) > Version(maximum):
             raise ValidationError('Minimum value must be lower or equal to maximum value.')
         return value
 
@@ -121,5 +140,4 @@ class JEXLAddonField(MultiValueField):
 
         if not check and addon_id:
             raise ValidationError('You must select a check')
-
         return value
