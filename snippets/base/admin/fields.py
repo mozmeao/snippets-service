@@ -2,7 +2,8 @@ from product_details import product_details
 from product_details.version_compare import Version, version_list
 
 from django.core.exceptions import ValidationError
-from django.forms import ChoiceField, ModelChoiceField, MultiValueField, MultipleChoiceField
+from django.forms import (ChoiceField, ModelChoiceField, ModelMultipleChoiceField,
+                          MultiValueField, MultipleChoiceField)
 
 from snippets.base.models import Addon
 
@@ -25,7 +26,18 @@ class MultipleChoiceFieldCSV(MultipleChoiceField):
         return ';'.join(value)
 
 
-class JEXLChoiceField(ChoiceField):
+class JEXLBaseField():
+    def to_db(self, value):
+        return value
+
+    def to_jexl(self, value):
+        if value:
+            return self.jexl.format(attr_name=self.attr_name, value=value)
+
+        return None
+
+
+class JEXLChoiceField(JEXLBaseField, ChoiceField):
     def __init__(self, attr_name, *args, **kwargs):
         self.attr_name = attr_name
         self.jexl = '{attr_name} == {value}'
@@ -35,10 +47,32 @@ class JEXLChoiceField(ChoiceField):
     def to_jexl(self, value):
         if value:
             return self.jexl.format(attr_name=self.attr_name, value=value)
+
+
+class JEXLModelMultipleChoiceField(JEXLBaseField, ModelMultipleChoiceField):
+    def __init__(self, attr_name, *args, **kwargs):
+        self.attr_name = attr_name
+        self.jexl = '{attr_name} in {value}'
+        self.jexl = kwargs.pop('jexl', self.jexl)
+        return super().__init__(*args, **kwargs)
+
+    def prepare_value(self, value):
+        if isinstance(value, str):
+            value = value.split(';')
+        return super().prepare_value(value)
+
+    def to_db(self, value):
+        return ';'.join([str(x.id) for x in value])
+
+
+class JEXLCountryField(JEXLModelMultipleChoiceField):
+    def to_jexl(self, value):
+        if value:
+            return f'region in {[x.code for x in value]}'
         return None
 
 
-class JEXLRangeField(MultiValueField):
+class JEXLRangeField(JEXLBaseField, MultiValueField):
     def __init__(self, attr_name, choices, **kwargs):
         self.attr_name = attr_name
         self.jexl = {

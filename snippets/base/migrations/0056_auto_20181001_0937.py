@@ -22,7 +22,7 @@ def migrate_country_code_to_lowercase(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('base', '0049_auto_20180925_1059'),
+        ('base', '0055_auto_20181009_1234'),
     ]
 
     operations = [

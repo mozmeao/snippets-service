@@ -242,9 +242,17 @@ class TargetedCountryAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'priority')
     list_filter = ('priority',)
     list_editable = ('priority',)
+    search_fields = (
+        'name',
+        'code',
+    )
 
 
 class TargetedLocaleAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'priority')
     list_filter = ('priority',)
     list_editable = ('priority',)
+    search_fields = (
+        'name',
+        'code',
+    )
