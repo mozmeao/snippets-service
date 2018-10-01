@@ -462,7 +462,7 @@ Mozilla.UITour.hideMenu = function(name) {
 
     function getUserCountry() {
         if (haveUserCountry()) {
-            return gSnippetsMap.get('geoCountry').toLowerCase();
+            return gSnippetsMap.get('geoCountry');
         } else {
             return null;
         }

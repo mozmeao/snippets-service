@@ -479,7 +479,7 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
 
     function getUserCountry() {
         if (haveUserCountry()) {
-            return gSnippetsMap.get('geoCountry').toLowerCase();
+            return gSnippetsMap.get('geoCountry');
         } else {
             return null;
         }
