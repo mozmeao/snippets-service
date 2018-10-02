@@ -327,12 +327,10 @@ class UploadedFileTests(TestCase):
 
 class ASRSnippetTests(TestCase):
     def test_render(self):
-        """
-
-        """
         snippet = ASRSnippetFactory.create(
             template__code='<p>{{ text }} {{ foo }}</p>',
-            data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}')
+            data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}',
+            target__jexl_expr='foo == bar')
         generated_result = snippet.render()
         expected_result = {
             'id': str(snippet.id),
@@ -340,6 +338,26 @@ class ASRSnippetTests(TestCase):
             'template_version': snippet.template.version,
             'campaign': snippet.campaign.slug,
             'weight': snippet.weight,
+            'content': {
+                'text': 'snippet id {}'.format(snippet.id),
+                'foo': 'bar',
+                'links': {},
+            },
+            'targeting': 'foo == bar'
+        }
+        self.assertEqual(generated_result, expected_result)
+
+    def test_render_preview_only(self):
+        snippet = ASRSnippetFactory.create(
+            template__code='<p>{{ text }} {{ foo }}</p>',
+            data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}',
+            target__jexl_expr='foo == bar')
+        generated_result = snippet.render(preview=True)
+        expected_result = {
+            'id': str(snippet.id),
+            'template': snippet.template.code_name,
+            'template_version': snippet.template.version,
+            'campaign': snippet.campaign.slug,
             'content': {
                 'text': 'snippet id {}'.format(snippet.id),
                 'foo': 'bar',

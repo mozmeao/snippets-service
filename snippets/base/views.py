@@ -84,7 +84,7 @@ def preview_asr_snippet(request, uuid):
         raise Http404()
 
     bundle_content = json.dumps({
-        'messages': [snippet.render()],
+        'messages': [snippet.render(preview=True)],
     })
     return HttpResponse(bundle_content, content_type='application/json')
 

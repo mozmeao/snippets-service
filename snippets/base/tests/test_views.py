@@ -260,7 +260,7 @@ class PreviewASRSnippetTests(TestCase):
         with patch('snippets.base.views.ASRSnippet.render') as render_mock:
             render_mock.return_value = 'foo'
             response = self.client.get(url)
-        self.assertTrue(render_mock.called)
+        render_mock.assert_called_with(preview=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/json')
 
