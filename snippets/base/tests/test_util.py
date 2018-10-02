@@ -36,40 +36,49 @@ class TestFirst(TestCase):
 
 class TestFluentLinkExtractor(TestCase):
     def test_multiple_links_with_metrics(self):
-        text = (
-            'We have an <a href="http://example.com">example</a> and another'
-            ' <a href="https://blog.mozvr.com/introducing-hubs-a-new-way-to-'
-            'get-together-online/#utm_source=desktop-snippet&amp;utm_medium='
-            'snippet&amp;utm_campaign=MozillaHubsIntro&amp;utm_term=8460&amp;'
-            'utm_content=REL">link</a> that has more complex format. One link that has '
-            'a <a data-metric="custom-click" href="https://mozilla.org">custom metric</a>'
-            'and yet another that has <a foo="bar">no href attrib</a>')
-        final_text = (
-            'We have an <link0>example</link0> and another'
-            ' <link1>link</link1> that has more complex format. One link that has '
-            'a <link2>custom metric</link2>'
-            'and yet another that has <link3>no href attrib</link3>')
-        final_links = {
-            'link0': {
-                'url': 'http://example.com'
-            },
-            'link1': {
-                'url': ('https://blog.mozvr.com/introducing-hubs-a-new-way-to-get-together-online'
-                        '/#utm_source=desktop-snippet&amp;utm_medium=snippet&amp'
-                        ';utm_campaign=MozillaHubsIntro&amp;utm_term=8460&amp;utm_content=REL')
-            },
-            'link2': {
-                'url': 'https://mozilla.org',
-                'metric': 'custom-click'
-            },
-            'link3': {
-                'url': ''
+        data = {
+            'text': ('We have an <a href="http://example.com">example</a> and another'
+                     ' <a href="https://blog.mozvr.com/introducing-hubs-a-new-way-to-'
+                     'get-together-online/#utm_source=desktop-snippet&amp;utm_medium='
+                     'snippet&amp;utm_campaign=MozillaHubsIntro&amp;utm_term=8460&amp;'
+                     'utm_content=REL">link</a> that has more complex format. One link that has '
+                     'a <a data-metric="custom-click" href="https://mozilla.org">custom metric</a>'
+                     'and yet another that has <a foo="bar">no href attrib</a>'),
+            'title': ('And this another variable with <a href="https://snippets.mozilla.org">more '
+                      'links</a>'),
+            'nolinks': 'And finally one with no links.',
+        }
+        final_data = {
+            'text': ('We have an <link0>example</link0> and another'
+                     ' <link1>link</link1> that has more complex format. One link that has '
+                     'a <link2>custom metric</link2>'
+                     'and yet another that has <link3>no href attrib</link3>'),
+            'title': ('And this another variable with <link4>more links</link4>'),
+            'nolinks': 'And finally one with no links.',
+            'links': {
+                'link0': {
+                    'url': 'http://example.com'
+                },
+                'link1': {
+                    'url': ('https://blog.mozvr.com/introducing-hubs-a-new-way-to-get-together'
+                            '-online/#utm_source=desktop-snippet&amp;utm_medium=snippet&amp'
+                            ';utm_campaign=MozillaHubsIntro&amp;utm_term=8460&amp;utm_content=REL')
+                },
+                'link2': {
+                    'url': 'https://mozilla.org',
+                    'metric': 'custom-click'
+                },
+                'link3': {
+                    'url': ''
+                },
+                'link4': {
+                    'url': 'https://snippets.mozilla.org'
+                }
             }
         }
-        generated_text, generated_links = fluent_link_extractor(text)
-        self.assertEqual(final_text, generated_text)
-        self.assertEqual(final_links['link0'], generated_links['link0'])
-        self.assertEqual(final_links['link1'], generated_links['link1'])
-        self.assertEqual(final_links['link2'], generated_links['link2'])
-        self.assertEqual(final_links['link3'], generated_links['link3'])
-        self.assertEqual(len(generated_links), 4)
+        generated_data = fluent_link_extractor(data, ['text', 'title', 'nolinks'])
+
+        self.assertEqual(final_data['text'], generated_data['text'])
+        self.assertEqual(final_data['title'], generated_data['title'])
+        self.assertEqual(final_data['nolinks'], generated_data['nolinks'])
+        self.assertEqual(final_data['links'], generated_data['links'])

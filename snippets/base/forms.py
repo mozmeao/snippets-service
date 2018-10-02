@@ -285,7 +285,8 @@ class SnippetNGAdminForm(BaseSnippetAdminForm):
     def clean(self):
         cleaned_data = super(SnippetNGAdminForm, self).clean()
 
-        validate_as_router_fluent_variables(cleaned_data['data'])
+        variables = cleaned_data['template'].get_rich_text_variables()
+        validate_as_router_fluent_variables(cleaned_data['data'], variables)
 
         if not any([cleaned_data['on_release'], cleaned_data['on_beta'],
                     cleaned_data['on_aurora'], cleaned_data['on_nightly'], cleaned_data['on_esr']]):
@@ -586,6 +587,13 @@ class ASRSnippetAdminForm(forms.ModelForm):
         widgets = {
             'data': TemplateDataWidget('template', include_preview_button=False),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        variables = cleaned_data['template'].get_rich_text_variables()
+        validate_as_router_fluent_variables(cleaned_data['data'], variables)
+
+        return cleaned_data
 
 
 class TargetAdminForm(forms.ModelForm):
