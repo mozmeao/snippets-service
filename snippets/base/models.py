@@ -551,6 +551,7 @@ class Target(models.Model):
             'filtr_profile_age_created': int,
             'filtr_uses_firefox_sync': str,
             'filtr_is_developer': str,
+            'filtr_current_search_engine': str,
         }
     )
     jexl_expr = models.TextField(blank=True, default='')
