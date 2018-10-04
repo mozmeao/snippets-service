@@ -104,6 +104,10 @@ class UploadedFileAdmin(admin.ModelAdmin):
         return mark_safe(template.render({'snippets': obj.snippets}))
 
 
+class AddonAdmin(admin.ModelAdmin):
+    list_display = ('name', 'guid')
+
+
 class ASRSnippetAdmin(admin.ModelAdmin):
     form = forms.ASRSnippetAdminForm
 
@@ -203,6 +207,7 @@ class TargetAdmin(admin.ModelAdmin):
                 'filtr_uses_firefox_sync',
                 'filtr_is_developer',
                 'filtr_current_search_engine',
+                'filtr_browser_addon',
             )
         }),
         ('Other Info', {

@@ -672,6 +672,9 @@ class TargetAdminForm(forms.ModelForm):
         label_suffix='?',
         label='Currently used search engine',
         required=False)
+    filtr_browser_addon = fields.JEXLAddonField(
+        label='Browser Add-on',
+        required=False)
 
     class Meta:
         model = Target

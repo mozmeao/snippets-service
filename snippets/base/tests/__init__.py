@@ -149,3 +149,12 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = models.ASRSnippet
+
+
+class AddonFactory(factory.django.DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Addon {}'.format(n))
+    guid = factory.Sequence(lambda n: 'addon_{}'.format(n))
+    url = factory.Sequence(lambda n: 'https://example.com/{}'.format(n))
+
+    class Meta:
+        model = models.Addon
