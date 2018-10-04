@@ -267,6 +267,9 @@ class Snippet(SnippetBaseModel):
         max_length=255, blank=True, default='',
         help_text=('Optional campaign name. Will be added in the stats ping. '
                    'Will be used for snippet blocking if set.'))
+
+    ready_for_review = models.BooleanField(default=False)
+
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 

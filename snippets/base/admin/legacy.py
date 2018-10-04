@@ -60,6 +60,7 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     list_filter = (
         ModifiedFilter,
         'published',
+        'ready_for_review',
         ReleaseFilter,
         ('locales', RelatedDropdownFilter),
         ('client_match_rules', RelatedDropdownFilter),
@@ -77,7 +78,8 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
                          ('exclude_from_search_providers', 'client_match_rules'))
 
     fieldsets = (
-        (None, {'fields': ('name', 'published', 'campaign', 'preview_url', 'created', 'modified')}),
+        (None, {'fields': ('name', ('ready_for_review', 'published'), 'campaign',
+                           'preview_url', 'created', 'modified')}),
         ('Content', {
             'description': ('In Activity Stream Templates you can use the special links:<br/>'
                             '<ol><li>about:accounts : To open Firefox Accounts</li>'
