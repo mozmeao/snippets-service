@@ -39,8 +39,8 @@ class JEXLRangeField(MultiValueField):
     def __init__(self, attr_name, choices, **kwargs):
         self.attr_name = attr_name
         self.jexl = {
-            'minimum': '{minimum} <= {attr_name}',
-            'maximum': '{attr_name} < {maximum}'
+            'minimum': '{value} <= {attr_name}',
+            'maximum': '{attr_name} < {value}'
         }
         self.jexl = kwargs.pop('jexl', self.jexl)
         fields = (

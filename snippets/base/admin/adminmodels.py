@@ -208,6 +208,7 @@ class TargetAdmin(admin.ModelAdmin):
                 'filtr_is_developer',
                 'filtr_current_search_engine',
                 'filtr_browser_addon',
+                'filtr_total_bookmarks_count',
             )
         }),
         ('Other Info', {

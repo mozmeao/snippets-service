@@ -47,6 +47,11 @@ class JEXLRangeFieldTests(TestCase):
         self.assertEqual(field.to_jexl(500), '500 != foo')
         self.assertEqual(field.to_jexl(''), None)
 
+    def test_to_jexl(self):
+        expected_output = '1 <= foo && foo < 3'
+        generated_output = self.field.to_jexl('1,3')
+        self.assertEqual(expected_output, generated_output)
+
 
 class JEXLAddonFieldTests(TestCase):
     def setUp(self):
