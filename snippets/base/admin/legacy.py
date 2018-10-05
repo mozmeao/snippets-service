@@ -37,9 +37,10 @@ class BaseSnippetAdmin(VersionAdmin, admin.ModelAdmin):
 
     def change_view(self, request, *args, **kwargs):
         if request.method == 'POST' and '_saveasnew' in request.POST:
-            # Always saved cloned snippets as un-published.
+            # Always saved cloned snippets as un-published and un-check ready for review.
             post_data = request.POST.copy()
             post_data.pop('published', None)
+            post_data.pop('ready_for_review', None)
             request.POST = post_data
         return super(BaseSnippetAdmin, self).change_view(request, *args, **kwargs)
 
