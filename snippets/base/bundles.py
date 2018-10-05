@@ -173,13 +173,18 @@ class ASRSnippetBundle(SnippetBundle):
         #
         # Key must change when Snippet or related Template, Campaign or Target
         # get updated.
-        key_properties = [
-            '-'.join([str(x) for x in [snippet.id,
-                                       snippet.modified.isoformat(),
-                                       snippet.template.modified.isoformat(),
-                                       snippet.campaign.modified.isoformat(),
-                                       snippet.target.modified.isoformat()]])
-            for snippet in self.snippets]
+        key_properties = []
+        for snippet in self.snippets:
+            attributes = [
+                snippet.id,
+                snippet.modified.isoformat(),
+                snippet.template.modified.isoformat(),
+                snippet.target.modified.isoformat(),
+            ]
+            if snippet.campaign:
+                attributes.append(snippet.campaign.modified.isoformat())
+
+            key_properties.append('-'.join([str(x) for x in attributes]))
 
         # Additional values used to calculate the key are the templates and the
         # variables used to render them besides snippets.
