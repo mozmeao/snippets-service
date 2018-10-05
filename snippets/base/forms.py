@@ -636,6 +636,11 @@ class TargetAdminForm(forms.ModelForm):
         label='Firefox Profile Age',
         help_text='The age of the browser profile must fall between those two limits.'
     )
+    filtr_firefox_version = fields.JEXLFirefoxRangeField(
+        required=False,
+        label='Firefox Version',
+        help_text='The version of the browser must fall between those two limits.'
+    )
     filtr_uses_firefox_sync = fields.JEXLChoiceField(
         'usesFirefoxSync',
         choices=((None, "I don't care"),

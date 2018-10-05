@@ -2,7 +2,8 @@ from unittest.mock import DEFAULT, patch
 
 from django.core.exceptions import ValidationError
 
-from snippets.base.admin.fields import JEXLAddonField, JEXLChoiceField, JEXLRangeField
+from snippets.base.admin.fields import (JEXLAddonField, JEXLChoiceField, JEXLFirefoxRangeField,
+                                        JEXLRangeField)
 from snippets.base.tests import AddonFactory, TestCase
 
 
@@ -102,3 +103,27 @@ class JEXLAddonFieldTests(TestCase):
     def test_validate_no_action(self):
         with self.assertRaises(ValidationError):
             self.field.validate(',3')
+
+
+class JEXLFirefoxRangeFieldTests(TestCase):
+    def setUp(self):
+        with patch('snippets.base.admin.fields.version_list') as version_list_mock:
+            version_list_mock.return_value = ['57.0', '58.0', '59.0', '60.0']
+            self.field = JEXLFirefoxRangeField()
+
+    def test_validate(self):
+        self.assertEqual(self.field.validate('57.0,60.0'), '57.0,60.0')
+        self.assertEqual(self.field.validate('57.0,57.0'), '57.0,57.0')
+
+    def test_validate_invalid_values(self):
+        # Check first subfield
+        with self.assertRaises(ValidationError):
+            self.field.validate('20.0,60.0')
+
+        # Check second subfield
+        with self.assertRaises(ValidationError):
+            self.field.validate('57.0,20.0')
+
+    def test_validate_min_max(self):
+        with self.assertRaises(ValidationError):
+            self.field.validate('60.0,57.0')

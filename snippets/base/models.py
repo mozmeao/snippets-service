@@ -552,6 +552,7 @@ class Target(models.Model):
         spec={
             'filtr_is_default_browser': str,
             'filtr_profile_age_created': int,
+            'filtr_firefox_version': str,
             'filtr_uses_firefox_sync': str,
             'filtr_is_developer': str,
             'filtr_current_search_engine': str,
