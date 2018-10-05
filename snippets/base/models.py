@@ -644,10 +644,11 @@ class ASRSnippet(django_mysql.models.Model):
             'id': str(self.id),
             'template': self.template.code_name,
             'template_version': self.template.version,
-            'campaign': self.campaign.slug,
             'weight': self.weight,
             'content': data,
         }
+        if self.campaign:
+            rendered_snippet['campaign'] = self.campaign.slug
 
         if not preview:
             rendered_snippet['targeting'] = self.target.jexl_expr
