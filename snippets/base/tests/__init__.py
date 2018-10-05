@@ -127,6 +127,14 @@ class TargetFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Target
 
+    @factory.post_generation
+    def client_match_rules(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.client_match_rules.add(*extracted)
+
 
 class CampaignFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Campaign {0}'.format(n))
@@ -149,6 +157,18 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = models.ASRSnippet
+
+    @factory.post_generation
+    def locales(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted is None:
+            extracted = ['en-us']
+
+        locales = [models.TargetedLocale.objects.get_or_create(code=code, name=code)[0]
+                   for code in extracted]
+        self.locales.add(*locales)
 
 
 class AddonFactory(factory.django.DjangoModelFactory):
