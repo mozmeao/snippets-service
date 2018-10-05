@@ -20,6 +20,7 @@ class SnippetAdminTests(TestCase):
             'name': 'test',
             'template': 'foo',
             'published': 'on',
+            'ready_for_review': 'on',
             '_saveasnew': True
         })
         request.user = self.user
@@ -29,12 +30,14 @@ class SnippetAdminTests(TestCase):
             change_view_mock.assert_called_with(request, 999, '', None)
             request = change_view_mock.call_args[0][0]
             self.assertTrue('published' not in request.POST)
+            self.assertTrue('ready_for_review' not in request.POST)
 
     def test_normal_save_published(self):
         """Test that normal save doesn't alter 'published' attribute."""
         request = self.factory.post('/', data={
             'name': 'test',
             'template': 'foo',
+            'ready_for_review': 'foo',
             'published': 'foo'
         })
         request.user = self.user
@@ -44,6 +47,7 @@ class SnippetAdminTests(TestCase):
             change_view_mock.assert_called_with(request, 999, '', None)
             request = change_view_mock.call_args[0][0]
             self.assertEqual(request.POST['published'], 'foo')
+            self.assertEqual(request.POST['ready_for_review'], 'foo')
 
 
 class SnippetTemplateAdminTests(TestCase):
