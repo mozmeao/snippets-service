@@ -1,6 +1,7 @@
 import json
 import os
 from collections import defaultdict
+from urllib.parse import urlparse
 
 from django import forms
 from django.conf import settings
@@ -9,11 +10,12 @@ from django.forms.widgets import Textarea
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
+import requests
 from product_details import product_details
 from product_details.version_compare import Version, version_list
 
 from snippets.base.admin import fields
-from snippets.base.models import (CHANNELS, ASRSnippet, JSONSnippet, Snippet,
+from snippets.base.models import (CHANNELS, Addon, ASRSnippet, JSONSnippet, Snippet,
                                   SnippetTemplate, SnippetTemplateVariable,
                                   Target, TargetedCountry, UploadedFile)
 from snippets.base.validators import (MinValueValidator, validate_as_router_fluent_variables,
@@ -723,3 +725,35 @@ class TargetAdminForm(forms.ModelForm):
         self.instance.jexl_expr = ' && '.join([x for x in jexl_expr_array if x])
 
         return super().save(*args, **kwargs)
+
+
+class AddonAdminForm(forms.ModelForm):
+    def clean(self, *args, **kwargs):
+        cleaned_data = super().clean(*args, **kwargs)
+        if 'url' in self.changed_data:
+
+            # Add ending slash and remove query params when needed.
+            url = cleaned_data.pop('url')
+            if not url.endswith('/'):
+                url += '/'
+            url = url[:-(len(urlparse(url).query) + 1)]
+            cleaned_data['url'] = url
+
+            try:
+                name, guid = Addon.fetch_details(self.cleaned_data['url'])
+            except (requests.HTTPError):
+                raise forms.ValidationError('Error while fetching add-on information. '
+                                            'Maybe a wrong URL?')
+            except (KeyError):
+                raise forms.ValidationError('Error while parsing add-on information')
+            except (TypeError) as exp:
+                raise forms.ValidationError(str(exp))
+
+            self.instance.name = name
+            self.instance.guid = guid
+
+        return
+
+    class Meta:
+        model = Addon
+        exclude = []

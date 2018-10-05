@@ -105,7 +105,17 @@ class UploadedFileAdmin(admin.ModelAdmin):
 
 
 class AddonAdmin(admin.ModelAdmin):
-    list_display = ('name', 'guid')
+    form = forms.AddonAdminForm
+    list_display = ('id', 'name', 'guid')
+    search_fields = (
+        'name',
+    )
+
+    def get_form(self, request, obj=None, **kwargs):
+        if obj is None:
+            self.exclude = ['name', 'guid']
+        form = super().get_form(request, obj, **kwargs)
+        return form
 
 
 class ASRSnippetAdmin(admin.ModelAdmin):

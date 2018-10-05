@@ -6,7 +6,7 @@ from jinja2 import Markup
 from mock import MagicMock, Mock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.models import Client, UploadedFile, _generate_filename
+from snippets.base.models import Addon, Client, UploadedFile, _generate_filename
 from snippets.base.tests import (ASRSnippetFactory,
                                  ClientMatchRuleFactory,
                                  JSONSnippetFactory,
@@ -373,3 +373,35 @@ class ASRSnippetTests(TestCase):
         expected_result = 'about:newtab?endpoint=http://example.com'
         expected_result += reverse('asr-preview', kwargs={'uuid': snippet.uuid})
         self.assertEqual(snippet.get_preview_url(), expected_result)
+
+
+class AddonTests(TestCase):
+    def test_fetch_details(self):
+        with patch('snippets.base.models.requests') as requests_mock:
+            url = 'https://addons.mozilla.org/en-US/firefox/addon/adblock-for-youtube'
+            requests_mock.get.return_value.json.return_value = {
+                'name': {
+                    'en-US': 'foo'
+                },
+                'guid': 'bar@example',
+                'type': 'extension',
+            }
+            name, guid = Addon.fetch_details(url)
+
+        requests_mock.get.assert_called_with(
+            'https://addons.mozilla.org/api/v3/addons/addon/adblock-for-youtube/')
+        self.assertTrue(requests_mock.get.return_value.raise_for_status.called)
+        self.assertEqual(name, 'foo')
+        self.assertEqual(guid, 'bar@example')
+
+    def test_fetch_details_typerror(self):
+        with patch('snippets.base.models.requests') as requests_mock:
+            url = 'https://example.com/foo/'
+            requests_mock.get.return_value.json.return_value = {
+                'name': {
+                    'en-US': 'foo'
+                },
+                'guid': '',
+                'type': 'persona',
+            }
+            self.assertRaises(TypeError, Addon.fetch_details, url)

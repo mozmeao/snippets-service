@@ -16,6 +16,7 @@ from django.template import engines
 from django.utils.html import format_html
 
 import django_mysql.models
+import requests
 from jinja2 import Markup
 from jinja2.utils import LRUCache
 
@@ -660,7 +661,10 @@ class Addon(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     name = models.CharField(max_length=255, unique=True)
-    url = models.URLField(unique=True)
+    url = models.URLField(
+        unique=True,
+        help_text='Add-on page on https://addons.mozilla.org.'
+    )
     guid = models.CharField(max_length=255, unique=True)
 
     class Meta:
@@ -668,3 +672,24 @@ class Addon(models.Model):
 
     def __str__(self):
         return self.name
+
+    @staticmethod
+    def fetch_details(url):
+        if not url.endswith('/'):
+            url += '/'
+
+        path = urlparse(url).path
+        addon_slug = path.rsplit('/', 2)[1]
+
+        response = requests.get(
+            'https://addons.mozilla.org/api/v3/addons/addon/{}/'.format(addon_slug))
+        response.raise_for_status()
+
+        json = response.json()
+        if json.get('type') != 'extension':
+            raise TypeError('URL does not point to an add-on.')
+
+        name = json['name']['en-US']
+        guid = json['guid']
+
+        return (name, guid)
