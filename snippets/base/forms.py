@@ -607,8 +607,9 @@ class ASRSnippetAdminForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        variables = cleaned_data['template'].get_rich_text_variables()
-        validate_as_router_fluent_variables(cleaned_data['data'], variables)
+        if 'template' in cleaned_data and 'data' in cleaned_data:
+            variables = cleaned_data['template'].get_rich_text_variables()
+            validate_as_router_fluent_variables(cleaned_data['data'], variables)
 
         return cleaned_data
 
