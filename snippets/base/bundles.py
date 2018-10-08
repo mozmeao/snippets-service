@@ -217,6 +217,7 @@ class ASRSnippetBundle(SnippetBundle):
             'messages': data,
             'metadata': {
                 'generated_at': datetime.utcnow().isoformat(),
+                'number_of_snippets': len(self.snippets),
             }
         })
 
