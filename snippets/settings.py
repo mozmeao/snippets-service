@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'watchman',
     'quickedit',
     'django_admin_listfilter_dropdown',
+    'admin_reorder',
 
     # Django apps
     'django.contrib.admin',
@@ -70,6 +71,7 @@ MIDDLEWARE = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'csp.middleware.CSPMiddleware',
+    'admin_reorder.middleware.ModelAdminReorder',
 )
 
 HOSTNAME = platform.node()
@@ -300,3 +302,32 @@ if OIDC_ENABLE:
     OIDC_CREATE_USER = config('OIDC_CREATE_USER', default=False, cast=bool)
     MIDDLEWARE = MIDDLEWARE + ('mozilla_django_oidc.middleware.SessionRefresh',)
     LOGIN_REDIRECT_URL = '/admin/'
+
+
+ADMIN_REORDER = [
+    {
+        'app': 'base',
+        'label': 'Snippets',
+        'models': [
+            'base.Snippet', 'base.SearchProvider', 'base.ClientMatchRule',
+            'base.SnippetTemplate', 'base.TargetedCountry', 'base.TargetedLocale',
+            'base.UploadedFile'
+        ]
+    },
+    {
+        'app': 'base',
+        'label': 'ASR Snippets',
+        'models': ['base.ASRSnippet', 'base.Campaign', 'base.Target', 'base.Addon']
+
+    },
+    {
+        'app': 'base',
+        'label': 'Android (Legacy)',
+        'models': ['base.JSONSnippet']
+    },
+    {
+        'app': 'auth',
+        'label': 'Admin',
+        'models': ['auth.User', 'auth.Group', 'admin.LogEntry']
+    },
+]
