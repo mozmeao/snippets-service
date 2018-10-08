@@ -558,6 +558,7 @@ class Target(models.Model):
             'filtr_current_search_engine': str,
             'filtr_browser_addon': str,
             'filtr_total_bookmarks_count': str,
+            'filtr_previous_session_end': str,
         }
     )
     jexl_expr = models.TextField(blank=True, default='')
