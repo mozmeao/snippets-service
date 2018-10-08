@@ -141,17 +141,18 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'creator',
         'preview_url',
     )
+    filter_horizontal = ('locales',)
     save_on_top = True
     save_as = True
     view_on_site = False
 
     fieldsets = (
         ('ID', {'fields': ('creator', 'name', 'status', 'preview_url')}),
-        ('Publishing Options', {
-            'fields': ('campaign', 'target', ('publish_start', 'publish_end'), 'weight',)
-        }),
         ('Content', {
             'fields': ('template', 'data'),
+        }),
+        ('Publishing Options', {
+            'fields': ('campaign', 'target', ('publish_start', 'publish_end'), 'locales', 'weight',)
         }),
         ('Other Info', {
             'fields': ('uuid', ('created', 'modified')),

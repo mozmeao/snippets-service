@@ -112,7 +112,8 @@ class ASRSnippetQuerySet(QuerySet):
     def match_client(self, client):
         from snippets.base.models import CHANNELS, ClientMatchRule, Target
 
-        filters = {}
+        snippet_filters = {}
+        target_filters = {}
 
         # Retrieve the first channel that starts with the client's channel.
         # Allows things like "release-cck-mozilla14" to match "release".
@@ -121,32 +122,31 @@ class ASRSnippetQuerySet(QuerySet):
         else:
             client_channel = first(CHANNELS, client.channel.startswith)
         if client_channel:
-            filters.update(**{'on_{0}'.format(client_channel): True})
+            target_filters.update(**{'on_{0}'.format(client_channel): True})
 
         startpage_field = 'on_startpage_{0}'.format(client.startpage_version)
         if hasattr(Target, startpage_field):
-            filters.update({startpage_field: True})
+            target_filters.update({startpage_field: True})
 
-        # # Only filter by locale if they pass a valid locale.
-        # locales = list(filter(client.locale.lower().startswith, LANGUAGE_VALUES))
-        # if locales:
-        #     filters.update(locales__code__in=locales)
-        # else:
-        #     # If the locale is invalid, only match snippets with no
-        #     # locales specified.
-        #     filters.update(locales__isnull=True)
-
-        targets = Target.objects.filter(**filters).distinct()
-        filtering = {'target__in': targets}
+        targets = Target.objects.filter(**target_filters).distinct()
 
         # Filter based on ClientMatchRules
         passed_rules, failed_rules = (ClientMatchRule.objects
-                                      .filter(**filtering)
+                                      .filter(target__in=targets)
                                       .distinct()
                                       .evaluate(client))
-        targets.exclude(client_match_rules__in=failed_rules)
+        targets = targets.exclude(client_match_rules__in=failed_rules)
 
-        return self.filter(target__in=targets)
+        # Only filter by locale if they pass a valid locale.
+        locales = list(filter(client.locale.lower().startswith, LANGUAGE_VALUES))
+        if locales:
+            snippet_filters.update(locales__code__in=locales)
+        else:
+            # If the locale is invalid, only match snippets with no
+            # locales specified.
+            snippet_filters.update(locales__isnull=True)
+
+        return self.filter(**snippet_filters).filter(target__in=targets)
 
 
 class ASRSnippetManager(Manager):

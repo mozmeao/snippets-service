@@ -613,6 +613,7 @@ class ASRSnippet(django_mysql.models.Model):
         verbose_name='Publish Ends',
         help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
 
+    locales = models.ManyToManyField('TargetedLocale', blank=True, verbose_name='Targeted Locales')
     target = models.ForeignKey(Target, on_delete=models.PROTECT,
                                default=None, blank=True, null=True)
 
