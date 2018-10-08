@@ -46,6 +46,8 @@ class TestFluentLinkExtractor(TestCase):
                      'and yet another that has <a foo="bar">no href attrib</a>'),
             'title': ('And this another variable with <a href="https://snippets.mozilla.org">more '
                       'links</a>'),
+            'special_account': 'With <a href="special:accounts">special accounts link</a>.',
+            'special_appMenu': 'and another <a href="special:appMenu">special menu link</a>.',
             'nolinks': 'And finally one with no links.',
         }
         final_data = {
@@ -53,7 +55,9 @@ class TestFluentLinkExtractor(TestCase):
                      ' <link1>link</link1> that has more complex format. One link that has '
                      'a <link2>custom metric</link2>'
                      'and yet another that has <link3>no href attrib</link3>'),
-            'title': ('And this another variable with <link4>more links</link4>'),
+            'title': 'And this another variable with <link4>more links</link4>',
+            'special_account': 'With <link5>special accounts link</link5>.',
+            'special_appMenu': 'and another <link6>special menu link</link6>.',
             'nolinks': 'And finally one with no links.',
             'links': {
                 'link0': {
@@ -73,10 +77,18 @@ class TestFluentLinkExtractor(TestCase):
                 },
                 'link4': {
                     'url': 'https://snippets.mozilla.org'
-                }
+                },
+                'link5': {
+                    'action': 'SHOW_FIREFOX_ACCOUNTS',
+                },
+                'link6': {
+                    'action': 'OPEN_APPLICATIONS_MENU',
+                    'args': 'appMenu',
+                },
             }
         }
-        generated_data = fluent_link_extractor(data, ['text', 'title', 'nolinks'])
+        generated_data = fluent_link_extractor(
+            data, ['text', 'title', 'special_account', 'special_appMenu', 'nolinks'])
 
         self.assertEqual(final_data['text'], generated_data['text'])
         self.assertEqual(final_data['title'], generated_data['title'])

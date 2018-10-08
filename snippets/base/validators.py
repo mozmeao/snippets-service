@@ -13,6 +13,7 @@ import bleach
 
 ALLOWED_TAGS = ['a', 'i', 'b', 'u', 'strong', 'em', 'br']
 ALLOWED_ATTRIBUTES = {'a': ['href', 'data-metric']}
+ALLOWED_PROTOCOLS = ['https', 'special']
 
 
 @deconstructible
@@ -74,13 +75,22 @@ def validate_as_router_fluent_variables(data, variables):
 
     for variable in variables:
         text = data_dict[variable]
-        bleached_text = bleach.clean(text, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
+        bleached_text = bleach.clean(
+            text,
+            tags=ALLOWED_TAGS,
+            attributes=ALLOWED_ATTRIBUTES,
+            # Allow only secure protocols and custom special links.
+            protocols=ALLOWED_PROTOCOLS,
+        )
         # Bleach escapes '&' to '&amp;'. We need to revert back to compare with
         # text
         bleached_text = bleached_text.replace('&amp;', '&')
+
         if text != bleached_text:
-            error_msg = ('Variable `{}` contains unsupported tags.'
-                         'Only {} are supported'.format(variable, ', '.join(ALLOWED_TAGS)))
+            error_msg = (
+                'Variable `{}` contains unsupported tags or insecure links.'
+                'Only {} tags and https links are supported'
+            ).format(variable, ', '.join(ALLOWED_TAGS))
             raise ValidationError(error_msg)
     return data
 
