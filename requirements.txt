@@ -428,3 +428,5 @@ urlwait==0.4 \
     --hash=sha256:395fc0c2a7f9736858a2c2f449aa20c6e9da1f86bfc2d1fda4f2f5b78a5c115a
 django-modeladmin-reorder==0.3.1 \
     --hash=sha256:bf42d0dcd184b796b4d6d988c4b4cea7914adfc4430dd9978a8a0199051f189f
+django-enforce-host==1.0.1 \
+    --hash=sha256:40c4b4830e7fc27710c1606e8f3a91e82f8f1d5ae6c26aaec76f453b1407fc3d

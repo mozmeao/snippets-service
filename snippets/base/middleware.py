@@ -1,6 +1,10 @@
 from django.conf import settings
 from django.core.exceptions import MiddlewareNotUsed
+from django.core.validators import validate_ipv4_address, ValidationError
+from django.http.request import split_domain_port
 from django.urls import Resolver404, resolve
+
+from enforce_host import EnforceHostMiddleware
 
 from snippets.base.views import fetch_json_snippets, fetch_snippets
 
@@ -45,3 +49,19 @@ class HostnameMiddleware(object):
         response = self.get_response(request)
         response['X-Backend-Server'] = self.backend_server
         return response
+
+
+# Direct copy from kitsune.sumo.middleware
+class EnforceHostIPMiddleware(EnforceHostMiddleware):
+    """Modify the `EnforceHostMiddleware` to allow IP addresses"""
+    def process_request(self, request):
+        host = request.get_host()
+        domain, port = split_domain_port(host)
+        try:
+            validate_ipv4_address(domain)
+        except ValidationError:
+            # not an IP address. Call the superclass
+            return super(EnforceHostIPMiddleware, self).process_request(request)
+
+        # it is an IP address
+        return
