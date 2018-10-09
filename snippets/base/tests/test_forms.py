@@ -6,8 +6,9 @@ from django.forms import ValidationError
 from mock import Mock, MagicMock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.forms import (IconWidget, SnippetAdminForm, SnippetNGAdminForm, TargetAdminForm,
-                                 TemplateDataWidget, TemplateSelect, UploadedFileAdminForm)
+from snippets.base.forms import (IconWidget, SnippetAdminForm, TargetAdminForm,
+                                 TemplateDataWidget, TemplateSelect,
+                                 UploadedFileAdminForm)
 from snippets.base.tests import (SnippetFactory, SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase, TargetFactory)
 
@@ -111,35 +112,6 @@ class SnippetAdminFormTests(TestCase):
             'on_startpage_5': 'on',
         })
         form = SnippetAdminForm(data)
-        check_mock = Mock()
-        form._publish_permission_check = check_mock
-        form.full_clean()
-        self.assertTrue(check_mock.called)
-
-
-class SnippetNGAdminFormTests(TestCase):
-    def setUp(self):
-        template = SnippetTemplateFactory(startpage=6)
-        self.data = {
-            'name': 'Test Snippet',
-            'template': template.id,
-            'data': '{}',
-            'on_release': 'on',
-            'on_startpage_6': 'on',
-        }
-
-    def test_fluent_variables_validation(self):
-        with patch('snippets.base.forms.validate_as_router_fluent_variables') as validate_mock:
-            form = SnippetNGAdminForm(self.data)
-            self.assertTrue(form.is_valid())
-        self.assertTrue(validate_mock.called)
-
-    def test_permission_check_called(self):
-        data = self.data.copy()
-        data.update({
-            'on_startpage_6': 'on',
-        })
-        form = SnippetNGAdminForm(data)
         check_mock = Mock()
         form._publish_permission_check = check_mock
         form.full_clean()

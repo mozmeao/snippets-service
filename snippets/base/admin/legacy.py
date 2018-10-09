@@ -175,12 +175,8 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         template = mark_safe('<a href="{url}" target=_blank>{url}</a>'.format(url=url))
         return template
 
-    def get_queryset(self, request, filtr=True):
+    def get_queryset(self, request):
         query = super(SnippetAdmin, self).get_queryset(request)
-        # When filtr it means that this is coming form the SnippetNG admin and
-        # will be filtered later to include only stage page 6 snippets.
-        if filtr:
-            query = query.exclude(on_startpage_6=True)
         return query.prefetch_related('locales')
 
 

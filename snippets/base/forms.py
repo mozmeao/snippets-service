@@ -13,7 +13,7 @@ from product_details import product_details
 from product_details.version_compare import Version, version_list
 
 from snippets.base.admin import fields
-from snippets.base.models import (CHANNELS, ASRSnippet, JSONSnippet, Snippet, SnippetNG,
+from snippets.base.models import (CHANNELS, ASRSnippet, JSONSnippet, Snippet,
                                   SnippetTemplate, SnippetTemplateVariable, Target, UploadedFile)
 from snippets.base.validators import (MinValueValidator, validate_as_router_fluent_variables,
                                       validate_xml_variables)
@@ -282,36 +282,6 @@ class SnippetChangeListForm(forms.ModelForm, PublishPermissionFormMixIn):
         if self.body_variable:
             self.instance.set_data_property(self.body_variable, self.cleaned_data['body'])
         return super(SnippetChangeListForm, self).save(*args, **kwargs)
-
-
-class SnippetNGAdminForm(BaseSnippetAdminForm):
-    template = forms.ModelChoiceField(
-        queryset=SnippetTemplate.objects.exclude(hidden=True).filter(startpage=6),
-        widget=TemplateSelect)
-    on_startpage_6 = forms.BooleanField(required=True, initial=True, label='Activity Stream Router')
-
-    class Meta:
-        model = SnippetNG
-        fields = ('name', 'template', 'data', 'published', 'publish_start', 'publish_end',
-                  'on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr',
-                  'on_startpage_6', 'campaign')
-        widgets = {
-            'data': TemplateDataWidget('template'),
-        }
-
-    def clean(self):
-        cleaned_data = super(SnippetNGAdminForm, self).clean()
-
-        variables = cleaned_data['template'].get_rich_text_variables()
-        validate_as_router_fluent_variables(cleaned_data['data'], variables)
-
-        if not any([cleaned_data['on_release'], cleaned_data['on_beta'],
-                    cleaned_data['on_aurora'], cleaned_data['on_nightly'], cleaned_data['on_esr']]):
-            raise forms.ValidationError('Select at least one channel to publish this snippet on.')
-
-        self._publish_permission_check(cleaned_data)
-
-        return cleaned_data
 
 
 class SnippetAdminForm(BaseSnippetAdminForm):
