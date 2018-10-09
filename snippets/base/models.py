@@ -251,7 +251,6 @@ class Snippet(SnippetBaseModel):
     on_startpage_3 = models.BooleanField(default=False, verbose_name='Version 3')
     on_startpage_4 = models.BooleanField(default=False, verbose_name='Version 4')
     on_startpage_5 = models.BooleanField(default=False, verbose_name='Activity Stream')
-    on_startpage_6 = models.BooleanField(default=False, verbose_name='Activity Stream NG')
 
     weight = models.IntegerField(
         'Prevalence', choices=SNIPPET_WEIGHTS, default=100,
@@ -396,13 +395,6 @@ class Snippet(SnippetBaseModel):
         if self.client_options is None:
             self.client_options = {}
         return super(Snippet, self).save(*args, **kwargs)
-
-
-class SnippetNG(Snippet):
-    class Meta:
-        proxy = True
-        verbose_name = 'Snippet NG'
-        verbose_name_plural = 'Snippets NG'
 
 
 class JSONSnippet(SnippetBaseModel):
