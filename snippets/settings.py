@@ -58,6 +58,7 @@ for app in config('EXTRA_APPS', default='', cast=Csv()):
     INSTALLED_APPS.append(app)
 
 MIDDLEWARE = (
+    'snippets.base.middleware.HostnameMiddleware',
     'allow_cidr.middleware.AllowCIDRMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
@@ -79,10 +80,6 @@ DEIS_APP = config('DEIS_APP', default=None)
 DEIS_DOMAIN = config('DEIS_DOMAIN', default=None)
 ENABLE_HOSTNAME_MIDDLEWARE = config('ENABLE_HOSTNAME_MIDDLEWARE',
                                     default=bool(DEIS_APP), cast=bool)
-if ENABLE_HOSTNAME_MIDDLEWARE:
-    MIDDLEWARE = (
-        ('snippets.base.middleware.HostnameMiddleware',) +
-        MIDDLEWARE)
 
 ROOT_URLCONF = 'snippets.urls'
 
