@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import MiddlewareNotUsed
 from django.urls import Resolver404, resolve
 
 from snippets.base.views import fetch_json_snippets, fetch_snippets
@@ -33,6 +34,9 @@ class FetchSnippetsMiddleware(object):
 
 class HostnameMiddleware(object):
     def __init__(self, get_response):
+        if not settings.ENABLE_HOSTNAME_MIDDLEWARE:
+            raise MiddlewareNotUsed
+
         values = [getattr(settings, x) for x in ['HOSTNAME', 'DEIS_APP', 'DEIS_DOMAIN']]
         self.backend_server = '.'.join(x for x in values if x)
         self.get_response = get_response
