@@ -149,6 +149,21 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     fieldsets = (
         ('ID', {'fields': ('creator', 'name', 'status', 'preview_url')}),
         ('Content', {
+            'description': (
+                '''
+                <strong>Available deep links:</strong><br/>
+                <ol>
+                  <li><code>special:accounts</code> to open Firefox Accounts</li>
+                  <li><code>special:appMenu</code> to open the hamburger menu</li>
+                </ol><br/>
+                <strong>Automatically add Snippet ID:</strong><br/>
+                You can use <code>[[snippet_id]]</code> in any field and it
+                will be automatically replaced by Snippet ID when served to users.
+                <br/>
+                Example: This is a <code>&lt;a href=&quot;https://example.com?utm_term=[[snippet_id]]&quot;&gt;link&lt;/a&gt;</code>  # noqa
+                <br/>
+                '''
+            ),
             'fields': ('template', 'data'),
         }),
         ('Publishing Options', {
@@ -159,6 +174,11 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    class Media:
+        css = {
+            'all': ('css/admin/ASRSnippetAdmin.css',)
+        }
 
     def save_model(self, request, obj, form, change):
         obj.creator = request.user
