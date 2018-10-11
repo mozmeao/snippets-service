@@ -78,9 +78,20 @@ def fluent_link_extractor(data, variables):
 
             if url_match:
                 url = url_match.group('url')
-            self.links[keyname] = {
-                'url': url,
-            }
+
+            if url == 'special:appMenu':
+                self.links[keyname] = {
+                    'action': 'OPEN_APPLICATIONS_MENU',
+                    'args': 'appMenu',
+                }
+            elif url == 'special:accounts':
+                self.links[keyname] = {
+                    'action': 'SHOW_FIREFOX_ACCOUNTS',
+                }
+            else:
+                self.links[keyname] = {
+                    'url': url,
+                }
 
             # Find the optional data-metric attrib
             metric_match = re.search('data-metric="(?P<metric>.+?)"', matchobj.group('attrs'))
