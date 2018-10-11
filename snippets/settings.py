@@ -23,6 +23,10 @@ DEBUG_TEMPLATE = config('DEBUG_TEMPLATE', default=DEBUG, cast=bool),
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 ALLOWED_CIDR_NETS = config('ALLOWED_CIDR_NETS', default='', cast=Csv())
 
+# Needs to be None if not set so that the middleware will be turned off. Can't
+# set default to None because of the Csv() cast.
+ENFORCE_HOST = config('ENFORCE_HOST', default='', cast=Csv()) or None
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -65,6 +69,7 @@ MIDDLEWARE = (
     'django_statsd.middleware.GraphiteMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'snippets.base.middleware.FetchSnippetsMiddleware',
+    'snippets.base.middleware.EnforceHostIPMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
