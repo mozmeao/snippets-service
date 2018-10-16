@@ -367,6 +367,29 @@ class ASRSnippetTests(TestCase):
         }
         self.assertEqual(generated_result, expected_result)
 
+    def test_render_button_url(self):
+        snippet = ASRSnippetFactory.create(
+            template__code='<p>{{ text }} {{ foo }}</p>',
+            data=('{"text": "snippet id [[snippet_id]]", "foo": "bar",'
+                  '"button_url": "https://example.com"}'),
+            target__jexl_expr='foo == bar')
+        generated_result = snippet.render(preview=True)
+        expected_result = {
+            'id': str(snippet.id),
+            'template': snippet.template.code_name,
+            'template_version': snippet.template.version,
+            'campaign': snippet.campaign.slug,
+            'weight': 100,
+            'content': {
+                'text': 'snippet id {}'.format(snippet.id),
+                'foo': 'bar',
+                'button_action': 'OPEN_URL',
+                'button_action_args': 'https://example.com',
+                'links': {},
+            }
+        }
+        self.assertEqual(generated_result, expected_result)
+
     @override_settings(SITE_URL='http://example.com')
     def test_get_preview_url(self):
         snippet = ASRSnippetFactory.create()
