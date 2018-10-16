@@ -634,6 +634,12 @@ class ASRSnippet(django_mysql.models.Model):
         # Convert inline links to fluent.js format.
         data = util.fluent_link_extractor(data, self.template.get_rich_text_variables())
 
+        # Expand `button_url` to `button_action` and `button_action_args` for
+        # backward compatibility.
+        if data.get('button_url', ''):
+            data['button_action'] = 'OPEN_URL'
+            data['button_action_args'] = data.pop('button_url')
+
         rendered_snippet = {
             'id': str(self.id),
             'template': self.template.code_name,
