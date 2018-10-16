@@ -132,6 +132,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = (
         'campaign',
+        'target',
     )
     preserve_filters = True
     readonly_fields = (
@@ -212,6 +213,9 @@ class CampaignAdmin(admin.ModelAdmin):
 class TargetAdmin(admin.ModelAdmin):
     form = forms.TargetAdminForm
     readonly_fields = ('created', 'modified', 'creator', 'jexl_expr')
+    search_fields = (
+        'name',
+    )
     fieldsets = (
         ('ID', {'fields': ('name',)}),
         ('Product channels', {
