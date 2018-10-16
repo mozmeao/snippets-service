@@ -42,7 +42,7 @@ def create_countries():
     from snippets.base.models import TargetedCountry
 
     for code, name in product_details.get_regions('en-US').items():
-        country = TargetedCountry.objects.get_or_create(code=code)[0]
+        country = TargetedCountry.objects.get_or_create(code=code.upper())[0]
         if country.name != name:
             country.name = name
             country.save()

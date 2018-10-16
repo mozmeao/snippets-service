@@ -4,8 +4,8 @@ from collections import defaultdict
 
 from django import forms
 from django.conf import settings
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms.widgets import Textarea
-
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
@@ -14,7 +14,8 @@ from product_details.version_compare import Version, version_list
 
 from snippets.base.admin import fields
 from snippets.base.models import (CHANNELS, ASRSnippet, JSONSnippet, Snippet,
-                                  SnippetTemplate, SnippetTemplateVariable, Target, UploadedFile)
+                                  SnippetTemplate, SnippetTemplateVariable,
+                                  Target, TargetedCountry, UploadedFile)
 from snippets.base.validators import (MinValueValidator, validate_as_router_fluent_variables,
                                       validate_xml_variables)
 
@@ -634,6 +635,14 @@ class TargetAdminForm(forms.ModelForm):
         label='Uses Firefox Sync',
         help_text='User has a Firefox account which is connected to their browser.',
         required=False)
+    filtr_country = fields.JEXLCountryField(
+        'region',
+        label='Countries',
+        widget=FilteredSelectMultiple('Countries', False),
+        help_text='Display Snippet to users in the selected countries.',
+        queryset=TargetedCountry.objects.all(),
+        required=False,
+    )
     filtr_is_developer = fields.JEXLChoiceField(
         'devToolsOpenedCount',
         # devToolsOpenedCount reads from devtools.selfxss.count which is capped
@@ -708,7 +717,7 @@ class TargetAdminForm(forms.ModelForm):
             if name.startswith('filtr_'):
                 value = self.cleaned_data[name]
                 if value:
-                    jexl[name] = value
+                    jexl[name] = field.to_db(value)
                     jexl_expr_array.append(field.to_jexl(value))
         self.instance.jexl = jexl
         self.instance.jexl_expr = ' && '.join([x for x in jexl_expr_array if x])

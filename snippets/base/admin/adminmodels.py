@@ -212,7 +212,6 @@ class CampaignAdmin(admin.ModelAdmin):
 class TargetAdmin(admin.ModelAdmin):
     form = forms.TargetAdminForm
     readonly_fields = ('created', 'modified', 'creator', 'jexl_expr')
-
     fieldsets = (
         ('ID', {'fields': ('name',)}),
         ('Product channels', {
@@ -228,6 +227,7 @@ class TargetAdmin(admin.ModelAdmin):
                 'filtr_firefox_version',
                 'filtr_previous_session_end',
                 'filtr_uses_firefox_sync',
+                'filtr_country',
                 'filtr_is_developer',
                 'filtr_current_search_engine',
                 'filtr_browser_addon',
