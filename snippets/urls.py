@@ -16,6 +16,8 @@ urlpatterns = [
     path('', include('snippets.base.urls')),
     path('robots.txt', robots_txt),
 
+    # Favicon
+    re_path(r'^(?P<path>favicon\.ico)$', static_serve, {'document_root': settings.STATIC_ROOT}),
     # contribute.json url
     re_path(r'^(?P<path>contribute\.json)$', static_serve, {'document_root': settings.ROOT}),
 ]
