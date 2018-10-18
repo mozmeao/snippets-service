@@ -271,6 +271,7 @@ class Snippet(SnippetBaseModel):
 
     ready_for_review = models.BooleanField(default=False)
 
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 

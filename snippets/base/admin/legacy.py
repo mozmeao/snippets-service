@@ -55,7 +55,7 @@ class BaseSnippetAdmin(VersionAdmin, admin.ModelAdmin):
 
 class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     form = forms.SnippetAdminForm
-    readonly_fields = BaseSnippetAdmin.readonly_fields + ('preview_url',)
+    readonly_fields = BaseSnippetAdmin.readonly_fields + ('preview_url', 'creator')
     search_fields = ('name', 'client_match_rules__description',
                      'template__name', 'campaign')
     list_filter = (
@@ -79,7 +79,7 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
                          ('exclude_from_search_providers', 'client_match_rules'))
 
     fieldsets = (
-        (None, {'fields': ('name', ('ready_for_review', 'published'), 'campaign',
+        (None, {'fields': ('creator', 'name', ('ready_for_review', 'published'), 'campaign',
                            'preview_url', 'created', 'modified')}),
         ('Content', {
             'description': ('In Activity Stream Templates you can use the special links:<br/>'
@@ -162,6 +162,9 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         return form
 
     def save_model(self, request, obj, form, change):
+        # Only save creator for new Snippets.
+        if not change:
+            obj.creator = request.user
         statsd.incr('save.snippet')
         super(SnippetAdmin, self).save_model(request, obj, form, change)
 
