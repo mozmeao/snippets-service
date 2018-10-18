@@ -180,6 +180,10 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         css = {
             'all': ('css/admin/ASRSnippetAdmin.css',)
         }
+        js = (
+            'js/admin/clipboard.min.js',
+            'js/admin/copy_preview.js',
+        )
 
     def save_model(self, request, obj, form, change):
         obj.creator = request.user
@@ -187,7 +191,15 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     def preview_url(self, obj):
-        return obj.get_preview_url()
+        text = f'''
+        <span id="previewLinkUrl">{obj.get_preview_url()}</span>
+        <button id="copyPreviewLink" class="btn"
+                data-clipboard-target="#previewLinkUrl"
+                originalText="Copy to Clipboard" type="button">
+          Copy to Clipboard
+        </button>
+        '''
+        return mark_safe(text)
 
 
 class CampaignAdmin(admin.ModelAdmin):

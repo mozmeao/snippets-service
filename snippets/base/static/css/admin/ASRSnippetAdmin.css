@@ -9,3 +9,16 @@
     background-color: #e4e4e4;
     border-radius: 3px;
 }
+
+#copyPreviewLink {
+    color: white;
+    border-radius: 4px;
+    text-shadow: none;
+    background: #2eb772;
+    margin: 0 0 0 5px;
+    line-height: 15px;
+    padding: 5px 7px;
+    cursor: pointer;
+    border: none;
+
+}
