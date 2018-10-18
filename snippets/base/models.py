@@ -231,7 +231,7 @@ class Snippet(SnippetBaseModel):
     template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT)
     data = models.TextField(default='{}')
 
-    published = models.BooleanField(default=False)
+    published = models.BooleanField(default=False, db_index=True)
 
     countries = models.ManyToManyField(
         'TargetedCountry', blank=True, verbose_name='Targeted Countries')
@@ -240,17 +240,19 @@ class Snippet(SnippetBaseModel):
     publish_start = models.DateTimeField(blank=True, null=True)
     publish_end = models.DateTimeField(blank=True, null=True)
 
-    on_release = models.BooleanField(default=False, verbose_name='Release')
-    on_beta = models.BooleanField(default=False, verbose_name='Beta')
-    on_aurora = models.BooleanField(default=False, verbose_name='Dev Edition (old Aurora)')
-    on_nightly = models.BooleanField(default=False, verbose_name='Nightly')
-    on_esr = models.BooleanField(default=False, verbose_name='ESR')
+    on_release = models.BooleanField(default=False, verbose_name='Release', db_index=True)
+    on_beta = models.BooleanField(default=False, verbose_name='Beta', db_index=True)
+    on_aurora = models.BooleanField(default=False, verbose_name='Dev Edition (old Aurora)',
+                                    db_index=True)
+    on_nightly = models.BooleanField(default=False, verbose_name='Nightly', db_index=True)
+    on_esr = models.BooleanField(default=False, verbose_name='ESR', db_index=True)
 
     on_startpage_1 = models.BooleanField(default=False, verbose_name='Version 1')
     on_startpage_2 = models.BooleanField(default=False, verbose_name='Version 2')
     on_startpage_3 = models.BooleanField(default=False, verbose_name='Version 3')
-    on_startpage_4 = models.BooleanField(default=False, verbose_name='Version 4')
-    on_startpage_5 = models.BooleanField(default=False, verbose_name='Activity Stream')
+    on_startpage_4 = models.BooleanField(default=False, verbose_name='Version 4', db_index=True)
+    on_startpage_5 = models.BooleanField(default=False, verbose_name='Activity Stream',
+                                         db_index=True)
 
     weight = models.IntegerField(
         'Prevalence', choices=SNIPPET_WEIGHTS, default=100,
