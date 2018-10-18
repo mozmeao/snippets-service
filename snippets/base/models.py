@@ -388,6 +388,11 @@ class Snippet(SnippetBaseModel):
         full_url = urljoin(settings.SITE_URL, url)
         return full_url
 
+    def get_admin_url(self):
+        url = reverse('admin:base_snippet_change', args=(self.id,))
+        full_url = urljoin(settings.SITE_URL, url)
+        return full_url
+
     def get_absolute_url(self):
         return reverse('base.show', kwargs={'snippet_id': self.id})
 
@@ -656,6 +661,11 @@ class ASRSnippet(django_mysql.models.Model):
         url = reverse('asr-preview', kwargs={'uuid': self.uuid})
         full_url = urljoin(settings.SITE_URL, url)
         return 'about:newtab?endpoint=' + full_url
+
+    def get_admin_url(self):
+        url = reverse('admin:base_asrsnippet_change', args=(self.id,))
+        full_url = urljoin(settings.SITE_URL, url)
+        return full_url
 
 
 class Addon(models.Model):
