@@ -182,7 +182,8 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         }
 
     def save_model(self, request, obj, form, change):
-        obj.creator = request.user
+        if not obj.creator:
+            obj.creator = request.user
         statsd.incr('save.asrsnippet')
         super().save_model(request, obj, form, change)
 
@@ -205,7 +206,8 @@ class CampaignAdmin(admin.ModelAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        obj.creator = request.user
+        if not obj.creator:
+            obj.creator = request.user
         statsd.incr('save.campaign')
         super().save_model(request, obj, form, change)
 
@@ -244,6 +246,7 @@ class TargetAdmin(admin.ModelAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        obj.creator = request.user
+        if not obj.creator:
+            obj.creator = request.user
         statsd.incr('save.target')
         super().save_model(request, obj, form, change)
