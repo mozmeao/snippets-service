@@ -14,6 +14,7 @@ from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 from snippets.base import forms, models
 from snippets.base.models import JINJA_ENV
 from snippets.base.admin.filters import ModifiedFilter, ReleaseFilter
+from snippets.base.admin.actions import duplicate_snippets_action
 
 
 MATCH_LOCALE_REGEX = re.compile('(\w+(?:-\w+)*)')
@@ -146,6 +147,9 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     save_on_top = True
     save_as = True
     view_on_site = False
+    actions = (
+        duplicate_snippets_action,
+    )
 
     fieldsets = (
         ('ID', {'fields': ('creator', 'name', 'status', 'preview_url')}),
