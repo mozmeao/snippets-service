@@ -271,6 +271,7 @@ class Snippet(SnippetBaseModel):
 
     ready_for_review = models.BooleanField(default=False)
 
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -384,6 +385,11 @@ class Snippet(SnippetBaseModel):
 
     def get_preview_url(self):
         url = reverse('base.show_uuid', kwargs={'snippet_id': self.uuid})
+        full_url = urljoin(settings.SITE_URL, url)
+        return full_url
+
+    def get_admin_url(self):
+        url = reverse('admin:base_snippet_change', args=(self.id,))
         full_url = urljoin(settings.SITE_URL, url)
         return full_url
 
@@ -655,6 +661,11 @@ class ASRSnippet(django_mysql.models.Model):
         url = reverse('asr-preview', kwargs={'uuid': self.uuid})
         full_url = urljoin(settings.SITE_URL, url)
         return 'about:newtab?endpoint=' + full_url
+
+    def get_admin_url(self):
+        url = reverse('admin:base_asrsnippet_change', args=(self.id,))
+        full_url = urljoin(settings.SITE_URL, url)
+        return full_url
 
 
 class Addon(models.Model):

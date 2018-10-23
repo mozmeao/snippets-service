@@ -1,0 +1,9 @@
+{
+  "attachments": [{
+        "pretext": "Update on Snippet #{{ snippet.id }}",
+        "title": "Snippet #{{ snippet.id }} is ready for review!",
+        "title_link": "{{ snippet.get_admin_url() }}",
+        "text": "Snippet *#{{ snippet.id }}*: *{{ snippet.name }}* from {{ snippet.creator }} was just marked ready for review.",
+        "color": "#FF7F50"
+  }]
+}

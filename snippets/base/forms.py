@@ -16,6 +16,7 @@ from snippets.base.admin import fields
 from snippets.base.models import (CHANNELS, ASRSnippet, JSONSnippet, Snippet,
                                   SnippetTemplate, SnippetTemplateVariable,
                                   Target, TargetedCountry, UploadedFile)
+from snippets.base.slack import send_slack
 from snippets.base.validators import (MinValueValidator, validate_as_router_fluent_variables,
                                       validate_xml_variables)
 
@@ -521,6 +522,12 @@ class SnippetAdminForm(BaseSnippetAdminForm):
                 client_options[key.split('client_option_', 1)[1]] = value
         snippet.client_options = client_options
         snippet.save()
+
+        if 'ready_for_review' in self.changed_data and self.instance.ready_for_review is True:
+            send_slack('legacy_ready_for_review', self.instance)
+
+        if 'published' in self.changed_data and self.instance.published is True:
+            send_slack('legacy_published', self.instance)
 
         return snippet
 

@@ -163,7 +163,8 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'debug': DEBUG_TEMPLATE,
-            'match_extension': '.jinja',
+            "match_extension": None,
+            'match_regex': '.+\.jinja(\.json)?',
             'newstyle_gettext': True,
             'context_processors': [
                 'snippets.base.context_processors.settings',
@@ -333,3 +334,7 @@ ADMIN_REORDER = [
         'models': ['auth.User', 'auth.Group', 'admin.LogEntry']
     },
 ]
+
+
+SLACK_ENABLE = config('SLACK_ENABLE', default=False, cast=bool)
+SLACK_WEBHOOK = config('SLACK_WEBHOOK', default='')
