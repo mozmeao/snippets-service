@@ -19,5 +19,5 @@ class SendSlackTests(TestCase):
             slack._send_slack('foo')
         self.assertTrue(requests_mock.post.called)
         requests_mock.post.assert_called_with(
-            'https://example.com', data='foo',
+            'https://example.com', data='foo', timeout=4,
             headers={'Content-Type': 'application/json'})
