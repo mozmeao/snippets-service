@@ -3,8 +3,9 @@ from django.test.client import RequestFactory
 
 from mock import Mock, patch
 
-from snippets.base.admin import SnippetAdmin, SnippetTemplateAdmin
-from snippets.base.models import Snippet, SnippetTemplate, SnippetTemplateVariable
+from snippets.base.admin import ASRSnippetAdmin, SnippetAdmin, SnippetTemplateAdmin
+from snippets.base.models import (STATUS_CHOICES, ASRSnippet, Snippet, SnippetTemplate,
+                                  SnippetTemplateVariable)
 from snippets.base.tests import SnippetTemplateFactory, SnippetTemplateVariableFactory, TestCase
 
 
@@ -138,3 +139,41 @@ class SnippetTemplateAdminTests(TestCase):
 
         self.assertFalse(SnippetTemplateVariable.objects
                          .filter(template=template, name='reserved_name').exists())
+
+
+class ASRSnippetAdminTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.model_admin = ASRSnippetAdmin(ASRSnippet, None)
+        self.model_admin.admin_site = Mock()
+        self.user = User.objects.get_or_create(username='foo', email='foo@example.com')[0]
+
+    def test_save_as_published(self):
+        request = self.factory.post('/', data={
+            'name': 'test',
+            'template': 'foo',
+            'status': STATUS_CHOICES['Published'],
+            '_saveasnew': True
+        })
+        request.user = self.user
+
+        with patch('snippets.base.admin.admin.ModelAdmin.change_view') as change_view_mock:
+            self.model_admin.change_view(request, 999)
+            change_view_mock.assert_called_with(request, 999)
+            request = change_view_mock.call_args[0][0]
+            self.assertEqual(request.POST['status'], STATUS_CHOICES['Draft'])
+
+    def test_normal_save_published(self):
+        """Test that normal save doesn't alter `status` attribute."""
+        request = self.factory.post('/', data={
+            'name': 'test',
+            'template': 'foo',
+            'status': STATUS_CHOICES['Published'],
+        })
+        request.user = self.user
+
+        with patch('snippets.base.admin.admin.ModelAdmin.change_view') as change_view_mock:
+            self.model_admin.change_view(request, 999)
+            change_view_mock.assert_called_with(request, 999)
+            request = change_view_mock.call_args[0][0]
+            self.assertEqual(request.POST['status'], str(STATUS_CHOICES['Published']))

@@ -202,6 +202,14 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         '''
         return mark_safe(text)
 
+    def change_view(self, request, *args, **kwargs):
+        if request.method == 'POST' and '_saveasnew' in request.POST:
+            # Always saved cloned snippets as un-published and un-check ready for review.
+            post_data = request.POST.copy()
+            post_data['status'] = models.STATUS_CHOICES['Draft']
+            request.POST = post_data
+        return super().change_view(request, *args, **kwargs)
+
 
 class CampaignAdmin(admin.ModelAdmin):
     readonly_fields = ('created', 'modified', 'creator',)
