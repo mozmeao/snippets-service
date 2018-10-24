@@ -137,6 +137,7 @@ MEDIA_FILES_ROOT = config('MEDIA_FILES_ROOT', default='files/')
 MEDIA_BUNDLES_ROOT = config('MEDIA_BUNDLES_ROOT', default='bundles/')
 
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
+SESSION_COOKIE_SAMESITE = config('SESSION_COOKIE_SAMESITE', default='Lax')
 
 USE_X_FORWARDED_HOST = True
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=not DEBUG, cast=bool)
@@ -206,7 +207,9 @@ SNIPPET_SIZE_LIMIT = 500
 SNIPPET_IMAGE_SIZE_LIMIT = 250
 
 ENABLE_ADMIN = config('ENABLE_ADMIN', default=False, cast=bool)
-CSRF_USE_SESSIONS = config('CSRF_USE_SESSIONS', default=True, cast=bool)
+CSRF_USE_SESSIONS = config('CSRF_USE_SESSIONS', default=False, cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=not DEBUG, cast=bool)
+CSRF_COOKIE_SAMESITE = config('CSRF_COOKIE_SAMESITE', default='Lax')
 
 SNIPPET_BUNDLE_TIMEOUT = config('SNIPPET_BUNDLE_TIMEOUT', default=15 * 60, cast=int)  # 15 minutes
 
