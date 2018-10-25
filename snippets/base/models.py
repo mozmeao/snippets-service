@@ -217,7 +217,7 @@ class SnippetBaseModel(django_mysql.models.Model):
                 manager = attr
                 if manager.__class__.__name__ == 'RelatedManager':
                     for itm in manager.all():
-                        itm_copy = copy.copy(itm)
+                        itm_copy = copy.deepcopy(itm)
                         itm_copy.id = None
                         getattr(snippet_copy, field.name).add(itm_copy)
                 elif manager.__class__.__name__ == 'ManyRelatedManager':
@@ -690,7 +690,7 @@ class ASRSnippet(django_mysql.models.Model):
                 manager = attr
                 if manager.__class__.__name__ == 'RelatedManager':
                     for itm in manager.all():
-                        itm_copy = copy.copy(itm)
+                        itm_copy = copy.deepcopy(itm)
                         itm_copy.id = None
                         getattr(snippet_copy, field.name).add(itm_copy)
                 elif manager.__class__.__name__ == 'ManyRelatedManager':

@@ -382,10 +382,14 @@ class ASRSnippetTests(TestCase):
 
     def test_duplicate(self):
         user = UserFactory.create()
-        snippet = ASRSnippetFactory.create(status=STATUS_CHOICES['Published'])
+        snippet = ASRSnippetFactory.create(
+            status=STATUS_CHOICES['Published'],
+            locales=['en-us', 'fr'],
+        )
         duplicate_snippet = snippet.duplicate(user)
 
         for attr in ['id', 'creator', 'created', 'modified', 'name', 'uuid']:
             self.assertNotEqual(getattr(snippet, attr), getattr(duplicate_snippet, attr))
 
+        self.assertEqual(set(snippet.locales.all()), set(duplicate_snippet.locales.all()))
         self.assertEqual(duplicate_snippet.status, STATUS_CHOICES['Draft'])
