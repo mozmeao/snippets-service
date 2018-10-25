@@ -6,7 +6,7 @@ from django.forms import ValidationError
 from mock import Mock, MagicMock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.forms import (IconWidget, SnippetAdminForm, TargetAdminForm,
+from snippets.base.forms import (AddonAdminForm, IconWidget, SnippetAdminForm, TargetAdminForm,
                                  TemplateDataWidget, TemplateSelect,
                                  UploadedFileAdminForm)
 from snippets.base.tests import (SnippetFactory, SnippetTemplateFactory,
@@ -297,3 +297,28 @@ class TargetAdminFormTests(TestCase):
         self.assertEqual(instance.jexl, {
             'filtr_is_default_browser': 'true',
         })
+
+
+class AddonAdminFormTests(TestCase):
+    def test_base(self):
+        data = {
+            'url': 'http://example.com/?foo=bar&la=lo'
+        }
+        form = AddonAdminForm(data)
+        with patch('snippets.base.forms.Addon.fetch_details') as fetch_details:
+            fetch_details.return_value = ('name', 'guid')
+            form.is_valid()
+        self.assertEqual(form.cleaned_data['url'], 'http://example.com/')
+        self.assertEqual(form.instance.name, 'name')
+        self.assertEqual(form.instance.guid, 'guid')
+        fetch_details.assert_called_with('http://example.com/')
+
+    def test_url_append_slash(self):
+        data = {
+            'url': 'http://example.com/foo'
+        }
+        form = AddonAdminForm(data)
+        with patch('snippets.base.forms.Addon.fetch_details') as fetch_details:
+            fetch_details.return_value = ('name', 'guid')
+            form.is_valid()
+        self.assertEqual(form.cleaned_data['url'], 'http://example.com/foo/')

@@ -731,12 +731,13 @@ class AddonAdminForm(forms.ModelForm):
     def clean(self, *args, **kwargs):
         cleaned_data = super().clean(*args, **kwargs)
         if 'url' in self.changed_data:
-
             # Add ending slash and remove query params when needed.
             url = cleaned_data.pop('url')
+            query = urlparse(url).query
+            if query:
+                url = url[:-(len(query) + 1)]
             if not url.endswith('/'):
                 url += '/'
-            url = url[:-(len(urlparse(url).query) + 1)]
             cleaned_data['url'] = url
 
             try:
@@ -752,7 +753,7 @@ class AddonAdminForm(forms.ModelForm):
             self.instance.name = name
             self.instance.guid = guid
 
-        return
+        return cleaned_data
 
     class Meta:
         model = Addon

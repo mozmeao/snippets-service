@@ -14,6 +14,7 @@ from django.db import models
 from django.db.models.manager import Manager
 from django.template import engines
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 import django_mysql.models
 import requests
@@ -663,7 +664,8 @@ class Addon(models.Model):
     name = models.CharField(max_length=255, unique=True)
     url = models.URLField(
         unique=True,
-        help_text='Add-on page on https://addons.mozilla.org.'
+        help_text=mark_safe('Add-on page on <a target="_blank" '
+                            'href="https://addons.mozilla.org">addons.mozilla.org</a>.')
     )
     guid = models.CharField(max_length=255, unique=True)
 
