@@ -551,14 +551,17 @@ class Target(models.Model):
         default={},
         spec={
             'filtr_is_default_browser': str,
-            'filtr_profile_age_created': int,
+            'filtr_profile_age_created': str,
             'filtr_firefox_version': str,
+            'filtr_previous_session_end': str,
             'filtr_uses_firefox_sync': str,
+            'filtr_country': str,
             'filtr_is_developer': str,
+            'filtr_updates_enabled': str,
+            'filtr_updates_autodownload_enabled': str,
             'filtr_current_search_engine': str,
             'filtr_browser_addon': str,
             'filtr_total_bookmarks_count': str,
-            'filtr_previous_session_end': str,
         }
     )
     jexl_expr = models.TextField(blank=True, default='')
