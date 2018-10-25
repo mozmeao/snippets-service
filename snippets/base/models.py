@@ -197,10 +197,14 @@ class ClientMatchRule(models.Model):
 class SnippetBaseModel(django_mysql.models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
-    def duplicate(self):
-        snippet_copy = copy.copy(self)
+    def duplicate(self, creator):
+        snippet_copy = copy.deepcopy(self)
         snippet_copy.id = None
+        snippet_copy.created = None
+        snippet_copy.modified = None
+        snippet_copy.creator = creator
         snippet_copy.published = False
+        snippet_copy.ready_for_review = False
         snippet_copy.uuid = uuid.uuid4()
         snippet_copy.name = '{0} - {1}'.format(
             self.name,
@@ -213,7 +217,7 @@ class SnippetBaseModel(django_mysql.models.Model):
                 manager = attr
                 if manager.__class__.__name__ == 'RelatedManager':
                     for itm in manager.all():
-                        itm_copy = copy.copy(itm)
+                        itm_copy = copy.deepcopy(itm)
                         itm_copy.id = None
                         getattr(snippet_copy, field.name).add(itm_copy)
                 elif manager.__class__.__name__ == 'ManyRelatedManager':
@@ -669,6 +673,34 @@ class ASRSnippet(django_mysql.models.Model):
         url = reverse('admin:base_asrsnippet_change', args=(self.id,))
         full_url = urljoin(settings.SITE_URL, url)
         return full_url
+
+    def duplicate(self, creator):
+        snippet_copy = copy.deepcopy(self)
+        snippet_copy.id = None
+        snippet_copy.created = None
+        snippet_copy.modified = None
+        snippet_copy.status = STATUS_CHOICES['Draft']
+        snippet_copy.creator = creator
+        snippet_copy.uuid = uuid.uuid4()
+        snippet_copy.name = '{0} - {1}'.format(
+            self.name,
+            datetime.strftime(datetime.now(), '%Y.%m.%d %H:%M:%S'))
+        snippet_copy.save()
+
+        for field in self._meta.get_fields():
+            attr = getattr(self, field.name)
+            if isinstance(attr, Manager):
+                manager = attr
+                if manager.__class__.__name__ == 'RelatedManager':
+                    for itm in manager.all():
+                        itm_copy = copy.deepcopy(itm)
+                        itm_copy.id = None
+                        getattr(snippet_copy, field.name).add(itm_copy)
+                elif manager.__class__.__name__ == 'ManyRelatedManager':
+                    for snippet in manager.all():
+                        getattr(snippet_copy, field.name).add(snippet)
+
+        return snippet_copy
 
 
 class Addon(models.Model):

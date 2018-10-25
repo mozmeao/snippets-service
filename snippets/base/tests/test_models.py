@@ -6,7 +6,7 @@ from jinja2 import Markup
 from mock import MagicMock, Mock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.models import Client, UploadedFile, _generate_filename
+from snippets.base.models import STATUS_CHOICES, Client, UploadedFile, _generate_filename
 from snippets.base.tests import (ASRSnippetFactory,
                                  ClientMatchRuleFactory,
                                  JSONSnippetFactory,
@@ -15,19 +15,25 @@ from snippets.base.tests import (ASRSnippetFactory,
                                  SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory,
                                  TestCase,
+                                 UserFactory,
                                  UploadedFileFactory)
 
 
 class DuplicateSnippetMixInTests(TestCase):
     def _dup_test(self, snippet):
+        user = UserFactory.create()
         snippet.client_match_rules.add(*ClientMatchRuleFactory.create_batch(3))
-        snippet_copy = snippet.duplicate()
+        snippet_copy = snippet.duplicate(user)
         self.assertEqual(snippet_copy.published, False)
-        self.assertTrue(snippet_copy.id != snippet.id)
+        self.assertNotEqual(snippet_copy.id, snippet.id)
         self.assertEqual(snippet_copy.locales.count(), 1)
         self.assertTrue(snippet_copy.locales.all()[0] == snippet.locales.all()[0])
         self.assertEqual(set(snippet_copy.client_match_rules.all()),
                          set(snippet.client_match_rules.all()))
+
+        # Only Snippet and not JSONSnippet, has creator
+        if hasattr(snippet, 'creator'):
+            self.assertNotEqual(snippet_copy.creator, snippet.creator)
 
     def test_snippet(self):
         snippet = SnippetFactory.create()
@@ -373,3 +379,17 @@ class ASRSnippetTests(TestCase):
         expected_result = 'about:newtab?endpoint=http://example.com'
         expected_result += reverse('asr-preview', kwargs={'uuid': snippet.uuid})
         self.assertEqual(snippet.get_preview_url(), expected_result)
+
+    def test_duplicate(self):
+        user = UserFactory.create()
+        snippet = ASRSnippetFactory.create(
+            status=STATUS_CHOICES['Published'],
+            locales=['en-us', 'fr'],
+        )
+        duplicate_snippet = snippet.duplicate(user)
+
+        for attr in ['id', 'creator', 'created', 'modified', 'name', 'uuid']:
+            self.assertNotEqual(getattr(snippet, attr), getattr(duplicate_snippet, attr))
+
+        self.assertEqual(set(snippet.locales.all()), set(duplicate_snippet.locales.all()))
+        self.assertEqual(duplicate_snippet.status, STATUS_CHOICES['Draft'])
