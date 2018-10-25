@@ -175,3 +175,6 @@ class JEXLAddonField(MultiValueField):
         if not check and addon_id:
             raise ValidationError('You must select a check')
         return value
+
+    def to_db(self, value):
+        return value
