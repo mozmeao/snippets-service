@@ -162,9 +162,6 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         return form
 
     def save_model(self, request, obj, form, change):
-        # Only save creator for new Snippets.
-        if not change:
-            obj.creator = request.user
         statsd.incr('save.snippet')
         super(SnippetAdmin, self).save_model(request, obj, form, change)
 

@@ -516,6 +516,9 @@ class SnippetAdminForm(BaseSnippetAdminForm):
     def save(self, *args, **kwargs):
         snippet = super(SnippetAdminForm, self).save(commit=False)
 
+        if not self.initial:
+            snippet.creator = self.current_user
+
         client_options = {}
         for key, value in self.cleaned_data.items():
             if key.startswith('client_option_'):
@@ -524,10 +527,10 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         snippet.save()
 
         if 'ready_for_review' in self.changed_data and self.instance.ready_for_review is True:
-            send_slack('legacy_ready_for_review', self.instance)
+            send_slack('legacy_ready_for_review', snippet)
 
         if 'published' in self.changed_data and self.instance.published is True:
-            send_slack('legacy_published', self.instance)
+            send_slack('legacy_published', snippet)
 
         return snippet
 
