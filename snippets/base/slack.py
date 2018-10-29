@@ -21,7 +21,7 @@ def _send_slack(data):
         return
 
     try:
-        response = requests.post(settings.SLACK_WEBHOOK, data=data,
+        response = requests.post(settings.SLACK_WEBHOOK, data=data.encode('utf-8'),
                                  headers={'Content-Type': 'application/json'},
                                  timeout=4)
         response.raise_for_status()
