@@ -614,11 +614,13 @@ class ASRSnippet(django_mysql.models.Model):
     publish_start = models.DateTimeField(
         blank=True, null=True,
         verbose_name='Publish Starts',
-        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
+        help_text=format_html(
+            'See the current time in <a target="_blank" href="http://time.is/UTC">UTC</a>'))
     publish_end = models.DateTimeField(
         blank=True, null=True,
         verbose_name='Publish Ends',
-        help_text=format_html('See the current time in <a href="http://time.is/UTC">UTC</a>'))
+        help_text=format_html(
+            'See the current time in <a target="_blank" href="http://time.is/UTC">UTC</a>'))
 
     locales = models.ManyToManyField('TargetedLocale', blank=True, verbose_name='Targeted Locales')
     target = models.ForeignKey(Target, on_delete=models.PROTECT,
