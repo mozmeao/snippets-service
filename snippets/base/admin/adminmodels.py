@@ -130,6 +130,9 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     )
     search_fields = (
         'name',
+        'id',
+        'campaign__name',
+        'target__name',
     )
     autocomplete_fields = (
         'campaign',
@@ -143,7 +146,9 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'creator',
         'preview_url',
     )
-    filter_horizontal = ('locales',)
+    filter_horizontal = (
+        'locales',
+    )
     save_on_top = True
     save_as = True
     view_on_site = False
