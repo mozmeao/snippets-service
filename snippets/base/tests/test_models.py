@@ -3,7 +3,7 @@ from django.test.utils import override_settings
 from django.urls import reverse
 
 from jinja2 import Markup
-from mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 from pyquery import PyQuery as pq
 
 from snippets.base.models import STATUS_CHOICES, Client, UploadedFile, _generate_filename

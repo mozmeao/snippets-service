@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test.client import RequestFactory
 
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from snippets.base.admin import ASRSnippetAdmin, SnippetAdmin, SnippetTemplateAdmin
 from snippets.base.models import (STATUS_CHOICES, ASRSnippet, Snippet, SnippetTemplate,

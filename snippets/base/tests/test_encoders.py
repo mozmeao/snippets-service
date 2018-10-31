@@ -1,4 +1,4 @@
-from mock import patch
+from unittest.mock import patch
 
 from snippets.base.encoders import JSONSnippetEncoder
 from snippets.base.tests import JSONSnippetFactory, TestCase

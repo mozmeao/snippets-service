@@ -6,7 +6,7 @@ from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.urls import reverse
 
-from mock import patch
+from unittest.mock import patch
 
 import snippets.base.models
 from snippets.base import views
