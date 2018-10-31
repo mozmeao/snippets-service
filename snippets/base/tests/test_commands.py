@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from mock import Mock
+from unittest.mock import Mock
 
 from django.core.management import call_command
 

@@ -3,7 +3,7 @@ import json
 from django.contrib.auth.models import User, Permission
 from django.forms import ValidationError
 
-from mock import Mock, MagicMock, patch
+from unittest.mock import Mock, MagicMock, patch
 from pyquery import PyQuery as pq
 
 from snippets.base.forms import (IconWidget, SnippetAdminForm, TargetAdminForm,

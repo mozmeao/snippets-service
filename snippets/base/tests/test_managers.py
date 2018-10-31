@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from mock import patch
+from unittest.mock import patch
 
 from snippets.base.models import ASRSnippet, Client, ClientMatchRule, Snippet
 from snippets.base.tests import (ASRSnippetFactory, ClientMatchRuleFactory, SnippetFactory,

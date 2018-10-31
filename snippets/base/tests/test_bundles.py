@@ -4,7 +4,7 @@ from django.conf import settings
 from django.test.utils import override_settings
 
 import brotli
-from mock import ANY, DEFAULT, Mock, patch
+from unittest.mock import ANY, DEFAULT, Mock, patch
 
 from snippets.base.bundles import ONE_DAY, ASRSnippetBundle, SnippetBundle
 from snippets.base.models import Client
