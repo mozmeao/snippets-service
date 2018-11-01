@@ -140,6 +140,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     )
     preserve_filters = True
     readonly_fields = (
+        'id',
         'created',
         'modified',
         'uuid',
@@ -157,7 +158,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     )
 
     fieldsets = (
-        ('ID', {'fields': ('creator', 'name', 'status', 'preview_url')}),
+        ('ID', {'fields': ('id', 'name', 'status', 'creator', 'preview_url')}),
         ('Content', {
             'description': (
                 '''
@@ -187,7 +188,10 @@ class ASRSnippetAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            'all': ('css/admin/ASRSnippetAdmin.css',)
+            'all': (
+                'css/admin/ASRSnippetAdmin.css',
+                'css/admin/IDFieldHighlight.css',
+            )
         }
         js = (
             'js/admin/clipboard.min.js',

@@ -28,7 +28,7 @@ class BaseSnippetAdmin(VersionAdmin, admin.ModelAdmin):
     list_editable = (
         'published',
     )
-    readonly_fields = ('created', 'modified', 'uuid')
+    readonly_fields = ('id', 'created', 'modified', 'uuid')
     save_on_top = True
     save_as = True
 
@@ -79,7 +79,7 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
                          ('exclude_from_search_providers', 'client_match_rules'))
 
     fieldsets = (
-        (None, {'fields': ('creator', 'name', ('ready_for_review', 'published'), 'campaign',
+        (None, {'fields': ('id', 'creator', 'name', ('ready_for_review', 'published'), 'campaign',
                            'preview_url', 'created', 'modified')}),
         ('Content', {
             'description': ('In Activity Stream Templates you can use the special links:<br/>'
@@ -148,7 +148,10 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
 
     class Media:
         css = {
-            'all': ('css/admin.css',)
+            'all': (
+                'css/admin.css',
+                'css/admin/IDFieldHighlight.css',
+            )
         }
 
     def get_form(self, request, obj=None, **kwargs):
@@ -192,7 +195,7 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
     )
 
     fieldsets = (
-        (None, {'fields': ('name', 'published', 'created', 'modified')}),
+        (None, {'fields': ('id', 'name', 'published', 'created', 'modified')}),
         ('Content', {
             'fields': ('icon', 'text', 'url'),
         }),
@@ -228,6 +231,14 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    class Media:
+        css = {
+            'all': (
+                'css/admin.css',
+                'css/admin/IDFieldHighlight.css',
+            )
+        }
 
     def save_model(self, request, obj, form, change):
         statsd.incr('save.json_snippet')
