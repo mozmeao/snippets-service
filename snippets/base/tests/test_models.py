@@ -60,8 +60,8 @@ class ClientMatchRuleTests(TestCase):
 
     def test_regex_match(self):
         client = self._client(version='15.2.4')
-        pass_rule = ClientMatchRuleFactory(version='/[\d\.]+/')
-        fail_rule = ClientMatchRuleFactory(version='/\D+/')
+        pass_rule = ClientMatchRuleFactory(version=r'/[\d\.]+/')
+        fail_rule = ClientMatchRuleFactory(version=r'/\D+/')
 
         self.assertTrue(pass_rule.matches(client))
         self.assertTrue(not fail_rule.matches(client))

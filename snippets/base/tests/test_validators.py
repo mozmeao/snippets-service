@@ -69,9 +69,9 @@ class RegexValidatorTests(TestCase):
         self.assertEqual(validate_regex(valid_string), valid_string)
 
     def test_valid_regex(self):
-        valid_regex = '/\d+/'
+        valid_regex = r'/\d+/'
         self.assertEqual(validate_regex(valid_regex), valid_regex)
 
     def test_invalid_regex(self):
-        bogus_regex = '/(?P\d+)/'
+        bogus_regex = r'/(?P\d+)/'
         self.assertRaises(ValidationError, validate_regex, bogus_regex)

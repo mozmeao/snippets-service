@@ -17,7 +17,7 @@ from snippets.base.admin.filters import ModifiedFilter, ReleaseFilter
 from snippets.base.admin.actions import duplicate_snippets_action
 
 
-MATCH_LOCALE_REGEX = re.compile('(\w+(?:-\w+)*)')
+MATCH_LOCALE_REGEX = re.compile(r'(\w+(?:-\w+)*)')
 RESERVED_VARIABLES = ('_', 'snippet_id')
 
 
