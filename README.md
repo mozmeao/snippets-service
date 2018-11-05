@@ -18,3 +18,13 @@ The root of all messaging.
 ## Run the tests
 
  `$ ./manage.py test --parallel`
+
+
+## Install Therapist
+
+[Therapist](https://github.com/rehandalal/therapist) is a smart pre-commit hook
+for git to ensure that committed code has been properly linted.
+
+Install the hooks by running:
+
+ `$ therapist install`
