@@ -165,7 +165,7 @@ TEMPLATES = [
         'OPTIONS': {
             'debug': DEBUG_TEMPLATE,
             "match_extension": None,
-            'match_regex': '.+\.jinja(\.json)?',
+            'match_regex': r'.+\.jinja(\.json)?',
             'newstyle_gettext': True,
             'context_processors': [
                 'snippets.base.context_processors.settings',
