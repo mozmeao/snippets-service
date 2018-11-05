@@ -1,71 +1,20 @@
-snippets
-==========
+# snippets service
 
-[What's deployed?](https://whatsdeployed.io/s-Lb4)
+[![What's Deployed?](https://img.shields.io/badge/What's_Deployed-%3F-yellow.svg)](https://whatsdeployed.io/s-088) [![Documentation RTFM](https://img.shields.io/badge/Documentation-RTFM-blue.svg)](http://abouthome-snippets-service.readthedocs.org/)
 
-[Documentation](http://abouthome-snippets-service.readthedocs.org/)
+The root of all messaging.
 
-
-Run the tests
--------------
-
-There's a sample test in `snippets/base/tests.py` for your convenience, that
-you can run using the following command:
-
-    python manage.py test
-
-If you want to run the full suite, with flake8 and coverage, you may use
-[tox](https://testrun.org/tox/latest/). This will run the tests the same way
-they are run by [travis](https://travis-ci.org)):
-
-    pip install tox
-    tox
-
-The `.travis.yml` file will also run [coveralls](https://coveralls.io) by
-default.
-
-If you want to benefit from Travis and Coveralls, you will need to activate
-them both for your project.
-
-Oh, and you might want to change the "Build Status" and "Coverage Status" links
-at the top of this file to point to your own travis and coveralls accounts.
-
-
-Docker for development
-----------------------
+## Develop using Docker
 
 0. Make sure you have [docker](https://docker.io) and [docker-compose](https://github.com/docker/compose)
 1. `docker-compose up`
 2. `docker-compose run web bash`
 3. `python manage.py migrate`
 4. `python manage.py createsuperuser` (enter any user/email/pass you wish)
-5. Navigate to `localhost:8000/admin` and log in with the admin account created in step #4
+5. Navigate to https://localhost:8443/admin and log in with the admin account created in step #4
 
 
-Docker for deploying to production
------------------------------------
 
-1. Add your project in [Docker Registry](https://registry.hub.docker.com/) as [Automated Build](http://docs.docker.com/docker-hub/builds/)
-2. Prepare a 'env' file with all the variables needed by dev, stage or production.
-3. Run the image:
+## Run the tests
 
-    docker run --env-file env -p 80:8000 mozorg/snippets
-
-Heroku
-------
-1. heroku create
-2. heroku config:set DEBUG=False ALLOWED_HOSTS=<foobar>.herokuapp.com, SECRET_KEY=something_secret
-   DATABASE_URL gets populated by heroku once you setup a database.
-3. git push heroku master
-
-
-NewRelic Monitoring
--------------------
-
-A newrelic.ini file is already included. To enable NewRelic monitoring
-add two enviroment variables:
-
- - NEW_RELIC_LICENSE_KEY
- - NEW_RELIC_APP_NAME
-
-See the [full list of supported environment variables](https://docs.newrelic.com/docs/agents/python-agent/installation-configuration/python-agent-configuration#environment-variables).
+ `$ ./manage.py test --parallel`

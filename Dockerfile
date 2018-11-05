@@ -1,5 +1,6 @@
 FROM python:3.7-slim-stretch
 
+ENV LANG=C.UTF-8
 EXPOSE 8000
 CMD ["./bin/run-prod.sh"]
 
@@ -21,4 +22,3 @@ COPY . /app
 RUN DEBUG=False SECRET_KEY=foo ALLOWED_HOSTS=localhost, DATABASE_URL=sqlite:/// SITE_URL= ./manage.py collectstatic --noinput
 RUN chown webdev.webdev -R .
 USER webdev
-ENV LANG=C.UTF-8
