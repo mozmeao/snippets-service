@@ -7,7 +7,7 @@
     <tr class="variable" data-variable="{{ variable.name }}" data-type="{{ variable.type }}">
       <td class="variable-name">{{ variable.name }}</td>
       <td>
-        {% if variable.type == types.text or variable.type == types.body %}
+        {% if variable.type == types.text or variable.type == types.body or variable.type == types.rich_text %}
           <textarea>{{ originalData[variable.name] }}</textarea>
         {% elif variable.type == types.image %}
 

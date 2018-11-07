@@ -7,7 +7,8 @@
         image: 1,
         smalltext: 2,
         checkbox: 3,
-        body: 4
+        body: 4,
+        rich_text: 5
     };
 
     // Setup Nunjucks
@@ -211,6 +212,7 @@
                 var variable = $item.data('variable');
 
                 switch ($item.data('type')) {
+                    case VARIABLE_TYPES.rich_text:
                     case VARIABLE_TYPES.body:
                     case VARIABLE_TYPES.text:
                         data[variable] = $item.find('textarea').val();
