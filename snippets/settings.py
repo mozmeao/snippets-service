@@ -285,7 +285,7 @@ RAVEN_CONFIG = {
     'release': config('GIT_SHA', None),
     'tags': {
         'server_full_name': '.'.join(x for x in [HOSTNAME, DEIS_APP, DEIS_DOMAIN] if x),
-        'environment': config('SENTRY_ENVIRONMENT', ''),
+        'environment': config('SENTRY_ENVIRONMENT', 'dev'),
         'site': '.'.join(x for x in [DEIS_APP, DEIS_DOMAIN] if x),
     }
 }
@@ -341,3 +341,22 @@ ADMIN_REORDER = [
 
 SLACK_ENABLE = config('SLACK_ENABLE', default=False, cast=bool)
 SLACK_WEBHOOK = config('SLACK_WEBHOOK', default='')
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'sentry': {
+            'level': 'DEBUG',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        },
+    },
+    'loggers': {
+        'django.security.csrf': {
+            'handlers': ['sentry'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
