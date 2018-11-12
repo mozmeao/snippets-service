@@ -7,10 +7,19 @@ The root of all messaging.
 ## Develop using Docker
 
 0. Make sure you have [docker](https://docker.io) and [docker-compose](https://github.com/docker/compose)
-1. `docker-compose up`
-2. `docker-compose run web bash`
-3. `python manage.py createsuperuser` (enter any user/email/pass you wish)
+1. `$ docker-compose run --service-ports web bash`
+2. `[docker]$ ./manage.py createsuperuser` (enter any user/email/pass you wish. Email is not required.)
+3. `[docker]$ ./bin/run-dev.sh`
 4. Navigate to https://localhost:8443/admin and log in with the admin account created in step #4. See an TLS Security Exception? Go to [TLS Certifcates](#tls-certificates) section.
+
+### A note about using `run` instead of `up`
+
+`docker-compose run` is more suitable for development purposes since you get a
+shell and from there you can run the webserver command. This way you can debug
+using `set_trace()` or restart the server when things go bad. The trick here is
+to use `--service-ports` flag to make docker compose map the required ports.
+
+The project is configured for `docker-compose up` if that's your preference.
 
 
 ## TLS Certificates

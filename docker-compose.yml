@@ -6,7 +6,10 @@ services:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=snippets
   web:
-    build: .
+    build:
+      context: .
+      args:
+        DEVELOPMENT: "true"
     ports:
       - "8443:8443"
       - "8000:8000"

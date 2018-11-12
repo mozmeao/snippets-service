@@ -1,5 +1,6 @@
 FROM python:3.7-slim-stretch
 
+ARG DEVELOPMENT=false
 ENV LANG=C.UTF-8
 EXPOSE 8000
 CMD ["./bin/run-prod.sh"]
@@ -15,8 +16,9 @@ WORKDIR /app
 
 # First copy requirements.txt and pip so we can take advantage of
 # docker caching.
-COPY requirements.txt requirements.txt
+COPY requirements.txt requirements-dev.txt ./
 RUN pip install --require-hashes --no-cache-dir -r requirements.txt
+RUN /bin/bash -c 'if ${DEVELOPMENT}; then pip install -r requirements-dev.txt; fi'
 
 COPY . /app
 RUN DEBUG=False SECRET_KEY=foo ALLOWED_HOSTS=localhost, DATABASE_URL=sqlite:/// SITE_URL= ./manage.py collectstatic --noinput
