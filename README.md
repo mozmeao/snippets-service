@@ -9,11 +9,19 @@ The root of all messaging.
 0. Make sure you have [docker](https://docker.io) and [docker-compose](https://github.com/docker/compose)
 1. `docker-compose up`
 2. `docker-compose run web bash`
-3. `python manage.py migrate`
-4. `python manage.py createsuperuser` (enter any user/email/pass you wish)
-5. Navigate to https://localhost:8443/admin and log in with the admin account created in step #4
+3. `python manage.py createsuperuser` (enter any user/email/pass you wish)
+4. Navigate to https://localhost:8443/admin and log in with the admin account created in step #4. See an TLS Security Exception? Go to [TLS Certifcates](#tls-certificates) section.
 
 
+## TLS Certificates
+
+Firefox communicates with the snippets service only over secure HTTPS
+connections. For development, the `runserver_plus` command as executed in
+[`./bin/run-dev.sh`](https://github.com/mozmeao/snippets-service/blob/master/bin/run-dev.sh)
+generates and uses a self-signed certificate.
+
+You'll need to permanently accept the certificate, to allow Firefox to fetch
+Snippets from your development environment.
 
 ## Run the tests
 
