@@ -28,6 +28,19 @@ Snippets from your development environment.
  `$ ./manage.py test --parallel`
 
 
+## Rebuild your Docker Compose Envinronment
+
+To rebuild your docker compose environment, first remove current images and
+containers and then run the `build` command.
+
+```shell
+$ docker-compose kill
+$ docker-compose rm -f
+$ docker-compose build
+
+```
+
+
 ## Install Therapist
 
 [Therapist](https://github.com/rehandalal/therapist) is a smart pre-commit hook
