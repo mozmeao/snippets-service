@@ -8,3 +8,4 @@ MANIFEST
 .runserver-ssl.*
 media/*
 database-dumps/*
+.product_details

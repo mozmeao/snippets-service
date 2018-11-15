@@ -6,11 +6,20 @@ The root of all messaging.
 
 ## Develop using Docker
 
+One time setup of your environment and database:
+
 0. Make sure you have [docker](https://docker.io) and [docker-compose](https://github.com/docker/compose)
 1. `$ docker-compose run --service-ports web bash`
-2. `[docker]$ ./manage.py createsuperuser` (enter any user/email/pass you wish. Email is not required.)
-3. `[docker]$ ./bin/run-dev.sh`
-4. Navigate to https://localhost:8443/admin and log in with the admin account created in step #4. See an TLS Security Exception? Go to [TLS Certifcates](#tls-certificates) section.
+2. `[docker]$ ./manage.py update_product_details`
+   -  If you get an error connecting to the database, you probably need to wait
+      for a few seconds for MariaDB to initialize and then re-try the command.
+3. `[docker]$ ./manage.py migrate`
+4. `[docker]$ ./manage.py createsuperuser` (enter any user/email/pass you wish. Email is not required.)
+
+Start the development server:
+
+1. `[docker]$ ./bin/run-dev.sh`
+2. Navigate to `https://localhost:8443/admin` and log in with the admin account created in step #4. See an TLS Security Exception? Go to [TLS Certifcates](#tls-certificates) section.
 
 ### A note about using `run` instead of `up`
 

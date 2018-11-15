@@ -26,5 +26,6 @@ services:
       - ENABLE_ADMIN=True
       - CSP_REPORT_ONLY=True
       - CSP_REPORT_ENABLE=False
+      - PROD_DETAILS_DIR=./.product_details/
     command:
       ./bin/run-dev.sh
