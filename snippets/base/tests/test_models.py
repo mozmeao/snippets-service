@@ -286,6 +286,12 @@ class SnippetTests(TestCase):
                                                     'snippet_id': snippet.id,
                                                     'foo': True})
 
+    @override_settings(SITE_URL='http://example.com')
+    def test_get_admin_url(self):
+        snippet = SnippetFactory.create()
+        self.assertTrue(snippet.get_admin_url().startswith('http://example.com'))
+        self.assertTrue(snippet.get_admin_url(full=False).startswith('/'))
+
 
 class UploadedFileTests(TestCase):
 
@@ -393,3 +399,11 @@ class ASRSnippetTests(TestCase):
 
         self.assertEqual(set(snippet.locales.all()), set(duplicate_snippet.locales.all()))
         self.assertEqual(duplicate_snippet.status, STATUS_CHOICES['Draft'])
+        with self.assertRaises(ASRSnippet.migrated_from.RelatedObjectDoesNotExist):
+            duplicate_snippet.migrated_from
+
+    @override_settings(SITE_URL='http://example.com')
+    def test_get_admin_url(self):
+        snippet = ASRSnippetFactory.create()
+        self.assertTrue(snippet.get_admin_url().startswith('http://example.com'))
+        self.assertTrue(snippet.get_admin_url(full=False).startswith('/'))
