@@ -247,6 +247,7 @@ class CampaignAdmin(admin.ModelAdmin):
 
 class TargetAdmin(admin.ModelAdmin):
     form = forms.TargetAdminForm
+    save_on_top = True
     readonly_fields = ('created', 'modified', 'creator', 'jexl_expr')
     search_fields = (
         'name',
