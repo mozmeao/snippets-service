@@ -159,7 +159,9 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     )
 
     fieldsets = (
-        ('ID', {'fields': ('id', 'name', 'status', 'creator', 'preview_url', 'migrated_from_linked')}),
+        ('ID', {
+            'fields': ('id', 'name', 'status', 'creator', 'preview_url', 'migrated_from_linked')
+        }),
         ('Content', {
             'description': (
                 '''
@@ -217,7 +219,8 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         return mark_safe(text)
 
     def migrated_from_linked(self, obj):
-        return mark_safe(f'<a href={obj.migrated_from.get_admin_url(full=False)}>{obj.migrated_from.name}</a>')
+        return mark_safe(
+            f'<a href={obj.migrated_from.get_admin_url(full=False)}>{obj.migrated_from.name}</a>')
     migrated_from_linked.short_description = 'Migrated From'
 
     def change_view(self, request, *args, **kwargs):

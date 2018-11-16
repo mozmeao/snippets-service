@@ -8,7 +8,7 @@ from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 from django_statsd.clients import statsd
 
 from snippets.base import forms
-from snippets.base.admin.actions import duplicate_snippets_action
+from snippets.base.admin.actions import duplicate_snippets_action, migrate_snippets_action
 from snippets.base.admin import filters
 
 
@@ -66,6 +66,7 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         'ready_for_review',
         filters.ChannelFilter,
         filters.ActivityStreamFilter,
+        filters.ASRMigrationFilter,
         ('locales', RelatedDropdownFilter),
         ('client_match_rules', RelatedDropdownFilter),
         ('template', RelatedDropdownFilter),
@@ -147,7 +148,10 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         }),
     )
 
-    actions = (duplicate_snippets_action,)
+    actions = (
+        duplicate_snippets_action,
+        migrate_snippets_action,
+    )
 
     class Media:
         css = {
@@ -186,7 +190,8 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         return query.prefetch_related('locales')
 
     def migrated_to_linked(self, obj):
-        return mark_safe(f'<a href={obj.migrated_to.get_admin_url(full=False)}>{obj.migrated_to.name}</a>')
+        return mark_safe(
+            f'<a href={obj.migrated_to.get_admin_url(full=False)}>{obj.migrated_to.name}</a>')
     migrated_to_linked.short_description = 'Migrated To'
 
 
