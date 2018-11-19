@@ -1,0 +1,7 @@
+actions:
+    flake8:
+        run: flake8 {files}
+        include: '*.py'
+        exclude:
+            - 'docs\*.py'
+            - 'migrations\*.py'

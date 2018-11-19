@@ -5,3 +5,7 @@ docs/_build
 .tox/
 MANIFEST
 .coverage
+.runserver-ssl.*
+media/*
+database-dumps/*
+.product_details

@@ -3,6 +3,7 @@ import platform
 
 import dj_database_url
 import django_cache_url
+import product_details
 from decouple import Csv, config
 
 
@@ -244,6 +245,8 @@ GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-42
 PROD_DETAILS_CACHE_NAME = 'product-details'
 PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
                               default='product_details.storage.PDFileStorage')
+PROD_DETAILS_DIR = config('PROD_DETAILS_DIR',
+                          default=product_details.settings_defaults.PROD_DETAILS_DIR)
 
 DEFAULT_FILE_STORAGE = config('FILE_STORAGE', 'snippets.storages.OverwriteStorage')
 
