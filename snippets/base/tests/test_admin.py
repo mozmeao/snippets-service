@@ -1,3 +1,4 @@
+from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.test.client import RequestFactory
 
@@ -6,7 +7,8 @@ from unittest.mock import Mock, patch
 from snippets.base.admin import ASRSnippetAdmin, SnippetAdmin, SnippetTemplateAdmin
 from snippets.base.models import (STATUS_CHOICES, ASRSnippet, Snippet, SnippetTemplate,
                                   SnippetTemplateVariable)
-from snippets.base.tests import SnippetTemplateFactory, SnippetTemplateVariableFactory, TestCase
+from snippets.base.tests import (ASRSnippetFactory, SnippetTemplateFactory,
+                                 SnippetTemplateVariableFactory, TestCase, UserFactory)
 
 
 class SnippetAdminTests(TestCase):
@@ -146,7 +148,7 @@ class ASRSnippetAdminTests(TestCase):
         self.factory = RequestFactory()
         self.model_admin = ASRSnippetAdmin(ASRSnippet, None)
         self.model_admin.admin_site = Mock()
-        self.user = User.objects.get_or_create(username='foo', email='foo@example.com')[0]
+        self.user = UserFactory()
 
     def test_save_as_published(self):
         request = self.factory.post('/', data={
@@ -177,3 +179,35 @@ class ASRSnippetAdminTests(TestCase):
             change_view_mock.assert_called_with(request, 999)
             request = change_view_mock.call_args[0][0]
             self.assertEqual(request.POST['status'], str(STATUS_CHOICES['Published']))
+
+    def test_get_readonly_fields(self):
+        asrsnippet = ASRSnippetFactory()
+        request = self.factory.get('/')
+        admin = ASRSnippetAdmin(ASRSnippet, AdminSite())
+
+        # Not Super User
+        request.user = UserFactory(is_superuser=False)
+        readonly_fields = admin.get_readonly_fields(request, asrsnippet)
+        self.assertTrue('for_qa' in readonly_fields)
+
+        # SuperUser
+        request.user = UserFactory(is_superuser=True)
+        readonly_fields = admin.get_readonly_fields(request, asrsnippet)
+        self.assertTrue('for_qa' not in readonly_fields)
+
+    def test_get_queryset(self):
+        snippets = ASRSnippetFactory.create_batch(2)
+        qa_snippets = ASRSnippetFactory.create_batch(2, for_qa=True)
+        request = self.factory.get('/')
+        admin = ASRSnippetAdmin(ASRSnippet, AdminSite())
+
+        # Not Super User
+        request.user = UserFactory(is_superuser=False)
+        queryset = admin.get_queryset(request)
+        self.assertEqual(set(snippets), set(queryset.all()))
+
+        # SuperUser
+        request.user = UserFactory(is_superuser=True)
+        queryset = admin.get_queryset(request)
+
+        self.assertEqual(set(snippets + qa_snippets), set(queryset.all()))
