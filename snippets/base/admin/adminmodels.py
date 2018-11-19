@@ -225,6 +225,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             # Always saved cloned snippets as un-published and un-check ready for review.
             post_data = request.POST.copy()
             post_data['status'] = models.STATUS_CHOICES['Draft']
+            post_data.pop('migrated_from', None)
             request.POST = post_data
         return super().change_view(request, *args, **kwargs)
 

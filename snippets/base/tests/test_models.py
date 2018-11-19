@@ -6,7 +6,8 @@ from jinja2 import Markup
 from unittest.mock import MagicMock, Mock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.models import STATUS_CHOICES, Client, UploadedFile, _generate_filename
+from snippets.base.models import (STATUS_CHOICES, ASRSnippet, Client,
+                                  UploadedFile, _generate_filename)
 from snippets.base.tests import (ASRSnippetFactory,
                                  ClientMatchRuleFactory,
                                  JSONSnippetFactory,
@@ -35,8 +36,11 @@ class DuplicateSnippetMixInTests(TestCase):
         if hasattr(snippet, 'creator'):
             self.assertNotEqual(snippet_copy.creator, snippet.creator)
 
+        if hasattr(snippet, 'migrated_to'):
+            self.assertEqual(snippet_copy.migrated_to, None)
+
     def test_snippet(self):
-        snippet = SnippetFactory.create()
+        snippet = SnippetFactory.create(migrated_to=ASRSnippetFactory())
         self._dup_test(snippet)
 
     def test_json_snippet(self):
@@ -391,6 +395,7 @@ class ASRSnippetTests(TestCase):
         snippet = ASRSnippetFactory.create(
             status=STATUS_CHOICES['Published'],
             locales=['en-us', 'fr'],
+            migrated_from=SnippetFactory(),
         )
         duplicate_snippet = snippet.duplicate(user)
 

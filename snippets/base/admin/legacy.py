@@ -41,6 +41,7 @@ class BaseSnippetAdmin(VersionAdmin, admin.ModelAdmin):
             post_data = request.POST.copy()
             post_data.pop('published', None)
             post_data.pop('ready_for_review', None)
+            post_data.pop('migrated_to', None)
             request.POST = post_data
         return super(BaseSnippetAdmin, self).change_view(request, *args, **kwargs)
 

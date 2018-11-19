@@ -205,6 +205,7 @@ class SnippetBaseModel(django_mysql.models.Model):
         snippet_copy.creator = creator
         snippet_copy.published = False
         snippet_copy.ready_for_review = False
+        snippet_copy.migrated_to = None
         snippet_copy.uuid = uuid.uuid4()
         snippet_copy.name = '{0} - {1}'.format(
             self.name,
@@ -697,6 +698,7 @@ class ASRSnippet(django_mysql.models.Model):
         snippet_copy.status = STATUS_CHOICES['Draft']
         snippet_copy.creator = creator
         snippet_copy.uuid = uuid.uuid4()
+        snippet_copy.migrated_from = None
         snippet_copy.name = '{0} - {1}'.format(
             self.name,
             datetime.strftime(datetime.now(), '%Y.%m.%d %H:%M:%S'))
