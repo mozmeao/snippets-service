@@ -36,9 +36,9 @@ class ModifiedFilter(admin.SimpleListFilter):
             }
 
 
-class ReleaseFilter(admin.SimpleListFilter):
-    title = 'Release'
-    parameter_name = 'release'
+class ChannelFilter(admin.SimpleListFilter):
+    title = 'Channel'
+    parameter_name = 'channel'
 
     def lookups(self, request, model_admin):
         return (
@@ -54,3 +54,22 @@ class ReleaseFilter(admin.SimpleListFilter):
             return queryset
 
         return queryset.filter(**{self.value(): True})
+
+
+class ActivityStreamFilter(admin.SimpleListFilter):
+    title = 'Activity Stream'
+    parameter_name = 'is_activity_stream'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+        elif self.value() == 'yes':
+            return queryset.filter(on_startpage_5=True)
+        elif self.value() == 'no':
+            return queryset.exclude(on_startpage_5=True)

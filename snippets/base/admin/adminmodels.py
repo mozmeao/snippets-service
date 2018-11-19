@@ -13,7 +13,7 @@ from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 
 from snippets.base import forms, models
 from snippets.base.models import JINJA_ENV
-from snippets.base.admin.filters import ModifiedFilter, ReleaseFilter
+from snippets.base.admin import filters
 from snippets.base.admin.actions import duplicate_snippets_action
 
 
@@ -123,9 +123,9 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'modified',
     )
     list_filter = (
-        ModifiedFilter,
+        filters.ModifiedFilter,
         'status',
-        ReleaseFilter,
+        filters.ChannelFilter,
         ('template', RelatedDropdownFilter),
     )
     search_fields = (

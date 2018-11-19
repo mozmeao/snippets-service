@@ -9,7 +9,7 @@ from django_statsd.clients import statsd
 
 from snippets.base import forms
 from snippets.base.admin.actions import duplicate_snippets_action
-from snippets.base.admin.filters import ModifiedFilter, ReleaseFilter
+from snippets.base.admin import filters
 
 
 class BaseSnippetAdmin(VersionAdmin, admin.ModelAdmin):
@@ -59,10 +59,11 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     search_fields = ('id', 'name', 'client_match_rules__description',
                      'template__name', 'campaign')
     list_filter = (
-        ModifiedFilter,
+        filters.ModifiedFilter,
         'published',
         'ready_for_review',
-        ReleaseFilter,
+        filters.ChannelFilter,
+        filters.ActivityStreamFilter,
         ('locales', RelatedDropdownFilter),
         ('client_match_rules', RelatedDropdownFilter),
         ('template', RelatedDropdownFilter),
@@ -187,9 +188,9 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
     form = forms.JSONSnippetAdminForm
     search_fields = ('name', 'client_match_rules__description')
     list_filter = (
-        ModifiedFilter,
+        filters.ModifiedFilter,
         'published',
-        ReleaseFilter,
+        filters.ChannelFilter,
         ('locales', RelatedDropdownFilter),
         ('client_match_rules', RelatedDropdownFilter),
     )
