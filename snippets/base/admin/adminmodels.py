@@ -260,6 +260,9 @@ class TargetAdmin(admin.ModelAdmin):
     form = forms.TargetAdminForm
     save_on_top = True
     readonly_fields = ('created', 'modified', 'creator', 'jexl_expr')
+    filter_horizontal = (
+        'client_match_rules',
+    )
     search_fields = (
         'name',
     )
@@ -283,6 +286,11 @@ class TargetAdmin(admin.ModelAdmin):
                 'filtr_current_search_engine',
                 'filtr_browser_addon',
                 'filtr_total_bookmarks_count',
+            )
+        }),
+        ('Advanced Targeting', {
+            'fields': (
+                'client_match_rules',
             )
         }),
         ('Other Info', {
