@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('base', '0058_snippet_creator'),
+        ('base', '0059_auto_20181119_1313'),
     ]
 
     operations = [
