@@ -630,6 +630,12 @@ class ASRSnippet(django_mysql.models.Model):
         choices=SNIPPET_WEIGHTS, default=100,
         help_text='How often should this snippet be shown to users?')
 
+    for_qa = models.BooleanField(
+        default=False, blank=True, null=False,
+        help_text='Snippet used in QA Testing. Do not remove or unpublish.',
+        verbose_name='For QA',
+    )
+
     objects = ASRSnippetManager()
 
     class Meta:

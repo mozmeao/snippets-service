@@ -181,7 +181,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             'fields': ('campaign', 'target', ('publish_start', 'publish_end'), 'locales', 'weight',)
         }),
         ('Other Info', {
-            'fields': ('uuid', ('created', 'modified')),
+            'fields': ('uuid', ('created', 'modified'), 'for_qa'),
             'classes': ('collapse',)
         }),
     )
@@ -222,6 +222,17 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             post_data['status'] = models.STATUS_CHOICES['Draft']
             request.POST = post_data
         return super().change_view(request, *args, **kwargs)
+
+    def get_readonly_fields(self, request, obj):
+        if not request.user.is_superuser:
+            return self.readonly_fields + ('for_qa',)
+        return self.readonly_fields
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        if request.user.is_superuser:
+            return queryset
+        return queryset.filter(for_qa=False)
 
 
 class CampaignAdmin(admin.ModelAdmin):
