@@ -107,13 +107,15 @@ class JEXLAddonFieldTests(TestCase):
 
 class JEXLFirefoxRangeFieldTests(TestCase):
     def setUp(self):
-        with patch('snippets.base.admin.fields.version_list') as version_list_mock:
-            version_list_mock.return_value = ['57.0', '58.0', '59.0', '60.0']
+        with patch('snippets.base.admin.fields.product_details') as product_details:
+            product_details.firefox_versions = {
+                'FIREFOX_NIGHTLY': '67.0'
+            }
             self.field = JEXLFirefoxRangeField()
 
     def test_validate(self):
-        self.assertEqual(self.field.validate('57.0,60.0'), '57.0,60.0')
-        self.assertEqual(self.field.validate('57.0,57.0'), '57.0,57.0')
+        self.assertEqual(self.field.validate('64,65'), '64,65')
+        self.assertEqual(self.field.validate('64,64'), '64,64')
 
     def test_validate_invalid_values(self):
         # Check first subfield

@@ -56,7 +56,7 @@ class BaseSnippetAdmin(VersionAdmin, admin.ModelAdmin):
 class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     form = forms.SnippetAdminForm
     readonly_fields = BaseSnippetAdmin.readonly_fields + ('preview_url', 'creator')
-    search_fields = ('name', 'client_match_rules__description',
+    search_fields = ('id', 'name', 'client_match_rules__description',
                      'template__name', 'campaign')
     list_filter = (
         ModifiedFilter,

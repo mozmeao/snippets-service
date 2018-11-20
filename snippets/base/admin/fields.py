@@ -1,5 +1,4 @@
 from product_details import product_details
-from product_details.version_compare import Version, version_list
 
 from django.core.exceptions import ValidationError
 from django.forms import (ChoiceField, ModelChoiceField, ModelMultipleChoiceField,
@@ -117,8 +116,14 @@ class JEXLRangeField(JEXLBaseField, MultiValueField):
 
 class JEXLFirefoxRangeField(JEXLRangeField):
     def __init__(self, **kwargs):
-        choices = ([(None, 'No limit')] +
-                   [(x, x) for x in version_list(product_details.firefox_history_major_releases)])
+        # Include only versions greater than 63, where ASRSnippets exist.
+        min_version = 64
+        max_version = int(product_details.firefox_versions['FIREFOX_NIGHTLY'].split('.', 1)[0])
+
+        choices = (
+            [(None, 'No limit')] +
+            [(x, x) for x in reversed(range(min_version, max_version + 1))]
+        )
         super().__init__('firefoxVersion', choices, **kwargs)
 
     def validate(self, value):
@@ -126,7 +131,7 @@ class JEXLFirefoxRangeField(JEXLRangeField):
         self.fields[0].validate(minimum)
         self.fields[1].validate(maximum)
 
-        if minimum and maximum and Version(minimum) > Version(maximum):
+        if minimum and maximum and minimum > maximum:
             raise ValidationError('Minimum value must be lower or equal to maximum value.')
         return value
 
