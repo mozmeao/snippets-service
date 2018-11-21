@@ -104,6 +104,8 @@ def fluent_link_extractor(data, variables):
     local_data = copy.deepcopy(data)
     replacer = Replacer()
     for variable in variables:
+        if variable not in local_data:
+            continue
         local_data[variable] = re.sub('(<a(?P<attrs> .*?)>)(?P<innerText>.+?)(</a>)',
                                       replacer, local_data[variable])
 
