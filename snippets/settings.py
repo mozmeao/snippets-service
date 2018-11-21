@@ -363,3 +363,5 @@ LOGGING = {
         },
     },
 }
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = config('DATA_UPLOAD_MAX_NUMBER_FIELDS', default=1000, cast=int)
