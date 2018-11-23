@@ -657,6 +657,9 @@ class ASRSnippet(django_mysql.models.Model):
         # Convert inline links to fluent.js format.
         data = util.fluent_link_extractor(data, self.template.get_rich_text_variables())
 
+        # Remove values that are empty strings
+        data = {k: v for k, v in data.items() if v != ''}
+
         rendered_snippet = {
             'id': str(self.id),
             'template': self.template.code_name,

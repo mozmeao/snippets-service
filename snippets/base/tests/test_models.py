@@ -335,7 +335,7 @@ class ASRSnippetTests(TestCase):
     def test_render(self):
         snippet = ASRSnippetFactory.create(
             template__code='<p>{{ text }} {{ foo }}</p>',
-            data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}',
+            data='{"text": "snippet id [[snippet_id]]", "foo": "bar", "empty": ""}',
             target__jexl_expr='foo == bar')
         generated_result = snippet.render()
         expected_result = {
