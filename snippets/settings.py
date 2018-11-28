@@ -364,4 +364,7 @@ LOGGING = {
     },
 }
 
+# Required for the migration to ASRSnippets or SuspiciousOperation
+# (TooManyFields) will be raised due to the number of Snippets selected in the
+# admin tool.
 DATA_UPLOAD_MAX_NUMBER_FIELDS = config('DATA_UPLOAD_MAX_NUMBER_FIELDS', default=1000, cast=int)
