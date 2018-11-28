@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from django.contrib import admin
 from django.utils.encoding import force_text
 
+from snippets.base.managers import SnippetQuerySet
+
 
 class ModifiedFilter(admin.SimpleListFilter):
     title = 'Last modified'
@@ -53,7 +55,9 @@ class ChannelFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
 
-        return queryset.filter(**{self.value(): True})
+        if isinstance(queryset, SnippetQuerySet):
+            return queryset.filter(**{self.value(): True})
+        return queryset.filter(**{f'target__{self.value()}': True})
 
 
 class ActivityStreamFilter(admin.SimpleListFilter):
