@@ -235,24 +235,6 @@ Mozilla.UITour.setConfiguration = function(configName, configValue) {
             );
         }
 
-        // Filter Snippets based on TestPilot addon existence.
-        var has_testpilot = Boolean(window.navigator.testpilotAddon);
-        if (has_testpilot === true) {
-            snippets = snippets.filter(
-                function(snippet) {
-                    return (snippet.client_options.has_testpilot == 'yes' ||
-                            snippet.client_options.has_testpilot == 'any');
-                }
-            );
-        } else {
-            snippets = snippets.filter(
-                function(snippet) {
-                    return (snippet.client_options.has_testpilot == 'no' ||
-                            snippet.client_options.has_testpilot == 'any');
-                }
-            );
-        }
-
         // Filter Snippets based on whether Firefox is the default browser or now.
         var appInfo = gSnippetsMap.get('appInfo');
         if (appInfo && (appInfo.defaultBrowser === true || appInfo.defaultBrowser === undefined)) {
