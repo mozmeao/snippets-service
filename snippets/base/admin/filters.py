@@ -14,6 +14,7 @@ class ModifiedFilter(admin.SimpleListFilter):
             ('168', '7 days'),
             ('336', '14 days'),
             ('720', '30 days'),
+            ('1440', '60 days'),
             ('all', 'All'),
         )
 
