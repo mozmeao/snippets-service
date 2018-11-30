@@ -1,5 +1,3 @@
-from product_details import product_details
-
 from django.core.exceptions import ValidationError
 from django.forms import (ChoiceField, ModelChoiceField, ModelMultipleChoiceField,
                           MultiValueField, MultipleChoiceField)
@@ -118,7 +116,9 @@ class JEXLFirefoxRangeField(JEXLRangeField):
     def __init__(self, **kwargs):
         # Include only versions greater than 63, where ASRSnippets exist.
         min_version = 64
-        max_version = int(product_details.firefox_versions['FIREFOX_NIGHTLY'].split('.', 1)[0])
+        # Need to be able to dynamically change this, probably using
+        # product_details. Issue #855
+        max_version = 74
 
         choices = (
             [(None, 'No limit')] +

@@ -52,41 +52,8 @@ PROFILE_AGE_CHOICES = (
     (48, 'One Year'),
     (96, 'Two Years'),
 )
-BOOKMARKS_COUNT_CHOICES = (
-    (-1, 'No limit'),
-    (-2, '----------'),
-    (1, '1'),
-    (10, '10'),
-    (50, '50'),
-    (100, '100'),
-    (500, '500'),
-    (1000, '1,000'),
-    (5000, '5,000'),
-    (10000, '10,000'),
-    (50000, '50,000'),
-    (100000, '100,000'),
-    (500000, '500,000'),
-    (1000000, '1,000,000'),
-)
 
-BOOKMARKS_COUNT_CHOICES_AS = (
-    (None, 'No limit'),
-    (None, '----------'),
-    (1, '1'),
-    (10, '10'),
-    (50, '50'),
-    (100, '100'),
-    (500, '500'),
-    (1000, '1,000'),
-    (5000, '5,000'),
-    (10000, '10,000'),
-    (50000, '50,000'),
-    (100000, '100,000'),
-    (500000, '500,000'),
-    (1000000, '1,000,000'),
-)
-
-PROFILE_AGE_CHOICES_AS = (
+PROFILE_AGE_CHOICES_ASR = (
     (None, 'No limit'),
     (None, '----------'),
     (1, 'One week'),
@@ -116,6 +83,40 @@ PROFILE_AGE_CHOICES_AS = (
     (None, '-----------'),
     (52, 'One Year'),
     (104, 'Two Years'),
+)
+
+BOOKMARKS_COUNT_CHOICES = (
+    (-1, 'No limit'),
+    (-2, '----------'),
+    (1, '1'),
+    (10, '10'),
+    (50, '50'),
+    (100, '100'),
+    (500, '500'),
+    (1000, '1,000'),
+    (5000, '5,000'),
+    (10000, '10,000'),
+    (50000, '50,000'),
+    (100000, '100,000'),
+    (500000, '500,000'),
+    (1000000, '1,000,000'),
+)
+
+BOOKMARKS_COUNT_CHOICES_ASR = (
+    (None, 'No limit'),
+    (None, '----------'),
+    (1, '1'),
+    (10, '10'),
+    (50, '50'),
+    (100, '100'),
+    (500, '500'),
+    (1000, '1,000'),
+    (5000, '5,000'),
+    (10000, '10,000'),
+    (50000, '50,000'),
+    (100000, '100,000'),
+    (500000, '500,000'),
+    (1000000, '1,000,000'),
 )
 
 
@@ -613,7 +614,7 @@ class TargetAdminForm(forms.ModelForm):
             'minimum': '((currentDate - profileAgeCreated) / 604800000) >= {value}',
             'maximum': '((currentDate - profileAgeCreated) / 604800000) < {value}',
         },
-        choices=PROFILE_AGE_CHOICES_AS,
+        choices=PROFILE_AGE_CHOICES_ASR,
         required=False,
         label='Firefox Profile Age',
         help_text='The age of the browser profile must fall between those two limits.'
@@ -631,7 +632,7 @@ class TargetAdminForm(forms.ModelForm):
             'minimum': '((currentDate - previousSessionEnd) / 604800000) >= {value}',
             'maximum': '((currentDate - previousSessionEnd) / 604800000) < {value}',
         },
-        choices=PROFILE_AGE_CHOICES_AS,
+        choices=PROFILE_AGE_CHOICES_ASR,
         required=False,
         label='Previous Session End',
         help_text='How many weeks since the last time Firefox was used?'
@@ -702,7 +703,7 @@ class TargetAdminForm(forms.ModelForm):
         required=False)
     filtr_total_bookmarks_count = fields.JEXLRangeField(
         'totalBookmarksCount',
-        choices=BOOKMARKS_COUNT_CHOICES_AS,
+        choices=BOOKMARKS_COUNT_CHOICES_ASR,
         required=False,
         label='Number of bookmarks',
         help_text='The number of bookmarks must fall between those two limits.'

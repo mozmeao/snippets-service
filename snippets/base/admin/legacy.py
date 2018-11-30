@@ -8,7 +8,7 @@ from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 from django_statsd.clients import statsd
 
 from snippets.base import forms
-from snippets.base.admin.actions import duplicate_snippets_action
+from snippets.base.admin.actions import duplicate_snippets_action, migrate_snippets_action
 from snippets.base.admin import filters
 
 
@@ -41,6 +41,7 @@ class BaseSnippetAdmin(VersionAdmin, admin.ModelAdmin):
             post_data = request.POST.copy()
             post_data.pop('published', None)
             post_data.pop('ready_for_review', None)
+            post_data.pop('migrated_to', None)
             request.POST = post_data
         return super(BaseSnippetAdmin, self).change_view(request, *args, **kwargs)
 
@@ -55,7 +56,8 @@ class BaseSnippetAdmin(VersionAdmin, admin.ModelAdmin):
 
 class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     form = forms.SnippetAdminForm
-    readonly_fields = BaseSnippetAdmin.readonly_fields + ('preview_url', 'creator')
+    readonly_fields = BaseSnippetAdmin.readonly_fields + ('preview_url', 'creator',
+                                                          'migrated_to_linked')
     search_fields = ('id', 'name', 'client_match_rules__description',
                      'template__name', 'campaign')
     list_filter = (
@@ -64,6 +66,7 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         'ready_for_review',
         filters.ChannelFilter,
         filters.ActivityStreamFilter,
+        filters.ASRMigrationFilter,
         ('locales', RelatedDropdownFilter),
         ('client_match_rules', RelatedDropdownFilter),
         ('template', RelatedDropdownFilter),
@@ -81,7 +84,7 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
 
     fieldsets = (
         (None, {'fields': ('id', 'creator', 'name', ('ready_for_review', 'published'), 'campaign',
-                           'preview_url', 'created', 'modified')}),
+                           'preview_url', 'created', 'modified', 'migrated_to_linked')}),
         ('Content', {
             'description': ('In Activity Stream Templates you can use the special links:<br/>'
                             '<ol><li>about:accounts : To open Firefox Accounts</li>'
@@ -145,7 +148,10 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         }),
     )
 
-    actions = (duplicate_snippets_action,)
+    actions = (
+        duplicate_snippets_action,
+        migrate_snippets_action,
+    )
 
     class Media:
         css = {
@@ -182,6 +188,11 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     def get_queryset(self, request):
         query = super(SnippetAdmin, self).get_queryset(request)
         return query.prefetch_related('locales')
+
+    def migrated_to_linked(self, obj):
+        return mark_safe(
+            f'<a href={obj.migrated_to.get_admin_url(full=False)}>{obj.migrated_to.name}</a>')
+    migrated_to_linked.short_description = 'Migrated To'
 
 
 class JSONSnippetAdmin(BaseSnippetAdmin):
