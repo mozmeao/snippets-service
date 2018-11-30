@@ -153,6 +153,7 @@ def _migrate_targeting(snippet, asrsnippet, creator):
         'on_aurora': snippet.on_aurora,
         'on_nightly': snippet.on_nightly,
         'on_esr': snippet.on_esr,
+        'on_startpage_6': True,
         'filtr_is_default_browser': _transalate_yes_no_to_true_false(co['is_default_browser']),
         'filtr_profile_age_created_0': _translate_age(co['profileage_lower_bound']),
         'filtr_profile_age_created_1': _translate_age(co['profileage_upper_bound']),
