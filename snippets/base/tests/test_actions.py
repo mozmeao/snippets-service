@@ -85,6 +85,8 @@ class MigrateSnippetActionTests(TestCase):
 
         self.assertEqual(set(asrsnippet.locales.all()), set(snippet.locales.all()))
 
+        self.assertTrue(asrsnippet.target.on_startpage_6)
+
         snippet.refresh_from_db()
         self.assertEqual(snippet.migrated_to, asrsnippet)
 
