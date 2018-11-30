@@ -53,6 +53,7 @@ def migrate_snippets_action(modeladmin, request, queryset):
                 )
 
                 _migrate_amp(asrsnippet)
+                _remove_extra_css_class(asrsnippet)
                 _migrate_campaign_to_asr(snippet, asrsnippet, request.user)
                 _migrate_template(snippet, asrsnippet)
                 _migrate_status(snippet, asrsnippet)
@@ -86,6 +87,10 @@ migrate_snippets_action.short_description = 'Migrate to ASR Snippet'  # noqa
 
 def _migrate_amp(asrsnippet):
     asrsnippet.data = asrsnippet.data.replace('&amp;', '&')
+
+
+def _remove_extra_css_class(asrsnippet):
+    asrsnippet.data = asrsnippet.data.replace(' class=\\"more\\"', '')
 
 
 def _migrate_special_links(asrsnippet):
