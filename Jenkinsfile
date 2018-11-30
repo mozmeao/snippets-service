@@ -63,6 +63,7 @@ conduit {
                             "-e 'DATABASE_URL=mysql://root@db/snippets' " +
                             "-e 'SITE_URL=http://localhost:8000' " +
                             "-e 'CACHE_URL=dummy://' " +
+                            "-e 'ENABLE_ADMIN=True' " +
                             "-e 'SECURE_SSL_REDIRECT=False'"),
             "cmd": "coverage run ./manage.py test --parallel"
           ]
