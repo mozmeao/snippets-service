@@ -58,7 +58,7 @@ class ChannelFilter(admin.SimpleListFilter):
 
         if isinstance(queryset, SnippetQuerySet):
             return queryset.filter(**{self.value(): True})
-        return queryset.filter(**{f'target__{self.value()}': True})
+        return queryset.filter(**{f'targets__{self.value()}': True})
 
 
 class ActivityStreamFilter(admin.SimpleListFilter):

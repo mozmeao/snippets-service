@@ -15,6 +15,7 @@ from snippets.base.tests import (ASRSnippetFactory,
                                  SnippetFactory,
                                  SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory,
+                                 TargetFactory,
                                  TestCase,
                                  UserFactory,
                                  UploadedFileFactory)
@@ -346,7 +347,11 @@ class ASRSnippetTests(TestCase):
         snippet = ASRSnippetFactory.create(
             template__code='<p>{{ text }} {{ foo }}</p>',
             data='{"text": "snippet id [[snippet_id]]", "foo": "bar", "empty": ""}',
-            target__jexl_expr='foo == bar')
+            targets=[
+                TargetFactory(jexl_expr='foo == bar'),
+                TargetFactory(jexl_expr='lalo == true')
+            ]
+        )
         generated_result = snippet.render()
         expected_result = {
             'id': str(snippet.id),
@@ -359,7 +364,7 @@ class ASRSnippetTests(TestCase):
                 'foo': 'bar',
                 'links': {},
             },
-            'targeting': 'foo == bar'
+            'targeting': 'foo == bar && lalo == true'
         }
         self.assertEqual(generated_result, expected_result)
 
@@ -367,7 +372,7 @@ class ASRSnippetTests(TestCase):
         snippet = ASRSnippetFactory.create(
             template__code='<p>{{ text }} {{ foo }}</p>',
             data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}',
-            target__jexl_expr='foo == bar')
+            targets=[TargetFactory(jexl_expr='foo == bar')])
         generated_result = snippet.render(preview=True)
         expected_result = {
             'id': str(snippet.id),

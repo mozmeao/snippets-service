@@ -136,7 +136,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = (
         'campaign',
-        'target',
     )
     preserve_filters = True
     readonly_fields = (
@@ -149,6 +148,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'migrated_from_linked',
     )
     filter_horizontal = (
+        'targets',
         'locales',
     )
     save_on_top = True
@@ -181,7 +181,12 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             'fields': ('template', 'data'),
         }),
         ('Publishing Options', {
-            'fields': ('campaign', 'target', ('publish_start', 'publish_end'), 'locales', 'weight',)
+            'fields': (
+                'campaign',
+                'targets',
+                ('publish_start', 'publish_end'),
+                'locales',
+                'weight',)
         }),
         ('Other Info', {
             'fields': ('uuid', ('created', 'modified'), 'for_qa'),

@@ -85,7 +85,7 @@ class MigrateSnippetActionTests(TestCase):
 
         self.assertEqual(set(asrsnippet.locales.all()), set(snippet.locales.all()))
 
-        self.assertTrue(asrsnippet.target.on_startpage_6)
+        self.assertTrue(asrsnippet.targets.all()[0].on_startpage_6)
 
         snippet.refresh_from_db()
         self.assertEqual(snippet.migrated_to, asrsnippet)
@@ -172,11 +172,11 @@ class MigrateSnippetActionTests(TestCase):
             'on_nightly': False,
         }
         asrsnippet = self._prepare_target_channels(channels)
-        self.assertTrue(asrsnippet.target.on_release)
-        self.assertFalse(asrsnippet.target.on_esr)
-        self.assertFalse(asrsnippet.target.on_beta)
-        self.assertFalse(asrsnippet.target.on_aurora)
-        self.assertFalse(asrsnippet.target.on_nightly)
+        self.assertTrue(asrsnippet.targets.all()[0].on_release)
+        self.assertFalse(asrsnippet.targets.all()[0].on_esr)
+        self.assertFalse(asrsnippet.targets.all()[0].on_beta)
+        self.assertFalse(asrsnippet.targets.all()[0].on_aurora)
+        self.assertFalse(asrsnippet.targets.all()[0].on_nightly)
 
     def test_target_channel_esr(self):
         channels = {
@@ -187,11 +187,11 @@ class MigrateSnippetActionTests(TestCase):
             'on_nightly': False,
         }
         asrsnippet = self._prepare_target_channels(channels)
-        self.assertFalse(asrsnippet.target.on_release)
-        self.assertTrue(asrsnippet.target.on_esr)
-        self.assertFalse(asrsnippet.target.on_beta)
-        self.assertFalse(asrsnippet.target.on_aurora)
-        self.assertFalse(asrsnippet.target.on_nightly)
+        self.assertFalse(asrsnippet.targets.all()[0].on_release)
+        self.assertTrue(asrsnippet.targets.all()[0].on_esr)
+        self.assertFalse(asrsnippet.targets.all()[0].on_beta)
+        self.assertFalse(asrsnippet.targets.all()[0].on_aurora)
+        self.assertFalse(asrsnippet.targets.all()[0].on_nightly)
 
     def test_target_channel_beta(self):
         channels = {
@@ -202,11 +202,11 @@ class MigrateSnippetActionTests(TestCase):
             'on_nightly': False,
         }
         asrsnippet = self._prepare_target_channels(channels)
-        self.assertFalse(asrsnippet.target.on_release)
-        self.assertFalse(asrsnippet.target.on_esr)
-        self.assertTrue(asrsnippet.target.on_beta)
-        self.assertFalse(asrsnippet.target.on_aurora)
-        self.assertFalse(asrsnippet.target.on_nightly)
+        self.assertFalse(asrsnippet.targets.all()[0].on_release)
+        self.assertFalse(asrsnippet.targets.all()[0].on_esr)
+        self.assertTrue(asrsnippet.targets.all()[0].on_beta)
+        self.assertFalse(asrsnippet.targets.all()[0].on_aurora)
+        self.assertFalse(asrsnippet.targets.all()[0].on_nightly)
 
     def test_target_channel_aurora(self):
         channels = {
@@ -217,11 +217,11 @@ class MigrateSnippetActionTests(TestCase):
             'on_nightly': False,
         }
         asrsnippet = self._prepare_target_channels(channels)
-        self.assertFalse(asrsnippet.target.on_release)
-        self.assertFalse(asrsnippet.target.on_beta)
-        self.assertFalse(asrsnippet.target.on_esr)
-        self.assertTrue(asrsnippet.target.on_aurora)
-        self.assertFalse(asrsnippet.target.on_nightly)
+        self.assertFalse(asrsnippet.targets.all()[0].on_release)
+        self.assertFalse(asrsnippet.targets.all()[0].on_beta)
+        self.assertFalse(asrsnippet.targets.all()[0].on_esr)
+        self.assertTrue(asrsnippet.targets.all()[0].on_aurora)
+        self.assertFalse(asrsnippet.targets.all()[0].on_nightly)
 
     def test_target_channel_nightly(self):
         channels = {
@@ -232,11 +232,11 @@ class MigrateSnippetActionTests(TestCase):
             'on_nightly': True,
         }
         asrsnippet = self._prepare_target_channels(channels)
-        self.assertFalse(asrsnippet.target.on_release)
-        self.assertFalse(asrsnippet.target.on_beta)
-        self.assertFalse(asrsnippet.target.on_esr)
-        self.assertFalse(asrsnippet.target.on_aurora)
-        self.assertTrue(asrsnippet.target.on_nightly)
+        self.assertFalse(asrsnippet.targets.all()[0].on_release)
+        self.assertFalse(asrsnippet.targets.all()[0].on_beta)
+        self.assertFalse(asrsnippet.targets.all()[0].on_esr)
+        self.assertFalse(asrsnippet.targets.all()[0].on_aurora)
+        self.assertTrue(asrsnippet.targets.all()[0].on_nightly)
 
     def _prepare_target_client_options(self, extended_client_options):
         client_options = copy.copy(self.client_options)
@@ -258,78 +258,78 @@ class MigrateSnippetActionTests(TestCase):
             'version_upper_bound': '65.0',
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_firefox_version'], ',65')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_firefox_version'], ',65')
 
         client_options = {
             'version_lower_bound': '64.0',
             'version_upper_bound': 'any',
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_firefox_version'], '64,')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_firefox_version'], '64,')
 
         client_options = {
             'version_lower_bound': '64.0',
             'version_upper_bound': '65.0',
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_firefox_version'], '64,65')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_firefox_version'], '64,65')
 
     def test_target_is_default_browser(self):
         client_options = {
             'is_default_browser': 'any'
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertTrue('filtr_is_default_browser' not in asrsnippet.target.jexl)
+        self.assertTrue('filtr_is_default_browser' not in asrsnippet.targets.all()[0].jexl)
 
         client_options = {
             'is_default_browser': 'yes'
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_is_default_browser'], 'true')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_is_default_browser'], 'true')
 
         client_options = {
             'is_default_browser': 'no'
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_is_default_browser'], 'false')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_is_default_browser'], 'false')
 
     def test_target_is_developer(self):
         client_options = {
             'is_developer': 'any'
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertTrue('filtr_is_developer' not in asrsnippet.target.jexl)
+        self.assertTrue('filtr_is_developer' not in asrsnippet.targets.all()[0].jexl)
 
         client_options = {
             'is_developer': 'yes'
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_is_developer'], '==')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_is_developer'], '==')
 
         client_options = {
             'is_developer': 'no'
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_is_developer'], '<')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_is_developer'], '<')
 
     def test_target_has_fxaccount(self):
         client_options = {
             'has_fxaccount': 'any'
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertTrue('filtr_uses_firefox_sync' not in asrsnippet.target.jexl)
+        self.assertTrue('filtr_uses_firefox_sync' not in asrsnippet.targets.all()[0].jexl)
 
         client_options = {
             'has_fxaccount': 'yes'
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_uses_firefox_sync'], 'true')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_uses_firefox_sync'], 'true')
 
         client_options = {
             'has_fxaccount': 'no'
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_uses_firefox_sync'], 'false')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_uses_firefox_sync'], 'false')
 
     def test_target_bookmarks(self):
         client_options = {
@@ -337,21 +337,22 @@ class MigrateSnippetActionTests(TestCase):
             'bookmarks_count_upper_bound': 1000,
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_total_bookmarks_count'], ',1000')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_total_bookmarks_count'], ',1000')
 
         client_options = {
             'bookmarks_count_lower_bound': 1000,
             'bookmarks_count_upper_bound': -1,
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_total_bookmarks_count'], '1000,')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_total_bookmarks_count'], '1000,')
 
         client_options = {
             'bookmarks_count_lower_bound': 1000,
             'bookmarks_count_upper_bound': 5000,
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_total_bookmarks_count'], '1000,5000')
+        self.assertEqual(
+            asrsnippet.targets.all()[0].jexl['filtr_total_bookmarks_count'], '1000,5000')
 
     def test_target_profile_age(self):
         client_options = {
@@ -359,7 +360,7 @@ class MigrateSnippetActionTests(TestCase):
             'profileage_upper_bound': 3,
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_profile_age_created'], ',3')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_profile_age_created'], ',3')
 
         client_options = {
             'profileage_lower_bound': 4,
@@ -367,14 +368,14 @@ class MigrateSnippetActionTests(TestCase):
         }
         asrsnippet = self._prepare_target_client_options(client_options)
         # 21 here is not a mistake, we're translating to PROFILE_AGE_ASR
-        self.assertEqual(asrsnippet.target.jexl['filtr_profile_age_created'], '4,21')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_profile_age_created'], '4,21')
 
         client_options = {
             'profileage_lower_bound': 17,
             'profileage_upper_bound': -1,
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_profile_age_created'], '17,')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_profile_age_created'], '17,')
 
     def test_target_session_age(self):
         client_options = {
@@ -382,7 +383,7 @@ class MigrateSnippetActionTests(TestCase):
             'sessionage_upper_bound': 3,
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_previous_session_end'], ',3')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_previous_session_end'], ',3')
 
         client_options = {
             'sessionage_lower_bound': 4,
@@ -390,14 +391,14 @@ class MigrateSnippetActionTests(TestCase):
         }
         asrsnippet = self._prepare_target_client_options(client_options)
         # 21 here is not a mistake, we're translating to PROFILE_AGE_ASR
-        self.assertEqual(asrsnippet.target.jexl['filtr_previous_session_end'], '4,21')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_previous_session_end'], '4,21')
 
         client_options = {
             'sessionage_lower_bound': 17,
             'sessionage_upper_bound': -1,
         }
         asrsnippet = self._prepare_target_client_options(client_options)
-        self.assertEqual(asrsnippet.target.jexl['filtr_previous_session_end'], '17,')
+        self.assertEqual(asrsnippet.targets.all()[0].jexl['filtr_previous_session_end'], '17,')
 
     def test_cmr(self):
         cmr = ClientMatchRuleFactory()
@@ -410,5 +411,5 @@ class MigrateSnippetActionTests(TestCase):
         queryset = models.Snippet.objects.all()
         actions.migrate_snippets_action(SnippetAdmin, self.request, queryset)
         asrsnippet = models.ASRSnippet.objects.all()[0]
-        self.assertEqual(asrsnippet.target.client_match_rules.all().count(), 1)
-        self.assertEqual(asrsnippet.target.client_match_rules.all()[0], cmr)
+        self.assertEqual(asrsnippet.targets.all()[0].client_match_rules.all().count(), 1)
+        self.assertEqual(asrsnippet.targets.all()[0].client_match_rules.all()[0], cmr)

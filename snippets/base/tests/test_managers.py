@@ -232,24 +232,30 @@ class ASRSnippetManagerTests(TestCase):
 
         # Matching snippets.
         snippet_1 = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=False, on_nightly=True,
-                                 client_match_rules=[client_match_rule_pass_1]))
+            targets=[
+                TargetFactory(on_release=False, on_nightly=True,
+                              client_match_rules=[client_match_rule_pass_1])
+            ])
         snippet_2 = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=False, on_beta=True, on_nightly=True,
-                                 client_match_rules=[client_match_rule_pass_2]))
+            targets=[
+                TargetFactory(on_release=False, on_beta=True, on_nightly=True,
+                              client_match_rules=[client_match_rule_pass_2])
+            ])
         snippet_3 = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=False, on_nightly=True))
+            targets=[TargetFactory(on_release=False, on_nightly=True)])
 
         # Not matching snippets.
-        ASRSnippetFactory.create(target=TargetFactory(on_release=False, on_beta=True))
+        ASRSnippetFactory.create(targets=[TargetFactory(on_release=False, on_beta=True)])
 
         ASRSnippetFactory.create(
-            target=TargetFactory(on_nightly=True,
-                                 client_match_rules=[client_match_rule_fail]))
+            targets=[
+                TargetFactory(on_nightly=True, client_match_rules=[client_match_rule_fail])
+            ])
         ASRSnippetFactory.create(
-            target=TargetFactory(
-                on_nightly=True,
-                client_match_rules=[client_match_rule_fail, client_match_rule_pass_2]))
+            targets=[
+                TargetFactory(on_nightly=True,
+                              client_match_rules=[client_match_rule_fail, client_match_rule_pass_2])
+            ])
         client = self._build_client(channel='nightly')
 
         snippets = ASRSnippet.objects.match_client(client)
@@ -260,10 +266,10 @@ class ASRSnippetManagerTests(TestCase):
     def test_match_client(self):
         params = {}
         snippet = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=['en-US'])
         ASRSnippetFactory.create(
-            target=TargetFactory(on_release=False, on_startpage_6=True),
+            targets=[TargetFactory(on_release=False, on_startpage_6=True)],
             locales=['en-US'])
         self._assert_client_matches_snippets(params, [snippet])
 
@@ -271,7 +277,7 @@ class ASRSnippetManagerTests(TestCase):
     def test_match_client_not_matching_channel(self):
         params = {'channel': 'phantom'}
         snippet = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=['en-US'])
         self._assert_client_matches_snippets(params, [snippet])
 
@@ -283,10 +289,10 @@ class ASRSnippetManagerTests(TestCase):
         """
         params = {'channel': 'release-cck-mozilla14'}
         snippet = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=['en-US'])
         ASRSnippetFactory.create(
-            target=TargetFactory(on_release=False, on_startpage_6=True),
+            targets=[TargetFactory(on_release=False, on_startpage_6=True)],
             locales=['en-US'])
         self._assert_client_matches_snippets(params, [snippet])
 
@@ -294,7 +300,7 @@ class ASRSnippetManagerTests(TestCase):
     def test_match_client_not_matching_startpage(self):
         params = {'startpage_version': '0'}
         snippet = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=['en-US'])
         self._assert_client_matches_snippets(params, [snippet])
 
@@ -308,7 +314,7 @@ class ASRSnippetManagerTests(TestCase):
     def test_match_client_not_matching_locale(self):
         params = {'locale': 'en-US'}
         ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=[])
         self._assert_client_matches_snippets(params, [])
 
@@ -316,10 +322,10 @@ class ASRSnippetManagerTests(TestCase):
     def test_match_client_match_locale(self):
         params = {}
         snippet = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=['en-US'])
         ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=['fr'])
         self._assert_client_matches_snippets(params, [snippet])
 
@@ -331,10 +337,10 @@ class ASRSnippetManagerTests(TestCase):
         """
         params = {'locale': 'es-mx'}
         snippet_1 = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=['es'])
         snippet_2 = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=['es-mx'])
         self._assert_client_matches_snippets(params, [snippet_1, snippet_2])
 
@@ -347,7 +353,7 @@ class ASRSnippetManagerTests(TestCase):
         """
         params = {'locale': 'es-mx'}
         snippet = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=['es', 'es-mx'])
         self._assert_client_matches_snippets(params, [snippet])
 
@@ -359,20 +365,20 @@ class ASRSnippetManagerTests(TestCase):
         """
         params = {'locale': 'foo'}
         snippet = ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=[])
         ASRSnippetFactory.create(
-            target=TargetFactory(on_release=True, on_startpage_6=True),
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
             locales=['en-us'])
         self._assert_client_matches_snippets(params, [snippet])
 
     def test_default_is_same_as_nightly(self):
         """ Make sure that default channel follows nightly. """
         # Snippets matching nightly (and therefor should match default).
-        nightly_snippet = ASRSnippetFactory.create(target=TargetFactory(on_nightly=True))
+        nightly_snippet = ASRSnippetFactory.create(targets=[TargetFactory(on_nightly=True)])
 
         # Snippets that don't match nightly
-        ASRSnippetFactory.create(target=TargetFactory(on_beta=True))
+        ASRSnippetFactory.create(targets=[TargetFactory(on_beta=True)])
 
         nightly_client = self._build_client(channel='nightly')
         nightly_snippets = ASRSnippet.objects.match_client(nightly_client)

@@ -153,10 +153,19 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
     template = factory.SubFactory(SnippetTemplateFactory)
     status = models.STATUS_CHOICES['Published']
 
-    target = factory.SubFactory(TargetFactory, creator=factory.SelfAttribute('..creator'))
-
     class Meta:
         model = models.ASRSnippet
+
+    @factory.post_generation
+    def targets(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted is None:
+            extracted = [TargetFactory(creator=self.creator)]
+
+        for target in extracted:
+            self.targets.add(target)
 
     @factory.post_generation
     def locales(self, create, extracted, **kwargs):
