@@ -11,6 +11,25 @@ from snippets.base.tests import (ASRSnippetFactory, ClientMatchRuleFactory, Snip
                                  SnippetTemplateFactory, TestCase, UserFactory)
 
 
+class PublishSnippetsActions(TestCase):
+    def test_base(self):
+        to_be_published = ASRSnippetFactory.create_batch(2, status=models.STATUS_CHOICES['Draft'])
+        already_published = ASRSnippetFactory(status=models.STATUS_CHOICES['Published'])
+        ASRSnippetFactory.create_batch(2, status=models.STATUS_CHOICES['Draft'])
+
+        queryset = models.ASRSnippet.objects.filter(id__in=[
+            to_be_published[0].id,
+            to_be_published[1].id,
+            already_published.id
+        ])
+        actions.publish_snippets_action(None, None, queryset)
+
+        self.assertEqual(
+            set(models.ASRSnippet.objects.filter(status=models.STATUS_CHOICES['Published'])),
+            set(to_be_published + [already_published])
+        )
+
+
 class MigrateSnippetActionTests(TestCase):
     def setUp(self):
         request_factory = RequestFactory()
