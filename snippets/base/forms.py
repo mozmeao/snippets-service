@@ -611,8 +611,8 @@ class TargetAdminForm(forms.ModelForm):
         # profileAgeCreated is in milliseconds. We first calculate the
         # difference from currentDate and then we convert to week.
         jexl={
-            'minimum': '((currentDate - profileAgeCreated) / 604800000) >= {value}',
-            'maximum': '((currentDate - profileAgeCreated) / 604800000) < {value}',
+            'minimum': '((currentDate|date - profileAgeCreated) / 604800000) >= {value}',
+            'maximum': '((currentDate|date - profileAgeCreated) / 604800000) < {value}',
         },
         choices=PROFILE_AGE_CHOICES_ASR,
         required=False,
@@ -629,8 +629,8 @@ class TargetAdminForm(forms.ModelForm):
         # previousSessionEnd is in milliseconds. We first calculate the
         # difference from currentDate and then we convert to week.
         jexl={
-            'minimum': '((currentDate - previousSessionEnd) / 604800000) >= {value}',
-            'maximum': '((currentDate - previousSessionEnd) / 604800000) < {value}',
+            'minimum': '((currentDate|date - previousSessionEnd) / 604800000) >= {value}',
+            'maximum': '((currentDate|date - previousSessionEnd) / 604800000) < {value}',
         },
         choices=PROFILE_AGE_CHOICES_ASR,
         required=False,
