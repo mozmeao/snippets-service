@@ -1,14 +1,15 @@
 from snippets.base.admin import ASRSnippetAdmin, SnippetAdmin
 from snippets.base.admin.filters import ChannelFilter
 from snippets.base.models import ASRSnippet, Snippet
-from snippets.base.tests import ASRSnippetFactory, SnippetFactory, TestCase
+from snippets.base.tests import ASRSnippetFactory, SnippetFactory, TargetFactory, TestCase
 
 
 class ChannelFilterTests(TestCase):
     def test_asrsnippet(self):
+
         nightly_snippets = ASRSnippetFactory.create_batch(
-            2, target__on_release=False, target__on_nightly=True)
-        ASRSnippetFactory.create_batch(2, target__on_release=False, target__on_beta=True)
+            2, targets=[TargetFactory(on_release=False, on_nightly=True)])
+        ASRSnippetFactory.create_batch(2, targets=[TargetFactory(on_release=False, on_beta=True)])
 
         filtr = ChannelFilter(None, {'channel': 'on_nightly'}, ASRSnippet, ASRSnippetAdmin)
         result = filtr.queryset(None, ASRSnippet.objects.all())

@@ -123,19 +123,7 @@ class ASRSnippetQuerySet(QuerySet):
             client_channel = first(CHANNELS, client.channel.startswith)
         if client_channel:
             target_filters.update(**{'on_{0}'.format(client_channel): True})
-
-        startpage_field = 'on_startpage_{0}'.format(client.startpage_version)
-        if hasattr(Target, startpage_field):
-            target_filters.update({startpage_field: True})
-
         targets = Target.objects.filter(**target_filters).distinct()
-
-        # Filter based on ClientMatchRules
-        passed_rules, failed_rules = (ClientMatchRule.objects
-                                      .filter(target__in=targets)
-                                      .distinct()
-                                      .evaluate(client))
-        targets = targets.exclude(client_match_rules__in=failed_rules)
 
         # Only filter by locale if they pass a valid locale.
         locales = list(filter(client.locale.lower().startswith, LANGUAGE_VALUES))
@@ -146,7 +134,15 @@ class ASRSnippetQuerySet(QuerySet):
             # locales specified.
             snippet_filters.update(locales__isnull=True)
 
-        return self.filter(**snippet_filters).filter(target__in=targets)
+        snippets = self.filter(**snippet_filters).filter(targets__in=targets)
+
+        # Filter based on ClientMatchRules
+        passed_rules, failed_rules = (ClientMatchRule.objects
+                                      .filter(target__asrsnippet__in=snippets)
+                                      .distinct()
+                                      .evaluate(client))
+
+        return snippets.exclude(targets__client_match_rules__in=failed_rules)
 
 
 class ASRSnippetManager(Manager):

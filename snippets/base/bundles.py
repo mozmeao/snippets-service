@@ -179,8 +179,12 @@ class ASRSnippetBundle(SnippetBundle):
                 snippet.id,
                 snippet.modified.isoformat(),
                 snippet.template.modified.isoformat(),
-                snippet.target.modified.isoformat(),
             ]
+
+            attributes.extend(
+                [target.modified.isoformat() for target in snippet.targets.all()]
+            )
+
             if snippet.campaign:
                 attributes.append(snippet.campaign.modified.isoformat())
 
@@ -205,7 +209,7 @@ class ASRSnippetBundle(SnippetBundle):
     def snippets(self):
         return (ASRSnippet.objects
                 .filter(status=STATUS_CHOICES['Published'])
-                .select_related('template', 'campaign', 'target')
+                .select_related('template', 'campaign')
                 .match_client(self.client)
                 .filter_by_available())
 

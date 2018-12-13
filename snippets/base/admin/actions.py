@@ -177,7 +177,7 @@ def _migrate_targeting(snippet, asrsnippet, creator):
     form.is_valid()
     target = form.save()
 
-    asrsnippet.target = target
+    asrsnippet.targets.add(target)
 
 
 def _migrate_locales(snippet, asrsnippet):

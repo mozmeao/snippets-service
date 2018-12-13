@@ -21,7 +21,7 @@ from jinja2.utils import LRUCache
 
 from snippets.base import util
 from snippets.base.fields import RegexField
-from snippets.base.managers import ASRSnippetManager, ClientMatchRuleManager, SnippetManager
+from snippets.base import managers
 from snippets.base.validators import validate_xml_template
 
 
@@ -165,7 +165,7 @@ class ClientMatchRule(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    objects = ClientMatchRuleManager()
+    objects = managers.ClientMatchRuleManager()
 
     class Meta:
         ordering = ('description',)
@@ -306,7 +306,7 @@ class Snippet(SnippetBaseModel):
         }
     )
 
-    objects = SnippetManager()
+    objects = managers.SnippetManager()
 
     class Meta:
         ordering = ('-modified',)
@@ -450,7 +450,7 @@ class JSONSnippet(SnippetBaseModel):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    objects = SnippetManager()
+    objects = managers.SnippetManager()
 
     class Meta:
         ordering = ('-modified',)
@@ -630,8 +630,7 @@ class ASRSnippet(django_mysql.models.Model):
             'See the current time in <a target="_blank" href="http://time.is/UTC">UTC</a>'))
 
     locales = models.ManyToManyField('TargetedLocale', blank=True, verbose_name='Targeted Locales')
-    target = models.ForeignKey(Target, on_delete=models.PROTECT,
-                               default=None, blank=True, null=True)
+    targets = models.ManyToManyField(Target, default=None, blank=True)
 
     weight = models.IntegerField(
         choices=SNIPPET_WEIGHTS, default=100,
@@ -643,7 +642,7 @@ class ASRSnippet(django_mysql.models.Model):
         verbose_name='For QA',
     )
 
-    objects = ASRSnippetManager()
+    objects = managers.ASRSnippetManager()
 
     class Meta:
         ordering = ['-modified']
@@ -678,7 +677,9 @@ class ASRSnippet(django_mysql.models.Model):
             rendered_snippet['campaign'] = self.campaign.slug
 
         if not preview:
-            rendered_snippet['targeting'] = self.target.jexl_expr
+            rendered_snippet['targeting'] = ' && '.join(
+                [target.jexl_expr for target in self.targets.all()]
+            )
 
         return rendered_snippet
 
