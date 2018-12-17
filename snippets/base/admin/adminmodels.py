@@ -1,6 +1,7 @@
 import re
 
 from django.contrib import admin
+from django.db import transaction
 from django.db.models import TextField, Q
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
@@ -12,9 +13,8 @@ from jinja2.meta import find_undeclared_variables
 from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 
 from snippets.base import forms, models
-from snippets.base.models import JINJA_ENV
-from snippets.base.admin import filters
-from snippets.base.admin import actions
+from snippets.base.models import JINJA_ENV, STATUS_CHOICES
+from snippets.base.admin import actions, filters
 
 
 MATCH_LOCALE_REGEX = re.compile(r'(\w+(?:-\w+)*)')
@@ -156,7 +156,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     view_on_site = False
     actions = (
         actions.duplicate_snippets_action,
-        actions.publish_snippets_action,
+        'make_published',
     )
 
     fieldsets = (
@@ -248,6 +248,35 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return queryset
         return queryset.filter(for_qa=False)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.current_user = request.user
+        return form
+
+    @transaction.atomic
+    def make_published(self, request, queryset):
+        for snippet in queryset:
+            snippet.status = STATUS_CHOICES['Published']
+            snippet.save()
+    make_published.short_description = 'Publish selected snippets'
+
+    # Only users with Publishing permissions on all channels are allowed to
+    # mark snippets for publication in bulk.
+    make_published.allowed_permissions = (
+        'global_publish',
+    )
+
+    def has_global_publish_permission(self, request):
+        return request.user.has_perms([
+            'base.%s' % perm for perm in [
+                'publish_on_release',
+                'publish_on_beta',
+                'publish_on_aurora',
+                'publish_on_nightly',
+                'publish_on_esr',
+            ]
+        ])
 
 
 class CampaignAdmin(admin.ModelAdmin):
