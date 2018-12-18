@@ -188,6 +188,18 @@ class FetchSnippetsTests(TestCase):
             ('distribution', 'default'),
             ('distribution_version', 'default_version'),
         ])
+        self.asrclient_kwargs = OrderedDict([
+            ('startpage_version', 6),
+            ('name', 'Firefox'),
+            ('version', '64.0'),
+            ('appbuildid', '20190110041606'),
+            ('build_target', 'Darwin_Universal-gcc3'),
+            ('locale', 'en-US'),
+            ('channel', 'release'),
+            ('os_version', 'Darwin 10.8.0'),
+            ('distribution', 'default'),
+            ('distribution_version', 'default_version'),
+        ])
 
     def test_normal(self):
         with patch.object(views, 'SnippetBundle') as SnippetBundle:
@@ -206,6 +218,23 @@ class FetchSnippetsTests(TestCase):
         # Do not generate bundle when not expired.
         self.assertTrue(not SnippetBundle.return_value.generate.called)
 
+    def test_normal_asr(self):
+        with patch.object(views, 'ASRSnippetBundle') as ASRSnippetBundle:
+            bundle = ASRSnippetBundle.return_value
+            bundle.url = '/foo/bar'
+            bundle.empty = False
+            bundle.cached = True
+            response = views.fetch_snippets(self.request, **self.asrclient_kwargs)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/foo/bar')
+
+        # Check for correct client.
+        self.assertEqual(ASRSnippetBundle.call_args[0][0].locale, 'en-US')
+
+        # Do not generate bundle when not expired.
+        self.assertTrue(not ASRSnippetBundle.return_value.generate.called)
+
     def test_regenerate(self):
         """If the bundle has expired, re-generate it."""
         with patch.object(views, 'SnippetBundle') as SnippetBundle:
@@ -222,7 +251,7 @@ class FetchSnippetsTests(TestCase):
         self.assertTrue(SnippetBundle.return_value.generate.called)
 
     def test_empty(self):
-        """If the bundle is empty return 200. """
+        """If the bundle is empty return 200 and empty string."""
         with patch.object(views, 'SnippetBundle') as SnippetBundle:
             bundle = SnippetBundle.return_value
             bundle.empty = True
@@ -230,6 +259,16 @@ class FetchSnippetsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'')
+
+    def test_empty_asr(self):
+        """If the bundle is empty return 200 and valid JSON for ASR."""
+        with patch.object(views, 'ASRSnippetBundle') as ASRSnippetBundle:
+            bundle = ASRSnippetBundle.return_value
+            bundle.empty = True
+            response = views.fetch_snippets(self.request, **self.asrclient_kwargs)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'{}')
 
     @patch('snippets.base.views.Client', wraps=Client)
     def test_client_construction(self, ClientMock):
