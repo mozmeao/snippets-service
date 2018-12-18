@@ -132,7 +132,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'name',
         'id',
         'campaign__name',
-        'target__name',
+        'targets__name',
     )
     autocomplete_fields = (
         'campaign',
