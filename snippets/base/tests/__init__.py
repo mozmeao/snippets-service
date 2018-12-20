@@ -150,7 +150,7 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'ASRSnippet {0}'.format(n))
     campaign = factory.SubFactory(CampaignFactory, creator=factory.SelfAttribute('..creator'))
 
-    template = factory.SubFactory(SnippetTemplateFactory)
+    template = factory.SubFactory(SnippetTemplateFactory, startpage=6)
     status = models.STATUS_CHOICES['Published']
 
     class Meta:

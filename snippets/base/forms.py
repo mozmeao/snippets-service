@@ -13,9 +13,10 @@ from product_details import product_details
 from product_details.version_compare import Version, version_list
 
 from snippets.base.admin import fields
-from snippets.base.models import (CHANNELS, ASRSnippet, JSONSnippet, Snippet,
-                                  SnippetTemplate, SnippetTemplateVariable,
-                                  Target, TargetedCountry, UploadedFile)
+from snippets.base.models import (CHANNELS, STATUS_CHOICES, ASRSnippet,
+                                  JSONSnippet, Snippet, SnippetTemplate,
+                                  SnippetTemplateVariable, Target,
+                                  TargetedCountry, UploadedFile)
 from snippets.base.slack import send_slack
 from snippets.base.validators import (MinValueValidator, validate_as_router_fluent_variables,
                                       validate_xml_variables)
@@ -248,6 +249,34 @@ class PublishPermissionFormMixIn:
                                'on {} channel.'.format(channel.title()))
                         raise forms.ValidationError(msg)
 
+    def _publish_permission_check_asr(self, cleaned_data):
+        """If Snippet is Published or the current form sets it to Published verify that
+        user has permission to publish on all the selected publication
+        channels.
+
+        This permission model allows users without any publish permissions to
+        edit a Snippet and select the publication channels but prevents them
+        from publishing the snippets.
+
+        A user with publish permission will later review the snippet and set
+        Snippet.published to True. After this point, only users with publish
+        permissions on all selected publication channels are allowed to edit
+        the Snippet, including editing content, un-publishing, alter targeting,
+        etc.
+        """
+        if ((self.instance.status == STATUS_CHOICES['Published'] or
+             cleaned_data.get('status') == STATUS_CHOICES['Published'])):
+
+            for channel in CHANNELS:
+                on_channel = 'on_{}'.format(channel)
+
+                for target in self.instance.targets.all() | self.cleaned_data['targets']:
+                    if getattr(target, on_channel) is True:
+                        if not self.current_user.has_perm('base.publish_on_{}'.format(channel)):
+                            msg = ('You are not allowed to edit or publish '
+                                   'on {} channel.'.format(channel.title()))
+                            raise forms.ValidationError(msg)
+
 
 class BaseSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     pass
@@ -284,6 +313,7 @@ class SnippetChangeListForm(forms.ModelForm, PublishPermissionFormMixIn):
     def save(self, *args, **kwargs):
         if self.body_variable:
             self.instance.set_data_property(self.body_variable, self.cleaned_data['body'])
+
         return super(SnippetChangeListForm, self).save(*args, **kwargs)
 
 
@@ -575,7 +605,7 @@ class SnippetTemplateVariableInlineFormset(forms.models.BaseInlineFormSet):
                     'There can be only one Main Text variable type per template')
 
 
-class ASRSnippetAdminForm(forms.ModelForm):
+class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     template = forms.ModelChoiceField(
         queryset=SnippetTemplate.objects.exclude(hidden=True).filter(startpage__gte=6),
         widget=TemplateSelect)
@@ -592,6 +622,8 @@ class ASRSnippetAdminForm(forms.ModelForm):
         if 'template' in cleaned_data and 'data' in cleaned_data:
             variables = cleaned_data['template'].get_rich_text_variables()
             validate_as_router_fluent_variables(cleaned_data['data'], variables)
+
+        self._publish_permission_check_asr(cleaned_data)
 
         return cleaned_data
 

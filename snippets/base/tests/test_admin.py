@@ -211,3 +211,20 @@ class ASRSnippetAdminTests(TestCase):
         queryset = admin.get_queryset(request)
 
         self.assertEqual(set(snippets + qa_snippets), set(queryset.all()))
+
+    def test_make_published(self):
+        to_be_published = ASRSnippetFactory.create_batch(2, status=STATUS_CHOICES['Draft'])
+        already_published = ASRSnippetFactory(status=STATUS_CHOICES['Published'])
+        ASRSnippetFactory.create_batch(2, status=STATUS_CHOICES['Draft'])
+
+        queryset = ASRSnippet.objects.filter(id__in=[
+            to_be_published[0].id,
+            to_be_published[1].id,
+            already_published.id
+        ])
+        ASRSnippetAdmin(ASRSnippet, None).make_published(None, queryset)
+
+        self.assertEqual(
+            set(ASRSnippet.objects.filter(status=STATUS_CHOICES['Published'])),
+            set(to_be_published + [already_published])
+        )

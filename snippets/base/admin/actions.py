@@ -18,14 +18,6 @@ duplicate_snippets_action.short_description = 'Duplicate selected snippets'  # n
 
 
 @transaction.atomic
-def publish_snippets_action(modeladmin, request, queryset):
-    for snippet in queryset:
-        snippet.status = STATUS_CHOICES['Published']
-        snippet.save()
-publish_snippets_action.short_description = 'Publish selected snippets'  # noqa
-
-
-@transaction.atomic
 def migrate_snippets_action(modeladmin, request, queryset):
     for snippet in queryset:
         if not snippet.on_startpage_5:
