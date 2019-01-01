@@ -1,6 +1,6 @@
-hashin==0.14.0 \
-    --hash=sha256:7cf9ba76b2b5052bb82f3c7d2f3a928027f936d22043850a69e36cb11568fab3 \
-    --hash=sha256:ea5ac747a38aae38a60fd9ab0f70f352f34f9077b5d9eaefbba3a63e927688ca
+hashin==0.14.1 \
+    --hash=sha256:5dbf06b2adc32e5e438b9b9b352622b787c8555d4a2aa88b38d64764526f81a1 \
+    --hash=sha256:43ae3277fbd937ba1c99bc3fef9e4dd2e68cd5f2eea8f60ebdb53d83983d861b
 Django==2.1.3 \
     --hash=sha256:dd46d87af4c1bf54f4c926c3cfa41dc2b5c15782f15e4329752ce65f5dad1c37 \
     --hash=sha256:1ffab268ada3d5684c05ba7ce776eaeedef360712358d6a6b340ae9f16486916
