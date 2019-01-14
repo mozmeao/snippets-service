@@ -126,6 +126,8 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         filters.ModifiedFilter,
         'status',
         filters.ChannelFilter,
+        ('campaign', RelatedDropdownFilter),
+        ('category', RelatedDropdownFilter),
         ('template', RelatedDropdownFilter),
     )
     search_fields = (
@@ -133,9 +135,11 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'id',
         'campaign__name',
         'targets__name',
+        'category__name',
     )
     autocomplete_fields = (
         'campaign',
+        'category',
     )
     preserve_filters = True
     readonly_fields = (
@@ -184,6 +188,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         ('Publishing Options', {
             'fields': (
                 'campaign',
+                'category',
                 'targets',
                 ('publish_start', 'publish_end'),
                 'locales',
@@ -298,6 +303,47 @@ class CampaignAdmin(admin.ModelAdmin):
             obj.creator = request.user
         statsd.incr('save.campaign')
         super().save_model(request, obj, form, change)
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    readonly_fields = ('created', 'modified', 'creator',
+                       'published_snippets_in_category', 'total_snippets_in_category')
+
+    fieldsets = (
+        ('ID', {
+            'fields': (
+                'name',
+                'description',
+                'published_snippets_in_category',
+                'total_snippets_in_category',
+            )
+        }),
+        ('Other Info', {
+            'fields': ('creator', ('created', 'modified')),
+        }),
+    )
+    search_fields = (
+        'name',
+        'description',
+    )
+
+    list_display = (
+        'name',
+        'published_snippets_in_category',
+        'total_snippets_in_category',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if not obj.creator_id:
+            obj.creator = request.user
+        statsd.incr('save.category')
+        super().save_model(request, obj, form, change)
+
+    def published_snippets_in_category(self, obj):
+        return obj.asrsnippets.filter(status=models.STATUS_CHOICES['Published']).count()
+
+    def total_snippets_in_category(self, obj):
+        return obj.asrsnippets.count()
 
 
 class TargetAdmin(admin.ModelAdmin):

@@ -326,7 +326,7 @@ ADMIN_REORDER = [
     {
         'app': 'base',
         'label': 'ASR Snippets',
-        'models': ['base.ASRSnippet', 'base.Campaign', 'base.Target', 'base.Addon']
+        'models': ['base.ASRSnippet', 'base.Campaign', 'base.Category', 'base.Target', 'base.Addon']
 
     },
     {

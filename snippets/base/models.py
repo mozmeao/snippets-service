@@ -602,6 +602,22 @@ class Campaign(models.Model):
         return self.name
 
 
+class Category(models.Model):
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=False)
+
+    class Meta:
+        verbose_name_plural = 'categories'
+        ordering = ('name',)
+
+    def __str__(self):
+        return '{}: {}'.format(self.name, self.description)
+
+
 class ASRSnippet(django_mysql.models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
@@ -611,6 +627,8 @@ class ASRSnippet(django_mysql.models.Model):
     name = models.CharField(max_length=255, unique=True)
 
     campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT)
+    category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.PROTECT,
+                                 related_name='asrsnippets')
 
     template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT)
     data = models.TextField(default='{}')
