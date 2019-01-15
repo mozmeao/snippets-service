@@ -54,7 +54,7 @@ def fetch_snippets(request, **kwargs):
 
         if client.startpage_version == 6:
             # Return valid JSON for Activity Stream Router
-            return HttpResponse(status=200, content='{}')
+            return HttpResponse(status=200, content='{}', content_type='application/json')
 
         # This is not a 204 because Activity Stream expects content, even if
         # it's empty.

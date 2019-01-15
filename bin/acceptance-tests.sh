@@ -37,6 +37,18 @@ function check_zero_content_length {
     fi
 }
 
+function check_empty_json {
+    echo -n "Checking empty json for URL ${1} "
+    test=$(curl -L -s ${1});
+    if [ $test = '{}' ];
+    then
+        echo "OK"
+    else
+        echo "Failed"
+        EXIT=1
+    fi
+}
+
 for url in ${URLS[*]}
 do
     check_http_code ${BASE_URL}${url}
@@ -47,6 +59,6 @@ check_http_code ${BASE_URL}/foo 404
 
 check_zero_content_length ${BASE_URL}/4/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/xx/release/Windows_NT%206.1/default/default/
 check_zero_content_length ${BASE_URL}/5/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/xx/release/Windows_NT%206.1/default/default/
-check_zero_content_length ${BASE_URL}/6/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/xx/release/Windows_NT%206.1/default/default/
+check_empty_json ${BASE_URL}/6/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/xx/release/Windows_NT%206.1/default/default/
 
 exit ${EXIT}

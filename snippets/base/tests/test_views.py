@@ -269,6 +269,7 @@ class FetchSnippetsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'{}')
+        self.assertEqual(response['content-type'], 'application/json')
 
     @patch('snippets.base.views.Client', wraps=Client)
     def test_client_construction(self, ClientMock):
