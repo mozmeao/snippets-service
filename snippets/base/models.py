@@ -708,6 +708,16 @@ class ASRSnippet(django_mysql.models.Model):
 
         return rendered_snippet
 
+    @property
+    def channels(self):
+        channels = []
+
+        for target in self.targets.all():
+            for channel in CHANNELS:
+                if getattr(target, 'on_{0}'.format(channel), False):
+                    channels.append(channel)
+        return set(channels)
+
     def get_preview_url(self):
         url = reverse('asr-preview', kwargs={'uuid': self.uuid})
         full_url = urljoin(settings.SITE_URL, url)

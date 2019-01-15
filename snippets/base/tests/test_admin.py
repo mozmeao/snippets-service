@@ -222,9 +222,14 @@ class ASRSnippetAdminTests(TestCase):
             to_be_published[1].id,
             already_published.id
         ])
-        ASRSnippetAdmin(ASRSnippet, None).make_published(None, queryset)
+
+        with patch('snippets.base.admin.adminmodels.messages.warning') as warning:
+            with patch('snippets.base.admin.adminmodels.messages.success') as success:
+                ASRSnippetAdmin(ASRSnippet, None).make_published(None, queryset)
 
         self.assertEqual(
             set(ASRSnippet.objects.filter(status=STATUS_CHOICES['Published'])),
             set(to_be_published + [already_published])
         )
+        self.assertTrue(warning.called)
+        self.assertTrue(success.called)
