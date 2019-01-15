@@ -417,3 +417,14 @@ class ASRSnippetTests(TestCase):
         snippet = ASRSnippetFactory.create()
         self.assertTrue(snippet.get_admin_url().startswith('http://example.com'))
         self.assertTrue(snippet.get_admin_url(full=False).startswith('/'))
+
+    def test_channels(self):
+        snippet = ASRSnippetFactory.create(
+            targets=[
+                TargetFactory.create(on_release=True),
+                TargetFactory.create(on_beta=True, on_nightly=True),
+                TargetFactory.create(on_release=False, on_esr=False,
+                                     on_aurora=False, on_beta=False, on_nightly=False),
+            ])
+
+        self.assertTrue(snippet.channels, set(['release', 'beta', 'nightly']))

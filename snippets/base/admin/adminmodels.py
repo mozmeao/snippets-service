@@ -1,6 +1,6 @@
 import re
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db import transaction
 from django.db.models import TextField, Q
 from django.template.loader import get_template
@@ -12,8 +12,7 @@ from django_statsd.clients import statsd
 from jinja2.meta import find_undeclared_variables
 from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 
-from snippets.base import forms, models
-from snippets.base.models import JINJA_ENV, STATUS_CHOICES
+from snippets.base import forms, models, slack
 from snippets.base.admin import actions, filters
 
 
@@ -70,7 +69,7 @@ class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
                                                        change)
 
         # Parse the template code and find any undefined variables.
-        ast = JINJA_ENV.env.parse(form.instance.code)
+        ast = models.JINJA_ENV.env.parse(form.instance.code)
         new_vars = find_undeclared_variables(ast)
         var_manager = form.instance.variable_set
 
@@ -259,11 +258,26 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         form.current_user = request.user
         return form
 
-    @transaction.atomic
     def make_published(self, request, queryset):
-        for snippet in queryset:
-            snippet.status = STATUS_CHOICES['Published']
-            snippet.save()
+        clean_queryset = queryset.exclude(status=models.STATUS_CHOICES['Published'])
+        no_snippets = clean_queryset.count()
+        no_already_published_snippets = queryset.count() - no_snippets
+
+        snippets = []
+        with transaction.atomic():
+            for snippet in clean_queryset:
+                snippet.status = models.STATUS_CHOICES['Published']
+                snippet.save()
+                snippets.append(snippet)
+
+        for snippet in snippets:
+            slack.send_slack('asr_published', snippet)
+
+        if no_already_published_snippets:
+            messages.warning(
+                request, f'Skipped {no_already_published_snippets} already published snippets.')
+        messages.success(request, f'Published {no_snippets} snippets.')
+
     make_published.short_description = 'Publish selected snippets'
 
     # Only users with Publishing permissions on all channels are allowed to

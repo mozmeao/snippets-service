@@ -627,6 +627,19 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
 
         return cleaned_data
 
+    def save(self, *args, **kwargs):
+        snippet = super().save(*args, **kwargs)
+
+        if (('status' in self.changed_data and
+             self.instance.status == STATUS_CHOICES['Ready for review'])):
+            send_slack('asr_ready_for_review', snippet)
+
+        if (('status' in self.changed_data and
+             self.instance.status == STATUS_CHOICES['Published'])):
+            send_slack('asr_published', snippet)
+
+        return snippet
+
 
 class TargetAdminForm(forms.ModelForm):
     filtr_is_default_browser = fields.JEXLChoiceField(
