@@ -1,3 +1,4 @@
+from distutils.util import strtobool
 from datetime import datetime, timedelta
 
 from django.contrib import admin
@@ -78,3 +79,24 @@ class ActivityStreamFilter(admin.SimpleListFilter):
             return queryset.filter(on_startpage_5=True)
         elif self.value() == 'no':
             return queryset.exclude(on_startpage_5=True)
+
+
+class ScheduledFilter(admin.SimpleListFilter):
+    title = 'is scheduled'
+    parameter_name = 'is_scheduled'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value is None:
+            return queryset
+        value = strtobool(value)
+        if value:
+            return queryset.exclude(publish_start=None, publish_end=None)
+        else:
+            return queryset.filter(publish_start=None, publish_end=None)
