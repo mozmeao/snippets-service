@@ -78,22 +78,3 @@ class ActivityStreamFilter(admin.SimpleListFilter):
             return queryset.filter(on_startpage_5=True)
         elif self.value() == 'no':
             return queryset.exclude(on_startpage_5=True)
-
-
-class ASRMigrationFilter(admin.SimpleListFilter):
-    title = 'Migrated to ASR'
-    parameter_name = 'migrated_to_asr'
-
-    def lookups(self, request, model_admin):
-        return (
-            ('migrated', 'Yes'),
-            ('not_migrated', 'No'),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() is None:
-            return queryset
-        elif self.value() == 'migrated':
-            return queryset.exclude(migrated_to=None)
-        elif self.value() == 'not_migrated':
-            return queryset.filter(migrated_to=None)
