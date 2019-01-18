@@ -127,6 +127,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         filters.ChannelFilter,
         ('campaign', RelatedDropdownFilter),
         ('category', RelatedDropdownFilter),
+        filters.ScheduledFilter,
         ('template', RelatedDropdownFilter),
     )
     search_fields = (

@@ -3,7 +3,7 @@ from django.urls import path
 from watchman import views as watchman_views
 
 from snippets.base import views
-from snippets.base.feed import EnabledSnippetsFeed
+from snippets.base import feed
 
 
 urlpatterns = [
@@ -21,5 +21,5 @@ urlpatterns = [
     path('csp-violation-capture', views.csp_violation_capture, name='csp-violation-capture'),
     path('healthz/', watchman_views.ping, name='watchman.ping'),
     path('readiness/', watchman_views.status, name='watchman.status'),
-    path('feeds/snippets-enabled.ics', EnabledSnippetsFeed()),
+    path('feeds/snippets.ics', feed.SnippetsFeed()),
 ]

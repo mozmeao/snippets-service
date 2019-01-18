@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'quickedit',
     'django_admin_listfilter_dropdown',
     'admin_reorder',
+    'django_filters',
 
     # Django apps
     'django.contrib.admin',

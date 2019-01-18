@@ -471,3 +471,6 @@ django-modeladmin-reorder==0.3.1 \
     --hash=sha256:bf42d0dcd184b796b4d6d988c4b4cea7914adfc4430dd9978a8a0199051f189f
 django-enforce-host==1.0.1 \
     --hash=sha256:40c4b4830e7fc27710c1606e8f3a91e82f8f1d5ae6c26aaec76f453b1407fc3d
+django-filter==2.0.0 \
+    --hash=sha256:6f4e4bc1a11151178520567b50320e5c32f8edb552139d93ea3e30613b886f56 \
+    --hash=sha256:86c3925020c27d072cdae7b828aaa5d165c2032a629abbe3c3a1be1edae61c58
