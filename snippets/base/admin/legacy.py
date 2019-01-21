@@ -152,7 +152,7 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
     class Media:
         css = {
             'all': (
-                'css/admin.css',
+                'css/admin/SnippetAdmin.css',
                 'css/admin/IDFieldHighlight.css',
             )
         }
@@ -238,7 +238,6 @@ class JSONSnippetAdmin(BaseSnippetAdmin):
     class Media:
         css = {
             'all': (
-                'css/admin.css',
                 'css/admin/IDFieldHighlight.css',
             )
         }

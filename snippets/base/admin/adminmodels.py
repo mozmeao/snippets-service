@@ -55,11 +55,6 @@ class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
                                         width='1200px', height='500px')},
     }
 
-    class Media:
-        css = {
-            'all': ('css/admin.css',)
-        }
-
     def save_related(self, request, form, formsets, change):
         """
         After saving the related objects, remove and add

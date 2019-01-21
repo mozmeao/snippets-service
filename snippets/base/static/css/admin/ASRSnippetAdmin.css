@@ -22,3 +22,23 @@
     border: none;
 
 }
+
+tr.variable input.smalltext {
+    width: 500px;
+    border: 1px solid rgb(204, 204, 204);
+    display: block;
+}
+
+tr.variable img {
+    float: left;
+}
+
+tr.variable small {
+    display: block;
+    clear: both;
+}
+
+td.field-description .vLargeTextField {
+    width: 60em;
+    height: 3em;
+}
