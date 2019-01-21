@@ -393,9 +393,11 @@ class Snippet(SnippetBaseModel):
         return full_url
 
     def get_admin_url(self, full=True):
-        url = reverse('admin:base_snippet_change', args=(self.id,))
+        # Not using reverse() because the `admin:` namespace is not registered
+        # in all clusters and app instances.
+        url = '/admin/base/snippet/{}/change/'.format(self.id)
         if full:
-            url = urljoin(settings.SITE_URL, url)
+            url = urljoin(settings.ADMIN_REDIRECT_URL or settings.SITE_URL, url)
         return url
 
     def get_absolute_url(self):
@@ -718,9 +720,11 @@ class ASRSnippet(django_mysql.models.Model):
         return 'about:newtab?endpoint=' + full_url
 
     def get_admin_url(self, full=True):
-        url = reverse('admin:base_asrsnippet_change', args=(self.id,))
+        # Not using reverse() because the `admin:` namespace is not registered
+        # in all clusters and app instances.
+        url = '/admin/base/asrsnippet/{}/change/'.format(self.id)
         if full:
-            url = urljoin(settings.SITE_URL, url)
+            url = urljoin(settings.ADMIN_REDIRECT_URL or settings.SITE_URL, url)
         return url
 
     def duplicate(self, creator):
