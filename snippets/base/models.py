@@ -697,7 +697,7 @@ class ASRSnippet(django_mysql.models.Model):
 
         if not preview:
             rendered_snippet['targeting'] = ' && '.join(
-                [target.jexl_expr for target in self.targets.all()]
+                [target.jexl_expr for target in self.targets.all().order_by('id')]
             )
 
         return rendered_snippet
