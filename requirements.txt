@@ -461,10 +461,10 @@ django-admin-list-filter-dropdown==1.0.2 \
 bleach==3.1.0 \
     --hash=sha256:213336e49e102af26d9cde77dd2d0397afabc5a6bf2fed985dc35b5d1e285a16 \
     --hash=sha256:3fdf7f77adcf649c9911387df51254b813185e32b2c6619f690b593a617e19fa
-mysqlclient==1.3.14 \
-    --hash=sha256:b3591a00c0366de71d65108627899710d9cfb00e575c4d211aa8de59b1f130c9 \
-    --hash=sha256:062d78953acb23066c0387a8f3bd0ecf946626f599145bb7fd201460e8f773e1 \
-    --hash=sha256:3981ae9ce545901a36a8b7aed76ed02960a429f75dc53b7ad77fb2f9ab7cd56b
+mysqlclient==1.4.1 \
+    --hash=sha256:6883a4dd98903bad375c859ead1a480e1245ea3a8d9b038ea2c091c1865ba673 \
+    --hash=sha256:e1b9f3a8928ddb4985ca3e3c9f2aa81b19e831bbf6fabf5681ee356738dbbbb2 \
+    --hash=sha256:a62220410e26ce2d2ff94dd0138c3ecfb91db634464a9afb4c8e6b50f0a67e00
 urlwait==0.4 \
     --hash=sha256:fc39ff2c8abbcaad5043e1f79699dcb15a036cc4b0ff4d1aa825ea105d4889ff \
     --hash=sha256:395fc0c2a7f9736858a2c2f449aa20c6e9da1f86bfc2d1fda4f2f5b78a5c115a
