@@ -590,7 +590,7 @@ class Campaign(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(
-        max_length=255, blank=True, default='', unique=True,
+        max_length=255, blank=False, unique=True,
         help_text=('Optional campaign slug. Will be added in the stats ping. '
                    'Will be used for snippet blocking if set.'))
 
