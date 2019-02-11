@@ -694,10 +694,19 @@ class ASRSnippet(django_mysql.models.Model):
             'weight': self.weight,
             'content': data,
         }
-        if self.campaign:
-            rendered_snippet['campaign'] = self.campaign.slug
 
-        if not preview:
+        if preview:
+            rendered_snippet['id'] = 'preview-{}'.format(self.id)
+            # Always set do_not_autoblock when previewing.
+            rendered_snippet['content']['do_not_autoblock'] = True
+
+            if self.campaign:
+                rendered_snippet['campaign'] = 'preview-{}'.format(self.campaign.slug)
+
+        else:
+            if self.campaign:
+                rendered_snippet['campaign'] = self.campaign.slug
+
             rendered_snippet['targeting'] = ' && '.join(
                 [target.jexl_expr for target in self.targets.all().order_by('id')]
             )
