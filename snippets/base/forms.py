@@ -598,11 +598,11 @@ class UploadedFileAdminForm(forms.ModelForm):
 
 class SnippetTemplateVariableInlineFormset(forms.models.BaseInlineFormSet):
     def clean(self):
-            main_body_count = sum([form.cleaned_data['type'] == SnippetTemplateVariable.BODY
-                                   for form in self.forms])
-            if main_body_count > 1:
-                raise forms.ValidationError(
-                    'There can be only one Main Text variable type per template')
+        main_body_count = sum([form.cleaned_data['type'] == SnippetTemplateVariable.BODY
+                               for form in self.forms])
+        if main_body_count > 1:
+            raise forms.ValidationError(
+                'There can be only one Main Text variable type per template')
 
 
 class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
