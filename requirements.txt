@@ -475,3 +475,6 @@ django-enforce-host==1.0.1 \
 django-filter==2.1.0 \
     --hash=sha256:a3014de317bef0cd43075a0f08dfa1d319a7ccc5733c3901fb860da70b0dda68 \
     --hash=sha256:3dafb7d2810790498895c22a1f31b2375795910680ac9c1432821cbedb1e176d
+entrypoints==0.3 \
+    --hash=sha256:589f874b313739ad35be6e0cd7efde2a4e9b6fea91edcc34e58ecbb8dbe56d19 \
+    --hash=sha256:c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451
