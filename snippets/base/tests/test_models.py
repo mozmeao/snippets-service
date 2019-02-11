@@ -371,15 +371,16 @@ class ASRSnippetTests(TestCase):
             targets=[TargetFactory(jexl_expr='foo == bar')])
         generated_result = snippet.render(preview=True)
         expected_result = {
-            'id': str(snippet.id),
+            'id': 'preview-{}'.format(snippet.id),
             'template': snippet.template.code_name,
             'template_version': snippet.template.version,
-            'campaign': snippet.campaign.slug,
+            'campaign': 'preview-{}'.format(snippet.campaign.slug),
             'weight': 100,
             'content': {
                 'text': 'snippet id {}'.format(snippet.id),
                 'foo': 'bar',
                 'links': {},
+                'do_not_autoblock': True,
             }
         }
         self.assertEqual(generated_result, expected_result)
