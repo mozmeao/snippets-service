@@ -58,9 +58,9 @@ Pygments==2.3.1 \
 django-jinja==2.4.1 \
     --hash=sha256:8a49d73de616a12075eee14c6d3bbab936261a463457d40348d8b8e2995cfbed \
     --hash=sha256:ceaa0eeebc4d91a5800967e50f4f087f0b6457503e3c2af85dc199bed8732a9a
-django-ace==1.0.4 \
-    --hash=sha256:c1dd7067dcf41f0f5dc523ca4f356b628fa2e5c57d88bacaae16bc0ff450f677 \
-    --hash=sha256:39ea305aeadc5bf67e676707c252f1f4ef9a69179ed737fa81a05066e45cab51
+django-ace==1.0.5 \
+    --hash=sha256:1334f08b4c5548e8ab13b25787e6a3f49dfe5fc92bb3a3d845b5b42fa0e1aff6 \
+    --hash=sha256:a2616b0265bdc1f839cc905c77243f779d82c00f3fddf58d23c08eb07e91e189
 django-mozilla-product-details==0.13 \
     --hash=sha256:4ffa5a104f53645460a50c9342a41e3ea02d432851becf56e820d42faa94839f \
     --hash=sha256:ce97fc2533aa06560d9b438ebba2522dc0b2ada86d6e0537cfb5ac06db1a6aa2
