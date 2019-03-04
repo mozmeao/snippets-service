@@ -249,12 +249,15 @@ PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
 PROD_DETAILS_DIR = config('PROD_DETAILS_DIR',
                           default=product_details.settings_defaults.PROD_DETAILS_DIR)
 
-DEFAULT_FILE_STORAGE = config('FILE_STORAGE', 'snippets.storages.OverwriteStorage')
+DEFAULT_FILE_STORAGE = config('FILE_STORAGE', 'snippets.base.storage.OverwriteStorage')
+
+# Used for exporting ASRSnippet metadata. See #887
+# https://github.com/mozmeao/snippets-service/issues/887
+CSV_EXPORT_ROOT = config('CSV_EXPORT_ROOT', default=MEDIA_ROOT)
 
 CDN_URL = config('CDN_URL', default='')
 
-
-# Set to 'storages.backends.s3boto.S3BotoStorage' for S3
+# Set to 'snippets.base.storage.S3Storage' for S3
 if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
@@ -267,6 +270,14 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     }
     AWS_DEFAULT_ACL = 'public-read'
     AWS_BUCKET_ACL = 'public-read'
+    AWS_IS_GZIPPED = True
+    GZIP_CONTENT_TYPES = [
+        'application/json'
+        'text/csv',
+    ]
+    CSV_EXPORT_ROOT = config('CSV_EXPORT_ROOT')
+
+DEAD_MANS_SNITCH_CSV_EXPORT = config('DEAD_MANS_SNITCH_CSV_EXPORT', default=None)
 
 DEAD_MANS_SNITCH_PRODUCT_DETAILS = config('DEAD_MANS_SNITCH_PRODUCT_DETAILS', default=None)
 DEAD_MANS_SNITCH_DISABLE_SNIPPETS = config('DEAD_MANS_SNITCH_DISABLE_SNIPPETS', default=None)

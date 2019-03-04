@@ -15,6 +15,7 @@ from django.db.models.manager import Manager
 from django.template import engines
 from django.utils.html import format_html
 
+import bleach
 import django_mysql.models
 from jinja2 import Markup
 from jinja2.utils import LRUCache
@@ -763,6 +764,35 @@ class ASRSnippet(django_mysql.models.Model):
                         getattr(snippet_copy, field.name).add(snippet)
 
         return snippet_copy
+
+    def analytics_export(self):
+        jsondata = json.loads(self.data)
+        export = {}
+
+        try:
+            main_body = self.template.variable_set.get(type=SnippetTemplateVariable.BODY)
+        except SnippetTemplateVariable.DoesNotExist:
+            body = ''
+            url = ''
+        else:
+            body = jsondata.get(main_body.name, '')
+            if jsondata.get('button_url', None):
+                url = jsondata.get('button_url')
+            else:
+                match = re.search('href="(?P<link>https?://.+?)"', body)
+                if match:
+                    url = match.groupdict()['link']
+                else:
+                    url = ''
+
+        export['id'] = self.id
+        export['name'] = self.name
+        export['campaign'] = self.campaign.name if self.campaign else ''
+        export['category'] = self.category.name if self.category else ''
+        export['url'] = url
+        export['body'] = bleach.clean(body, tags=[], strip=True).strip()
+
+        return export
 
 
 class Addon(models.Model):
