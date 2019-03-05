@@ -272,7 +272,7 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     AWS_BUCKET_ACL = 'public-read'
     AWS_IS_GZIPPED = True
     GZIP_CONTENT_TYPES = [
-        'application/json'
+        'application/json',
         'text/csv',
     ]
     CSV_EXPORT_ROOT = config('CSV_EXPORT_ROOT')
