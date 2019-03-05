@@ -270,11 +270,6 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     }
     AWS_DEFAULT_ACL = 'public-read'
     AWS_BUCKET_ACL = 'public-read'
-    AWS_IS_GZIPPED = True
-    GZIP_CONTENT_TYPES = [
-        'application/json',
-        'text/csv',
-    ]
     CSV_EXPORT_ROOT = config('CSV_EXPORT_ROOT')
 
 DEAD_MANS_SNITCH_CSV_EXPORT = config('DEAD_MANS_SNITCH_CSV_EXPORT', default=None)
