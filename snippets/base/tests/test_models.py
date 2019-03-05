@@ -6,7 +6,11 @@ from jinja2 import Markup
 from unittest.mock import MagicMock, Mock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.models import STATUS_CHOICES, Client, UploadedFile, _generate_filename
+from snippets.base.models import (STATUS_CHOICES,
+                                  Client,
+                                  SnippetTemplateVariable,
+                                  UploadedFile,
+                                  _generate_filename)
 from snippets.base.tests import (ASRSnippetFactory,
                                  ClientMatchRuleFactory,
                                  JSONSnippetFactory,
@@ -422,3 +426,25 @@ class ASRSnippetTests(TestCase):
             ])
 
         self.assertTrue(snippet.channels, set(['release', 'beta', 'nightly']))
+
+    def test_analytics_export(self):
+        snippet = ASRSnippetFactory.create(
+            name='test-snippet',
+            template__code='<p>{{ text }} {{ foo }}</p>',
+            campaign__name='test-campaign',
+            category__name='test-category',
+            data=('{"body": "This is the <b>bold body</b> with a '
+                  '<a href=\\"https://example.com\\">link</a>."}')
+        )
+        snippet.template.variable_set.add(
+            SnippetTemplateVariableFactory.create(name='body', type=SnippetTemplateVariable.BODY)
+        )
+        expected_data = {
+            'id': snippet.id,
+            'name': 'test-snippet',
+            'campaign': 'test-campaign',
+            'category': 'test-category',
+            'url': 'https://example.com',
+            'body': 'This is the bold body with a link.'
+        }
+        self.assertEqual(expected_data, snippet.analytics_export())
