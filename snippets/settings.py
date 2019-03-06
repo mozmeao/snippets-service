@@ -137,6 +137,7 @@ MEDIA_URL = config('MEDIA_URL', '/media/')
 MEDIA_ROOT = config('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
 MEDIA_FILES_ROOT = config('MEDIA_FILES_ROOT', default='files/')
 MEDIA_BUNDLES_ROOT = config('MEDIA_BUNDLES_ROOT', default='bundles/')
+MEDIA_ICONS_ROOT = config('MEDIA_ICONS_ROOT', default='icons/')
 
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
 SESSION_COOKIE_SAMESITE = config('SESSION_COOKIE_SAMESITE', default='Lax')
@@ -267,6 +268,7 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     AWS_CACHE_CONTROL_HEADERS = {
         MEDIA_FILES_ROOT: 'max-age=900',  # 15 Minutes
         MEDIA_BUNDLES_ROOT: 'max-age=2592000',  # 1 Month
+        MEDIA_ICONS_ROOT: 'max-age=15552000',  # 6 Months
     }
     AWS_DEFAULT_ACL = 'public-read'
     AWS_BUCKET_ACL = 'public-read'
@@ -333,7 +335,15 @@ ADMIN_REORDER = [
     {
         'app': 'base',
         'label': 'ASR Snippets',
-        'models': ['base.ASRSnippet', 'base.Campaign', 'base.Category', 'base.Target', 'base.Addon']
+        'models': [
+            'base.ASRSnippet',
+            'base.Campaign',
+            'base.Category',
+            'base.Target',
+            'base.Icon',
+            'base.Addon',
+            'base.Template',
+        ]
 
     },
     {

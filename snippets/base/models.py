@@ -6,9 +6,11 @@ import re
 import uuid
 from collections import namedtuple
 from datetime import datetime
+from functools import partial
 from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
+from django.core import validators as django_validators
 from django.urls import reverse
 from django.db import models
 from django.db.models.manager import Manager
@@ -457,17 +459,19 @@ class JSONSnippet(SnippetBaseModel):
         return self.name
 
 
-def _generate_filename(instance, filename):
+def _generate_filename(instance, filename, root=None):
     """Generate a new unique filename while preserving the original
     filename extension. If an existing UploadedFile gets updated
     do not generate a new filename.
     """
+    if not root:
+        root = settings.MEDIA_FILES_ROOT
 
     # Instance is new UploadedFile, generate a filename
     if not instance.id:
         ext = os.path.splitext(filename)[1]
         filename = str(uuid.uuid4()) + ext
-        return os.path.join(settings.MEDIA_FILES_ROOT, filename)
+        return os.path.join(root, filename)
 
     # Use existing filename.
     obj = UploadedFile.objects.get(id=instance.id)
@@ -615,6 +619,159 @@ class Category(models.Model):
         return '{}: {}'.format(self.name, self.description)
 
 
+class Icon(models.Model):
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=255)
+    height = models.PositiveIntegerField(default=0)
+    width = models.PositiveIntegerField(default=0)
+    image = models.ImageField(
+        upload_to=partial(_generate_filename, root=settings.MEDIA_ICONS_ROOT),
+        height_field='height',
+        width_field='width',
+    )
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def url(self):
+        full_url = urljoin(settings.SITE_URL, self.image.url).split('?')[0]
+        cdn_url = getattr(settings, 'CDN_URL', None)
+        if cdn_url:
+            full_url = urljoin(cdn_url, urlparse(self.image.url).path)
+
+        return full_url
+
+
+class Template(models.Model):
+    snippet = models.OneToOneField('ASRSnippet', related_name='template_ng',
+                                   on_delete=models.CASCADE)
+
+    def render(self):
+        subtemplate = getattr(self, self.type.lower(), None)
+        if not subtemplate:
+            return {}
+        data = subtemplate.render()
+
+        # Convert links in text fields in fluent format.
+        data = util.fluent_link_extractor(data, subtemplate.get_rich_text_fields())
+
+        # Remove values that are empty strings
+        data = {k: v for k, v in data.items() if v != ''}
+
+        return data
+
+    def get_rich_text_fields(self):
+        subtemplate = getattr(self, self.type.lower(), None)
+        if not subtemplate:
+            return []
+        return subtemplate.get_rich_text_fields()
+
+    @property
+    def type(self):
+        for field in self._meta.fields_map.values():
+            if issubclass(field.related_model, Template):
+                try:
+                    getattr(self, field.name)
+                    label = field.related_model._meta.label
+                    return label.rsplit('.', 1)[1]
+                except Template.DoesNotExist:
+                    continue
+
+
+class SimpleTemplate(Template):
+    title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='title_icons',
+        help_text=('Small icon that shows up before the title / text. 64x64px.'
+                   'PNG. Grayscale.')
+    )
+    title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Snippet title displayed before snippet text',
+    )
+    text = models.TextField(
+        help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br',
+    )
+    icon = models.ForeignKey(Icon, on_delete=models.CASCADE, related_name='icons',
+                             help_text='Snippet icon. 192x192px PNG.')
+    button_label = models.CharField(
+        max_length=50, blank=True,
+        help_text=('Text for a button next to main snippet text that '
+                   'links to button_url. Requires button_url.'),
+    )
+    button_color = models.CharField(
+        max_length=20, blank=True,
+        help_text='The text color of the button. Valid CSS color.',
+    )
+    button_url = models.URLField(
+        max_length=500,
+        blank=True,
+        validators=[django_validators.URLValidator(schemes=['https'])],
+        help_text='A url, button_label links to this',
+    )
+    section_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='section_icons',
+        help_text=('Section title icon. 32x32px. PNG. '
+                   'section_title_text must also be specified to display.'),
+    )
+    section_title_text = models.CharField(
+        blank=True, max_length=255,
+        help_text='Section title text. section_title_icon must also be specified to display.',
+    )
+    section_title_url = models.URLField(
+        blank=True,
+        validators=[django_validators.URLValidator(schemes=['https'])],
+        help_text='A url, section_title_text links to this',
+    )
+    tall = models.BooleanField(
+        default=False, blank=True,
+        help_text=('To be used by fundraising only, increases height '
+                   'to roughly 120px. Defaults to false.'),
+    )
+
+    block_button_text = models.CharField(
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    def render(self):
+        data = {
+            'title_icon': self.title_icon.url if self.title_icon else '',
+            'title': self.title,
+            'text': self.text,
+            'icon': self.icon.url if self.icon else '',
+            'button_label': self.button_label,
+            'button_url': self.button_url,
+            'section_title_icon': self.section_title_icon.url if self.section_title_icon else '',
+            'section_title_text': self.section_title_text,
+            'section_title_url': self.section_title_url,
+            'tall': self.tall,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+        }
+
+        return data
+
+    def get_rich_text_fields(self):
+        return ['text']
+
+
 class ASRSnippet(django_mysql.models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
@@ -675,18 +832,27 @@ class ASRSnippet(django_mysql.models.Model):
         return self.name
 
     def render(self, preview=False):
-        data = json.loads(self.data)
+        if hasattr(self, 'template_ng'):
+            data = self.template_ng.render()
 
-        # Add snippet ID to template variables.
-        for key, value in data.items():
-            if isinstance(value, str):
-                data[key] = value.replace('[[snippet_id]]', str(self.id))
+            # Add snippet ID to template variables.
+            for key, value in data.items():
+                if isinstance(value, str):
+                    data[key] = value.replace('[[snippet_id]]', str(self.id))
 
-        # Convert inline links to fluent.js format.
-        data = util.fluent_link_extractor(data, self.template.get_rich_text_variables())
+        else:
+            data = json.loads(self.data)
 
-        # Remove values that are empty strings
-        data = {k: v for k, v in data.items() if v != ''}
+            # Add snippet ID to template variables.
+            for key, value in data.items():
+                if isinstance(value, str):
+                    data[key] = value.replace('[[snippet_id]]', str(self.id))
+
+            # Convert inline links to fluent.js format.
+            data = util.fluent_link_extractor(data, self.template.get_rich_text_variables())
+
+            # Remove values that are empty strings
+            data = {k: v for k, v in data.items() if v != ''}
 
         rendered_snippet = {
             'id': str(self.id),
@@ -751,7 +917,7 @@ class ASRSnippet(django_mysql.models.Model):
         snippet_copy.save()
 
         for field in self._meta.get_fields():
-            attr = getattr(self, field.name)
+            attr = getattr(self, field.name, None)
             if isinstance(attr, Manager):
                 manager = attr
                 if manager.__class__.__name__ == 'RelatedManager':

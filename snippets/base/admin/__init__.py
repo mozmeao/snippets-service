@@ -3,7 +3,7 @@ from django.contrib import admin
 from snippets.base import models
 
 from .adminmodels import (AddonAdmin, ASRSnippetAdmin, CampaignAdmin, CategoryAdmin,
-                          ClientMatchRuleAdmin, LogEntryAdmin,
+                          ClientMatchRuleAdmin, LogEntryAdmin, IconAdmin,
                           SnippetTemplateAdmin, TargetAdmin, UploadedFileAdmin)
 from .legacy import (SnippetAdmin, JSONSnippetAdmin, SearchProviderAdmin, TargetedCountryAdmin,
                      TargetedLocaleAdmin)
@@ -26,3 +26,5 @@ admin.site.register(admin.models.LogEntry, LogEntryAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
 admin.site.register(models.Target, TargetAdmin)
 admin.site.register(models.UploadedFile, UploadedFileAdmin)
+admin.site.register(models.Icon, IconAdmin)
+admin.site.register(models.Template)

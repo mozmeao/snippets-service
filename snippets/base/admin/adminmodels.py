@@ -103,6 +103,81 @@ class AddonAdmin(admin.ModelAdmin):
     list_display = ('name', 'guid')
 
 
+class IconAdmin(admin.ModelAdmin):
+    prepopulated_fields = {
+        'name': (
+            'image',
+        )
+    }
+    search_fields = [
+        'name',
+    ]
+    readonly_fields = [
+        'height',
+        'width',
+        'preview',
+        'creator',
+        'created',
+    ]
+    list_display_links = [
+        'id',
+        'name',
+    ]
+    list_display = [
+        'id',
+        'name',
+        'width',
+        'height',
+        'preview',
+    ]
+
+    def save_model(self, request, obj, form, change):
+        if not obj.creator_id:
+            obj.creator = request.user
+        super().save_model(request, obj, form, change)
+
+    def preview(self, obj):
+        text = f'<img src="{obj.image.url}"/>'
+        return mark_safe(text)
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = super().get_readonly_fields(request, obj)
+
+        # Don't allow image to be changed after set.
+        if obj and 'image' not in fields:
+            fields.append('image')
+
+        return fields
+
+
+class SimpleTemplateInline(admin.StackedInline):
+    form = forms.SimpleTemplateForm
+    model = models.SimpleTemplate
+    can_delete = False
+    classes = [
+        'inline-template'
+    ]
+    raw_id_fields = [
+        'icon'
+    ]
+
+    fieldsets = (
+        ('Title', {
+            'fields': ('title_icon', 'title'),
+        }),
+        ('Section', {
+            'fields': ('section_title_icon', 'section_title_text', 'section_title_url',),
+        }),
+        ('Main', {
+            'fields': ('icon', 'text', 'button_label', 'button_color', 'button_url'),
+        }),
+        ('Extra', {
+            'fields': ('block_button_text', 'tall', 'do_not_autoblock'),
+        })
+
+    )
+
+
 class ASRSnippetAdmin(admin.ModelAdmin):
     form = forms.ASRSnippetAdminForm
 

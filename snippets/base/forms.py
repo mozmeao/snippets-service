@@ -16,7 +16,7 @@ from snippets.base.admin import fields
 from snippets.base.models import (CHANNELS, STATUS_CHOICES, ASRSnippet,
                                   JSONSnippet, Snippet, SnippetTemplate,
                                   SnippetTemplateVariable, Target,
-                                  TargetedCountry, UploadedFile)
+                                  TargetedCountry, UploadedFile, SimpleTemplate)
 from snippets.base.slack import send_slack
 from snippets.base.validators import (MinValueValidator, validate_as_router_fluent_variables,
                                       validate_xml_variables)
@@ -603,6 +603,13 @@ class SnippetTemplateVariableInlineFormset(forms.models.BaseInlineFormSet):
         if main_body_count > 1:
             raise forms.ValidationError(
                 'There can be only one Main Text variable type per template')
+
+
+class SimpleTemplateForm(forms.ModelForm):
+
+    class Meta:
+        model = SimpleTemplate
+        exclude = []
 
 
 class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
