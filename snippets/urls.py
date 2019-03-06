@@ -43,7 +43,7 @@ if settings.DEBUG:
     def serve_media(*args, **kwargs):
         response = static_serve(*args, **kwargs)
         response['Access-Control-Allow-Origin'] = '*'
-        if settings.BUNDLE_BROTLI_COMPRESS:
+        if settings.BUNDLE_BROTLI_COMPRESS and kwargs['path'].startswith(settings.MEDIA_BUNDLES_ROOT):
             response['Content-Encoding'] = 'br'
         return response
 
