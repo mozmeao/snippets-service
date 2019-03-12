@@ -197,11 +197,18 @@ class FundraisingTemplateInline(admin.StackedInline):
 
     fieldsets = (
         ('Title', {
-            'fields': ('title_icon', 'title'),
+            'fields': (
+                'title_icon',
+                'title'
+            ),
         }),
         ('Main', {
             'fields': (
-                'icon', 'text', 'text_color', 'background_color', 'highlight_color',
+                'icon',
+                'text',
+                'text_color',
+                'background_color',
+                'highlight_color',
             )
         }),
         ('Form Configuration', {
@@ -244,11 +251,17 @@ class FxASignupTemplateInline(admin.StackedInline):
 
     fieldsets = (
         ('Scene 1 Title', {
-            'fields': ('scene1_title_icon', 'scene1_title'),
+            'fields': (
+                'scene1_title_icon',
+                'scene1_title'
+            ),
         }),
         ('Scene 1 Main', {
             'fields': (
-                'scene1_icon', 'scene1_text', 'scene1_button_label', 'scene1_button_color',
+                'scene1_icon',
+                'scene1_text',
+                'scene1_button_label',
+                'scene1_button_color',
                 'scene1_button_background_color',
             )
         }),
@@ -257,7 +270,8 @@ class FxASignupTemplateInline(admin.StackedInline):
         }),
         ('Scene 2 Main', {
             'fields': (
-                'scene2_text', 'scene2_button_label',
+                'scene2_text',
+                'scene2_button_label',
                 'scene2_email_placeholder_text',
                 'scene2_dismiss_button_text',
             )
@@ -268,7 +282,63 @@ class FxASignupTemplateInline(admin.StackedInline):
                 'utm_term',
                 'utm_campaign',
                 'block_button_text',
-                'do_not_autoblock'),
+                'do_not_autoblock'
+            ),
+        })
+    )
+
+
+class NewsletterTemplateInline(admin.StackedInline):
+    model = models.NewsletterTemplate
+    form = forms.NewsletterTemplateForm
+    can_delete = False
+    classes = [
+        'inline-template',
+        'newsletter-template-inline-template',
+    ]
+    raw_id_fields = [
+        'scene1_title_icon',
+        'scene1_icon',
+    ]
+
+    fieldsets = (
+        ('Scene 1 Title', {
+            'fields': (
+                'scene1_title_icon',
+                'scene1_title'
+            ),
+        }),
+        ('Scene 1 Main', {
+            'fields': (
+                'scene1_icon',
+                'scene1_text',
+                'scene1_button_label',
+                'scene1_button_color',
+                'scene1_button_background_color',
+            )
+        }),
+        ('Scene 2 Title', {
+            'fields': ('scene2_title',),
+        }),
+        ('Scene 2 Main', {
+            'fields': (
+                'scene2_text',
+                'scene2_button_label',
+                'scene2_email_placeholder_text',
+                'scene2_privacy_html',
+                'scene2_newsletter',
+                'scene2_dismiss_button_text',
+                'locale',
+                'success_text',
+                'error_text',
+            )
+        }),
+
+        ('Extra', {
+            'fields': (
+                'block_button_text',
+                'do_not_autoblock'
+            ),
         })
     )
 
@@ -280,6 +350,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         SimpleTemplateInline,
         FundraisingTemplateInline,
         FxASignupTemplateInline,
+        NewsletterTemplateInline,
     ]
 
     list_display_links = (

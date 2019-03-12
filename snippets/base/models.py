@@ -1007,6 +1007,140 @@ class FxASignupTemplate(Template):
         return ['scene1_text', 'scene2_text']
 
 
+class NewsletterTemplate(Template):
+    scene1_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='newsletter_scene1_title_icons',
+        help_text=('Small icon that shows up before the title / text. 64x64px.'
+                   'PNG. Grayscale.')
+    )
+    scene1_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Snippet title displayed before snippet text.',
+    )
+    scene1_text = models.TextField(
+        help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene1_icon = models.ForeignKey(
+        Icon,
+        on_delete=models.CASCADE,
+        related_name='newsletter_scene1_icons',
+        help_text='Snippet icon. 192x192px PNG.')
+    scene1_button_label = models.CharField(
+        max_length=50,
+        help_text='Label for the button on Scene 1 that leads to Scene 2.'
+    )
+    scene1_button_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The text color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+    scene1_button_background_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The background color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+
+    ###
+    # Scene 2
+    ###
+    scene2_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Title displayed before text in scene 2.',
+    )
+    scene2_text = models.TextField(
+        help_text='Scene 2 main text. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene2_button_label = models.CharField(
+        max_length=50,
+        default='Sign me up',
+        help_text='Label for form submit button.',
+    )
+    scene2_email_placeholder_text = models.CharField(
+        max_length=255,
+        default='Your email here',
+        help_text='Value to show while input is empty.',
+    )
+    scene2_dismiss_button_text = models.CharField(
+        max_length=50,
+        default='Dismiss',
+        help_text='Label for the dismiss button on Scene 2.'
+    )
+
+    scene2_newsletter = models.CharField(
+        max_length=50,
+        default='mozilla-foundation',
+        help_text=('Newsletter/basket id user is subscribing to. Must be a value from the "Slug" '
+                   'column here: https://basket.mozilla.org/news/.'),
+    )
+    scene2_privacy_html = models.TextField(
+        help_text='Text and link next to the privacy checkbox. Must link to a privacy policy.',
+    )
+
+    locale = models.CharField(
+        max_length=10,
+        default='en-US',
+        help_text='String for the newsletter locale code.',
+    )
+    success_text = models.TextField(
+        help_text='Text of success message after form submission.',
+    )
+    error_text = models.TextField(
+        help_text='Text of error message if form submission fails.',
+    )
+
+    ###
+    # Extras
+    ###
+    block_button_text = models.CharField(
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    @property
+    def code_name(self):
+        return 'newsletter_snippet'
+
+    def render(self):
+        data = {
+            'scene1_title_icon': self.scene1_title_icon.url if self.scene1_title_icon else '',
+            'scene1_title': self.scene1_title,
+            'scene1_text': self.scene1_text,
+            'scene1_icon': self.scene1_icon.url if self.scene1_icon else '',
+            'scene1_button_label': self.scene1_button_label,
+            'scene1_button_color': self.scene1_button_color,
+            'scene1_button_background_color': self.scene1_button_background_color,
+            'scene2_title': self.scene2_title,
+            'scene2_text': self.scene2_text,
+            'scene2_button_label': self.scene2_button_label,
+            'scene2_email_placeholder_text': self.scene2_email_placeholder_text,
+            'scene2_dismiss_button_text': self.scene2_dismiss_button_text,
+            'scene2_newsletter': self.scene2_newsletter,
+            'scene2_privacy_html': self.scene2_privacy_html,
+            'locale': self.locale,
+            'success_text': self.success_text,
+            'error_text': self.error_text,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+        }
+
+        return data
+
+    def get_rich_text_fields(self):
+        return [
+            'scene1_text',
+            'scene2_privacy_html',
+        ]
+
+
 class ASRSnippet(django_mysql.models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)

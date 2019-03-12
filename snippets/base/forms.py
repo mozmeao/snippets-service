@@ -630,6 +630,13 @@ class FxASignupTemplateForm(forms.ModelForm):
         exclude = []
 
 
+class NewsletterTemplateForm(forms.ModelForm):
+
+    class Meta:
+        model = models.NewsletterTemplate
+        exclude = []
+
+
 class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     template = forms.ModelChoiceField(
         queryset=models.SnippetTemplate.objects.exclude(hidden=True).filter(startpage__gte=6),
@@ -641,6 +648,7 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
             ('simple-template-inline-template', 'Simple'),
             ('fundraising-template-inline-template', 'Fundraising'),
             ('fxasignup-template-inline-template', 'Firefox Accounts Sign Up'),
+            ('newsletter-template-inline-template', 'Newsletter Sign Up'),
         ),
         widget=TemplateChooserWidget,
         required=False,
