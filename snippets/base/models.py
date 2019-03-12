@@ -650,6 +650,13 @@ class Template(models.Model):
     snippet = models.OneToOneField('ASRSnippet', related_name='template_ng',
                                    on_delete=models.CASCADE)
 
+    @property
+    def code_name(self):
+        subtemplate = getattr(self, self.type.lower(), None)
+        if not subtemplate:
+            return ''
+        return subtemplate.code_name
+
     def render(self):
         subtemplate = getattr(self, self.type.lower(), None)
         if not subtemplate:
@@ -694,7 +701,7 @@ class SimpleTemplate(Template):
     )
     title = models.CharField(
         max_length=255, blank=True,
-        help_text='Snippet title displayed before snippet text',
+        help_text='Snippet title displayed before snippet text.',
     )
     text = models.TextField(
         help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br',
@@ -739,7 +746,6 @@ class SimpleTemplate(Template):
         help_text=('To be used by fundraising only, increases height '
                    'to roughly 120px. Defaults to false.'),
     )
-
     block_button_text = models.CharField(
         max_length=50, default='Remove this',
         help_text='Tooltip text used for dismiss button.'
@@ -749,6 +755,10 @@ class SimpleTemplate(Template):
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
     )
+
+    @property
+    def code_name(self):
+        return 'simple_snippet'
 
     def render(self):
         data = {
@@ -770,6 +780,231 @@ class SimpleTemplate(Template):
 
     def get_rich_text_fields(self):
         return ['text']
+
+
+class FundraisingTemplate(Template):
+    """Also known as EOY Template"""
+    donation_form_url = models.URLField(
+        default='https://donate.mozilla.org/?utm_source=desktop-snippet&utm_medium=snippet',
+        max_length=500,
+    )
+    currency_code = models.CharField(max_length=10, default='usd')
+    locale = models.CharField(max_length=10, default='en-US')
+    title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Snippet title displayed before snippet text.',
+    )
+    text = models.TextField()
+    text_color = models.CharField(max_length=10, blank=True,)
+    background_color = models.CharField(max_length=10, blank=True,)
+    highlight_color = models.CharField(
+        max_length=10,
+        help_text='Paragraph em highlight color.',
+        blank=True,
+        default='#FFE900',
+    )
+    donation_amount_first = models.PositiveSmallIntegerField('First')
+    donation_amount_second = models.PositiveSmallIntegerField('Second')
+    donation_amount_third = models.PositiveSmallIntegerField('Third')
+    donation_amount_fourth = models.PositiveSmallIntegerField('Fourth')
+    selected_button = models.CharField(
+        max_length=25,
+        choices=(
+            ('donation_amount_first', 'First'),
+            ('donation_amount_second', 'Second'),
+            ('donation_amount_third', 'Third'),
+            ('donation_amount_fourth', 'Fourth'),
+        ),
+        default='donation_amount_second',
+        help_text='Donation amount button that\'s selected by default.',
+    )
+    icon = models.ForeignKey(Icon, on_delete=models.CASCADE, related_name='fundraising_icons',
+                             help_text='Snippet icon. 192x192px PNG.')
+    title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='fundraising_title_icons',
+        help_text=('Small icon that shows up before the title / text. 64x64px.'
+                   'PNG. Grayscale.')
+    )
+    button_label = models.CharField(
+        max_length=50,
+        help_text=('Text for a button next to main snippet text that links '
+                   'to button_url. Requires button_url.'),
+    )
+    button_color = models.CharField(
+        max_length=20, blank=True,
+        help_text='defaults to firefox theme'
+    )
+    button_background_color = models.CharField(
+        max_length=20, blank=True, help_text='defaults to firefox theme')
+    monthly_checkbox_label_text = models.CharField(max_length=255)
+    test = models.CharField(max_length=10,
+                            choices=(('', 'Default'),
+                                     ('bold', 'Bold'),
+                                     ('takeover', 'Takeover')),
+                            blank=True,
+                            help_text=('Different styles for the snippet.'))
+    block_button_text = models.CharField(
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    @property
+    def code_name(self):
+        return 'eoy_snippet'
+
+    def render(self):
+        data = {
+            'donation_form_url': self.donation_form_url,
+            'currency_code': self.currency_code,
+            'locale': self.locale,
+            'title': self.title,
+            'text': self.text,
+            'text_color': self.text_color,
+            'background_color': self.background_color,
+            'highlight_color': self.highlight_color,
+            'donation_amount_first': self.donation_amount_first,
+            'donation_amount_second': self.donation_amount_second,
+            'donation_amount_third': self.donation_amount_third,
+            'donation_amount_fourth': self.donation_amount_fourth,
+            'selected_button': self.selected_button,
+            'icon': self.icon.url if self.icon else '',
+            'title_icon': self.title_icon.url if self.title_icon else '',
+            'button_label': self.button_label,
+            'button_color': self.button_color,
+            'button_background_color': self.button_background_color,
+            'monthly_checkbox_label_text': self.monthly_checkbox_label_text,
+            'test': self.test,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+        }
+
+        return data
+
+    def get_rich_text_fields(self):
+        return ['text']
+
+
+class FxASignupTemplate(Template):
+    scene1_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='fxasignup_scene1_title_icons',
+        help_text=('Small icon that shows up before the title / text. 64x64px.'
+                   'PNG. Grayscale.')
+    )
+    scene1_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Snippet title displayed before snippet text.',
+    )
+    scene1_text = models.TextField(
+        help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene1_icon = models.ForeignKey(
+        Icon,
+        on_delete=models.CASCADE,
+        related_name='fxasignup_scene1_icons',
+        help_text='Snippet icon. 192x192px PNG.')
+    scene1_button_label = models.CharField(
+        max_length=50,
+        help_text='Label for the button on Scene 1 that leads to Scene 2.'
+    )
+    scene1_button_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The text color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+    scene1_button_background_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The background color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+
+    ###
+    # Scene 2
+    ###
+    scene2_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Title displayed before text in scene 2.',
+    )
+    scene2_text = models.TextField(
+        help_text='Scene 2 main text. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene2_button_label = models.CharField(
+        max_length=50,
+        default='Sign me up',
+        help_text='Label for form submit button.',
+    )
+    scene2_email_placeholder_text = models.CharField(
+        max_length=255,
+        default='Your email here',
+        help_text='Value to show while input is empty.',
+    )
+    scene2_dismiss_button_text = models.CharField(
+        max_length=50,
+        default='Dismiss',
+        help_text='Label for the dismiss button on Scene 2.'
+    )
+
+    ###
+    # Extras
+    ###
+    utm_term = models.CharField(
+        max_length=100, blank=True,
+        help_text='Value to pass through to GA as utm_term.',
+    )
+    utm_campaign = models.CharField(
+        max_length=100, blank=True,
+        help_text='Value to pass through to GA as utm_campaign.',
+    )
+    block_button_text = models.CharField(
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    @property
+    def code_name(self):
+        return 'fxa_signup_snippet'
+
+    def render(self):
+        data = {
+            'scene1_title_icon': self.scene1_title_icon.url if self.scene1_title_icon else '',
+            'scene1_title': self.scene1_title,
+            'scene1_text': self.scene1_text,
+            'scene1_icon': self.scene1_icon.url if self.scene1_icon else '',
+            'scene1_button_label': self.scene1_button_label,
+            'scene1_button_color': self.scene1_button_color,
+            'scene1_button_background_color': self.scene1_button_background_color,
+            'scene2_title': self.scene2_title,
+            'scene2_text': self.scene2_text,
+            'scene2_button_label': self.scene2_button_label,
+            'scene2_email_placeholder_text': self.scene2_email_placeholder_text,
+            'scene2_dismiss_button_text': self.scene2_dismiss_button_text,
+            'utm_term': self.utm_term,
+            'utm_campaign': self.utm_campaign,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+        }
+
+        return data
+
+    def get_rich_text_fields(self):
+        return ['scene1_text', 'scene2_text']
 
 
 class ASRSnippet(django_mysql.models.Model):
@@ -833,20 +1068,12 @@ class ASRSnippet(django_mysql.models.Model):
 
     def render(self, preview=False):
         if hasattr(self, 'template_ng'):
+            template_code_name = self.template_ng.code_name
             data = self.template_ng.render()
-
-            # Add snippet ID to template variables.
-            for key, value in data.items():
-                if isinstance(value, str):
-                    data[key] = value.replace('[[snippet_id]]', str(self.id))
-
         else:
-            data = json.loads(self.data)
+            template_code_name = self.template.code_name
 
-            # Add snippet ID to template variables.
-            for key, value in data.items():
-                if isinstance(value, str):
-                    data[key] = value.replace('[[snippet_id]]', str(self.id))
+            data = json.loads(self.data)
 
             # Convert inline links to fluent.js format.
             data = util.fluent_link_extractor(data, self.template.get_rich_text_variables())
@@ -854,9 +1081,14 @@ class ASRSnippet(django_mysql.models.Model):
             # Remove values that are empty strings
             data = {k: v for k, v in data.items() if v != ''}
 
+        # Add snippet ID to template variables.
+        for key, value in data.items():
+            if isinstance(value, str):
+                data[key] = value.replace('[[snippet_id]]', str(self.id))
+
         rendered_snippet = {
             'id': str(self.id),
-            'template': self.template.code_name,
+            'template': template_code_name,
             'template_version': self.template.version,
             'weight': self.weight,
             'content': data,

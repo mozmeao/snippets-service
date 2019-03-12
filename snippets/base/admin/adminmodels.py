@@ -1,4 +1,5 @@
 import re
+import sys
 
 from django.contrib import admin, messages
 from django.db import transaction
@@ -151,14 +152,17 @@ class IconAdmin(admin.ModelAdmin):
 
 
 class SimpleTemplateInline(admin.StackedInline):
-    form = forms.SimpleTemplateForm
     model = models.SimpleTemplate
+    form = forms.SimpleTemplateForm
     can_delete = False
     classes = [
-        'inline-template'
+        'inline-template',
+        'simple-template-inline-template',
     ]
     raw_id_fields = [
-        'icon'
+        'section_title_icon',
+        'title_icon',
+        'icon',
     ]
 
     fieldsets = (
@@ -178,8 +182,105 @@ class SimpleTemplateInline(admin.StackedInline):
     )
 
 
+class FundraisingTemplateInline(admin.StackedInline):
+    model = models.FundraisingTemplate
+    form = forms.FundraisingTemplateForm
+    can_delete = False
+    classes = [
+        'inline-template',
+        'fundraising-template-inline-template',
+    ]
+    raw_id_fields = [
+        'title_icon',
+        'icon',
+    ]
+
+    fieldsets = (
+        ('Title', {
+            'fields': ('title_icon', 'title'),
+        }),
+        ('Main', {
+            'fields': (
+                'icon', 'text', 'text_color', 'background_color', 'highlight_color',
+            )
+        }),
+        ('Form Configuration', {
+            'fields': (
+                'donation_form_url',
+                'currency_code',
+                'locale',
+                'selected_button',
+                'button_label',
+                'button_color',
+                'button_background_color',
+                'monthly_checkbox_label_text',
+            )
+        }),
+        ('Donation', {
+            'fields': (
+                ('donation_amount_first', 'donation_amount_second',
+                 'donation_amount_third', 'donation_amount_fourth',),
+            )
+        }),
+        ('Extra', {
+            'fields': ('block_button_text', 'test', 'do_not_autoblock'),
+        })
+
+    )
+
+
+class FxASignupTemplateInline(admin.StackedInline):
+    model = models.FxASignupTemplate
+    form = forms.FxASignupTemplateForm
+    can_delete = False
+    classes = [
+        'inline-template',
+        'fxasignup-template-inline-template',
+    ]
+    raw_id_fields = [
+        'scene1_title_icon',
+        'scene1_icon',
+    ]
+
+    fieldsets = (
+        ('Scene 1 Title', {
+            'fields': ('scene1_title_icon', 'scene1_title'),
+        }),
+        ('Scene 1 Main', {
+            'fields': (
+                'scene1_icon', 'scene1_text', 'scene1_button_label', 'scene1_button_color',
+                'scene1_button_background_color',
+            )
+        }),
+        ('Scene 2 Title', {
+            'fields': ('scene2_title',),
+        }),
+        ('Scene 2 Main', {
+            'fields': (
+                'scene2_text', 'scene2_button_label',
+                'scene2_email_placeholder_text',
+                'scene2_dismiss_button_text',
+            )
+        }),
+
+        ('Extra', {
+            'fields': (
+                'utm_term',
+                'utm_campaign',
+                'block_button_text',
+                'do_not_autoblock'),
+        })
+    )
+
+
 class ASRSnippetAdmin(admin.ModelAdmin):
     form = forms.ASRSnippetAdminForm
+
+    inlines = [
+        SimpleTemplateInline,
+        FundraisingTemplateInline,
+        FxASignupTemplateInline,
+    ]
 
     list_display_links = (
         'id',
@@ -267,6 +368,11 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             'fields': ('uuid', ('created', 'modified'), 'for_qa'),
             'classes': ('collapse',)
         }),
+        ('Template', {
+            'fields': (
+                'template_chooser',
+            )
+        }),
     )
 
     class Media:
@@ -274,12 +380,31 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             'all': (
                 'css/admin/ASRSnippetAdmin.css',
                 'css/admin/IDFieldHighlight.css',
+                'css/admin/InlineTemplates.css',
             )
         }
         js = (
             'js/admin/clipboard.min.js',
             'js/admin/copy_preview.js',
         )
+
+    # TODO to be re-engineered and cleaned up
+    def get_inline_instances(self, request, obj=None):
+        instances = super().get_inline_instances(request, obj)
+
+        if not obj:
+            return instances
+
+        template_ng = getattr(obj, 'template_ng', None)
+        if template_ng:
+            type = template_ng.type
+            inline_type = f'{type}Inline'
+            inline_class = getattr(sys.modules[__name__], inline_type)
+
+            return [
+                instance for instance in instances if isinstance(instance, inline_class)
+            ]
+        return instances
 
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:

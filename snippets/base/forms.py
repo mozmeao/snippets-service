@@ -13,10 +13,7 @@ from product_details import product_details
 from product_details.version_compare import Version, version_list
 
 from snippets.base.admin import fields
-from snippets.base.models import (CHANNELS, STATUS_CHOICES, ASRSnippet,
-                                  JSONSnippet, Snippet, SnippetTemplate,
-                                  SnippetTemplateVariable, Target,
-                                  TargetedCountry, UploadedFile, SimpleTemplate)
+from snippets.base import models
 from snippets.base.slack import send_slack
 from snippets.base.validators import (MinValueValidator, validate_as_router_fluent_variables,
                                       validate_xml_variables)
@@ -136,7 +133,7 @@ class TemplateSelect(forms.Select):
             # We can't use the orm in init without having a fully working
             # database which breaks management commands unrelated to the
             # database like collectstatic.
-            for variable in SnippetTemplateVariable.objects.all():
+            for variable in models.SnippetTemplateVariable.objects.all():
                 self.variables_for[variable.template.id].append({
                     'name': variable.name,
                     'type': variable.type,
@@ -202,6 +199,13 @@ class TemplateDataWidget(forms.TextInput):
         ]
 
 
+class TemplateChooserWidget(forms.Select):
+    class Media:
+        js = [
+            'js/templateChooserWidget.js'
+        ]
+
+
 class IconWidget(forms.TextInput):
     def render(self, name, value, attrs=None, renderer=None):
         if not attrs:
@@ -240,7 +244,7 @@ class PublishPermissionFormMixIn:
         etc.
         """
         if self.instance.published or cleaned_data.get('published'):
-            for channel in CHANNELS:
+            for channel in models.CHANNELS:
                 on_channel = 'on_{}'.format(channel)
                 if ((cleaned_data.get(on_channel) is True or
                      getattr(self.instance, on_channel, False) is True)):
@@ -264,10 +268,10 @@ class PublishPermissionFormMixIn:
         the Snippet, including editing content, un-publishing, alter targeting,
         etc.
         """
-        if ((self.instance.status == STATUS_CHOICES['Published'] or
-             cleaned_data.get('status') == STATUS_CHOICES['Published'])):
+        if ((self.instance.status == models.STATUS_CHOICES['Published'] or
+             cleaned_data.get('status') == models.STATUS_CHOICES['Published'])):
 
-            for channel in CHANNELS:
+            for channel in models.CHANNELS:
                 on_channel = 'on_{}'.format(channel)
 
                 for target in self.instance.targets.all() | self.cleaned_data['targets']:
@@ -284,7 +288,7 @@ class BaseSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
 
 class SnippetChangeListForm(forms.ModelForm, PublishPermissionFormMixIn):
     class Meta:
-        model = Snippet
+        model = models.Snippet
         fields = ('body',)
 
     body = forms.CharField(required=False, widget=Textarea(attrs={'cols': '120', 'rows': '8'}))
@@ -297,8 +301,8 @@ class SnippetChangeListForm(forms.ModelForm, PublishPermissionFormMixIn):
 
         try:
             self.body_variable = (instance.template
-                                  .variable_set.get(type=SnippetTemplateVariable.BODY).name)
-        except SnippetTemplateVariable.DoesNotExist:
+                                  .variable_set.get(type=models.SnippetTemplateVariable.BODY).name)
+        except models.SnippetTemplateVariable.DoesNotExist:
             self.fields['body'].disabled = True
             self.body_variable = None
         else:
@@ -319,7 +323,7 @@ class SnippetChangeListForm(forms.ModelForm, PublishPermissionFormMixIn):
 
 class SnippetAdminForm(BaseSnippetAdminForm):
     template = forms.ModelChoiceField(
-        queryset=SnippetTemplate.objects.exclude(hidden=True).filter(startpage__lt=6),
+        queryset=models.SnippetTemplate.objects.exclude(hidden=True).filter(startpage__lt=6),
         widget=TemplateSelect)
     on_startpage_5 = forms.BooleanField(required=False, initial=True, label='Activity Stream')
     client_option_version_lower_bound = forms.ChoiceField(
@@ -452,7 +456,7 @@ class SnippetAdminForm(BaseSnippetAdminForm):
                         key.split('client_option_', 1)[1], None)
 
     class Meta:
-        model = Snippet
+        model = models.Snippet
         fields = ('name', 'template', 'data', 'published', 'countries',
                   'publish_start', 'publish_end', 'on_release', 'on_beta',
                   'on_aurora', 'on_nightly', 'on_esr', 'on_startpage_1',
@@ -568,7 +572,7 @@ class SnippetAdminForm(BaseSnippetAdminForm):
 
 class JSONSnippetAdminForm(BaseSnippetAdminForm):
     class Meta:
-        model = JSONSnippet
+        model = models.JSONSnippet
         fields = ('name', 'published', 'icon', 'text', 'url', 'countries',
                   'publish_start', 'publish_end',
                   'on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr',
@@ -592,13 +596,13 @@ class UploadedFileAdminForm(forms.ModelForm):
         return self.cleaned_data['file']
 
     class Meta:
-        model = UploadedFile
+        model = models.UploadedFile
         fields = ('file', 'name')
 
 
 class SnippetTemplateVariableInlineFormset(forms.models.BaseInlineFormSet):
     def clean(self):
-        main_body_count = sum([form.cleaned_data['type'] == SnippetTemplateVariable.BODY
+        main_body_count = sum([form.cleaned_data['type'] == models.SnippetTemplateVariable.BODY
                                for form in self.forms])
         if main_body_count > 1:
             raise forms.ValidationError(
@@ -608,17 +612,48 @@ class SnippetTemplateVariableInlineFormset(forms.models.BaseInlineFormSet):
 class SimpleTemplateForm(forms.ModelForm):
 
     class Meta:
-        model = SimpleTemplate
+        model = models.SimpleTemplate
+        exclude = []
+
+
+class FundraisingTemplateForm(forms.ModelForm):
+
+    class Meta:
+        model = models.FundraisingTemplate
+        exclude = []
+
+
+class FxASignupTemplateForm(forms.ModelForm):
+
+    class Meta:
+        model = models.FxASignupTemplate
         exclude = []
 
 
 class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     template = forms.ModelChoiceField(
-        queryset=SnippetTemplate.objects.exclude(hidden=True).filter(startpage__gte=6),
+        queryset=models.SnippetTemplate.objects.exclude(hidden=True).filter(startpage__gte=6),
         widget=TemplateSelect)
 
+    template_chooser = forms.ChoiceField(
+        choices=(
+            ('', 'Select Template'),
+            ('simple-template-inline-template', 'Simple'),
+            ('fundraising-template-inline-template', 'Fundraising'),
+            ('fxasignup-template-inline-template', 'Firefox Accounts Sign Up'),
+        ),
+        widget=TemplateChooserWidget,
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance.id:
+            self.fields['template_chooser'].disabled = True
+
     class Meta:
-        model = ASRSnippet
+        model = models.ASRSnippet
         exclude = ['creator', 'created', 'modified']
         widgets = {
             'data': TemplateDataWidget('template', include_preview_button=False),
@@ -638,11 +673,11 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
         snippet = super().save(*args, **kwargs)
 
         if (('status' in self.changed_data and
-             self.instance.status == STATUS_CHOICES['Ready for review'])):
+             self.instance.status == models.STATUS_CHOICES['Ready for review'])):
             send_slack('asr_ready_for_review', snippet)
 
         if (('status' in self.changed_data and
-             self.instance.status == STATUS_CHOICES['Published'])):
+             self.instance.status == models.STATUS_CHOICES['Published'])):
             send_slack('asr_published', snippet)
 
         return snippet
@@ -703,7 +738,7 @@ class TargetAdminForm(forms.ModelForm):
         label='Countries',
         widget=FilteredSelectMultiple('Countries', False),
         help_text='Display Snippet to users in the selected countries.',
-        queryset=TargetedCountry.objects.all(),
+        queryset=models.TargetedCountry.objects.all(),
         required=False,
     )
     filtr_is_developer = fields.JEXLChoiceField(
@@ -762,7 +797,7 @@ class TargetAdminForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Target
+        model = models.Target
         exclude = ['creator', 'created', 'modified']
 
     def __init__(self, *args, **kwargs):
