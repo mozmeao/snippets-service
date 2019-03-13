@@ -343,6 +343,68 @@ class NewsletterTemplateInline(admin.StackedInline):
     )
 
 
+class SendToDeviceTemplateInline(admin.StackedInline):
+    model = models.SendToDeviceTemplate
+    form = forms.SendToDeviceTemplateForm
+    can_delete = False
+    classes = [
+        'inline-template',
+        'sendtodevice-template-inline-template',
+    ]
+    raw_id_fields = [
+        'scene1_title_icon',
+        'scene1_icon',
+        'scene2_icon',
+    ]
+
+    fieldsets = (
+        ('Scene 1 Title', {
+            'fields': (
+                'scene1_title_icon',
+                'scene1_title'
+            ),
+        }),
+        ('Scene 1 Main', {
+            'fields': (
+                'scene1_icon',
+                'scene1_text',
+                'scene1_button_label',
+                'scene1_button_color',
+                'scene1_button_background_color',
+            )
+        }),
+        ('Scene 2 Title', {
+            'fields': ('scene2_title',),
+        }),
+        ('Scene 2 Main', {
+            'fields': (
+                'scene2_icon',
+                'scene2_text',
+
+                'scene2_button_label',
+                'scene2_input_placeholder',
+                'scene2_disclaimer_html',
+                'scene2_dismiss_button_text',
+
+                'locale',
+                'country',
+                ('include_sms', 'message_id_sms',),
+                'message_id_email',
+                'success_title',
+                'success_text',
+                'error_text',
+            )
+        }),
+
+        ('Extra', {
+            'fields': (
+                'block_button_text',
+                'do_not_autoblock'
+            ),
+        })
+    )
+
+
 class ASRSnippetAdmin(admin.ModelAdmin):
     form = forms.ASRSnippetAdminForm
 
@@ -351,6 +413,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         FundraisingTemplateInline,
         FxASignupTemplateInline,
         NewsletterTemplateInline,
+        SendToDeviceTemplateInline,
     ]
 
     list_display_links = (

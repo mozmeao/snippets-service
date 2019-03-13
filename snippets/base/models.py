@@ -1141,6 +1141,171 @@ class NewsletterTemplate(Template):
         ]
 
 
+class SendToDeviceTemplate(Template):
+    scene1_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='sendtodevice_scene1_title_icons',
+        help_text=('Small icon that shows up before the title / text. 64x64px.'
+                   'PNG. Grayscale.')
+    )
+    scene1_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Snippet title displayed before snippet text.',
+    )
+    scene1_text = models.TextField(
+        help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene1_icon = models.ForeignKey(
+        Icon,
+        on_delete=models.CASCADE,
+        related_name='sendtodevice_scene1_icons',
+        help_text='Snippet icon. 192x192 PNG.')
+    scene1_button_label = models.CharField(
+        max_length=50,
+        default='Learn more',
+        help_text='Label for the button on Scene 1 that leads to Scene 2.'
+    )
+    scene1_button_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The text color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+    scene1_button_background_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The background color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+
+    ###
+    # Scene 2
+    ###
+    scene2_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Title displayed before text in scene 2.',
+    )
+    scene2_text = models.TextField(
+        help_text='Scene 2 main text. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene2_icon = models.ForeignKey(
+        Icon,
+        on_delete=models.CASCADE,
+        related_name='sendtodevice_scene2_icons',
+        help_text='Image to display above the form. 192x192px PNG.'
+    )
+    scene2_button_label = models.CharField(
+        max_length=50,
+        default='Send',
+        help_text='Label for form submit button.',
+    )
+    scene2_input_placeholder = models.CharField(
+        max_length=255,
+        default='Your email here',
+        help_text='Placeholder text for email / phone number field.',
+    )
+
+    scene2_dismiss_button_text = models.CharField(
+        max_length=50,
+        default='Dismiss',
+        help_text='Label for the dismiss button on Scene 2.'
+    )
+    scene2_disclaimer_html = models.TextField(
+        help_text='Text and link underneath the input box.',
+    )
+
+    locale = models.CharField(
+        max_length=10,
+        default='en-US',
+        help_text='Two to five character string for the locale code. Default "en-US".',
+    )
+    country = models.CharField(
+        max_length=10,
+        default='us',
+        help_text='Two character string for the country code (used for SMS). Default "us".',
+    )
+    include_sms = models.BooleanField(
+        blank=True,
+        default=False,
+        help_text='Defines whether SMS is available.',
+    )
+    message_id_sms = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='Newsletter/basket id representing the SMS message to be sent.',
+    )
+    message_id_email = models.CharField(
+        max_length=100,
+        help_text=('Newsletter/basket id representing the email message to be sent. Must be '
+                   'a value from the "Slug" column here: https://basket.mozilla.org/news/.'),
+    )
+
+    success_title = models.TextField(
+        help_text='Title of success message after form submission.',
+    )
+    success_text = models.TextField(
+        help_text='Text of success message after form submission.',
+    )
+    error_text = models.TextField(
+        help_text='Text of error message if form submission fails.',
+    )
+
+    ###
+    # Extras
+    ###
+    block_button_text = models.CharField(
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    @property
+    def code_name(self):
+        return 'send_to_device_snippet'
+
+    def render(self):
+        data = {
+            'scene1_title_icon': self.scene1_title_icon.url if self.scene1_title_icon else '',
+            'scene1_title': self.scene1_title,
+            'scene1_text': self.scene1_text,
+            'scene1_icon': self.scene1_icon.url if self.scene1_icon else '',
+            'scene1_button_label': self.scene1_button_label,
+            'scene1_button_color': self.scene1_button_color,
+            'scene1_button_background_color': self.scene1_button_background_color,
+            'scene2_title': self.scene2_title,
+            'scene2_text': self.scene2_text,
+            'scene2_icon': self.scene2_icon.url if self.scene2_icon else '',
+            'scene2_button_label': self.scene2_button_label,
+            'scene2_input_placeholder': self.scene2_input_placeholder,
+            'scene2_dismiss_button_text': self.scene2_dismiss_button_text,
+            'scene2_disclaimer_html': self.scene2_disclaimer_html,
+            'locale': self.locale,
+            'country': self.country,
+            'include_sms': self.include_sms,
+            'message_id_sms': self.message_id_sms,
+            'message_id_email': self.message_id_email,
+            'success_title': self.success_title,
+            'success_text': self.success_text,
+            'error_text': self.error_text,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+        }
+
+        return data
+
+    def get_rich_text_fields(self):
+        return [
+            'scene1_text',
+            'scene2_text',
+            'scene2_disclaimer_html',
+        ]
+
+
 class ASRSnippet(django_mysql.models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)

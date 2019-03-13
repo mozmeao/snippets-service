@@ -637,6 +637,13 @@ class NewsletterTemplateForm(forms.ModelForm):
         exclude = []
 
 
+class SendToDeviceTemplateForm(forms.ModelForm):
+
+    class Meta:
+        model = models.SendToDeviceTemplate
+        exclude = []
+
+
 class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     template = forms.ModelChoiceField(
         queryset=models.SnippetTemplate.objects.exclude(hidden=True).filter(startpage__gte=6),
@@ -649,6 +656,7 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
             ('fundraising-template-inline-template', 'Fundraising'),
             ('fxasignup-template-inline-template', 'Firefox Accounts Sign Up'),
             ('newsletter-template-inline-template', 'Newsletter Sign Up'),
+            ('sendtodevice-template-inline-template', 'Send to Device'),
         ),
         widget=TemplateChooserWidget,
         required=False,
