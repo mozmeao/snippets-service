@@ -193,7 +193,7 @@ class TemplateDataWidget(forms.TextInput):
             'all': ('css/templateDataWidget.css',)
         }
         js = [
-            'js/lib/jquery-2.2.1.min.js',
+            'js/lib/jquery-3.3.1.min.js',
             'js/lib/nunjucks.min.js',
             'js/templateDataWidget.js'
         ]
@@ -223,7 +223,7 @@ class IconWidget(forms.TextInput):
         return mark_safe(widget_code)
 
     class Media:
-        js = ('js/lib/jquery-2.2.1.min.js',
+        js = ('js/lib/jquery-3.3.1.min.js',
               'js/iconWidget.js')
 
 
