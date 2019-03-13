@@ -428,7 +428,6 @@ class SendToDeviceTemplateInline(admin.StackedInline):
 
 class ASRSnippetAdmin(admin.ModelAdmin):
     form = forms.ASRSnippetAdminForm
-
     inlines = [
         SimpleTemplateInline,
         FundraisingTemplateInline,
@@ -436,7 +435,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         NewsletterTemplateInline,
         SendToDeviceTemplateInline,
     ]
-
     list_display_links = (
         'id',
         'name',
@@ -508,7 +506,8 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 <br/>
                 '''  # noqa
             ),
-            'fields': ('template', 'data'),
+            'fields': ('template_chooser',),
+            'classes': ('template-fieldset',)
         }),
         ('Publishing Options', {
             'fields': (
@@ -522,11 +521,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         ('Other Info', {
             'fields': ('uuid', ('created', 'modified'), 'for_qa'),
             'classes': ('collapse',)
-        }),
-        ('Template', {
-            'fields': (
-                'template_chooser',
-            )
         }),
     )
 
@@ -548,7 +542,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         only the populated template inline.
 
         """
-
         instances = super().get_inline_instances(request, obj)
 
         if not obj:

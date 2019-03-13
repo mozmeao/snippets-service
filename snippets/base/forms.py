@@ -202,7 +202,8 @@ class TemplateDataWidget(forms.TextInput):
 class TemplateChooserWidget(forms.Select):
     class Media:
         js = [
-            'js/templateChooserWidget.js'
+            'js/lib/jquery-3.3.1.min.js',
+            'js/templateChooserWidget.js',
         ]
 
 
@@ -671,9 +672,12 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     class Meta:
         model = models.ASRSnippet
         exclude = ['creator', 'created', 'modified']
-        widgets = {
-            'data': TemplateDataWidget('template', include_preview_button=False),
-        }
+
+    class Media:
+        js = [
+            'js/lib/jquery-3.3.1.min.js',
+            'js/admin/inlineMover.js',
+        ]
 
     def clean(self):
         cleaned_data = super().clean()

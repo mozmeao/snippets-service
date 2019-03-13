@@ -3,15 +3,13 @@
 
     function showTemplate() {
         let value = $('#id_template_chooser').val();
+        $('.inline-template').hide();
         if (value) {
-            $('.inline-template').hide();
             $('.' + value).show();
         }
     }
 
     if ($('.inline-template').length > 1) {
-        $('.inline-template').hide();
-
         // Show correct template on load
         showTemplate();
 
