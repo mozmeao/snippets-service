@@ -107,6 +107,7 @@ class AddonAdmin(admin.ModelAdmin):
 class IconAdmin(admin.ModelAdmin):
     search_fields = [
         'name',
+        'image',
     ]
     readonly_fields = [
         'height',
