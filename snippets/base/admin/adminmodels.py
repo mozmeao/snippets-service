@@ -543,8 +543,12 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             'js/admin/copy_preview.js',
         )
 
-    # TODO to be re-engineered and cleaned up
     def get_inline_instances(self, request, obj=None):
+        """Return all available template inlines when a new Snippet. Otherwise return
+        only the populated template inline.
+
+        """
+
         instances = super().get_inline_instances(request, obj)
 
         if not obj:

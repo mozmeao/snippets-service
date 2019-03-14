@@ -657,6 +657,13 @@ class Template(models.Model):
             return ''
         return subtemplate.code_name
 
+    @property
+    def version(self):
+        subtemplate = getattr(self, self.type.lower(), None)
+        if not subtemplate:
+            return ''
+        return subtemplate.version
+
     def render(self):
         subtemplate = getattr(self, self.type.lower(), None)
         if not subtemplate:
@@ -687,6 +694,7 @@ class Template(models.Model):
                     return label.rsplit('.', 1)[1]
                 except Template.DoesNotExist:
                     continue
+
 
 
 class SimpleTemplate(Template):
@@ -763,6 +771,10 @@ class SimpleTemplate(Template):
     @property
     def code_name(self):
         return 'simple_snippet'
+
+    @property
+    def version(self):
+        return '1.0.0'
 
     def render(self):
         data = {
@@ -868,6 +880,10 @@ class FundraisingTemplate(Template):
     @property
     def code_name(self):
         return 'eoy_snippet'
+
+    @property
+    def version(self):
+        return '1.0.0'
 
     def render(self):
         data = {
@@ -988,6 +1004,10 @@ class FxASignupTemplate(Template):
     @property
     def code_name(self):
         return 'fxa_signup_snippet'
+
+    @property
+    def version(self):
+        return '1.0.0'
 
     def render(self):
         data = {
@@ -1116,6 +1136,10 @@ class NewsletterTemplate(Template):
     @property
     def code_name(self):
         return 'newsletter_snippet'
+
+    @property
+    def version(self):
+        return '1.0.0'
 
     def render(self):
         data = {
@@ -1275,6 +1299,10 @@ class SendToDeviceTemplate(Template):
     @property
     def code_name(self):
         return 'send_to_device_snippet'
+
+    @property
+    def version(self):
+        return '1.0.0'
 
     def render(self):
         data = {

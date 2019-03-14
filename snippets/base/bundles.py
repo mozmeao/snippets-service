@@ -178,7 +178,7 @@ class ASRSnippetBundle(SnippetBundle):
             attributes = [
                 snippet.id,
                 snippet.modified.isoformat(),
-                snippet.template.modified.isoformat(),
+                snippet.template_ng.version,
             ]
 
             attributes.extend(
