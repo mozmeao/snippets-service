@@ -504,9 +504,9 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 You can use <code>[[snippet_id]]</code> in any field and it
                 will be automatically replaced by Snippet ID when served to users.
                 <br/>
-                Example: This is a <code>&lt;a href=&quot;https://example.com?utm_term=[[snippet_id]]&quot;&gt;link&lt;/a&gt;</code>  # noqa
+                Example: This is a <code>&lt;a href=&quot;https://example.com?utm_term=[[snippet_id]]&quot;&gt;link&lt;/a&gt;</code>
                 <br/>
-                '''
+                '''  # noqa
             ),
             'fields': ('template', 'data'),
         }),
