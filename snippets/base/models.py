@@ -694,8 +694,8 @@ class SimpleTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.CASCADE,
-        related_name='title_icons',
+        on_delete=models.SET_NULL,
+        related_name='simple_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
                    'PNG. Grayscale.')
     )
@@ -706,8 +706,12 @@ class SimpleTemplate(Template):
     text = models.TextField(
         help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br',
     )
-    icon = models.ForeignKey(Icon, on_delete=models.CASCADE, related_name='icons',
-                             help_text='Snippet icon. 192x192px PNG.')
+    icon = models.ForeignKey(
+        Icon,
+        on_delete=models.PROTECT,
+        related_name='simple_icons',
+        help_text='Snippet icon. 192x192px PNG.'
+    )
     button_label = models.CharField(
         max_length=50, blank=True,
         help_text=('Text for a button next to main snippet text that '
@@ -727,8 +731,8 @@ class SimpleTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.CASCADE,
-        related_name='section_icons',
+        on_delete=models.SET_NULL,
+        related_name='simple_section_icons',
         help_text=('Section title icon. 32x32px. PNG. '
                    'section_title_text must also be specified to display.'),
     )
@@ -818,13 +822,17 @@ class FundraisingTemplate(Template):
         default='donation_amount_second',
         help_text='Donation amount button that\'s selected by default.',
     )
-    icon = models.ForeignKey(Icon, on_delete=models.CASCADE, related_name='fundraising_icons',
-                             help_text='Snippet icon. 192x192px PNG.')
+    icon = models.ForeignKey(
+        Icon,
+        on_delete=models.PROTECT,
+        related_name='fundraising_icons',
+        help_text='Snippet icon. 192x192px PNG.'
+    )
     title_icon = models.ForeignKey(
         Icon,
         blank=True,
         null=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='fundraising_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
                    'PNG. Grayscale.')
@@ -898,7 +906,7 @@ class FxASignupTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='fxasignup_scene1_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
                    'PNG. Grayscale.')
@@ -912,7 +920,7 @@ class FxASignupTemplate(Template):
     )
     scene1_icon = models.ForeignKey(
         Icon,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='fxasignup_scene1_icons',
         help_text='Snippet icon. 192x192px PNG.')
     scene1_button_label = models.CharField(
@@ -1012,7 +1020,7 @@ class NewsletterTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='newsletter_scene1_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
                    'PNG. Grayscale.')
@@ -1026,7 +1034,7 @@ class NewsletterTemplate(Template):
     )
     scene1_icon = models.ForeignKey(
         Icon,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='newsletter_scene1_icons',
         help_text='Snippet icon. 192x192px PNG.')
     scene1_button_label = models.CharField(
@@ -1146,7 +1154,7 @@ class SendToDeviceTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='sendtodevice_scene1_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
                    'PNG. Grayscale.')
@@ -1160,7 +1168,7 @@ class SendToDeviceTemplate(Template):
     )
     scene1_icon = models.ForeignKey(
         Icon,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='sendtodevice_scene1_icons',
         help_text='Snippet icon. 192x192 PNG.')
     scene1_button_label = models.CharField(
@@ -1191,7 +1199,7 @@ class SendToDeviceTemplate(Template):
     )
     scene2_icon = models.ForeignKey(
         Icon,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='sendtodevice_scene2_icons',
         help_text='Image to display above the form. 192x192px PNG.'
     )
