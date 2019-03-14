@@ -105,11 +105,6 @@ class AddonAdmin(admin.ModelAdmin):
 
 
 class IconAdmin(admin.ModelAdmin):
-    prepopulated_fields = {
-        'name': (
-            'image',
-        )
-    }
     search_fields = [
         'name',
     ]
@@ -119,6 +114,7 @@ class IconAdmin(admin.ModelAdmin):
         'preview',
         'creator',
         'created',
+        'snippets',
     ]
     list_display_links = [
         'id',
@@ -132,13 +128,20 @@ class IconAdmin(admin.ModelAdmin):
         'preview',
     ]
 
+    class Media:
+        css = {
+            'all': (
+                'css/admin/IconListSnippets.css',
+            )
+        }
+
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
             obj.creator = request.user
         super().save_model(request, obj, form, change)
 
     def preview(self, obj):
-        text = f'<img src="{obj.image.url}"/>'
+        text = f'<img style="max-width:120px; max-height:120px;" src="{obj.image.url}"/>'
         return mark_safe(text)
 
     def get_readonly_fields(self, request, obj=None):
@@ -149,6 +152,23 @@ class IconAdmin(admin.ModelAdmin):
             fields.append('image')
 
         return fields
+
+    def snippets(self, obj):
+        """Snippets using this icon.
+
+        Needs that fancy code b/c icons have multiple relations with multiple Templates.
+        """
+        all_snippets = []
+        for relation_name, relation in obj._meta.fields_map.items():
+            if issubclass(relation.related_model, models.Template):
+                related_snippets = getattr(obj, relation_name).values_list('snippet__id',
+                                                                           'snippet__name')
+
+                if related_snippets:
+                    all_snippets.extend(related_snippets)
+
+        template = get_template('base/snippets_related_with_icon.jinja')
+        return mark_safe(template.render({'snippets': all_snippets}))
 
 
 class SimpleTemplateInline(admin.StackedInline):
