@@ -160,6 +160,7 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
     category = factory.SubFactory(CategoryFactory, creator=factory.SelfAttribute('..creator'))
 
     template = factory.SubFactory(SnippetTemplateFactory, startpage=6)
+    template_relation = factory.RelatedFactory(SimpleTemplateFactory, 'snippet')
     status = models.STATUS_CHOICES['Published']
 
     class Meta:
