@@ -646,10 +646,6 @@ class SendToDeviceTemplateForm(forms.ModelForm):
 
 
 class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
-    template = forms.ModelChoiceField(
-        queryset=models.SnippetTemplate.objects.exclude(hidden=True).filter(startpage__gte=6),
-        widget=TemplateSelect)
-
     template_chooser = forms.ChoiceField(
         choices=(
             ('', 'Select Template'),
