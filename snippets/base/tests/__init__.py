@@ -153,6 +153,23 @@ class CategoryFactory(factory.django.DjangoModelFactory):
         model = models.Category
 
 
+class IconFactory(factory.django.DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Icon {0}'.format(n))
+    creator = factory.SubFactory(UserFactory)
+    image = factory.django.ImageField(width=192, height=192, format='PNG')
+
+    class Meta:
+        model = models.Icon
+
+
+class SimpleTemplateFactory(factory.django.DjangoModelFactory):
+    text = 'This is the main text with a <a href="https://example.com">link</a>.'
+    icon = factory.SubFactory(IconFactory)
+
+    class Meta:
+        model = models.SimpleTemplate
+
+
 class ASRSnippetFactory(factory.django.DjangoModelFactory):
     creator = factory.SubFactory(UserFactory)
     name = factory.Sequence(lambda n: 'ASRSnippet {0}'.format(n))

@@ -334,7 +334,7 @@ class ASRSnippetBundleTests(TestCase):
         key_1 = bundle.key
 
         # save template, touch modified
-        self.snippet1.template.save()
+        self.snippet1.template_ng.VERSION = 'new-version'
         bundle = ASRSnippetBundle(client1)
         bundle.snippets = [self.snippet1]
         key_2 = bundle.key

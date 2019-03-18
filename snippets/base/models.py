@@ -647,42 +647,8 @@ class Icon(models.Model):
 
 
 class Template(models.Model):
-    snippet = models.OneToOneField('ASRSnippet', related_name='template_ng',
+    snippet = models.OneToOneField('ASRSnippet', related_name='template_relation',
                                    on_delete=models.CASCADE)
-
-    @property
-    def code_name(self):
-        subtemplate = getattr(self, self.type.lower(), None)
-        if not subtemplate:
-            return ''
-        return subtemplate.code_name
-
-    @property
-    def version(self):
-        subtemplate = getattr(self, self.type.lower(), None)
-        if not subtemplate:
-            return ''
-        return subtemplate.version
-
-    def render(self):
-        subtemplate = getattr(self, self.type.lower(), None)
-        if not subtemplate:
-            return {}
-        data = subtemplate.render()
-
-        # Convert links in text fields in fluent format.
-        data = util.fluent_link_extractor(data, subtemplate.get_rich_text_fields())
-
-        # Remove values that are empty strings
-        data = {k: v for k, v in data.items() if v != ''}
-
-        return data
-
-    def get_rich_text_fields(self):
-        subtemplate = getattr(self, self.type.lower(), None)
-        if not subtemplate:
-            return []
-        return subtemplate.get_rich_text_fields()
 
     @property
     def type(self):
@@ -695,9 +661,35 @@ class Template(models.Model):
                 except Template.DoesNotExist:
                     continue
 
+        raise Exception('Cannot find template type')
+
+    @property
+    def subtemplate(self):
+        return getattr(self, self.type.lower(), None)
+
+    def _process_rendered_data(self, data):
+        # Convert links in text fields in fluent format.
+        data = util.fluent_link_extractor(data, self.get_rich_text_fields())
+
+        # Remove values that are empty strings
+        data = {k: v for k, v in data.items() if v != ''}
+
+        return data
+
+    def get_rich_text_fields(self):
+        raise Exception('Not Implemented')
+
+    def render(self):
+        raise Exception('Not Implemented')
+
+    @property
+    def version(self):
+        return self.VERSION
 
 
 class SimpleTemplate(Template):
+    VERSION = '1.0.0'
+
     title_icon = models.ForeignKey(
         Icon,
         blank=True,
@@ -769,12 +761,12 @@ class SimpleTemplate(Template):
     )
 
     @property
-    def code_name(self):
-        return 'simple_snippet'
+    def type(self):
+        return 'simpletemplate'
 
     @property
-    def version(self):
-        return '1.0.0'
+    def code_name(self):
+        return 'simple_snippet'
 
     def render(self):
         data = {
@@ -791,7 +783,7 @@ class SimpleTemplate(Template):
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
         }
-
+        data = self._process_rendered_data(data)
         return data
 
     def get_rich_text_fields(self):
@@ -800,6 +792,8 @@ class SimpleTemplate(Template):
 
 class FundraisingTemplate(Template):
     """Also known as EOY Template"""
+    VERSION = '1.0.0'
+
     donation_form_url = models.URLField(
         default='https://donate.mozilla.org/?utm_source=desktop-snippet&utm_medium=snippet',
         max_length=500,
@@ -878,12 +872,12 @@ class FundraisingTemplate(Template):
     )
 
     @property
-    def code_name(self):
-        return 'eoy_snippet'
+    def type(self):
+        return 'fundraisingtemplate'
 
     @property
-    def version(self):
-        return '1.0.0'
+    def code_name(self):
+        return 'eoy_snippet'
 
     def render(self):
         data = {
@@ -910,7 +904,7 @@ class FundraisingTemplate(Template):
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
         }
-
+        data = self._process_rendered_data(data)
         return data
 
     def get_rich_text_fields(self):
@@ -918,6 +912,8 @@ class FundraisingTemplate(Template):
 
 
 class FxASignupTemplate(Template):
+    VERSION = '1.0.0'
+
     scene1_title_icon = models.ForeignKey(
         Icon,
         blank=True,
@@ -1002,12 +998,12 @@ class FxASignupTemplate(Template):
     )
 
     @property
-    def code_name(self):
-        return 'fxa_signup_snippet'
+    def type(self):
+        return 'fxasignuptemplate'
 
     @property
-    def version(self):
-        return '1.0.0'
+    def code_name(self):
+        return 'fxa_signup_snippet'
 
     def render(self):
         data = {
@@ -1028,7 +1024,7 @@ class FxASignupTemplate(Template):
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
         }
-
+        data = self._process_rendered_data(data)
         return data
 
     def get_rich_text_fields(self):
@@ -1036,6 +1032,8 @@ class FxASignupTemplate(Template):
 
 
 class NewsletterTemplate(Template):
+    VERSION = '1.0.0'
+
     scene1_title_icon = models.ForeignKey(
         Icon,
         blank=True,
@@ -1134,12 +1132,12 @@ class NewsletterTemplate(Template):
     )
 
     @property
-    def code_name(self):
-        return 'newsletter_snippet'
+    def type(self):
+        return 'newslettertemplate'
 
     @property
-    def version(self):
-        return '1.0.0'
+    def code_name(self):
+        return 'newsletter_snippet'
 
     def render(self):
         data = {
@@ -1163,7 +1161,7 @@ class NewsletterTemplate(Template):
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
         }
-
+        data = self._process_rendered_data(data)
         return data
 
     def get_rich_text_fields(self):
@@ -1174,6 +1172,8 @@ class NewsletterTemplate(Template):
 
 
 class SendToDeviceTemplate(Template):
+    VERSION = '1.0.0'
+
     scene1_title_icon = models.ForeignKey(
         Icon,
         blank=True,
@@ -1297,12 +1297,12 @@ class SendToDeviceTemplate(Template):
     )
 
     @property
-    def code_name(self):
-        return 'send_to_device_snippet'
+    def type(self):
+        return 'sendtodevicetemplate'
 
     @property
-    def version(self):
-        return '1.0.0'
+    def code_name(self):
+        return 'send_to_device_snippet'
 
     def render(self):
         data = {
@@ -1331,7 +1331,7 @@ class SendToDeviceTemplate(Template):
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
         }
-
+        data = self._process_rendered_data(data)
         return data
 
     def get_rich_text_fields(self):
@@ -1354,7 +1354,7 @@ class ASRSnippet(django_mysql.models.Model):
     category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.PROTECT,
                                  related_name='asrsnippets')
 
-    template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT)
+    template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT, null=True)
     data = models.TextField(default='{}')
 
     status = models.IntegerField(choices=[(y, x) for x, y in STATUS_CHOICES.items()],
@@ -1401,8 +1401,13 @@ class ASRSnippet(django_mysql.models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def template_ng(self):
+        return self.template_relation.subtemplate
+
     def render(self, preview=False):
-        if hasattr(self, 'template_ng'):
+        # TODO
+        if hasattr(self, 'template_relation'):
             template_code_name = self.template_ng.code_name
             data = self.template_ng.render()
         else:
