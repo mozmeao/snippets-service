@@ -686,6 +686,26 @@ class Template(models.Model):
     def version(self):
         return self.VERSION
 
+    def get_main_body(self, bleached=False):
+        body = self.text
+        if bleached:
+            body = bleach.clean(body, tags=[], strip=True).strip()
+        return body
+
+    def get_main_url(self):
+        button_url = getattr(self, 'button_url', '')
+        if button_url:
+            return button_url
+
+        # Try to find the URL in the body
+        url = ''
+        body = self.get_main_body()
+        match = re.search('href="(?P<link>https?://.+?)"', body)
+        if match:
+            url = match.groupdict()['link']
+
+        return url
+
 
 class SimpleTemplate(Template):
     VERSION = '1.0.0'
@@ -1030,6 +1050,12 @@ class FxASignupTemplate(Template):
     def get_rich_text_fields(self):
         return ['scene1_text', 'scene2_text']
 
+    def get_main_body(self, bleached=False):
+        body = self.scene1_text
+        if bleached:
+            body = bleach.clean(body, tags=[], strip=True).strip()
+        return body
+
 
 class NewsletterTemplate(Template):
     VERSION = '1.0.0'
@@ -1169,6 +1195,12 @@ class NewsletterTemplate(Template):
             'scene1_text',
             'scene2_privacy_html',
         ]
+
+    def get_main_body(self, bleached=False):
+        body = self.scene1_text
+        if bleached:
+            body = bleach.clean(body, tags=[], strip=True).strip()
+        return body
 
 
 class SendToDeviceTemplate(Template):
@@ -1341,6 +1373,12 @@ class SendToDeviceTemplate(Template):
             'scene2_disclaimer_html',
         ]
 
+    def get_main_body(self, bleached=False):
+        body = self.scene1_text
+        if bleached:
+            body = bleach.clean(body, tags=[], strip=True).strip()
+        return body
+
 
 class ASRSnippet(django_mysql.models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
@@ -1504,32 +1542,16 @@ class ASRSnippet(django_mysql.models.Model):
         return snippet_copy
 
     def analytics_export(self):
-        jsondata = json.loads(self.data)
-        export = {}
-
-        try:
-            main_body = self.template.variable_set.get(type=SnippetTemplateVariable.BODY)
-        except SnippetTemplateVariable.DoesNotExist:
-            body = ''
-            url = ''
-        else:
-            body = jsondata.get(main_body.name, '')
-            if jsondata.get('button_url', None):
-                url = jsondata.get('button_url')
-            else:
-                match = re.search('href="(?P<link>https?://.+?)"', body)
-                if match:
-                    url = match.groupdict()['link']
-                else:
-                    url = ''
-
-        export['id'] = self.id
-        export['name'] = self.name
-        export['campaign'] = self.campaign.name if self.campaign else ''
-        export['category'] = self.category.name if self.category else ''
-        export['url'] = url
-        export['body'] = bleach.clean(body, tags=[], strip=True).strip()
-
+        body = self.template_ng.get_main_body(bleached=True)
+        url = self.template_ng.get_main_url()
+        export = {
+            'id': self.id,
+            'name': self.name,
+            'campaign': self.campaign.name if self.campaign else '',
+            'category': self.category.name if self.category else '',
+            'url': url,
+            'body': body,
+        }
         return export
 
 

@@ -15,6 +15,7 @@ from snippets.base.tests import (ASRSnippetFactory,
                                  ClientMatchRuleFactory,
                                  JSONSnippetFactory,
                                  SearchProviderFactory,
+                                 SimpleTemplateFactory,
                                  SnippetFactory,
                                  SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory,
@@ -430,14 +431,10 @@ class ASRSnippetTests(TestCase):
     def test_analytics_export(self):
         snippet = ASRSnippetFactory.create(
             name='test-snippet',
-            template__code='<p>{{ text }} {{ foo }}</p>',
             campaign__name='test-campaign',
             category__name='test-category',
-            data=('{"body": "This is the <b>bold body</b> with a '
-                  '<a href=\\"https://example.com\\">link</a>."}')
-        )
-        snippet.template.variable_set.add(
-            SnippetTemplateVariableFactory.create(name='body', type=SnippetTemplateVariable.BODY)
+            template_relation__text=(
+                'This is the <b>bold body</b> with a <a href="https://example.com">link</a>.'),
         )
         expected_data = {
             'id': snippet.id,
