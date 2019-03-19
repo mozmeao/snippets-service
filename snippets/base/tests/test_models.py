@@ -404,8 +404,7 @@ class IconTests(TestCase):
 class ASRSnippetTests(TestCase):
     def test_render(self):
         snippet = ASRSnippetFactory.create(
-            template__code='<p>{{ text }} {{ foo }}</p>',
-            data='{"text": "snippet id [[snippet_id]]", "foo": "bar", "empty": ""}',
+            template_relation__text='snippet id [[snippet_id]]',
             targets=[
                 TargetFactory(jexl_expr='foo == bar'),
                 TargetFactory(jexl_expr='lalo == true')
@@ -414,14 +413,17 @@ class ASRSnippetTests(TestCase):
         generated_result = snippet.render()
         expected_result = {
             'id': str(snippet.id),
-            'template': snippet.template.code_name,
-            'template_version': snippet.template.version,
+            'template': snippet.template_ng.code_name,
+            'template_version': snippet.template_ng.version,
             'campaign': snippet.campaign.slug,
             'weight': snippet.weight,
             'content': {
                 'text': 'snippet id {}'.format(snippet.id),
-                'foo': 'bar',
                 'links': {},
+                'tall': False,
+                'icon': snippet.template_ng.icon.url,
+                'do_not_autoblock': False,
+                'block_button_text': 'Remove this',
             },
             'targeting': 'foo == bar && lalo == true'
         }
@@ -429,21 +431,22 @@ class ASRSnippetTests(TestCase):
 
     def test_render_preview_only(self):
         snippet = ASRSnippetFactory.create(
-            template__code='<p>{{ text }} {{ foo }}</p>',
-            data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}',
+            template_relation__text='snippet id [[snippet_id]]',
             targets=[TargetFactory(jexl_expr='foo == bar')])
         generated_result = snippet.render(preview=True)
         expected_result = {
             'id': 'preview-{}'.format(snippet.id),
-            'template': snippet.template.code_name,
-            'template_version': snippet.template.version,
+            'template': snippet.template_ng.code_name,
+            'template_version': snippet.template_ng.version,
             'campaign': 'preview-{}'.format(snippet.campaign.slug),
             'weight': 100,
             'content': {
-                'text': 'snippet id {}'.format(snippet.id),
-                'foo': 'bar',
-                'links': {},
                 'do_not_autoblock': True,
+                'text': 'snippet id {}'.format(snippet.id),
+                'links': {},
+                'tall': False,
+                'icon': snippet.template_ng.icon.url,
+                'block_button_text': 'Remove this',
             }
         }
         self.assertEqual(generated_result, expected_result)

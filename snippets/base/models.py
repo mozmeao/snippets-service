@@ -777,7 +777,6 @@ class SimpleTemplate(Template):
     )
 
     @property
-    @property
     def code_name(self):
         return 'simple_snippet'
 
@@ -1425,9 +1424,11 @@ class ASRSnippet(django_mysql.models.Model):
         # https://github.com/mozmeao/snippets-service/issues/933
         if hasattr(self, 'template_relation'):
             template_code_name = self.template_ng.code_name
+            template_version = self.template_ng.version
             data = self.template_ng.render()
         else:
             template_code_name = self.template.code_name
+            template_version = self.template.version
 
             data = json.loads(self.data)
 
@@ -1445,7 +1446,7 @@ class ASRSnippet(django_mysql.models.Model):
         rendered_snippet = {
             'id': str(self.id),
             'template': template_code_name,
-            'template_version': self.template.version,
+            'template_version': template_version,
             'weight': self.weight,
             'content': data,
         }
