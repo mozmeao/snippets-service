@@ -1531,6 +1531,18 @@ class ASRSnippet(django_mysql.models.Model):
             datetime.strftime(timezone.now(), '%Y.%m.%d %H:%M:%S'))
         snippet_copy.save()
 
+        # From https://djangosnippets.org/snippets/1040/ Needed due to the
+        # model inheritance where setting instance.pk = None isn't enough.
+        def copy_model_instance(obj):
+            initial = dict(
+                [(f.name, getattr(obj, f.name)) for f in obj._meta.fields
+                 if not isinstance(f, models.AutoField) and f not in obj._meta.parents.values()]
+            )
+            return obj.__class__(**initial)
+        new_template = copy_model_instance(self.template_ng)
+        new_template.snippet = snippet_copy
+        new_template.save()
+
         for field in self._meta.get_fields():
             attr = getattr(self, field.name, None)
             if isinstance(attr, Manager):
