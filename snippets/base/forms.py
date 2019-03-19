@@ -662,7 +662,7 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.id:
+        if self.instance.id and getattr(self.instance, 'template_ng', None):
             self.fields['template_chooser'].disabled = True
 
     class Meta:

@@ -178,8 +178,14 @@ class ASRSnippetBundle(SnippetBundle):
             attributes = [
                 snippet.id,
                 snippet.modified.isoformat(),
-                snippet.template_ng.version,
             ]
+
+            # To remove after migration completes. See
+            # https://github.com/mozmeao/snippets-service/issues/933
+            if hasattr(snippet, 'template_relation'):
+                attributes.append(snippet.template_ng.version)
+            else:
+                attributes.append(snippet.template.modified.isoformat())
 
             attributes.extend(
                 [target.modified.isoformat() for target in snippet.targets.all()]
