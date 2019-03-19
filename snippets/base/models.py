@@ -652,13 +652,16 @@ class Template(models.Model):
 
     @property
     def subtemplate(self):
+        if type(self) is not Template:
+            # We 're already in the subclass
+            return self
+
         for field in self._meta.fields_map.values():
             if issubclass(field.related_model, Template):
                 try:
                     return getattr(self, field.name)
                 except Template.DoesNotExist:
                     continue
-        raise Exception('Cannot find subtemplate')
 
     def _process_rendered_data(self, data):
         # Convert links in text fields in fluent format.

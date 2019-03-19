@@ -4,10 +4,11 @@ from django.test.client import RequestFactory
 
 from unittest.mock import Mock, patch
 
-from snippets.base.admin import ASRSnippetAdmin, SnippetAdmin, SnippetTemplateAdmin
-from snippets.base.models import (STATUS_CHOICES, ASRSnippet, Snippet, SnippetTemplate,
+from snippets.base.admin import ASRSnippetAdmin, IconAdmin, SnippetAdmin, SnippetTemplateAdmin
+from snippets.base.models import (STATUS_CHOICES, ASRSnippet, Icon, Snippet, SnippetTemplate,
                                   SnippetTemplateVariable)
-from snippets.base.tests import (ASRSnippetFactory, SnippetTemplateFactory,
+from snippets.base.tests import (ASRSnippetFactory, IconFactory,
+                                 SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase, UserFactory)
 
 
@@ -233,3 +234,26 @@ class ASRSnippetAdminTests(TestCase):
         )
         self.assertTrue(warning.called)
         self.assertTrue(success.called)
+
+
+class IconAdminTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.model_admin = ASRSnippetAdmin(ASRSnippet, None)
+        self.model_admin.admin_site = Mock()
+        self.user = UserFactory()
+
+    def test_get_readonly_fields(self):
+        icon = IconFactory()
+        request = self.factory.get('/')
+        admin = IconAdmin(Icon, AdminSite())
+
+        # Image must be editable when new object
+        request.user = UserFactory(is_superuser=False)
+        readonly_fields = admin.get_readonly_fields(request, None)
+        self.assertFalse('image' in readonly_fields)
+
+        # Image must be read-only after set
+        request.user = UserFactory(is_superuser=False)
+        readonly_fields = admin.get_readonly_fields(request, icon)
+        self.assertTrue('image' in readonly_fields)

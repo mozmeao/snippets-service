@@ -184,6 +184,15 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
         model = models.ASRSnippet
 
     @factory.post_generation
+    def set_template_relation_to_template_model(self, *args, **kwargs):
+        """By default this Factory creates and relates a SimpleTemplate to this
+        new ASRSnippet object. The Django Admin on the other hand, relates a
+        Template obj when saving a ASRSnippet object. We use this method to
+        make the Factory behave like Django Admin.
+        """
+        self.template_relation = self.template_relation.template_ptr
+
+    @factory.post_generation
     def targets(self, create, extracted, **kwargs):
         if not create:
             return

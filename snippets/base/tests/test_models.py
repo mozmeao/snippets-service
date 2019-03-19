@@ -8,14 +8,15 @@ from pyquery import PyQuery as pq
 
 from snippets.base.models import (STATUS_CHOICES,
                                   Client,
-                                  SnippetTemplateVariable,
+                                  Icon,
+                                  SimpleTemplate,
                                   UploadedFile,
                                   _generate_filename)
+from snippets.base.util import fluent_link_extractor
 from snippets.base.tests import (ASRSnippetFactory,
                                  ClientMatchRuleFactory,
                                  JSONSnippetFactory,
                                  SearchProviderFactory,
-                                 SimpleTemplateFactory,
                                  SnippetFactory,
                                  SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory,
@@ -318,6 +319,17 @@ class UploadedFileTests(TestCase):
             settings_mock.SITE_URL = 'http://example.com/foo/'
             self.assertEqual(test_file.url, 'http://example.com/foo/bar')
 
+    def test_snippets(self):
+        instance = UploadedFileFactory.build()
+        instance.file = MagicMock()
+        instance.file.url = '/media/foo.png'
+        snippets = SnippetFactory.create_batch(2, data='lalala {0} foobar'.format(instance.url))
+        template = SnippetTemplateFactory.create(code='<foo>{0}</foo>'.format(instance.url))
+        more_snippets = SnippetFactory.create_batch(3, template=template)
+        self.assertEqual(set(instance.snippets), set(list(snippets) + list(more_snippets)))
+
+
+class GenerateFilenameTests(TestCase):
     @override_settings(MEDIA_FILES_ROOT='filesroot/')
     @patch('snippets.base.models.uuid')
     def test_generate_new_filename(self, uuid_mock):
@@ -333,14 +345,60 @@ class UploadedFileTests(TestCase):
         filename = _generate_filename(obj, 'new_filename.boing')
         self.assertEqual(filename, 'bar.png')
 
-    def test_snippets(self):
-        instance = UploadedFileFactory.build()
-        instance.file = MagicMock()
-        instance.file.url = '/media/foo.png'
-        snippets = SnippetFactory.create_batch(2, data='lalala {0} foobar'.format(instance.url))
-        template = SnippetTemplateFactory.create(code='<foo>{0}</foo>'.format(instance.url))
-        more_snippets = SnippetFactory.create_batch(3, template=template)
-        self.assertEqual(set(instance.snippets), set(list(snippets) + list(more_snippets)))
+    @override_settings(MEDIA_FILES_ROOT='filesroot/')
+    @patch('snippets.base.models.uuid')
+    def test_generate_filename_different_root(self, uuid_mock):
+        uuid_mock.uuid4.return_value = 'bar'
+        file = UploadedFileFactory.build()
+        filename = _generate_filename(file, 'filename.boing', root='new-root')
+        self.assertEqual(filename, 'new-root/bar.boing')
+
+
+class TemplateTests(TestCase):
+    def test_process_rendered_data(self):
+        data = {
+            'foo': '',
+            'bar': 'bar',
+        }
+        expected_data = {
+            'bar': 'bar',
+            'links': {},
+        }
+        snippet = ASRSnippetFactory()
+        with patch('snippets.base.models.util.fluent_link_extractor',
+                   wraps=fluent_link_extractor) as fluent_link_extractor_mock:
+            processed_data = snippet.template_ng._process_rendered_data(data)
+
+        self.assertTrue(fluent_link_extractor_mock.called)
+        self.assertEqual(processed_data, expected_data)
+
+    def test_subtemplate(self):
+        snippet = ASRSnippetFactory()
+        subtemplate = snippet.template_relation.subtemplate
+        self.assertTrue(type(subtemplate) is SimpleTemplate)
+
+        # Test subtemplate when checking from an object that inherits Template
+        subtemplate = snippet.template_relation.subtemplate.subtemplate
+        self.assertTrue(type(subtemplate) is SimpleTemplate)
+
+
+class IconTests(TestCase):
+
+    @override_settings(CDN_URL='http://example.com')
+    def test_url_with_cdn_url(self):
+        test_file = Icon()
+        test_file.image = Mock()
+        test_file.image.url = 'foo'
+        self.assertEqual(test_file.url, 'http://example.com/foo')
+
+    def test_url_without_cdn_url(self):
+        test_file = Icon()
+        test_file.image = Mock()
+        test_file.image.url = 'foo'
+        with patch('snippets.base.models.settings', wraps=settings) as settings_mock:
+            delattr(settings_mock, 'CDN_URL')
+            settings_mock.SITE_URL = 'http://second-example.com/'
+            self.assertEqual(test_file.url, 'http://second-example.com/foo')
 
 
 class ASRSnippetTests(TestCase):
