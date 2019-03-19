@@ -547,15 +547,13 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         if not obj:
             return instances
 
-        template_ng = getattr(obj, 'template_ng', None)
-        if template_ng:
-            type = template_ng.type
-            inline_type = f'{type}Inline'
-            inline_class = getattr(sys.modules[__name__], inline_type)
+        type = obj.template_ng._meta.object_name
+        inline_type = f'{type}Inline'
+        inline_class = getattr(sys.modules[__name__], inline_type)
 
-            return [
-                instance for instance in instances if isinstance(instance, inline_class)
-            ]
+        return [
+            instance for instance in instances if isinstance(instance, inline_class)
+        ]
         return instances
 
     def save_model(self, request, obj, form, change):

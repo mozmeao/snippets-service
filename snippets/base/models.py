@@ -651,21 +651,14 @@ class Template(models.Model):
                                    on_delete=models.CASCADE)
 
     @property
-    def type(self):
+    def subtemplate(self):
         for field in self._meta.fields_map.values():
             if issubclass(field.related_model, Template):
                 try:
-                    getattr(self, field.name)
-                    label = field.related_model._meta.label
-                    return label.rsplit('.', 1)[1]
+                    return getattr(self, field.name)
                 except Template.DoesNotExist:
                     continue
-
-        raise Exception('Cannot find template type')
-
-    @property
-    def subtemplate(self):
-        return getattr(self, self.type.lower(), None)
+        raise Exception('Cannot find subtemplate')
 
     def _process_rendered_data(self, data):
         # Convert links in text fields in fluent format.
@@ -781,9 +774,6 @@ class SimpleTemplate(Template):
     )
 
     @property
-    def type(self):
-        return 'simpletemplate'
-
     @property
     def code_name(self):
         return 'simple_snippet'
@@ -890,10 +880,6 @@ class FundraisingTemplate(Template):
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
     )
-
-    @property
-    def type(self):
-        return 'fundraisingtemplate'
 
     @property
     def code_name(self):
@@ -1016,10 +1002,6 @@ class FxASignupTemplate(Template):
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
     )
-
-    @property
-    def type(self):
-        return 'fxasignuptemplate'
 
     @property
     def code_name(self):
@@ -1156,10 +1138,6 @@ class NewsletterTemplate(Template):
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
     )
-
-    @property
-    def type(self):
-        return 'newslettertemplate'
 
     @property
     def code_name(self):
@@ -1329,10 +1307,6 @@ class SendToDeviceTemplate(Template):
     )
 
     @property
-    def type(self):
-        return 'sendtodevicetemplate'
-
-    @property
     def code_name(self):
         return 'send_to_device_snippet'
 
@@ -1444,7 +1418,8 @@ class ASRSnippet(django_mysql.models.Model):
         return self.template_relation.subtemplate
 
     def render(self, preview=False):
-        # TODO
+        # To remove after migration completes. See
+        # https://github.com/mozmeao/snippets-service/issues/933
         if hasattr(self, 'template_relation'):
             template_code_name = self.template_ng.code_name
             data = self.template_ng.render()
