@@ -353,6 +353,11 @@ class GenerateFilenameTests(TestCase):
         filename = _generate_filename(file, 'filename.boing', root='new-root')
         self.assertEqual(filename, 'new-root/bar.boing')
 
+    def test_update_icon_new_filename(self):
+        icon = IconFactory()
+        filename = _generate_filename(icon, 'filename.boing', settings.MEDIA_ICONS_ROOT)
+        self.assertNotEqual(icon.image.name, filename)
+
 
 class TemplateTests(TestCase):
     def test_process_rendered_data(self):

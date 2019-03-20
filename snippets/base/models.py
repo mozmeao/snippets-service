@@ -467,15 +467,19 @@ def _generate_filename(instance, filename, root=None):
     if not root:
         root = settings.MEDIA_FILES_ROOT
 
-    # Instance is new UploadedFile, generate a filename
-    if not instance.id:
+    keep_filename = True
+    if isinstance(instance, Icon):
+        keep_filename = False
+
+    # Instance is new, generate a filename
+    if not instance.id or not keep_filename:
         ext = os.path.splitext(filename)[1]
         filename = str(uuid.uuid4()) + ext
         return os.path.join(root, filename)
 
-    # Use existing filename.
-    obj = UploadedFile.objects.get(id=instance.id)
-    return obj.file.name
+    # So that UploadedFile can keep the same filename.
+    db_instance = instance._meta.model.objects.get(pk=instance.id)
+    return db_instance.file.name
 
 
 class UploadedFile(models.Model):
@@ -631,6 +635,8 @@ class Icon(models.Model):
         upload_to=partial(_generate_filename, root=settings.MEDIA_ICONS_ROOT),
         height_field='height',
         width_field='width',
+        help_text=('PNGs only. Note that updating the image will '
+                   'update all snippets using this image.'),
     )
 
     def __str__(self):

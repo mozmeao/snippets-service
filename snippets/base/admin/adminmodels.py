@@ -145,15 +145,6 @@ class IconAdmin(admin.ModelAdmin):
         text = f'<img style="max-width:120px; max-height:120px;" src="{obj.image.url}"/>'
         return mark_safe(text)
 
-    def get_readonly_fields(self, request, obj=None):
-        fields = super().get_readonly_fields(request, obj)
-
-        # Don't allow image to be changed after set.
-        if obj and 'image' not in fields:
-            fields.append('image')
-
-        return fields
-
     def snippets(self, obj):
         """Snippets using this icon.
 
