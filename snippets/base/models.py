@@ -1470,9 +1470,7 @@ class ASRSnippet(django_mysql.models.Model):
             data = {k: v for k, v in data.items() if v != ''}
 
         # Add snippet ID to template variables.
-        for key, value in data.items():
-            if isinstance(value, str):
-                data[key] = value.replace('[[snippet_id]]', str(self.id))
+        data = util.deep_search_and_replace(data, '[[snippet_id]]', str(self.id))
 
         rendered_snippet = {
             'id': str(self.id),

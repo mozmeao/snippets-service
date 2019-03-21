@@ -113,5 +113,15 @@ def fluent_link_extractor(data, variables):
     return local_data
 
 
-def to_unix_time_seconds(dt):
-    return int((dt - EPOCH).total_seconds())
+def deep_search_and_replace(data, search_string, replace_string):
+    for key, value in data.items():
+        if isinstance(value, str):
+            data[key] = value.replace(search_string, replace_string)
+
+        elif isinstance(value, list):
+            data[key] = [v.replace(search_string, replace_string) for v in value]
+
+        elif isinstance(value, dict):
+            data[key] = deep_search_and_replace(value, search_string, replace_string)
+
+    return data

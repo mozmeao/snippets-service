@@ -1,6 +1,7 @@
 from snippets.base.models import Snippet
 from snippets.base.tests import SnippetFactory, TestCase
-from snippets.base.util import first, fluent_link_extractor, get_object_or_none
+from snippets.base.util import (deep_search_and_replace, first,
+                                fluent_link_extractor, get_object_or_none)
 
 
 class TestGetObjectOrNone(TestCase):
@@ -94,3 +95,35 @@ class TestFluentLinkExtractor(TestCase):
         self.assertEqual(final_data['title'], generated_data['title'])
         self.assertEqual(final_data['nolinks'], generated_data['nolinks'])
         self.assertEqual(final_data['links'], generated_data['links'])
+
+
+class DeepSearchAndReplaceTests(TestCase):
+    def test_base(self):
+        data = {
+            'text': 'this is the text with [[snippet_id]]',
+            'list': [
+                'this includes [[snippet_id]]',
+                'in a list',
+                'multiple [[snippet_id]] times'
+            ],
+            'links': {
+                'link0': {
+                    'url': 'http://example.com/foo/?utm_term=[[snippet_id]]&utm_param=foo'
+                }
+            }
+        }
+        generated_data = deep_search_and_replace(data, '[[snippet_id]]', '7748')
+        expected_data = {
+            'text': 'this is the text with 7748',
+            'list': [
+                'this includes 7748',
+                'in a list',
+                'multiple 7748 times'
+            ],
+            'links': {
+                'link0': {
+                    'url': 'http://example.com/foo/?utm_term=7748&utm_param=foo'
+                }
+            }
+        }
+        self.assertEqual(generated_data, expected_data)

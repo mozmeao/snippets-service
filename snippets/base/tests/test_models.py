@@ -410,12 +410,14 @@ class IconTests(TestCase):
 class ASRSnippetTests(TestCase):
     def test_render(self):
         snippet = ASRSnippetFactory.create(
-            template_relation__text='snippet id [[snippet_id]]',
+            template_relation__text=('snippet id [[snippet_id]] and with '
+                                     '<a href="https://example.com/[[snippet_id]]/foo">link</a>'),
             targets=[
                 TargetFactory(jexl_expr='foo == bar'),
                 TargetFactory(jexl_expr='lalo == true')
             ]
         )
+        self.maxDiff = None
         generated_result = snippet.render()
         expected_result = {
             'id': str(snippet.id),
@@ -424,8 +426,12 @@ class ASRSnippetTests(TestCase):
             'campaign': snippet.campaign.slug,
             'weight': snippet.weight,
             'content': {
-                'text': 'snippet id {}'.format(snippet.id),
-                'links': {},
+                'text': 'snippet id {} and with <link0>link</link0>'.format(snippet.id),
+                'links': {
+                    'link0': {
+                        'url': 'https://example.com/{}/foo'.format(snippet.id),
+                    }
+                },
                 'tall': False,
                 'icon': snippet.template_ng.icon.url,
                 'do_not_autoblock': False,
