@@ -892,7 +892,10 @@ class FundraisingTemplate(Template):
     )
     button_background_color = models.CharField(
         max_length=20, blank=True, help_text='defaults to firefox theme')
-    monthly_checkbox_label_text = models.CharField(max_length=255)
+    monthly_checkbox_label_text = models.CharField(
+        max_length=255,
+        default='Make my donation monthly',
+    )
     test = models.CharField(max_length=10,
                             choices=(('', 'Default'),
                                      ('bold', 'Bold'),
@@ -971,6 +974,7 @@ class FxASignupTemplate(Template):
         help_text='Snippet icon. 192x192px PNG.')
     scene1_button_label = models.CharField(
         max_length=50,
+        default='Learn more',
         help_text='Label for the button on Scene 1 that leads to Scene 2.'
     )
     scene1_button_color = models.CharField(
@@ -1093,6 +1097,7 @@ class NewsletterTemplate(Template):
         help_text='Snippet icon. 192x192px PNG.')
     scene1_button_label = models.CharField(
         max_length=50,
+        default='Learn more',
         help_text='Label for the button on Scene 1 that leads to Scene 2.'
     )
     scene1_button_color = models.CharField(
