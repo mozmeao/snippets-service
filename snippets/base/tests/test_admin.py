@@ -4,11 +4,10 @@ from django.test.client import RequestFactory
 
 from unittest.mock import Mock, patch
 
-from snippets.base.admin import ASRSnippetAdmin, IconAdmin, SnippetAdmin, SnippetTemplateAdmin
-from snippets.base.models import (STATUS_CHOICES, ASRSnippet, Icon, Snippet, SnippetTemplate,
-                                  SnippetTemplateVariable)
-from snippets.base.tests import (ASRSnippetFactory, IconFactory,
-                                 SnippetTemplateFactory,
+from snippets.base.admin import ASRSnippetAdmin, SnippetAdmin, SnippetTemplateAdmin
+from snippets.base.models import (STATUS_CHOICES, ASRSnippet, Snippet,
+                                  SnippetTemplate, SnippetTemplateVariable)
+from snippets.base.tests import (ASRSnippetFactory, SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase, UserFactory)
 
 

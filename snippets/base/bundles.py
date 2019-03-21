@@ -215,7 +215,7 @@ class ASRSnippetBundle(SnippetBundle):
     def snippets(self):
         return (ASRSnippet.objects
                 .filter(status=STATUS_CHOICES['Published'])
-                .select_related('template', 'campaign')
+                .select_related('template', 'campaign', 'template_relation')
                 .match_client(self.client)
                 .filter_by_available())
 

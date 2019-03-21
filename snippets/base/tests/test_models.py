@@ -16,6 +16,7 @@ from snippets.base.util import fluent_link_extractor
 from snippets.base.tests import (ASRSnippetFactory,
                                  ClientMatchRuleFactory,
                                  JSONSnippetFactory,
+                                 IconFactory,
                                  SearchProviderFactory,
                                  SnippetFactory,
                                  SnippetTemplateFactory,
@@ -511,3 +512,29 @@ class ASRSnippetTests(TestCase):
             'body': 'This is the bold body with a link.'
         }
         self.assertEqual(expected_data, snippet.analytics_export())
+
+    def test_modified_date_updates_when_template_updates(self):
+        snippet = ASRSnippetFactory()
+        old_modified = snippet.modified
+
+        template = snippet.template_ng
+        template.title = 'foobar'
+        template.save()
+
+        snippet.refresh_from_db()
+        new_modified = snippet.modified
+
+        self.assertNotEqual(old_modified, new_modified)
+
+    def test_modified_date_updates_when_icon_updates(self):
+        snippet = ASRSnippetFactory()
+        old_modified = snippet.modified
+
+        template = snippet.template_ng
+        template.icon = IconFactory()
+        template.save()
+
+        snippet.refresh_from_db()
+        new_modified = snippet.modified
+
+        self.assertNotEqual(old_modified, new_modified)

@@ -14,7 +14,10 @@ from django.core import validators as django_validators
 from django.urls import reverse
 from django.db import models
 from django.db.models.manager import Manager
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.template import engines
+from django.utils import timezone
 from django.utils.html import format_html
 
 import bleach
@@ -211,7 +214,7 @@ class SnippetBaseModel(django_mysql.models.Model):
         snippet_copy.uuid = uuid.uuid4()
         snippet_copy.name = '{0} - {1}'.format(
             self.name,
-            datetime.strftime(datetime.now(), '%Y.%m.%d %H:%M:%S'))
+            datetime.strftime(timezone.now(), '%Y.%m.%d %H:%M:%S'))
         snippet_copy.save()
 
         for field in self._meta.get_fields():
@@ -650,6 +653,23 @@ class Icon(models.Model):
             full_url = urljoin(cdn_url, urlparse(self.image.url).path)
 
         return full_url
+
+    @property
+    def snippets(self):
+        """Returns a Queryset of ASRSnippets using this icon. Needs this fancy code
+        b/c icons have multiple relations with multiple Templates.
+
+        """
+        all_snippets = []
+        for relation_name, relation in self._meta.fields_map.items():
+            if issubclass(relation.related_model, Template):
+                related_snippets = (getattr(self, relation_name)
+                                    .values_list('snippet__id', flat=True))
+
+                if related_snippets:
+                    all_snippets.extend(related_snippets)
+
+        return ASRSnippet.objects.filter(pk__in=all_snippets)
 
 
 class Template(models.Model):
@@ -1508,7 +1528,7 @@ class ASRSnippet(django_mysql.models.Model):
         snippet_copy.uuid = uuid.uuid4()
         snippet_copy.name = '{0} - {1}'.format(
             self.name,
-            datetime.strftime(datetime.now(), '%Y.%m.%d %H:%M:%S'))
+            datetime.strftime(timezone.now(), '%Y.%m.%d %H:%M:%S'))
         snippet_copy.save()
 
         for field in self._meta.get_fields():
@@ -1538,6 +1558,28 @@ class ASRSnippet(django_mysql.models.Model):
             'body': body,
         }
         return export
+
+
+# We could connect the signal to specific senders using `sender` argument but
+# we would have to connect each template class separately which will create
+# another thing to do when we add more templates and that can be potentially
+# forgotten. Instead we're collecting all signals and we do instance type
+# checking.
+@receiver(post_save, dispatch_uid='update_icon')
+def update_asrsnippet_modified_date(sender, instance, **kwargs):
+    now = timezone.now()
+    snippets = None
+
+    if isinstance(instance, Template):
+        snippets = [instance.snippet.pk]
+
+    elif isinstance(instance, Icon):
+        # Convert the value_list Queryset to a list, required for the upcoming
+        # update() query to work.
+        snippets = [id for id in instance.snippets.values_list('pk', flat=True)]
+
+    if snippets:
+        ASRSnippet.objects.filter(pk__in=snippets).update(modified=now)
 
 
 class Addon(models.Model):

@@ -146,21 +146,9 @@ class IconAdmin(admin.ModelAdmin):
         return mark_safe(text)
 
     def snippets(self, obj):
-        """Snippets using this icon.
-
-        Needs that fancy code b/c icons have multiple relations with multiple Templates.
-        """
-        all_snippets = []
-        for relation_name, relation in obj._meta.fields_map.items():
-            if issubclass(relation.related_model, models.Template):
-                related_snippets = getattr(obj, relation_name).values_list('snippet__id',
-                                                                           'snippet__name')
-
-                if related_snippets:
-                    all_snippets.extend(related_snippets)
-
+        """Snippets using this icon."""
         template = get_template('base/snippets_related_with_icon.jinja')
-        return mark_safe(template.render({'snippets': all_snippets}))
+        return mark_safe(template.render({'snippets': obj.snippets}))
 
 
 class SimpleTemplateInline(admin.StackedInline):
