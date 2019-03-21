@@ -649,11 +649,11 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     template_chooser = forms.ChoiceField(
         choices=(
             ('', 'Select Template'),
-            ('simple-template-inline-template', 'Simple'),
-            ('fundraising-template-inline-template', 'Fundraising'),
-            ('fxasignup-template-inline-template', 'Firefox Accounts Sign Up'),
-            ('newsletter-template-inline-template', 'Newsletter Sign Up'),
-            ('sendtodevice-template-inline-template', 'Send to Device'),
+            ('simple_snippet', 'Simple'),
+            ('eoy_snippet', 'Fundraising'),
+            ('fxa_signup_snippet', 'Firefox Accounts Sign Up'),
+            ('newsletter_snippet', 'Newsletter Sign Up'),
+            ('send_to_device_snippet', 'Send to Device'),
         ),
         widget=TemplateChooserWidget,
         required=False,
@@ -664,6 +664,7 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
 
         if self.instance.id and getattr(self.instance, 'template_ng', None):
             self.fields['template_chooser'].disabled = True
+            self.fields['template_chooser'].initial = self.instance.template_ng.code_name
 
     class Meta:
         model = models.ASRSnippet

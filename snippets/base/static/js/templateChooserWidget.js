@@ -9,13 +9,11 @@
         }
     }
 
-    if ($('.inline-template').length > 1) {
-        // Show correct template on load
-        showTemplate();
+    // Show correct template on load
+    showTemplate();
 
-        // Show correct template on change
-        $('#id_template_chooser').change(function() {
-            showTemplate();
-        });
-    }
+    // Show correct template on change
+    $('#id_template_chooser').change(function() {
+        showTemplate();
+    });
 });

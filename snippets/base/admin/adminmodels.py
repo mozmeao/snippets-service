@@ -1,5 +1,4 @@
 import re
-import sys
 
 from django.contrib import admin, messages
 from django.db import transaction
@@ -157,7 +156,7 @@ class SimpleTemplateInline(admin.StackedInline):
     can_delete = False
     classes = [
         'inline-template',
-        'simple-template-inline-template',
+        'simple_snippet',
     ]
     raw_id_fields = [
         'section_title_icon',
@@ -188,7 +187,7 @@ class FundraisingTemplateInline(admin.StackedInline):
     can_delete = False
     classes = [
         'inline-template',
-        'fundraising-template-inline-template',
+        'eoy_snippet',
     ]
     raw_id_fields = [
         'title_icon',
@@ -242,7 +241,7 @@ class FxASignupTemplateInline(admin.StackedInline):
     can_delete = False
     classes = [
         'inline-template',
-        'fxasignup-template-inline-template',
+        'fxa_signup_snippet',
     ]
     raw_id_fields = [
         'scene1_title_icon',
@@ -294,7 +293,7 @@ class NewsletterTemplateInline(admin.StackedInline):
     can_delete = False
     classes = [
         'inline-template',
-        'newsletter-template-inline-template',
+        'newsletter_snippet',
     ]
     raw_id_fields = [
         'scene1_title_icon',
@@ -349,7 +348,7 @@ class SendToDeviceTemplateInline(admin.StackedInline):
     can_delete = False
     classes = [
         'inline-template',
-        'sendtodevice-template-inline-template',
+        'send_to_device_snippet',
     ]
     raw_id_fields = [
         'scene1_title_icon',
@@ -515,25 +514,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             'js/admin/clipboard.min.js',
             'js/admin/copy_preview.js',
         )
-
-    def get_inline_instances(self, request, obj=None):
-        """Return all available template inlines when a new Snippet. Otherwise return
-        only the populated template inline.
-
-        """
-        instances = super().get_inline_instances(request, obj)
-
-        if not obj:
-            return instances
-
-        type = obj.template_ng._meta.object_name
-        inline_type = f'{type}Inline'
-        inline_class = getattr(sys.modules[__name__], inline_type)
-
-        return [
-            instance for instance in instances if isinstance(instance, inline_class)
-        ]
-        return instances
 
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
