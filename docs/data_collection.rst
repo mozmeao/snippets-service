@@ -74,8 +74,78 @@ with information about the user's browser.
 .. _about:config: http://kb.mozillazine.org/About:config
 
 
-Metrics
--------
+Metrics for Firefox 64+
+-----------------------
+
+By default, the about:newtab and about:home pages in Firefox (the pages you see when you
+open a new tab and when you start the browser), will send data back to Mozilla servers
+about snippets. The intent is to collect data in order to improve the user's experience
+while using Firefox. At any time, it is easy to **turn off** this data collection by
+`opting out of Firefox telemetry <https://support.mozilla.org/kb/share-telemetry-data-mozilla-help-improve-firefox>`_.
+
+Data is sent to our servers in the form of discreet HTTPS 'pings' or messages whenever
+you see or interact with snippets on about:home or about:newtab. We try to minimize the
+amount and frequency of pings by batching them together.
+
+At Mozilla, `we take your privacy very seriously <https://www.mozilla.org/privacy/>`_.
+The new tab page will never send any data that could personally identify you. We do not
+transmit what you are browsing, searches you perform or any private settings.
+Activity Stream does not set or send cookies, and uses
+`Transport Layer Security <https://en.wikipedia.org/wiki/Transport_Layer_Security>`_ to
+securely transmit data to Mozilla servers.
+
+Data collected about snippets is retained on Mozilla secured servers for a period of
+30 days before being rolled up into an anonymous aggregated format.  After this period
+the raw data is deleted permanently. Mozilla **never shares data with any third party**.
+
+The following is an overview of the different kinds of data we collect about snippets:
+
+Message ID
+   Unique name referring to the snippet that was being viewed when the request was sent.
+Locale
+   The locale of the current Firefox instance (the same locale value described in the
+   snippet URL from the previous section).
+Region
+   The country code corresponding to the country the user is currently located
+   in. This value may be empty in cases where we can't retrieve the user's country.
+Action
+   A string identifying the type of ping as either an impression or user event.
+Event
+   A string describing the type of event being measured, such as a snippet impression
+   or a link click.
+Source
+   A string identifying that the ping as coming from the footer area of the new tab page.
+
+
+Types of Metrics Gathered (for Firefox 64+)
+-------------------------------------------
+
+The following is a list of the types of events that we collect data for as described
+in the previous section:
+
+Impressions
+~~~~~~~~~~~
+
+An impression is whenever a user is shown a specific snippet.
+
+Snippet Clicks
+~~~~~~~~~~~~~~
+
+Whenever a link or button in a snippet is clicked, we trigger an event that
+includes what was clicked on. This includes links and buttons that may trigger
+an action besides opening up a new page, such as opening up browser menus,
+submitting a form, or going to the next scene in the snippet.
+
+Snippet Blocks
+~~~~~~~~~~~~~~
+
+We trigger an event when a snippet is hidden from view by clicking the small "x"
+button in the corner of all snippets, as well as the "Dismiss" button on certain
+snippets with multiple-stage views.
+
+
+Metrics for Firefox 63 and earlier
+----------------------------------
 
 Snippet code, which is executed on about:home, sends HTTP requests to a server
 located at https://snippets-stats.moz.works and/or
@@ -107,8 +177,8 @@ Campaign
    campaign. This value may be empty.
 
 
-Types of Metrics Gathered
--------------------------
+Types of Metrics Gathered (for Firefox 63 and earlier)
+------------------------------------------------------
 
 The following is a list of the types of events that we collect data for as
 described in the previous section:
@@ -158,8 +228,8 @@ elements that can be tracked this way include:
   Hello dialog.
 
 
-Google Analytics
-----------------
+Google Analytics (for Firefox 63 and earlier)
+---------------------------------------------
 
 The `snippets statistics server
 <https://github.com/mozmeao/snippets-stats-proxy>`_ may proxy data to Google
