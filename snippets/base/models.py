@@ -763,6 +763,10 @@ class SimpleTemplate(Template):
         max_length=20, blank=True,
         help_text='The text color of the button. Valid CSS color.',
     )
+    button_background_color = models.CharField(
+        max_length=20, blank=True,
+        help_text='The text color of the button. Valid CSS color.',
+    )
     button_url = models.URLField(
         max_length=500,
         blank=True,
@@ -814,6 +818,8 @@ class SimpleTemplate(Template):
             'icon': self.icon.url if self.icon else '',
             'button_label': self.button_label,
             'button_url': self.button_url,
+            'button_color': self.button_color,
+            'button_background_color': self.button_background_color,
             'section_title_icon': self.section_title_icon.url if self.section_title_icon else '',
             'section_title_text': self.section_title_text,
             'section_title_url': self.section_title_url,
