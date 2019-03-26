@@ -178,8 +178,14 @@ class ASRSnippetBundle(SnippetBundle):
             attributes = [
                 snippet.id,
                 snippet.modified.isoformat(),
-                snippet.template.modified.isoformat(),
             ]
+
+            # To remove after migration completes. See
+            # https://github.com/mozmeao/snippets-service/issues/933
+            if hasattr(snippet, 'template_relation'):
+                attributes.append(snippet.template_ng.version)
+            else:
+                attributes.append(snippet.template.modified.isoformat())
 
             attributes.extend(
                 [target.modified.isoformat() for target in snippet.targets.all()]
@@ -209,7 +215,7 @@ class ASRSnippetBundle(SnippetBundle):
     def snippets(self):
         return (ASRSnippet.objects
                 .filter(status=STATUS_CHOICES['Published'])
-                .select_related('template', 'campaign')
+                .select_related('template', 'campaign', 'template_relation')
                 .match_client(self.client)
                 .filter_by_available())
 

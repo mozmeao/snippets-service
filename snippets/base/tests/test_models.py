@@ -8,12 +8,15 @@ from pyquery import PyQuery as pq
 
 from snippets.base.models import (STATUS_CHOICES,
                                   Client,
-                                  SnippetTemplateVariable,
+                                  Icon,
+                                  SimpleTemplate,
                                   UploadedFile,
                                   _generate_filename)
+from snippets.base.util import fluent_link_extractor
 from snippets.base.tests import (ASRSnippetFactory,
                                  ClientMatchRuleFactory,
                                  JSONSnippetFactory,
+                                 IconFactory,
                                  SearchProviderFactory,
                                  SnippetFactory,
                                  SnippetTemplateFactory,
@@ -317,6 +320,17 @@ class UploadedFileTests(TestCase):
             settings_mock.SITE_URL = 'http://example.com/foo/'
             self.assertEqual(test_file.url, 'http://example.com/foo/bar')
 
+    def test_snippets(self):
+        instance = UploadedFileFactory.build()
+        instance.file = MagicMock()
+        instance.file.url = '/media/foo.png'
+        snippets = SnippetFactory.create_batch(2, data='lalala {0} foobar'.format(instance.url))
+        template = SnippetTemplateFactory.create(code='<foo>{0}</foo>'.format(instance.url))
+        more_snippets = SnippetFactory.create_batch(3, template=template)
+        self.assertEqual(set(instance.snippets), set(list(snippets) + list(more_snippets)))
+
+
+class GenerateFilenameTests(TestCase):
     @override_settings(MEDIA_FILES_ROOT='filesroot/')
     @patch('snippets.base.models.uuid')
     def test_generate_new_filename(self, uuid_mock):
@@ -332,37 +346,96 @@ class UploadedFileTests(TestCase):
         filename = _generate_filename(obj, 'new_filename.boing')
         self.assertEqual(filename, 'bar.png')
 
-    def test_snippets(self):
-        instance = UploadedFileFactory.build()
-        instance.file = MagicMock()
-        instance.file.url = '/media/foo.png'
-        snippets = SnippetFactory.create_batch(2, data='lalala {0} foobar'.format(instance.url))
-        template = SnippetTemplateFactory.create(code='<foo>{0}</foo>'.format(instance.url))
-        more_snippets = SnippetFactory.create_batch(3, template=template)
-        self.assertEqual(set(instance.snippets), set(list(snippets) + list(more_snippets)))
+    @override_settings(MEDIA_FILES_ROOT='filesroot/')
+    @patch('snippets.base.models.uuid')
+    def test_generate_filename_different_root(self, uuid_mock):
+        uuid_mock.uuid4.return_value = 'bar'
+        file = UploadedFileFactory.build()
+        filename = _generate_filename(file, 'filename.boing', root='new-root')
+        self.assertEqual(filename, 'new-root/bar.boing')
+
+    def test_update_icon_new_filename(self):
+        icon = IconFactory()
+        filename = _generate_filename(icon, 'filename.boing', settings.MEDIA_ICONS_ROOT)
+        self.assertNotEqual(icon.image.name, filename)
+
+
+class TemplateTests(TestCase):
+    def test_process_rendered_data(self):
+        data = {
+            'foo': '',
+            'bar': 'bar',
+        }
+        expected_data = {
+            'bar': 'bar',
+            'links': {},
+        }
+        snippet = ASRSnippetFactory()
+        with patch('snippets.base.models.util.fluent_link_extractor',
+                   wraps=fluent_link_extractor) as fluent_link_extractor_mock:
+            processed_data = snippet.template_ng._process_rendered_data(data)
+
+        self.assertTrue(fluent_link_extractor_mock.called)
+        self.assertEqual(processed_data, expected_data)
+
+    def test_subtemplate(self):
+        snippet = ASRSnippetFactory()
+        subtemplate = snippet.template_relation.subtemplate
+        self.assertTrue(type(subtemplate) is SimpleTemplate)
+
+        # Test subtemplate when checking from an object that inherits Template
+        subtemplate = snippet.template_relation.subtemplate.subtemplate
+        self.assertTrue(type(subtemplate) is SimpleTemplate)
+
+
+class IconTests(TestCase):
+
+    @override_settings(CDN_URL='http://example.com')
+    def test_url_with_cdn_url(self):
+        test_file = Icon()
+        test_file.image = Mock()
+        test_file.image.url = 'foo'
+        self.assertEqual(test_file.url, 'http://example.com/foo')
+
+    def test_url_without_cdn_url(self):
+        test_file = Icon()
+        test_file.image = Mock()
+        test_file.image.url = 'foo'
+        with patch('snippets.base.models.settings', wraps=settings) as settings_mock:
+            delattr(settings_mock, 'CDN_URL')
+            settings_mock.SITE_URL = 'http://second-example.com/'
+            self.assertEqual(test_file.url, 'http://second-example.com/foo')
 
 
 class ASRSnippetTests(TestCase):
     def test_render(self):
         snippet = ASRSnippetFactory.create(
-            template__code='<p>{{ text }} {{ foo }}</p>',
-            data='{"text": "snippet id [[snippet_id]]", "foo": "bar", "empty": ""}',
+            template_relation__text=('snippet id [[snippet_id]] and with '
+                                     '<a href="https://example.com/[[snippet_id]]/foo">link</a>'),
             targets=[
                 TargetFactory(jexl_expr='foo == bar'),
                 TargetFactory(jexl_expr='lalo == true')
             ]
         )
+        self.maxDiff = None
         generated_result = snippet.render()
         expected_result = {
             'id': str(snippet.id),
-            'template': snippet.template.code_name,
-            'template_version': snippet.template.version,
+            'template': snippet.template_ng.code_name,
+            'template_version': snippet.template_ng.version,
             'campaign': snippet.campaign.slug,
             'weight': snippet.weight,
             'content': {
-                'text': 'snippet id {}'.format(snippet.id),
-                'foo': 'bar',
-                'links': {},
+                'text': 'snippet id {} and with <link0>link</link0>'.format(snippet.id),
+                'links': {
+                    'link0': {
+                        'url': 'https://example.com/{}/foo'.format(snippet.id),
+                    }
+                },
+                'tall': False,
+                'icon': snippet.template_ng.icon.url,
+                'do_not_autoblock': False,
+                'block_button_text': 'Remove this',
             },
             'targeting': 'foo == bar && lalo == true'
         }
@@ -370,21 +443,22 @@ class ASRSnippetTests(TestCase):
 
     def test_render_preview_only(self):
         snippet = ASRSnippetFactory.create(
-            template__code='<p>{{ text }} {{ foo }}</p>',
-            data='{"text": "snippet id [[snippet_id]]", "foo": "bar"}',
+            template_relation__text='snippet id [[snippet_id]]',
             targets=[TargetFactory(jexl_expr='foo == bar')])
         generated_result = snippet.render(preview=True)
         expected_result = {
             'id': 'preview-{}'.format(snippet.id),
-            'template': snippet.template.code_name,
-            'template_version': snippet.template.version,
+            'template': snippet.template_ng.code_name,
+            'template_version': snippet.template_ng.version,
             'campaign': 'preview-{}'.format(snippet.campaign.slug),
             'weight': 100,
             'content': {
-                'text': 'snippet id {}'.format(snippet.id),
-                'foo': 'bar',
-                'links': {},
                 'do_not_autoblock': True,
+                'text': 'snippet id {}'.format(snippet.id),
+                'links': {},
+                'tall': False,
+                'icon': snippet.template_ng.icon.url,
+                'block_button_text': 'Remove this',
             }
         }
         self.assertEqual(generated_result, expected_result)
@@ -403,12 +477,14 @@ class ASRSnippetTests(TestCase):
             locales=['en-us', 'fr'],
         )
         duplicate_snippet = snippet.duplicate(user)
+        snippet.refresh_from_db()
 
         for attr in ['id', 'creator', 'created', 'modified', 'name', 'uuid']:
             self.assertNotEqual(getattr(snippet, attr), getattr(duplicate_snippet, attr))
 
         self.assertEqual(set(snippet.locales.all()), set(duplicate_snippet.locales.all()))
         self.assertEqual(duplicate_snippet.status, STATUS_CHOICES['Draft'])
+        self.assertNotEqual(snippet.template_ng.pk, duplicate_snippet.template_ng.pk)
 
     @override_settings(SITE_URL='http://example.com')
     def test_get_admin_url(self):
@@ -430,14 +506,10 @@ class ASRSnippetTests(TestCase):
     def test_analytics_export(self):
         snippet = ASRSnippetFactory.create(
             name='test-snippet',
-            template__code='<p>{{ text }} {{ foo }}</p>',
             campaign__name='test-campaign',
             category__name='test-category',
-            data=('{"body": "This is the <b>bold body</b> with a '
-                  '<a href=\\"https://example.com\\">link</a>."}')
-        )
-        snippet.template.variable_set.add(
-            SnippetTemplateVariableFactory.create(name='body', type=SnippetTemplateVariable.BODY)
+            template_relation__text=(
+                'This is the <b>bold body</b> with a <a href="https://example.com">link</a>.'),
         )
         expected_data = {
             'id': snippet.id,
@@ -448,3 +520,29 @@ class ASRSnippetTests(TestCase):
             'body': 'This is the bold body with a link.'
         }
         self.assertEqual(expected_data, snippet.analytics_export())
+
+    def test_modified_date_updates_when_template_updates(self):
+        snippet = ASRSnippetFactory()
+        old_modified = snippet.modified
+
+        template = snippet.template_ng
+        template.title = 'foobar'
+        template.save()
+
+        snippet.refresh_from_db()
+        new_modified = snippet.modified
+
+        self.assertNotEqual(old_modified, new_modified)
+
+    def test_modified_date_updates_when_icon_updates(self):
+        snippet = ASRSnippetFactory()
+        old_modified = snippet.modified
+
+        template = snippet.template_ng
+        template.icon = IconFactory()
+        template.save()
+
+        snippet.refresh_from_db()
+        new_modified = snippet.modified
+
+        self.assertNotEqual(old_modified, new_modified)

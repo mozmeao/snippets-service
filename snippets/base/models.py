@@ -6,13 +6,18 @@ import re
 import uuid
 from collections import namedtuple
 from datetime import datetime
+from functools import partial
 from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
+from django.core import validators as django_validators
 from django.urls import reverse
 from django.db import models
 from django.db.models.manager import Manager
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.template import engines
+from django.utils import timezone
 from django.utils.html import format_html
 
 import bleach
@@ -209,7 +214,7 @@ class SnippetBaseModel(django_mysql.models.Model):
         snippet_copy.uuid = uuid.uuid4()
         snippet_copy.name = '{0} - {1}'.format(
             self.name,
-            datetime.strftime(datetime.now(), '%Y.%m.%d %H:%M:%S'))
+            datetime.strftime(timezone.now(), '%Y.%m.%d %H:%M:%S'))
         snippet_copy.save()
 
         for field in self._meta.get_fields():
@@ -457,21 +462,27 @@ class JSONSnippet(SnippetBaseModel):
         return self.name
 
 
-def _generate_filename(instance, filename):
+def _generate_filename(instance, filename, root=None):
     """Generate a new unique filename while preserving the original
     filename extension. If an existing UploadedFile gets updated
     do not generate a new filename.
     """
+    if not root:
+        root = settings.MEDIA_FILES_ROOT
 
-    # Instance is new UploadedFile, generate a filename
-    if not instance.id:
+    keep_filename = True
+    if isinstance(instance, Icon):
+        keep_filename = False
+
+    # Instance is new, generate a filename
+    if not instance.id or not keep_filename:
         ext = os.path.splitext(filename)[1]
         filename = str(uuid.uuid4()) + ext
-        return os.path.join(settings.MEDIA_FILES_ROOT, filename)
+        return os.path.join(root, filename)
 
-    # Use existing filename.
-    obj = UploadedFile.objects.get(id=instance.id)
-    return obj.file.name
+    # So that UploadedFile can keep the same filename.
+    db_instance = instance._meta.model.objects.get(pk=instance.id)
+    return db_instance.file.name
 
 
 class UploadedFile(models.Model):
@@ -615,6 +626,773 @@ class Category(models.Model):
         return '{}: {}'.format(self.name, self.description)
 
 
+class Icon(models.Model):
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=255)
+    height = models.PositiveIntegerField(default=0)
+    width = models.PositiveIntegerField(default=0)
+    image = models.ImageField(
+        upload_to=partial(_generate_filename, root=settings.MEDIA_ICONS_ROOT),
+        height_field='height',
+        width_field='width',
+        help_text=('PNGs only. Note that updating the image will '
+                   'update all snippets using this image.'),
+    )
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def url(self):
+        full_url = urljoin(settings.SITE_URL, self.image.url).split('?')[0]
+        cdn_url = getattr(settings, 'CDN_URL', None)
+        if cdn_url:
+            full_url = urljoin(cdn_url, urlparse(self.image.url).path)
+
+        return full_url
+
+    @property
+    def snippets(self):
+        """Returns a Queryset of ASRSnippets using this icon. Needs this fancy code
+        b/c icons have multiple relations with multiple Templates.
+
+        """
+        all_snippets = []
+        for relation_name, relation in self._meta.fields_map.items():
+            if issubclass(relation.related_model, Template):
+                related_snippets = (getattr(self, relation_name)
+                                    .values_list('snippet__id', flat=True))
+
+                if related_snippets:
+                    all_snippets.extend(related_snippets)
+
+        return ASRSnippet.objects.filter(pk__in=all_snippets)
+
+
+class Template(models.Model):
+    snippet = models.OneToOneField('ASRSnippet', related_name='template_relation',
+                                   on_delete=models.CASCADE)
+
+    @property
+    def subtemplate(self):
+        if type(self) is not Template:
+            # We 're already in the subclass
+            return self
+
+        for field in self._meta.fields_map.values():
+            if issubclass(field.related_model, Template):
+                try:
+                    return getattr(self, field.name)
+                except Template.DoesNotExist:
+                    continue
+
+    def _process_rendered_data(self, data):
+        # Convert links in text fields in fluent format.
+        data = util.fluent_link_extractor(data, self.get_rich_text_fields())
+
+        # Remove values that are empty strings
+        data = {k: v for k, v in data.items() if v != ''}
+
+        return data
+
+    def get_rich_text_fields(self):
+        raise Exception('Not Implemented')
+
+    def render(self):
+        raise Exception('Not Implemented')
+
+    @property
+    def version(self):
+        return self.VERSION
+
+    def get_main_body(self, bleached=False):
+        body = self.text
+        if bleached:
+            body = bleach.clean(body, tags=[], strip=True).strip()
+        return body
+
+    def get_main_url(self):
+        button_url = getattr(self, 'button_url', '')
+        if button_url:
+            return button_url
+
+        # Try to find the URL in the body
+        url = ''
+        body = self.get_main_body()
+        match = re.search('href="(?P<link>https?://.+?)"', body)
+        if match:
+            url = match.groupdict()['link']
+
+        return url
+
+
+class SimpleTemplate(Template):
+    VERSION = '1.0.0'
+
+    title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='simple_title_icons',
+        help_text=('Small icon that shows up before the title / text. 64x64px.'
+                   'PNG. Grayscale.')
+    )
+    title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Snippet title displayed before snippet text.',
+    )
+    text = models.TextField(
+        help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br',
+    )
+    icon = models.ForeignKey(
+        Icon,
+        on_delete=models.PROTECT,
+        related_name='simple_icons',
+        help_text='Snippet icon. 192x192px PNG.'
+    )
+    button_label = models.CharField(
+        max_length=50, blank=True,
+        help_text=('Text for a button next to main snippet text that '
+                   'links to button_url. Requires button_url.'),
+    )
+    button_color = models.CharField(
+        max_length=20, blank=True,
+        help_text='The text color of the button. Valid CSS color.',
+    )
+    button_background_color = models.CharField(
+        max_length=20, blank=True,
+        help_text='The text color of the button. Valid CSS color.',
+    )
+    button_url = models.URLField(
+        max_length=500,
+        blank=True,
+        validators=[django_validators.URLValidator(schemes=['https'])],
+        help_text='A url, button_label links to this',
+    )
+    section_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='simple_section_icons',
+        help_text=('Section title icon. 32x32px. PNG. '
+                   'section_title_text must also be specified to display.'),
+    )
+    section_title_text = models.CharField(
+        blank=True, max_length=255,
+        help_text='Section title text. section_title_icon must also be specified to display.',
+    )
+    section_title_url = models.URLField(
+        blank=True,
+        validators=[django_validators.URLValidator(schemes=['https'])],
+        help_text='A url, section_title_text links to this',
+    )
+    tall = models.BooleanField(
+        default=False, blank=True,
+        help_text=('To be used by fundraising only, increases height '
+                   'to roughly 120px. Defaults to false.'),
+    )
+    block_button_text = models.CharField(
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    @property
+    def code_name(self):
+        return 'simple_snippet'
+
+    def render(self):
+        data = {
+            'title_icon': self.title_icon.url if self.title_icon else '',
+            'title': self.title,
+            'text': self.text,
+            'icon': self.icon.url if self.icon else '',
+            'button_label': self.button_label,
+            'button_url': self.button_url,
+            'button_color': self.button_color,
+            'button_background_color': self.button_background_color,
+            'section_title_icon': self.section_title_icon.url if self.section_title_icon else '',
+            'section_title_text': self.section_title_text,
+            'section_title_url': self.section_title_url,
+            'tall': self.tall,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+        }
+        data = self._process_rendered_data(data)
+        return data
+
+    def get_rich_text_fields(self):
+        return ['text']
+
+
+class FundraisingTemplate(Template):
+    """Also known as EOY Template"""
+    VERSION = '1.0.0'
+
+    donation_form_url = models.URLField(
+        default='https://donate.mozilla.org/?utm_source=desktop-snippet&utm_medium=snippet',
+        max_length=500,
+    )
+    currency_code = models.CharField(max_length=10, default='usd')
+    locale = models.CharField(max_length=10, default='en-US')
+    title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Snippet title displayed before snippet text.',
+    )
+    text = models.TextField()
+    text_color = models.CharField(max_length=10, blank=True,)
+    background_color = models.CharField(max_length=10, blank=True,)
+    highlight_color = models.CharField(
+        max_length=10,
+        help_text='Paragraph em highlight color.',
+        blank=True,
+        default='#FFE900',
+    )
+    donation_amount_first = models.PositiveSmallIntegerField('First')
+    donation_amount_second = models.PositiveSmallIntegerField('Second')
+    donation_amount_third = models.PositiveSmallIntegerField('Third')
+    donation_amount_fourth = models.PositiveSmallIntegerField('Fourth')
+    selected_button = models.CharField(
+        max_length=25,
+        choices=(
+            ('donation_amount_first', 'First'),
+            ('donation_amount_second', 'Second'),
+            ('donation_amount_third', 'Third'),
+            ('donation_amount_fourth', 'Fourth'),
+        ),
+        default='donation_amount_second',
+        help_text='Donation amount button that\'s selected by default.',
+    )
+    icon = models.ForeignKey(
+        Icon,
+        on_delete=models.PROTECT,
+        related_name='fundraising_icons',
+        help_text='Snippet icon. 192x192px PNG.'
+    )
+    title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='fundraising_title_icons',
+        help_text=('Small icon that shows up before the title / text. 64x64px.'
+                   'PNG. Grayscale.')
+    )
+    button_label = models.CharField(
+        max_length=50,
+        help_text=('Text for a button next to main snippet text that links '
+                   'to button_url. Requires button_url.'),
+    )
+    button_color = models.CharField(
+        max_length=20, blank=True,
+        help_text='defaults to firefox theme'
+    )
+    button_background_color = models.CharField(
+        max_length=20, blank=True, help_text='defaults to firefox theme')
+    monthly_checkbox_label_text = models.CharField(
+        max_length=255,
+        default='Make my donation monthly',
+    )
+    test = models.CharField(max_length=10,
+                            choices=(('', 'Default'),
+                                     ('bold', 'Bold'),
+                                     ('takeover', 'Takeover')),
+                            blank=True,
+                            help_text=('Different styles for the snippet.'))
+    block_button_text = models.CharField(
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    @property
+    def code_name(self):
+        return 'eoy_snippet'
+
+    def render(self):
+        data = {
+            'donation_form_url': self.donation_form_url,
+            'currency_code': self.currency_code,
+            'locale': self.locale,
+            'title': self.title,
+            'text': self.text,
+            'text_color': self.text_color,
+            'background_color': self.background_color,
+            'highlight_color': self.highlight_color,
+            'donation_amount_first': self.donation_amount_first,
+            'donation_amount_second': self.donation_amount_second,
+            'donation_amount_third': self.donation_amount_third,
+            'donation_amount_fourth': self.donation_amount_fourth,
+            'selected_button': self.selected_button,
+            'icon': self.icon.url if self.icon else '',
+            'title_icon': self.title_icon.url if self.title_icon else '',
+            'button_label': self.button_label,
+            'button_color': self.button_color,
+            'button_background_color': self.button_background_color,
+            'monthly_checkbox_label_text': self.monthly_checkbox_label_text,
+            'test': self.test,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+        }
+        data = self._process_rendered_data(data)
+        return data
+
+    def get_rich_text_fields(self):
+        return ['text']
+
+
+class FxASignupTemplate(Template):
+    VERSION = '1.0.0'
+
+    scene1_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='fxasignup_scene1_title_icons',
+        help_text=('Small icon that shows up before the title / text. 64x64px.'
+                   'PNG. Grayscale.')
+    )
+    scene1_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Snippet title displayed before snippet text.',
+    )
+    scene1_text = models.TextField(
+        help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene1_icon = models.ForeignKey(
+        Icon,
+        on_delete=models.PROTECT,
+        related_name='fxasignup_scene1_icons',
+        help_text='Snippet icon. 192x192px PNG.')
+    scene1_button_label = models.CharField(
+        max_length=50,
+        default='Learn more',
+        help_text='Label for the button on Scene 1 that leads to Scene 2.'
+    )
+    scene1_button_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The text color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+    scene1_button_background_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The background color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+
+    ###
+    # Scene 2
+    ###
+    scene2_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Title displayed before text in scene 2.',
+    )
+    scene2_text = models.TextField(
+        help_text='Scene 2 main text. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene2_button_label = models.CharField(
+        max_length=50,
+        default='Sign me up',
+        help_text='Label for form submit button.',
+    )
+    scene2_email_placeholder_text = models.CharField(
+        max_length=255,
+        default='Your email here',
+        help_text='Value to show while input is empty.',
+    )
+    scene2_dismiss_button_text = models.CharField(
+        max_length=50,
+        default='Dismiss',
+        help_text='Label for the dismiss button on Scene 2.'
+    )
+
+    ###
+    # Extras
+    ###
+    utm_term = models.CharField(
+        max_length=100, blank=True,
+        help_text='Value to pass through to GA as utm_term.',
+    )
+    utm_campaign = models.CharField(
+        max_length=100, blank=True,
+        help_text='Value to pass through to GA as utm_campaign.',
+    )
+    block_button_text = models.CharField(
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    @property
+    def code_name(self):
+        return 'fxa_signup_snippet'
+
+    def render(self):
+        data = {
+            'scene1_title_icon': self.scene1_title_icon.url if self.scene1_title_icon else '',
+            'scene1_title': self.scene1_title,
+            'scene1_text': self.scene1_text,
+            'scene1_icon': self.scene1_icon.url if self.scene1_icon else '',
+            'scene1_button_label': self.scene1_button_label,
+            'scene1_button_color': self.scene1_button_color,
+            'scene1_button_background_color': self.scene1_button_background_color,
+            'scene2_title': self.scene2_title,
+            'scene2_text': self.scene2_text,
+            'scene2_button_label': self.scene2_button_label,
+            'scene2_email_placeholder_text': self.scene2_email_placeholder_text,
+            'scene2_dismiss_button_text': self.scene2_dismiss_button_text,
+            'utm_term': self.utm_term,
+            'utm_campaign': self.utm_campaign,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+        }
+        data = self._process_rendered_data(data)
+        return data
+
+    def get_rich_text_fields(self):
+        return ['scene1_text', 'scene2_text']
+
+    def get_main_body(self, bleached=False):
+        body = self.scene1_text
+        if bleached:
+            body = bleach.clean(body, tags=[], strip=True).strip()
+        return body
+
+
+class NewsletterTemplate(Template):
+    VERSION = '1.0.0'
+
+    scene1_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='newsletter_scene1_title_icons',
+        help_text=('Small icon that shows up before the title / text. 64x64px.'
+                   'PNG. Grayscale.')
+    )
+    scene1_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Snippet title displayed before snippet text.',
+    )
+    scene1_text = models.TextField(
+        help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene1_icon = models.ForeignKey(
+        Icon,
+        on_delete=models.PROTECT,
+        related_name='newsletter_scene1_icons',
+        help_text='Snippet icon. 192x192px PNG.')
+    scene1_button_label = models.CharField(
+        max_length=50,
+        default='Learn more',
+        help_text='Label for the button on Scene 1 that leads to Scene 2.'
+    )
+    scene1_button_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The text color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+    scene1_button_background_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The background color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+
+    ###
+    # Scene 2
+    ###
+    scene2_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Title displayed before text in scene 2.',
+    )
+    scene2_text = models.TextField(
+        help_text='Scene 2 main text. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene2_button_label = models.CharField(
+        max_length=50,
+        default='Sign me up',
+        help_text='Label for form submit button.',
+    )
+    scene2_email_placeholder_text = models.CharField(
+        max_length=255,
+        default='Your email here',
+        help_text='Value to show while input is empty.',
+    )
+    scene2_dismiss_button_text = models.CharField(
+        max_length=50,
+        default='Dismiss',
+        help_text='Label for the dismiss button on Scene 2.'
+    )
+
+    scene2_newsletter = models.CharField(
+        max_length=50,
+        default='mozilla-foundation',
+        help_text=('Newsletter/basket id user is subscribing to. Must be a value from the "Slug" '
+                   'column here: https://basket.mozilla.org/news/.'),
+    )
+    scene2_privacy_html = models.TextField(
+        help_text='Text and link next to the privacy checkbox. Must link to a privacy policy.',
+    )
+
+    locale = models.CharField(
+        max_length=10,
+        default='en-US',
+        help_text='String for the newsletter locale code.',
+    )
+    success_text = models.TextField(
+        help_text='Text of success message after form submission.',
+    )
+    error_text = models.TextField(
+        help_text='Text of error message if form submission fails.',
+    )
+
+    ###
+    # Extras
+    ###
+    block_button_text = models.CharField(
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    @property
+    def code_name(self):
+        return 'newsletter_snippet'
+
+    def render(self):
+        data = {
+            'scene1_title_icon': self.scene1_title_icon.url if self.scene1_title_icon else '',
+            'scene1_title': self.scene1_title,
+            'scene1_text': self.scene1_text,
+            'scene1_icon': self.scene1_icon.url if self.scene1_icon else '',
+            'scene1_button_label': self.scene1_button_label,
+            'scene1_button_color': self.scene1_button_color,
+            'scene1_button_background_color': self.scene1_button_background_color,
+            'scene2_title': self.scene2_title,
+            'scene2_text': self.scene2_text,
+            'scene2_button_label': self.scene2_button_label,
+            'scene2_email_placeholder_text': self.scene2_email_placeholder_text,
+            'scene2_dismiss_button_text': self.scene2_dismiss_button_text,
+            'scene2_newsletter': self.scene2_newsletter,
+            'scene2_privacy_html': self.scene2_privacy_html,
+            'locale': self.locale,
+            'success_text': self.success_text,
+            'error_text': self.error_text,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+        }
+        data = self._process_rendered_data(data)
+        return data
+
+    def get_rich_text_fields(self):
+        return [
+            'scene1_text',
+            'scene2_privacy_html',
+        ]
+
+    def get_main_body(self, bleached=False):
+        body = self.scene1_text
+        if bleached:
+            body = bleach.clean(body, tags=[], strip=True).strip()
+        return body
+
+
+class SendToDeviceTemplate(Template):
+    VERSION = '1.0.0'
+
+    scene1_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='sendtodevice_scene1_title_icons',
+        help_text=('Small icon that shows up before the title / text. 64x64px.'
+                   'PNG. Grayscale.')
+    )
+    scene1_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Snippet title displayed before snippet text.',
+    )
+    scene1_text = models.TextField(
+        help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene1_icon = models.ForeignKey(
+        Icon,
+        on_delete=models.PROTECT,
+        related_name='sendtodevice_scene1_icons',
+        help_text='Snippet icon. 192x192 PNG.')
+    scene1_button_label = models.CharField(
+        max_length=50,
+        default='Learn more',
+        help_text='Label for the button on Scene 1 that leads to Scene 2.'
+    )
+    scene1_button_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The text color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+    scene1_button_background_color = models.CharField(
+        max_length=20, blank=True,
+        help_text=('The background color of the button. Valid CSS color. '
+                   'Defaults to Firefox Theme Color.'),
+    )
+
+    ###
+    # Scene 2
+    ###
+    scene2_title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Title displayed before text in scene 2.',
+    )
+    scene2_text = models.TextField(
+        help_text='Scene 2 main text. HTML subset allowed: i, b, u, strong, em, br.',
+    )
+    scene2_icon = models.ForeignKey(
+        Icon,
+        on_delete=models.PROTECT,
+        related_name='sendtodevice_scene2_icons',
+        help_text='Image to display above the form. 192x192px PNG.'
+    )
+    scene2_button_label = models.CharField(
+        max_length=50,
+        default='Send',
+        help_text='Label for form submit button.',
+    )
+    scene2_input_placeholder = models.CharField(
+        max_length=255,
+        default='Your email here',
+        help_text='Placeholder text for email / phone number field.',
+    )
+
+    scene2_dismiss_button_text = models.CharField(
+        max_length=50,
+        default='Dismiss',
+        help_text='Label for the dismiss button on Scene 2.'
+    )
+    scene2_disclaimer_html = models.TextField(
+        help_text='Text and link underneath the input box.',
+    )
+
+    locale = models.CharField(
+        max_length=10,
+        default='en-US',
+        help_text='Two to five character string for the locale code. Default "en-US".',
+    )
+    country = models.CharField(
+        max_length=10,
+        default='us',
+        help_text='Two character string for the country code (used for SMS). Default "us".',
+    )
+    include_sms = models.BooleanField(
+        blank=True,
+        default=False,
+        help_text='Defines whether SMS is available.',
+    )
+    message_id_sms = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='Newsletter/basket id representing the SMS message to be sent.',
+    )
+    message_id_email = models.CharField(
+        max_length=100,
+        help_text=('Newsletter/basket id representing the email message to be sent. Must be '
+                   'a value from the "Slug" column here: https://basket.mozilla.org/news/.'),
+    )
+
+    success_title = models.TextField(
+        help_text='Title of success message after form submission.',
+    )
+    success_text = models.TextField(
+        help_text='Text of success message after form submission.',
+    )
+    error_text = models.TextField(
+        help_text='Text of error message if form submission fails.',
+    )
+
+    ###
+    # Extras
+    ###
+    block_button_text = models.CharField(
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    @property
+    def code_name(self):
+        return 'send_to_device_snippet'
+
+    def render(self):
+        data = {
+            'scene1_title_icon': self.scene1_title_icon.url if self.scene1_title_icon else '',
+            'scene1_title': self.scene1_title,
+            'scene1_text': self.scene1_text,
+            'scene1_icon': self.scene1_icon.url if self.scene1_icon else '',
+            'scene1_button_label': self.scene1_button_label,
+            'scene1_button_color': self.scene1_button_color,
+            'scene1_button_background_color': self.scene1_button_background_color,
+            'scene2_title': self.scene2_title,
+            'scene2_text': self.scene2_text,
+            'scene2_icon': self.scene2_icon.url if self.scene2_icon else '',
+            'scene2_button_label': self.scene2_button_label,
+            'scene2_input_placeholder': self.scene2_input_placeholder,
+            'scene2_dismiss_button_text': self.scene2_dismiss_button_text,
+            'scene2_disclaimer_html': self.scene2_disclaimer_html,
+            'locale': self.locale,
+            'country': self.country,
+            'include_sms': self.include_sms,
+            'message_id_sms': self.message_id_sms,
+            'message_id_email': self.message_id_email,
+            'success_title': self.success_title,
+            'success_text': self.success_text,
+            'error_text': self.error_text,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+        }
+        data = self._process_rendered_data(data)
+        return data
+
+    def get_rich_text_fields(self):
+        return [
+            'scene1_text',
+            'scene2_text',
+            'scene2_disclaimer_html',
+        ]
+
+    def get_main_body(self, bleached=False):
+        body = self.scene1_text
+        if bleached:
+            body = bleach.clean(body, tags=[], strip=True).strip()
+        return body
+
+
 class ASRSnippet(django_mysql.models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
@@ -627,7 +1405,7 @@ class ASRSnippet(django_mysql.models.Model):
     category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.PROTECT,
                                  related_name='asrsnippets')
 
-    template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT)
+    template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT, null=True)
     data = models.TextField(default='{}')
 
     status = models.IntegerField(choices=[(y, x) for x, y in STATUS_CHOICES.items()],
@@ -674,24 +1452,36 @@ class ASRSnippet(django_mysql.models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def template_ng(self):
+        return self.template_relation.subtemplate
+
     def render(self, preview=False):
-        data = json.loads(self.data)
+        # To remove after migration completes. See
+        # https://github.com/mozmeao/snippets-service/issues/933
+        if hasattr(self, 'template_relation'):
+            template_code_name = self.template_ng.code_name
+            template_version = self.template_ng.version
+            data = self.template_ng.render()
+        else:
+            template_code_name = self.template.code_name
+            template_version = self.template.version
+
+            data = json.loads(self.data)
+
+            # Convert inline links to fluent.js format.
+            data = util.fluent_link_extractor(data, self.template.get_rich_text_variables())
+
+            # Remove values that are empty strings
+            data = {k: v for k, v in data.items() if v != ''}
 
         # Add snippet ID to template variables.
-        for key, value in data.items():
-            if isinstance(value, str):
-                data[key] = value.replace('[[snippet_id]]', str(self.id))
-
-        # Convert inline links to fluent.js format.
-        data = util.fluent_link_extractor(data, self.template.get_rich_text_variables())
-
-        # Remove values that are empty strings
-        data = {k: v for k, v in data.items() if v != ''}
+        data = util.deep_search_and_replace(data, '[[snippet_id]]', str(self.id))
 
         rendered_snippet = {
             'id': str(self.id),
-            'template': self.template.code_name,
-            'template_version': self.template.version,
+            'template': template_code_name,
+            'template_version': template_version,
             'weight': self.weight,
             'content': data,
         }
@@ -747,11 +1537,23 @@ class ASRSnippet(django_mysql.models.Model):
         snippet_copy.uuid = uuid.uuid4()
         snippet_copy.name = '{0} - {1}'.format(
             self.name,
-            datetime.strftime(datetime.now(), '%Y.%m.%d %H:%M:%S'))
+            datetime.strftime(timezone.now(), '%Y.%m.%d %H:%M:%S'))
         snippet_copy.save()
 
+        # From https://djangosnippets.org/snippets/1040/ Needed due to the
+        # model inheritance where setting instance.pk = None isn't enough.
+        def copy_model_instance(obj):
+            initial = dict(
+                [(f.name, getattr(obj, f.name)) for f in obj._meta.fields
+                 if not isinstance(f, models.AutoField) and f not in obj._meta.parents.values()]
+            )
+            return obj.__class__(**initial)
+        new_template = copy_model_instance(self.template_ng)
+        new_template.snippet = snippet_copy
+        new_template.save()
+
         for field in self._meta.get_fields():
-            attr = getattr(self, field.name)
+            attr = getattr(self, field.name, None)
             if isinstance(attr, Manager):
                 manager = attr
                 if manager.__class__.__name__ == 'RelatedManager':
@@ -766,33 +1568,39 @@ class ASRSnippet(django_mysql.models.Model):
         return snippet_copy
 
     def analytics_export(self):
-        jsondata = json.loads(self.data)
-        export = {}
-
-        try:
-            main_body = self.template.variable_set.get(type=SnippetTemplateVariable.BODY)
-        except SnippetTemplateVariable.DoesNotExist:
-            body = ''
-            url = ''
-        else:
-            body = jsondata.get(main_body.name, '')
-            if jsondata.get('button_url', None):
-                url = jsondata.get('button_url')
-            else:
-                match = re.search('href="(?P<link>https?://.+?)"', body)
-                if match:
-                    url = match.groupdict()['link']
-                else:
-                    url = ''
-
-        export['id'] = self.id
-        export['name'] = self.name
-        export['campaign'] = self.campaign.name if self.campaign else ''
-        export['category'] = self.category.name if self.category else ''
-        export['url'] = url
-        export['body'] = bleach.clean(body, tags=[], strip=True).strip()
-
+        body = self.template_ng.get_main_body(bleached=True)
+        url = self.template_ng.get_main_url()
+        export = {
+            'id': self.id,
+            'name': self.name,
+            'campaign': self.campaign.name if self.campaign else '',
+            'category': self.category.name if self.category else '',
+            'url': url,
+            'body': body,
+        }
         return export
+
+
+# We could connect the signal to specific senders using `sender` argument but
+# we would have to connect each template class separately which will create
+# another thing to do when we add more templates and that can be potentially
+# forgotten. Instead we're collecting all signals and we do instance type
+# checking.
+@receiver(post_save, dispatch_uid='update_icon')
+def update_asrsnippet_modified_date(sender, instance, **kwargs):
+    now = timezone.now()
+    snippets = None
+
+    if isinstance(instance, Template):
+        snippets = [instance.snippet.pk]
+
+    elif isinstance(instance, Icon):
+        # Convert the value_list Queryset to a list, required for the upcoming
+        # update() query to work.
+        snippets = [id for id in instance.snippets.values_list('pk', flat=True)]
+
+    if snippets:
+        ASRSnippet.objects.filter(pk__in=snippets).update(modified=now)
 
 
 class Addon(models.Model):

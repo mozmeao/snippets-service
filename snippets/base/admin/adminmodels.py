@@ -103,9 +103,316 @@ class AddonAdmin(admin.ModelAdmin):
     list_display = ('name', 'guid')
 
 
+class IconAdmin(admin.ModelAdmin):
+    search_fields = [
+        'name',
+        'image',
+    ]
+    readonly_fields = [
+        'height',
+        'width',
+        'preview',
+        'creator',
+        'created',
+        'snippets',
+    ]
+    list_display_links = [
+        'id',
+        'name',
+    ]
+    list_display = [
+        'id',
+        'name',
+        'width',
+        'height',
+        'preview',
+    ]
+
+    class Media:
+        css = {
+            'all': (
+                'css/admin/IconListSnippets.css',
+            )
+        }
+
+    def save_model(self, request, obj, form, change):
+        if not obj.creator_id:
+            obj.creator = request.user
+        super().save_model(request, obj, form, change)
+
+    def preview(self, obj):
+        text = f'<img style="max-width:120px; max-height:120px;" src="{obj.image.url}"/>'
+        return mark_safe(text)
+
+    def snippets(self, obj):
+        """Snippets using this icon."""
+        template = get_template('base/snippets_related_with_icon.jinja')
+        return mark_safe(template.render({'snippets': obj.snippets}))
+
+
+class SimpleTemplateInline(admin.StackedInline):
+    model = models.SimpleTemplate
+    form = forms.SimpleTemplateForm
+    can_delete = False
+    classes = [
+        'inline-template',
+        'simple_snippet',
+    ]
+    raw_id_fields = [
+        'section_title_icon',
+        'title_icon',
+        'icon',
+    ]
+
+    fieldsets = (
+        ('Title', {
+            'fields': ('title_icon', 'title'),
+        }),
+        ('Section', {
+            'fields': ('section_title_icon', 'section_title_text', 'section_title_url',),
+        }),
+        ('Main', {
+            'fields': ('icon', 'text', 'button_label', 'button_color', 'button_url'),
+        }),
+        ('Extra', {
+            'fields': ('block_button_text', 'tall', 'do_not_autoblock'),
+        })
+
+    )
+
+
+class FundraisingTemplateInline(admin.StackedInline):
+    model = models.FundraisingTemplate
+    form = forms.FundraisingTemplateForm
+    can_delete = False
+    classes = [
+        'inline-template',
+        'eoy_snippet',
+    ]
+    raw_id_fields = [
+        'title_icon',
+        'icon',
+    ]
+
+    fieldsets = (
+        ('Title', {
+            'fields': (
+                'title_icon',
+                'title'
+            ),
+        }),
+        ('Main', {
+            'fields': (
+                'icon',
+                'text',
+                'text_color',
+                'background_color',
+                'highlight_color',
+            )
+        }),
+        ('Form Configuration', {
+            'fields': (
+                'donation_form_url',
+                'currency_code',
+                'locale',
+                'selected_button',
+                'button_label',
+                'button_color',
+                'button_background_color',
+                'monthly_checkbox_label_text',
+            )
+        }),
+        ('Donation', {
+            'fields': (
+                ('donation_amount_first', 'donation_amount_second',
+                 'donation_amount_third', 'donation_amount_fourth',),
+            )
+        }),
+        ('Extra', {
+            'fields': ('block_button_text', 'test', 'do_not_autoblock'),
+        })
+
+    )
+
+
+class FxASignupTemplateInline(admin.StackedInline):
+    model = models.FxASignupTemplate
+    form = forms.FxASignupTemplateForm
+    can_delete = False
+    classes = [
+        'inline-template',
+        'fxa_signup_snippet',
+    ]
+    raw_id_fields = [
+        'scene1_title_icon',
+        'scene1_icon',
+    ]
+
+    fieldsets = (
+        ('Scene 1 Title', {
+            'fields': (
+                'scene1_title_icon',
+                'scene1_title'
+            ),
+        }),
+        ('Scene 1 Main', {
+            'fields': (
+                'scene1_icon',
+                'scene1_text',
+                'scene1_button_label',
+                'scene1_button_color',
+                'scene1_button_background_color',
+            )
+        }),
+        ('Scene 2 Title', {
+            'fields': ('scene2_title',),
+        }),
+        ('Scene 2 Main', {
+            'fields': (
+                'scene2_text',
+                'scene2_button_label',
+                'scene2_email_placeholder_text',
+                'scene2_dismiss_button_text',
+            )
+        }),
+
+        ('Extra', {
+            'fields': (
+                'utm_term',
+                'utm_campaign',
+                'block_button_text',
+                'do_not_autoblock'
+            ),
+        })
+    )
+
+
+class NewsletterTemplateInline(admin.StackedInline):
+    model = models.NewsletterTemplate
+    form = forms.NewsletterTemplateForm
+    can_delete = False
+    classes = [
+        'inline-template',
+        'newsletter_snippet',
+    ]
+    raw_id_fields = [
+        'scene1_title_icon',
+        'scene1_icon',
+    ]
+
+    fieldsets = (
+        ('Scene 1 Title', {
+            'fields': (
+                'scene1_title_icon',
+                'scene1_title'
+            ),
+        }),
+        ('Scene 1 Main', {
+            'fields': (
+                'scene1_icon',
+                'scene1_text',
+                'scene1_button_label',
+                'scene1_button_color',
+                'scene1_button_background_color',
+            )
+        }),
+        ('Scene 2 Title', {
+            'fields': ('scene2_title',),
+        }),
+        ('Scene 2 Main', {
+            'fields': (
+                'scene2_text',
+                'scene2_button_label',
+                'scene2_email_placeholder_text',
+                'scene2_privacy_html',
+                'scene2_newsletter',
+                'scene2_dismiss_button_text',
+                'locale',
+                'success_text',
+                'error_text',
+            )
+        }),
+
+        ('Extra', {
+            'fields': (
+                'block_button_text',
+                'do_not_autoblock'
+            ),
+        })
+    )
+
+
+class SendToDeviceTemplateInline(admin.StackedInline):
+    model = models.SendToDeviceTemplate
+    form = forms.SendToDeviceTemplateForm
+    can_delete = False
+    classes = [
+        'inline-template',
+        'send_to_device_snippet',
+    ]
+    raw_id_fields = [
+        'scene1_title_icon',
+        'scene1_icon',
+        'scene2_icon',
+    ]
+
+    fieldsets = (
+        ('Scene 1 Title', {
+            'fields': (
+                'scene1_title_icon',
+                'scene1_title'
+            ),
+        }),
+        ('Scene 1 Main', {
+            'fields': (
+                'scene1_icon',
+                'scene1_text',
+                'scene1_button_label',
+                'scene1_button_color',
+                'scene1_button_background_color',
+            )
+        }),
+        ('Scene 2 Title', {
+            'fields': ('scene2_title',),
+        }),
+        ('Scene 2 Main', {
+            'fields': (
+                'scene2_icon',
+                'scene2_text',
+
+                'scene2_button_label',
+                'scene2_input_placeholder',
+                'scene2_disclaimer_html',
+                'scene2_dismiss_button_text',
+
+                'locale',
+                'country',
+                ('include_sms', 'message_id_sms',),
+                'message_id_email',
+                'success_title',
+                'success_text',
+                'error_text',
+            )
+        }),
+
+        ('Extra', {
+            'fields': (
+                'block_button_text',
+                'do_not_autoblock'
+            ),
+        })
+    )
+
+
 class ASRSnippetAdmin(admin.ModelAdmin):
     form = forms.ASRSnippetAdminForm
-
+    inlines = [
+        SimpleTemplateInline,
+        FundraisingTemplateInline,
+        FxASignupTemplateInline,
+        NewsletterTemplateInline,
+        SendToDeviceTemplateInline,
+    ]
     list_display_links = (
         'id',
         'name',
@@ -173,11 +480,12 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 You can use <code>[[snippet_id]]</code> in any field and it
                 will be automatically replaced by Snippet ID when served to users.
                 <br/>
-                Example: This is a <code>&lt;a href=&quot;https://example.com?utm_term=[[snippet_id]]&quot;&gt;link&lt;/a&gt;</code>  # noqa
+                Example: This is a <code>&lt;a href=&quot;https://example.com?utm_term=[[snippet_id]]&quot;&gt;link&lt;/a&gt;</code>
                 <br/>
-                '''
+                '''  # noqa
             ),
-            'fields': ('template', 'data'),
+            'fields': ('template_chooser',),
+            'classes': ('template-fieldset',)
         }),
         ('Publishing Options', {
             'fields': (
@@ -199,6 +507,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             'all': (
                 'css/admin/ASRSnippetAdmin.css',
                 'css/admin/IDFieldHighlight.css',
+                'css/admin/InlineTemplates.css',
             )
         }
         js = (

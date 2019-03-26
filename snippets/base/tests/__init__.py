@@ -153,6 +153,23 @@ class CategoryFactory(factory.django.DjangoModelFactory):
         model = models.Category
 
 
+class IconFactory(factory.django.DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Icon {0}'.format(n))
+    creator = factory.SubFactory(UserFactory)
+    image = factory.django.ImageField(width=192, height=192, format='PNG')
+
+    class Meta:
+        model = models.Icon
+
+
+class SimpleTemplateFactory(factory.django.DjangoModelFactory):
+    text = 'This is the main text with a <a href="https://example.com">link</a>.'
+    icon = factory.SubFactory(IconFactory)
+
+    class Meta:
+        model = models.SimpleTemplate
+
+
 class ASRSnippetFactory(factory.django.DjangoModelFactory):
     creator = factory.SubFactory(UserFactory)
     name = factory.Sequence(lambda n: 'ASRSnippet {0}'.format(n))
@@ -160,10 +177,20 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
     category = factory.SubFactory(CategoryFactory, creator=factory.SelfAttribute('..creator'))
 
     template = factory.SubFactory(SnippetTemplateFactory, startpage=6)
+    template_relation = factory.RelatedFactory(SimpleTemplateFactory, 'snippet')
     status = models.STATUS_CHOICES['Published']
 
     class Meta:
         model = models.ASRSnippet
+
+    @factory.post_generation
+    def set_template_relation_to_template_model(self, *args, **kwargs):
+        """By default this Factory creates and relates a SimpleTemplate to this
+        new ASRSnippet object. The Django Admin on the other hand, relates a
+        Template obj when saving a ASRSnippet object. We use this method to
+        make the Factory behave like Django Admin.
+        """
+        self.template_relation = self.template_relation.template_ptr
 
     @factory.post_generation
     def targets(self, create, extracted, **kwargs):
