@@ -327,19 +327,6 @@ class ASRSnippetBundleTests(TestCase):
         key_2 = bundle.key
         self.assertNotEqual(key_1, key_2)
 
-    def test_key_template_modified(self):
-        client1 = self._client(locale='en-US', startpage_version=4)
-        bundle = ASRSnippetBundle(client1)
-        bundle.snippets = [self.snippet1]
-        key_1 = bundle.key
-
-        # save template, touch modified
-        self.snippet1.template_ng.VERSION = 'new-version'
-        bundle = ASRSnippetBundle(client1)
-        bundle.snippets = [self.snippet1]
-        key_2 = bundle.key
-        self.assertNotEqual(key_1, key_2)
-
     @override_settings(BUNDLE_BROTLI_COMPRESS=False)
     def test_generate(self):
         """

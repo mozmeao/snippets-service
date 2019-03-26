@@ -546,3 +546,29 @@ class ASRSnippetTests(TestCase):
         new_modified = snippet.modified
 
         self.assertNotEqual(old_modified, new_modified)
+
+    def test_modified_date_updates_when_campaign_updates(self):
+        snippet = ASRSnippetFactory()
+        old_modified = snippet.modified
+
+        campaign = snippet.campaign
+        campaign.name = 'new name'
+        campaign.save()
+
+        snippet.refresh_from_db()
+        new_modified = snippet.modified
+
+        self.assertNotEqual(old_modified, new_modified)
+
+    def test_modified_date_updates_when_target_updates(self):
+        new_target = TargetFactory()
+        snippet = ASRSnippetFactory()
+        snippet.targets.add(new_target)
+        old_modified = snippet.modified
+
+        new_target.name = 'new name'
+        new_target.save()
+        snippet.refresh_from_db()
+        new_modified = snippet.modified
+
+        self.assertNotEqual(old_modified, new_modified)

@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from urllib.parse import urljoin, urlparse
 
+from django.apps import apps
 from django.conf import settings
 from django.core.cache import cache
 from django.core.files.base import ContentFile
@@ -13,7 +14,7 @@ from django.utils.functional import cached_property
 import brotli
 
 from snippets.base import util
-from snippets.base.models import STATUS_CHOICES, ASRSnippet, Snippet
+from snippets.base.models import STATUS_CHOICES, ASRSnippet, Snippet, Template
 
 
 ONE_DAY = 60 * 60 * 24
@@ -45,6 +46,16 @@ SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
             'metrics_url': settings.METRICS_URL,
         }
     ).encode('utf-8')).hexdigest()
+
+# On application load combine all the version strings of all available
+# templates into one. To be used in ASRSnippetBundle.key method to calculate
+# the bundle key. The point is that this string should change when the Template
+# schema changes.
+TEMPLATES_NG_VERSIONS = '-'.join([
+    model.VERSION
+    for model in apps.get_models()
+    if issubclass(model, Template) and not model.__name__ == 'Template'
+])
 
 
 class SnippetBundle(object):
@@ -180,20 +191,6 @@ class ASRSnippetBundle(SnippetBundle):
                 snippet.modified.isoformat(),
             ]
 
-            # To remove after migration completes. See
-            # https://github.com/mozmeao/snippets-service/issues/933
-            if hasattr(snippet, 'template_relation'):
-                attributes.append(snippet.template_ng.version)
-            else:
-                attributes.append(snippet.template.modified.isoformat())
-
-            attributes.extend(
-                [target.modified.isoformat() for target in snippet.targets.all()]
-            )
-
-            if snippet.campaign:
-                attributes.append(snippet.campaign.modified.isoformat())
-
             key_properties.append('-'.join([str(x) for x in attributes]))
 
         # Additional values used to calculate the key are the templates and the
@@ -202,6 +199,7 @@ class ASRSnippetBundle(SnippetBundle):
             str(self.client.startpage_version),
             self.client.locale,
             str(settings.BUNDLE_BROTLI_COMPRESS),
+            TEMPLATES_NG_VERSIONS,
         ])
 
         key_string = '_'.join(key_properties)
@@ -215,7 +213,7 @@ class ASRSnippetBundle(SnippetBundle):
     def snippets(self):
         return (ASRSnippet.objects
                 .filter(status=STATUS_CHOICES['Published'])
-                .select_related('template', 'campaign', 'template_relation')
+                .select_related('campaign', 'template_relation')
                 .match_client(self.client)
                 .filter_by_available())
 
@@ -227,7 +225,7 @@ class ASRSnippetBundle(SnippetBundle):
             'messages': data,
             'metadata': {
                 'generated_at': datetime.utcnow().isoformat(),
-                'number_of_snippets': len(self.snippets),
+                'number_of_snippets': len(data),
             }
         })
 
