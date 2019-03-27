@@ -1586,7 +1586,7 @@ class ASRSnippet(django_mysql.models.Model):
 # another thing to do when we add more templates and that can be potentially
 # forgotten. Instead we're collecting all signals and we do instance type
 # checking.
-@receiver(post_save, dispatch_uid='update_icon')
+@receiver(post_save, dispatch_uid='update_asrsnippet_modified')
 def update_asrsnippet_modified_date(sender, instance, **kwargs):
     now = timezone.now()
     snippets = None
@@ -1598,6 +1598,11 @@ def update_asrsnippet_modified_date(sender, instance, **kwargs):
         # Convert the value_list Queryset to a list, required for the upcoming
         # update() query to work.
         snippets = [id for id in instance.snippets.values_list('pk', flat=True)]
+
+    elif isinstance(instance, Campaign) or isinstance(instance, Target):
+        # Convert the value_list Queryset to a list, required for the upcoming
+        # update() query to work.
+        snippets = [id for id in instance.asrsnippet_set.values_list('pk', flat=True)]
 
     if snippets:
         ASRSnippet.objects.filter(pk__in=snippets).update(modified=now)
