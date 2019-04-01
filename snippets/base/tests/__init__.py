@@ -92,17 +92,6 @@ class ClientMatchRuleFactory(factory.django.DjangoModelFactory):
         model = models.ClientMatchRule
 
 
-class UploadedFileFactory(factory.django.DjangoModelFactory):
-    name = factory.Sequence(lambda n: 'Uploaded File {0}'.format(n))
-    # factory.django.FileField is broken and doesn't save filename. We
-    # set file to None to prevent factory from taking any action and mock
-    # it as needed in the tests.
-    file = None
-
-    class Meta:
-        model = models.UploadedFile
-
-
 class SearchProviderFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Search Provider {0}'.format(n))
     identifier = factory.Sequence(lambda n: 'search-provider-{0}'.format(n))

@@ -1,15 +1,13 @@
 import json
 
 from django.contrib.auth.models import User, Permission
-from django.forms import ValidationError
 
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, patch
 from pyquery import PyQuery as pq
 
 from snippets.base.forms import (ASRSnippetAdminForm, IconWidget,
                                  SnippetAdminForm, TargetAdminForm,
-                                 TemplateDataWidget, TemplateSelect,
-                                 UploadedFileAdminForm)
+                                 TemplateDataWidget, TemplateSelect)
 from snippets.base.models import STATUS_CHOICES
 from snippets.base.tests import (ASRSnippetFactory, SnippetFactory,
                                  SnippetTemplateFactory,
@@ -130,26 +128,6 @@ class TemplateDataWidgetTests(TestCase):
 
         self.assertEqual(data_widget.attr('data-select-name'), 'somename')
         self.assertEqual(data_widget.attr('data-input-name'), 'anothername')
-
-
-class UploadedFileAdminFormTests(TestCase):
-    def test_clean_file(self):
-        instance = MagicMock()
-        instance.file.name = 'foo.png'
-        form = UploadedFileAdminForm(instance=instance)
-        file_mock = MagicMock()
-        file_mock.name = 'bar.png'
-        form.cleaned_data = {'file': file_mock}
-        self.assertEqual(form.clean_file(), file_mock)
-
-    def test_clean_file_different_extension(self):
-        instance = MagicMock()
-        instance.file.name = 'foo.png'
-        form = UploadedFileAdminForm(instance=instance)
-        file_mock = MagicMock()
-        file_mock.name = 'bar.pdf'
-        form.cleaned_data = {'file': file_mock}
-        self.assertRaises(ValidationError, form.clean_file)
 
 
 class BaseSnippetAdminFormTests(TestCase):
