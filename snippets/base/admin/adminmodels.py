@@ -83,22 +83,6 @@ class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
                 obj.save()
 
 
-class UploadedFileAdmin(admin.ModelAdmin):
-    readonly_fields = ('url', 'preview', 'snippets')
-    list_display = ('name', 'url', 'preview', 'modified')
-    prepopulated_fields = {'name': ('file',)}
-    form = forms.UploadedFileAdminForm
-
-    def preview(self, obj):
-        template = get_template('base/uploadedfile_preview.jinja')
-        return mark_safe(template.render({'file': obj}))
-
-    def snippets(self, obj):
-        """Snippets using this file."""
-        template = get_template('base/uploadedfile_snippets.jinja')
-        return mark_safe(template.render({'snippets': obj.snippets}))
-
-
 class AddonAdmin(admin.ModelAdmin):
     list_display = ('name', 'guid')
 

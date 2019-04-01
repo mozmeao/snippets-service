@@ -6,7 +6,6 @@ import re
 import uuid
 from collections import namedtuple
 from datetime import datetime
-from functools import partial
 from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
@@ -468,47 +467,11 @@ def _generate_filename(instance, filename, root=None):
     do not generate a new filename.
     """
     if not root:
-        root = settings.MEDIA_FILES_ROOT
+        root = settings.MEDIA_ICONS_ROOT
 
-    keep_filename = True
-    if isinstance(instance, Icon):
-        keep_filename = False
-
-    # Instance is new, generate a filename
-    if not instance.id or not keep_filename:
-        ext = os.path.splitext(filename)[1]
-        filename = str(uuid.uuid4()) + ext
-        return os.path.join(root, filename)
-
-    # So that UploadedFile can keep the same filename.
-    db_instance = instance._meta.model.objects.get(pk=instance.id)
-    return db_instance.file.name
-
-
-class UploadedFile(models.Model):
-    file = models.FileField(upload_to=_generate_filename)
-    name = models.CharField(max_length=255)
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def url(self):
-        full_url = urljoin(settings.SITE_URL, self.file.url).split('?')[0]
-        cdn_url = getattr(settings, 'CDN_URL', None)
-        if cdn_url:
-            full_url = urljoin(cdn_url, urlparse(self.file.url).path)
-
-        return full_url
-
-    @property
-    def snippets(self):
-        return Snippet.objects.filter(
-            models.Q(data__contains=self.file.url) |
-            models.Q(template__code__contains=self.file.url)
-        )
+    ext = os.path.splitext(filename)[1]
+    filename = str(uuid.uuid4()) + ext
+    return os.path.join(root, filename)
 
 
 class SearchProvider(models.Model):
@@ -635,7 +598,7 @@ class Icon(models.Model):
     height = models.PositiveIntegerField(default=0)
     width = models.PositiveIntegerField(default=0)
     image = models.ImageField(
-        upload_to=partial(_generate_filename, root=settings.MEDIA_ICONS_ROOT),
+        upload_to=_generate_filename,
         height_field='height',
         width_field='width',
         help_text=('PNGs only. Note that updating the image will '

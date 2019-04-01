@@ -1,16 +1,16 @@
 from django.conf import settings
+from django.core.files import File
 from django.test.utils import override_settings
 from django.urls import reverse
 
 from jinja2 import Markup
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 from pyquery import PyQuery as pq
 
 from snippets.base.models import (STATUS_CHOICES,
                                   Client,
                                   Icon,
                                   SimpleTemplate,
-                                  UploadedFile,
                                   _generate_filename)
 from snippets.base.util import fluent_link_extractor
 from snippets.base.tests import (ASRSnippetFactory,
@@ -23,8 +23,7 @@ from snippets.base.tests import (ASRSnippetFactory,
                                  SnippetTemplateVariableFactory,
                                  TargetFactory,
                                  TestCase,
-                                 UserFactory,
-                                 UploadedFileFactory)
+                                 UserFactory)
 
 
 class DuplicateSnippetMixInTests(TestCase):
@@ -301,63 +300,31 @@ class SnippetTests(TestCase):
         self.assertTrue(snippet.get_admin_url(full=False).startswith('/'))
 
 
-class UploadedFileTests(TestCase):
-
-    @override_settings(CDN_URL='http://example.com')
-    def test_url_with_cdn_url(self):
-        test_file = UploadedFile()
-        test_file.file = Mock()
-        test_file.file.url = 'foo'
-        self.assertEqual(test_file.url, 'http://example.com/foo')
-
-    @override_settings(CDN_URL='http://example.com/error/')
-    def test_url_without_cdn_url(self):
-        test_file = UploadedFileFactory.build()
-        test_file.file = Mock()
-        test_file.file.url = 'bar'
-        with patch('snippets.base.models.settings', wraps=settings) as settings_mock:
-            delattr(settings_mock, 'CDN_URL')
-            settings_mock.SITE_URL = 'http://example.com/foo/'
-            self.assertEqual(test_file.url, 'http://example.com/foo/bar')
-
-    def test_snippets(self):
-        instance = UploadedFileFactory.build()
-        instance.file = MagicMock()
-        instance.file.url = '/media/foo.png'
-        snippets = SnippetFactory.create_batch(2, data='lalala {0} foobar'.format(instance.url))
-        template = SnippetTemplateFactory.create(code='<foo>{0}</foo>'.format(instance.url))
-        more_snippets = SnippetFactory.create_batch(3, template=template)
-        self.assertEqual(set(instance.snippets), set(list(snippets) + list(more_snippets)))
-
-
 class GenerateFilenameTests(TestCase):
-    @override_settings(MEDIA_FILES_ROOT='filesroot/')
+    @override_settings(MEDIA_ICONS_ROOT='filesroot/')
     @patch('snippets.base.models.uuid')
     def test_generate_new_filename(self, uuid_mock):
         uuid_mock.uuid4.return_value = 'bar'
-        file = UploadedFileFactory.build()
-        filename = _generate_filename(file, 'filename.boing')
-        self.assertEqual(filename, 'filesroot/bar.boing')
+        icon = IconFactory(image__filename='upload.png')
+        self.assertEqual(icon.image.name, 'filesroot/bar.png')
 
-    def test_generate_filename_existing_entry(self):
-        obj = UploadedFileFactory.build()
-        obj.file.name = 'bar.png'
-        obj.save()
-        filename = _generate_filename(obj, 'new_filename.boing')
-        self.assertEqual(filename, 'bar.png')
-
-    @override_settings(MEDIA_FILES_ROOT='filesroot/')
     @patch('snippets.base.models.uuid')
     def test_generate_filename_different_root(self, uuid_mock):
         uuid_mock.uuid4.return_value = 'bar'
-        file = UploadedFileFactory.build()
-        filename = _generate_filename(file, 'filename.boing', root='new-root')
+        filename = _generate_filename(None, 'filename.boing', root='new-root')
         self.assertEqual(filename, 'new-root/bar.boing')
 
-    def test_update_icon_new_filename(self):
+    def test_update_icon_generate_new_filename(self):
         icon = IconFactory()
-        filename = _generate_filename(icon, 'filename.boing', settings.MEDIA_ICONS_ROOT)
-        self.assertNotEqual(icon.image.name, filename)
+        old_name = icon.image.name
+
+        # Simplest way to test with a new image is to create a new Icon with
+        # IconFactory
+        new_icon = IconFactory()
+        icon.image = File(new_icon.image.file.open())
+        icon.save()
+        icon.refresh_from_db()
+        self.assertNotEqual(icon.image.name, old_name)
 
 
 class TemplateTests(TestCase):

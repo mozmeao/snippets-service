@@ -4,7 +4,7 @@ from snippets.base import models
 
 from .adminmodels import (AddonAdmin, ASRSnippetAdmin, CampaignAdmin, CategoryAdmin,
                           ClientMatchRuleAdmin, LogEntryAdmin, IconAdmin,
-                          SnippetTemplateAdmin, TargetAdmin, UploadedFileAdmin)
+                          SnippetTemplateAdmin, TargetAdmin)
 from .legacy import (SnippetAdmin, JSONSnippetAdmin, SearchProviderAdmin, TargetedCountryAdmin,
                      TargetedLocaleAdmin)
 
@@ -25,6 +25,5 @@ admin.site.register(models.ClientMatchRule, ClientMatchRuleAdmin)
 admin.site.register(admin.models.LogEntry, LogEntryAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
 admin.site.register(models.Target, TargetAdmin)
-admin.site.register(models.UploadedFile, UploadedFileAdmin)
 admin.site.register(models.Icon, IconAdmin)
 admin.site.register(models.Template)

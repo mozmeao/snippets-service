@@ -135,7 +135,6 @@ if not DEBUG_TEMPLATE:
 
 MEDIA_URL = config('MEDIA_URL', '/media/')
 MEDIA_ROOT = config('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
-MEDIA_FILES_ROOT = config('MEDIA_FILES_ROOT', default='files/')
 MEDIA_BUNDLES_ROOT = config('MEDIA_BUNDLES_ROOT', default='bundles/')
 MEDIA_ICONS_ROOT = config('MEDIA_ICONS_ROOT', default='icons/')
 
@@ -266,7 +265,6 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     # Full list of S3 endpoints http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
     AWS_S3_HOST = config('AWS_S3_HOST')
     AWS_CACHE_CONTROL_HEADERS = {
-        MEDIA_FILES_ROOT: 'max-age=900',  # 15 Minutes
         MEDIA_BUNDLES_ROOT: 'max-age=2592000',  # 1 Month
         MEDIA_ICONS_ROOT: 'max-age=15552000',  # 6 Months
     }
@@ -329,7 +327,6 @@ ADMIN_REORDER = [
         'models': [
             'base.Snippet', 'base.SearchProvider', 'base.ClientMatchRule',
             'base.SnippetTemplate', 'base.TargetedCountry', 'base.TargetedLocale',
-            'base.UploadedFile'
         ]
     },
     {

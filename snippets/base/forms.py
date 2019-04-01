@@ -1,5 +1,4 @@
 import json
-import os
 from collections import defaultdict
 
 from django import forms
@@ -582,23 +581,6 @@ class JSONSnippetAdminForm(BaseSnippetAdminForm):
             'text': forms.Textarea,
             'icon': IconWidget,
         }
-
-
-class UploadedFileAdminForm(forms.ModelForm):
-    def clean_file(self):
-        current_ext = os.path.splitext(self.instance.file.name)[1]
-        new_ext = os.path.splitext(self.cleaned_data['file'].name)[1]
-
-        if current_ext and current_ext != new_ext:
-            raise forms.ValidationError(
-                'File extensions do not match! You tried to upload a {0} file'
-                ' in the place of a {1} file.'.format(new_ext, current_ext)
-            )
-        return self.cleaned_data['file']
-
-    class Meta:
-        model = models.UploadedFile
-        fields = ('file', 'name')
 
 
 class SnippetTemplateVariableInlineFormset(forms.models.BaseInlineFormSet):
