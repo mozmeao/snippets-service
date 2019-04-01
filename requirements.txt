@@ -61,9 +61,9 @@ django-jinja==2.4.1 \
 django-ace==1.0.5 \
     --hash=sha256:1334f08b4c5548e8ab13b25787e6a3f49dfe5fc92bb3a3d845b5b42fa0e1aff6 \
     --hash=sha256:a2616b0265bdc1f839cc905c77243f779d82c00f3fddf58d23c08eb07e91e189
-django-mozilla-product-details==0.13 \
-    --hash=sha256:4ffa5a104f53645460a50c9342a41e3ea02d432851becf56e820d42faa94839f \
-    --hash=sha256:ce97fc2533aa06560d9b438ebba2522dc0b2ada86d6e0537cfb5ac06db1a6aa2
+django-mozilla-product-details==0.13.1 \
+    --hash=sha256:fad2022fb9289aca574a9c1cb6bea90c9977302ad31494608b540d35c201e3a9 \
+    --hash=sha256:fdb87422ebd1b15ece9d338100c75d1dbe936930ca14e4f5644b9918b6b4f6f3
 lxml==4.3.2 \
     --hash=sha256:0358b9e9642bc7d39aac5cffe9884a99a5ca68e5e2c1b89e570ed60da9139908 \
     --hash=sha256:091a359c4dafebbecd3959d9013f1b896b5371859165e4e50b01607a98d9e3e2 \
