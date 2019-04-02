@@ -430,7 +430,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         ('campaign', RelatedDropdownFilter),
         ('category', RelatedDropdownFilter),
         filters.ScheduledFilter,
-        ('template', RelatedDropdownFilter),
     )
     search_fields = (
         'name',
