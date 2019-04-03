@@ -15,7 +15,6 @@ from snippets.base.models import (STATUS_CHOICES,
 from snippets.base.util import fluent_link_extractor
 from snippets.base.tests import (ASRSnippetFactory,
                                  ClientMatchRuleFactory,
-                                 JSONSnippetFactory,
                                  IconFactory,
                                  SearchProviderFactory,
                                  SnippetFactory,
@@ -38,16 +37,10 @@ class DuplicateSnippetMixInTests(TestCase):
         self.assertEqual(set(snippet_copy.client_match_rules.all()),
                          set(snippet.client_match_rules.all()))
 
-        # Only Snippet and not JSONSnippet, has creator
-        if hasattr(snippet, 'creator'):
-            self.assertNotEqual(snippet_copy.creator, snippet.creator)
+        self.assertNotEqual(snippet_copy.creator, snippet.creator)
 
     def test_snippet(self):
         snippet = SnippetFactory.create()
-        self._dup_test(snippet)
-
-    def test_json_snippet(self):
-        snippet = JSONSnippetFactory.create()
         self._dup_test(snippet)
 
 

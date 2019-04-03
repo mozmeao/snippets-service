@@ -43,7 +43,7 @@ class SnippetQuerySet(QuerySet):
         return matching_snippets
 
     def match_client(self, client):
-        from snippets.base.models import CHANNELS, JSONSnippet, ClientMatchRule
+        from snippets.base.models import CHANNELS, ClientMatchRule
 
         filters = {}
 
@@ -72,10 +72,7 @@ class SnippetQuerySet(QuerySet):
             filters.update(locales__isnull=True)
 
         snippets = self.filter(**filters).distinct()
-        if issubclass(self.model, JSONSnippet):
-            filtering = {'jsonsnippet__in': snippets}
-        else:
-            filtering = {'snippet__in': snippets}
+        filtering = {'snippet__in': snippets}
 
         # Filter based on ClientMatchRules
         passed_rules, failed_rules = (ClientMatchRule.objects

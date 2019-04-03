@@ -417,50 +417,6 @@ class Snippet(SnippetBaseModel):
         return super(Snippet, self).save(*args, **kwargs)
 
 
-class JSONSnippet(SnippetBaseModel):
-    name = models.CharField(max_length=255, unique=True)
-    published = models.BooleanField(default=False)
-
-    icon = models.TextField(help_text='Icon should be a 96x96px PNG.')
-    text = models.CharField(max_length=140,
-                            help_text='Maximum length 140 characters.')
-    url = models.CharField(max_length=500)
-
-    countries = models.ManyToManyField(
-        'TargetedCountry', blank=True, verbose_name='Targeted Countries')
-    locales = models.ManyToManyField('TargetedLocale', blank=True, verbose_name='Targeted Locales')
-
-    publish_start = models.DateTimeField(blank=True, null=True)
-    publish_end = models.DateTimeField(blank=True, null=True)
-
-    on_release = models.BooleanField(default=True, verbose_name='Release')
-    on_beta = models.BooleanField(default=False, verbose_name='Beta')
-    on_aurora = models.BooleanField(default=False, verbose_name='Aurora')
-    on_nightly = models.BooleanField(default=False, verbose_name='Nightly')
-    on_esr = models.BooleanField(default=False, verbose_name='ESR')
-
-    on_startpage_1 = models.BooleanField(default=True, verbose_name='Version 1')
-
-    weight = models.IntegerField(
-        'Prevalence', choices=SNIPPET_WEIGHTS, default=100,
-        help_text='How often should this snippet be shown to users?')
-
-    client_match_rules = models.ManyToManyField(
-        ClientMatchRule, blank=True, verbose_name='Client Match Rules')
-
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
-
-    objects = managers.SnippetManager()
-
-    class Meta:
-        ordering = ('-modified',)
-        verbose_name = 'JSON Snippet'
-
-    def __str__(self):
-        return self.name
-
-
 def _generate_filename(instance, filename, root=None):
     """Generate a new unique filename while preserving the original
     filename extension. If an existing UploadedFile gets updated

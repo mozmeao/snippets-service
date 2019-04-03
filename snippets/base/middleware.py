@@ -6,7 +6,7 @@ from django.urls import Resolver404, resolve
 
 from enforce_host import EnforceHostMiddleware
 
-from snippets.base.views import fetch_json_snippets, fetch_snippets
+from snippets.base.views import fetch_snippets
 
 
 class FetchSnippetsMiddleware(object):
@@ -30,7 +30,7 @@ class FetchSnippetsMiddleware(object):
             # If we cannot resolve, continue with the next middleware.
             return self.get_response(request)
 
-        if result.func in (fetch_snippets, fetch_json_snippets):
+        if result.func in (fetch_snippets,):
             return result.func(request, *result.args, **result.kwargs)
 
         return self.get_response(request)

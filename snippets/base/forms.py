@@ -570,19 +570,6 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         return snippet
 
 
-class JSONSnippetAdminForm(BaseSnippetAdminForm):
-    class Meta:
-        model = models.JSONSnippet
-        fields = ('name', 'published', 'icon', 'text', 'url', 'countries',
-                  'publish_start', 'publish_end',
-                  'on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr',
-                  'on_startpage_1', 'weight', 'client_match_rules',)
-        widgets = {
-            'text': forms.Textarea,
-            'icon': IconWidget,
-        }
-
-
 class SnippetTemplateVariableInlineFormset(forms.models.BaseInlineFormSet):
     def clean(self):
         main_body_count = sum([form.cleaned_data['type'] == models.SnippetTemplateVariable.BODY
