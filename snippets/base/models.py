@@ -1368,9 +1368,6 @@ class ASRSnippet(django_mysql.models.Model):
     category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.PROTECT,
                                  related_name='asrsnippets')
 
-    template = models.ForeignKey(SnippetTemplate, on_delete=models.PROTECT, null=True)
-    data = models.TextField(default='{}')
-
     status = models.IntegerField(choices=[(y, x) for x, y in STATUS_CHOICES.items()],
                                  db_index=True, default=100)
 
@@ -1420,23 +1417,9 @@ class ASRSnippet(django_mysql.models.Model):
         return self.template_relation.subtemplate
 
     def render(self, preview=False):
-        # To remove after migration completes. See
-        # https://github.com/mozmeao/snippets-service/issues/933
-        if hasattr(self, 'template_relation'):
-            template_code_name = self.template_ng.code_name
-            template_version = self.template_ng.version
-            data = self.template_ng.render()
-        else:
-            template_code_name = self.template.code_name
-            template_version = self.template.version
-
-            data = json.loads(self.data)
-
-            # Convert inline links to fluent.js format.
-            data = util.fluent_link_extractor(data, self.template.get_rich_text_variables())
-
-            # Remove values that are empty strings
-            data = {k: v for k, v in data.items() if v != ''}
+        template_code_name = self.template_ng.code_name
+        template_version = self.template_ng.version
+        data = self.template_ng.render()
 
         # Add snippet ID to template variables.
         data = util.deep_search_and_replace(data, '[[snippet_id]]', str(self.id))

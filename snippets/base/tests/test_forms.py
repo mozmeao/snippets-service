@@ -292,8 +292,6 @@ class ASRSnippetAdminFormTests(TestCase):
         data = {
             'name': 'Test',
             'weight': 100,
-            'template': asrsnippet.template.id,
-            'data': '{}',
         }
 
         # User should get an error trying to publish on Release
