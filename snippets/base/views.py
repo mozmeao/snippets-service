@@ -20,8 +20,7 @@ from raven.contrib.django.models import client as sentry_client
 from snippets.base import util
 from snippets.base.bundles import ASRSnippetBundle, SnippetBundle
 from snippets.base.decorators import access_control
-from snippets.base.encoders import JSONSnippetEncoder
-from snippets.base.models import ASRSnippet, Client, JSONSnippet, Snippet, SnippetTemplate
+from snippets.base.models import ASRSnippet, Client, Snippet, SnippetTemplate
 from snippets.base.util import get_object_or_none
 
 
@@ -66,19 +65,6 @@ def fetch_snippets(request, **kwargs):
         bundle.generate()
 
     return HttpResponseRedirect(bundle.url)
-
-
-@cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)
-@access_control(max_age=SNIPPET_BUNDLE_TIMEOUT)
-def fetch_json_snippets(request, **kwargs):
-    statsd.incr('serve.json_snippets')
-    client = Client(**kwargs)
-    matching_snippets = (JSONSnippet.objects
-                         .filter(published=True)
-                         .match_client(client)
-                         .filter_by_available())
-    return HttpResponse(json.dumps(matching_snippets, cls=JSONSnippetEncoder),
-                        content_type='application/json')
 
 
 def preview_asr_snippet(request, uuid):

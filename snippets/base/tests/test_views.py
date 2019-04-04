@@ -1,4 +1,3 @@
-import json
 from collections import OrderedDict
 
 from django.contrib.auth.models import User
@@ -11,75 +10,10 @@ from unittest.mock import patch
 import snippets.base.models
 from snippets.base import views
 from snippets.base.models import Client
-from snippets.base.tests import (ASRSnippetFactory, JSONSnippetFactory, SnippetFactory,
+from snippets.base.tests import (ASRSnippetFactory, SnippetFactory,
                                  SnippetTemplateFactory, TestCase)
 
 snippets.base.models.CHANNELS = ('release', 'beta', 'aurora', 'nightly')
-
-
-class JSONSnippetsTests(TestCase):
-    def test_base(self):
-        # Matching snippets.
-        snippet_1 = JSONSnippetFactory.create(on_nightly=True, weight=66)
-
-        # Matching but disabled snippet.
-        JSONSnippetFactory.create(on_nightly=True, published=False)
-
-        # Snippet that doesn't match.
-        JSONSnippetFactory.create(on_nightly=False),
-
-        params = ('4', 'Fennec', '23.0a1', '20130510041606',
-                  'Darwin_Universal-gcc3', 'en-US', 'nightly',
-                  'Darwin%2010.8.0', 'default', 'default_version')
-        response = self.client.get('/json/{0}/'.format('/'.join(params)))
-        data = json.loads(response.content)
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]['id'], snippet_1.id)
-        self.assertEqual(data[0]['weight'], 66)
-
-    @patch('snippets.base.views.Client', wraps=Client)
-    def test_client_construction(self, ClientMock):
-        """
-        Ensure that the client object is constructed correctly from the URL
-        arguments.
-        """
-        params = ('4', 'Fennec', '23.0a1', '20130510041606',
-                  'Darwin_Universal-gcc3', 'en-US', 'nightly',
-                  'Darwin%2010.8.0', 'default', 'default_version')
-        self.client.get('/json/{0}/'.format('/'.join(params)))
-
-        ClientMock.assert_called_with(startpage_version=4,
-                                      name='Fennec',
-                                      version='23.0a1',
-                                      appbuildid='20130510041606',
-                                      build_target='Darwin_Universal-gcc3',
-                                      locale='en-US',
-                                      channel='nightly',
-                                      os_version='Darwin 10.8.0',
-                                      distribution='default',
-                                      distribution_version='default_version')
-
-    @override_settings(SNIPPET_BUNDLE_TIMEOUT=75)
-    def test_cache_headers(self):
-        """
-        view_snippets should always have Cache-control set to
-        'public, max-age={settings.SNIPPET_BUNDLE_TIMEOUT}'
-        even after middleware is executed.
-        """
-        params = ('1', 'Fennec', '23.0a1', '20130510041606',
-                  'Darwin_Universal-gcc3', 'en-US', 'nightly',
-                  'Darwin%2010.8.0', 'default', 'default_version')
-        response = self.client.get('/json/{0}/'.format('/'.join(params)))
-        cache_headers = [header.strip() for header in response['Cache-control'].split(',')]
-        self.assertEqual(set(cache_headers), set(['public', 'max-age=75']))
-        self.assertTrue('Vary' not in response)
-
-    def test_response(self):
-        params = ('1', 'Fennec', '23.0a1', '20130510041606',
-                  'Darwin_Universal-gcc3', 'en-US', 'nightly',
-                  'Darwin%2010.8.0', 'default', 'default_version')
-        response = self.client.get('/json/{0}/'.format('/'.join(params)))
-        self.assertEqual(response['Content-Type'], 'application/json')
 
 
 class PreviewSnippetTests(TestCase):

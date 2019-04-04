@@ -344,11 +344,6 @@ ADMIN_REORDER = [
 
     },
     {
-        'app': 'base',
-        'label': 'Android (Legacy)',
-        'models': ['base.JSONSnippet']
-    },
-    {
         'app': 'auth',
         'label': 'Admin',
         'models': ['auth.User', 'auth.Group', 'admin.LogEntry']

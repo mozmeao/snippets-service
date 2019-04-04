@@ -63,8 +63,6 @@ snippet code from the cache and injects it directly into about:home.
    it into the page. The rest of the logic behind displaying snippets is
    determined by the snippet code itself, as explained in the next section.
 
-.. note:: Firefox for Android caches snippets for 24 hours.
-
 .. seealso::
 
    `aboutHome.js <http://dxr.mozilla.org/mozilla-central/source/browser/base/content/abouthome/aboutHome.js>`_

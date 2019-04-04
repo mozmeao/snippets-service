@@ -186,67 +186,6 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         return query.prefetch_related('locales')
 
 
-class JSONSnippetAdmin(BaseSnippetAdmin):
-    form = forms.JSONSnippetAdminForm
-    search_fields = ('name', 'client_match_rules__description')
-    list_filter = (
-        filters.ModifiedFilter,
-        'published',
-        filters.ChannelFilter,
-        ('locales', RelatedDropdownFilter),
-        ('client_match_rules', RelatedDropdownFilter),
-    )
-
-    fieldsets = (
-        (None, {'fields': ('id', 'name', 'published', 'created', 'modified')}),
-        ('Content', {
-            'fields': ('icon', 'text', 'url'),
-        }),
-        ('Publish Duration', {
-            'description': ('When will this snippet be available? (Optional)'
-                            '<br>Publish times are in UTC. '
-                            '<a href="http://time.is/UTC" target="_blank" '
-                            'rel="noopener noreferrer">'
-                            'Click here to see the current time in UTC</a>.'),
-            'fields': ('publish_start', 'publish_end'),
-        }),
-        ('Prevalence', {
-            'fields': ('weight',)
-        }),
-        ('Product channels', {
-            'description': 'What channels will this snippet be available in?',
-            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
-        }),
-        ('Country and Locale', {
-            'description': ('What country and locales will this snippet be '
-                            'available in?'),
-            'fields': (('countries', 'locales'))
-        }),
-        ('Client Match Rules', {
-            'fields': ('client_match_rules',),
-        }),
-        ('Startpage Versions', {
-            'fields': (('on_startpage_1',),),
-            'classes': ('collapse',)
-        }),
-        ('Other Info', {
-            'fields': (('uuid',),),
-            'classes': ('collapse',)
-        }),
-    )
-
-    class Media:
-        css = {
-            'all': (
-                'css/admin/IDFieldHighlight.css',
-            )
-        }
-
-    def save_model(self, request, obj, form, change):
-        statsd.incr('save.json_snippet')
-        super(JSONSnippetAdmin, self).save_model(request, obj, form, change)
-
-
 class SearchProviderAdmin(admin.ModelAdmin):
     list_display = ('name', 'identifier')
 

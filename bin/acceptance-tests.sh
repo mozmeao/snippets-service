@@ -9,7 +9,6 @@ URLS=(
     "/contribute.json"
     "/5/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/en-US-test/release/Windows_NT%206.1/default/default/"
     "/6/Firefox/62.0.1/20160922113459/WINNT_x86-msvc/en-US-test/release/Windows_NT%206.1/default/default/"
-    "/json/1/Fennec/55.0.2/20170815231002/Android_arm-eabi-gcc3/en-GB/release/Linux%2022/default/default/"
     "/feeds/snippets.ics"
 )
 
