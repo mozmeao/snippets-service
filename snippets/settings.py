@@ -112,6 +112,7 @@ if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
 
 SILENCED_SYSTEM_CHECKS = [
     'django_mysql.W003',
+    'cachalot.E003',
 ]
 
 
