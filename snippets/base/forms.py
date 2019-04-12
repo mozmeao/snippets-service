@@ -614,6 +614,13 @@ class SendToDeviceTemplateForm(forms.ModelForm):
         exclude = []
 
 
+class SimpleBelowSearchTemplateForm(forms.ModelForm):
+
+    class Meta:
+        model = models.SimpleBelowSearchTemplate
+        exclude = []
+
+
 class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     template_chooser = forms.ChoiceField(
         choices=(
@@ -623,6 +630,7 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
             ('fxa_signup_snippet', 'Firefox Accounts Sign Up'),
             ('newsletter_snippet', 'Newsletter Sign Up'),
             ('send_to_device_snippet', 'Send to Device'),
+            ('simple_below_search_snippet', 'Simple Below Search'),
         ),
         widget=TemplateChooserWidget,
         required=False,
