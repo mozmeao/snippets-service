@@ -388,6 +388,29 @@ class SendToDeviceTemplateInline(admin.StackedInline):
     )
 
 
+class SimpleBelowSearchTemplateInline(admin.StackedInline):
+    model = models.SimpleBelowSearchTemplate
+    form = forms.SimpleBelowSearchTemplateForm
+    can_delete = False
+    classes = [
+        'inline-template',
+        'simple_below_search_snippet',
+    ]
+    raw_id_fields = [
+        'icon',
+    ]
+
+    fieldsets = (
+        ('Main', {
+            'fields': ('icon', 'text'),
+        }),
+        ('Extra', {
+            'fields': ('block_button_text', 'do_not_autoblock'),
+        })
+
+    )
+
+
 class ASRSnippetAdmin(admin.ModelAdmin):
     form = forms.ASRSnippetAdminForm
     inlines = [
@@ -396,6 +419,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         FxASignupTemplateInline,
         NewsletterTemplateInline,
         SendToDeviceTemplateInline,
+        SimpleBelowSearchTemplateInline,
     ]
     list_display_links = (
         'id',

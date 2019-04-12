@@ -1312,6 +1312,46 @@ class SendToDeviceTemplate(Template):
         return body
 
 
+class SimpleBelowSearchTemplate(Template):
+    VERSION = '1.0.0'
+
+    text = models.TextField(
+        help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br',
+    )
+    icon = models.ForeignKey(
+        Icon,
+        on_delete=models.PROTECT,
+        related_name='simple_below_search_icons',
+        help_text='Snippet icon. 192x192px PNG.'
+    )
+    block_button_text = models.CharField(
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    @property
+    def code_name(self):
+        return 'simple_below_search_snippet'
+
+    def render(self):
+        data = {
+            'text': self.text,
+            'icon': self.icon.url,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+        }
+        data = self._process_rendered_data(data)
+        return data
+
+    def get_rich_text_fields(self):
+        return ['text']
+
+
 class ASRSnippet(django_mysql.models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
