@@ -10,5 +10,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(['ALTER TABLE base_asrsnippet AUTO_INCREMENT=10500;'], [''])
+        # Part the Dynamic Column Removal Effort (Issue #940)
     ]

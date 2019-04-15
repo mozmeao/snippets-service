@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import django_mysql.models
 
 
 class Migration(migrations.Migration):
@@ -12,9 +11,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='snippet',
-            name='client_options',
-            field=django_mysql.models.DynamicField(default=None),
-        ),
+        # Part the Dynamic Column Removal Effort (Issue #940)
     ]

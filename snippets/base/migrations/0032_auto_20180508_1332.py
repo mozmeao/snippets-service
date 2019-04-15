@@ -4,32 +4,10 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 
-from django_mysql.models.functions import AsType, ColumnAdd
-
 
 def migrate_has_testpilot(apps, schema_editor):
-    Snippet = apps.get_model('base', 'Snippet')
-    Snippet.objects.filter(client_options__has_testpilot_CHAR='yes').update(
-        client_options=ColumnAdd(
-            'client_options', {
-                'addon_check_type': AsType('installed', 'CHAR'),
-                'addon_name': AsType('@testpilot-addon', 'CHAR'),
-            })
-    )
-    Snippet.objects.filter(client_options__has_testpilot_CHAR='no').update(
-        client_options=ColumnAdd(
-            'client_options', {
-                'addon_check_type': AsType('not_installed', 'CHAR'),
-                'addon_name': AsType('@testpilot-addon', 'CHAR'),
-            })
-    )
-    Snippet.objects.filter(client_options__has_testpilot_CHAR='any').update(
-        client_options=ColumnAdd(
-            'client_options', {
-                'addon_check_type': AsType('any', 'CHAR'),
-                'addon_name': AsType('', 'CHAR'),
-            })
-    )
+    # Part the Dynamic Column Removal Effort (Issue #940)
+    pass
 
 
 def noop(apps, schema_editor):
