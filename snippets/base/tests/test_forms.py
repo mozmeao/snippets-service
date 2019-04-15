@@ -407,12 +407,6 @@ class TargetAdminFormTests(TestCase):
             'filtr_is_default_browser': 'true',
         }
 
-    def test_set_initial_jexl(self):
-        data = self.data.copy()
-        instance = TargetFactory(jexl={'filtr_is_default_browser': 'false'})
-        form = TargetAdminForm(data, instance=instance)
-        self.assertEqual(form.fields['filtr_is_default_browser'].initial, 'false')
-
     def test_save(self):
         data = self.data.copy()
         instance = TargetFactory()
@@ -422,6 +416,4 @@ class TargetAdminFormTests(TestCase):
         form.save()
         instance.refresh_from_db()
         self.assertEqual(instance.jexl_expr, 'isDefaultBrowser == true')
-        self.assertEqual(instance.jexl, {
-            'filtr_is_default_browser': 'true',
-        })
+        self.assertTrue(instance.filtr_is_default_browser)
