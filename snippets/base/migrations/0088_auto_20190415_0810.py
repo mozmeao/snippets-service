@@ -10,12 +10,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='snippet',
-            name='client_options',
-        ),
-        migrations.RemoveField(
-            model_name='target',
-            name='jexl',
-        ),
+        # Part the Dynamic Column Removal Effort (Issue #940)
     ]

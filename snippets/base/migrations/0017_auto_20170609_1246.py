@@ -3,16 +3,10 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 
-from django_mysql.models.functions import AsType, ColumnAdd
-
 
 def set_default_resolutions(apps, schema_editor):
-    Snippet = apps.get_model('base', 'Snippet')
-    resolutions = '0-1024;1024-1920;1920-50000'
-    Snippet.objects.update(
-        client_options=ColumnAdd('client_options',
-                                 {'screen_resolutions': AsType(resolutions, 'CHAR')})
-    )
+    # Part the Dynamic Column Removal Effort (Issue #940)
+    pass
 
 
 def noop(apps, schema_editor):

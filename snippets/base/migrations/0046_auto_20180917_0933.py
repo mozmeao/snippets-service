@@ -3,7 +3,6 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import django_mysql.models
 import uuid
 
 
@@ -58,7 +57,6 @@ class Migration(migrations.Migration):
                 ('on_nightly', models.BooleanField(db_index=True, default=False, verbose_name='Nightly')),
                 ('on_esr', models.BooleanField(db_index=True, default=False, verbose_name='ESR')),
                 ('on_startpage_6', models.BooleanField(db_index=True, default=True, verbose_name='Activity Stream Router')),
-                ('jexl', django_mysql.models.DynamicField(default={})),
                 ('jexl_expr', models.TextField(blank=True, default='')),
                 ('client_match_rules', models.ManyToManyField(blank=True, to='base.ClientMatchRule', verbose_name='Client Match Rules')),
                 ('creator', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),

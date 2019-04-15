@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django_ace',
     'product_details',
     'django_extensions',
-    'django_mysql',
     'reversion',
     'raven.contrib.django.raven_compat',
     'cachalot',
@@ -111,7 +110,6 @@ if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
     }
 
 SILENCED_SYSTEM_CHECKS = [
-    'django_mysql.W003',
     'cachalot.E003',
 ]
 
