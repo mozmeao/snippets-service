@@ -20,7 +20,6 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 import bleach
-import django_mysql.models
 from jinja2 import Markup
 from jinja2.utils import LRUCache
 
@@ -199,7 +198,7 @@ class ClientMatchRule(models.Model):
         return self.description
 
 
-class SnippetBaseModel(django_mysql.models.Model):
+class SnippetBaseModel(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def duplicate(self, creator):
@@ -284,26 +283,6 @@ class Snippet(SnippetBaseModel):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    client_options = django_mysql.models.DynamicField(
-        default=None,
-        spec={
-            'version_lower_bound': str,
-            'version_upper_bound': str,
-            'has_fxaccount': str,
-            'has_testpilot': str,
-            'is_developer': str,
-            'is_default_browser': str,
-            'screen_resolutions': str,
-            'profileage_lower_bound': int,
-            'profileage_upper_bound': int,
-            'sessionage_lower_bound': int,
-            'sessionage_upper_bound': int,
-            'addon_check_type': str,
-            'addon_name': str,
-            'bookmarks_count_lower_bound': int,
-            'bookmarks_count_upper_bound': int,
-        }
-    )
     client_option_version_lower_bound = models.CharField(max_length=20, default='any')
     client_option_version_upper_bound = models.CharField(max_length=20, default='any')
     client_option_has_fxaccount = models.CharField(max_length=10, default='any')
@@ -445,8 +424,6 @@ class Snippet(SnippetBaseModel):
         return self.name
 
     def save(self, *args, **kwargs):
-        if self.client_options is None:
-            self.client_options = {}
         return super(Snippet, self).save(*args, **kwargs)
 
 
@@ -518,23 +495,6 @@ class Target(models.Model):
 
     client_match_rules = models.ManyToManyField(
         ClientMatchRule, blank=True, verbose_name='Client Match Rules')
-    jexl = django_mysql.models.DynamicField(
-        default={},
-        spec={
-            'filtr_is_default_browser': str,
-            'filtr_profile_age_created': str,
-            'filtr_firefox_version': str,
-            'filtr_previous_session_end': str,
-            'filtr_uses_firefox_sync': str,
-            'filtr_country': str,
-            'filtr_is_developer': str,
-            'filtr_updates_enabled': str,
-            'filtr_updates_autodownload_enabled': str,
-            'filtr_current_search_engine': str,
-            'filtr_browser_addon': str,
-            'filtr_total_bookmarks_count': str,
-        }
-    )
     filtr_is_default_browser = models.CharField(max_length=10, blank=True, default='')
     filtr_profile_age_created = models.CharField(max_length=250, blank=True, default='')
     filtr_firefox_version = models.CharField(max_length=10, blank=True, default='')
@@ -1395,7 +1355,7 @@ class SimpleBelowSearchTemplate(Template):
         return ['text']
 
 
-class ASRSnippet(django_mysql.models.Model):
+class ASRSnippet(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
