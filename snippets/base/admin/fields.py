@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.forms import (ChoiceField, ModelChoiceField, ModelMultipleChoiceField,
                           MultiValueField, MultipleChoiceField)
 
-from snippets.base.models import Addon
+from snippets.base.models import Addon, TargetedCountry
 
 from .widgets import JEXLMultiWidget
 
@@ -24,9 +24,6 @@ class MultipleChoiceFieldCSV(MultipleChoiceField):
 
 
 class JEXLBaseField():
-    def to_db(self, value):
-        return value
-
     def to_jexl(self, value):
         if value:
             return self.jexl.format(attr_name=self.attr_name, value=value)
@@ -58,14 +55,16 @@ class JEXLModelMultipleChoiceField(JEXLBaseField, ModelMultipleChoiceField):
             value = value.split(';')
         return super().prepare_value(value)
 
-    def to_db(self, value):
+    def clean(self, value):
+        value = super().clean(value)
         return ';'.join([str(x.id) for x in value])
 
 
 class JEXLCountryField(JEXLModelMultipleChoiceField):
     def to_jexl(self, value):
         if value:
-            return f'region in {[x.code for x in value]}'
+            values = TargetedCountry.objects.filter(id__in=value.split(";"))
+            return f'region in {[x.code for x in values]}'
         return None
 
 
@@ -179,7 +178,4 @@ class JEXLAddonField(MultiValueField):
 
         if not check and addon_id:
             raise ValidationError('You must select a check')
-        return value
-
-    def to_db(self, value):
         return value

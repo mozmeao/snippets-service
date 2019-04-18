@@ -449,12 +449,6 @@ class SnippetAdminForm(BaseSnippetAdminForm):
         self.fields['client_option_version_lower_bound'].choices += version_choices
         self.fields['client_option_version_upper_bound'].choices += version_choices
 
-        if self.instance.client_options:
-            for key in self.fields:
-                if key.startswith('client_option_'):
-                    self.fields[key].initial = self.instance.client_options.get(
-                        key.split('client_option_', 1)[1], None)
-
     class Meta:
         model = models.Snippet
         fields = ('name', 'template', 'data', 'published', 'countries',
@@ -553,13 +547,6 @@ class SnippetAdminForm(BaseSnippetAdminForm):
 
         if not self.initial:
             snippet.creator = self.current_user
-
-        client_options = {}
-        for key, value in self.cleaned_data.items():
-            if key.startswith('client_option_'):
-                client_options[key.split('client_option_', 1)[1]] = value
-        snippet.client_options = client_options
-        snippet.save()
 
         if 'ready_for_review' in self.changed_data and self.instance.ready_for_review is True:
             send_slack('legacy_ready_for_review', snippet)
@@ -794,24 +781,14 @@ class TargetAdminForm(forms.ModelForm):
         model = models.Target
         exclude = ['creator', 'created', 'modified']
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance and self.instance.jexl:
-            for name, field in self.fields.items():
-                if name.startswith('filtr_'):
-                    field.initial = self.instance.jexl.get(name)
-
     def save(self, *args, **kwargs):
-        jexl = {}
         jexl_expr_array = []
 
         for name, field in self.fields.items():
             if name.startswith('filtr_'):
                 value = self.cleaned_data[name]
                 if value:
-                    jexl[name] = field.to_db(value)
                     jexl_expr_array.append(field.to_jexl(value))
-        self.instance.jexl = jexl
         self.instance.jexl_expr = ' && '.join([x for x in jexl_expr_array if x])
 
         return super().save(*args, **kwargs)

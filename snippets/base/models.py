@@ -304,6 +304,21 @@ class Snippet(SnippetBaseModel):
             'bookmarks_count_upper_bound': int,
         }
     )
+    client_option_version_lower_bound = models.CharField(max_length=20, default='any')
+    client_option_version_upper_bound = models.CharField(max_length=20, default='any')
+    client_option_has_fxaccount = models.CharField(max_length=10, default='any')
+    client_option_is_developer = models.CharField(max_length=10, default='any')
+    client_option_is_default_browser = models.CharField(max_length=10, default='any')
+    client_option_profileage_lower_bound = models.IntegerField(default=-1)
+    client_option_profileage_upper_bound = models.IntegerField(default=-1)
+    client_option_sessionage_lower_bound = models.IntegerField(default=-1)
+    client_option_sessionage_upper_bound = models.IntegerField(default=-1)
+    client_option_bookmarks_count_lower_bound = models.IntegerField(default=-1)
+    client_option_bookmarks_count_upper_bound = models.IntegerField(default=-1)
+    client_option_addon_check_type = models.CharField(max_length=20, default='any')
+    client_option_addon_name = models.CharField(max_length=100, default='', blank=True)
+    client_option_screen_resolutions = models.CharField(
+        max_length=150, default='0-1024;1024-1920;1920-50000')
 
     objects = managers.SnippetManager()
 
@@ -317,6 +332,24 @@ class Snippet(SnippetBaseModel):
             ('can_publish_on_esr', 'Can publish snippets on ESR'),
         )
 
+    def get_client_options(self):
+        return {
+            'version_lower_bound': self.client_option_version_lower_bound,
+            'version_upper_bound': self.client_option_version_upper_bound,
+            'has_fxaccount': self.client_option_has_fxaccount,
+            'is_developer': self.client_option_is_developer,
+            'is_default_browser': self.client_option_is_default_browser,
+            'profileage_lower_bound': self.client_option_profileage_lower_bound,
+            'profileage_upper_bound': self.client_option_profileage_upper_bound,
+            'sessionage_lower_bound': self.client_option_sessionage_lower_bound,
+            'sessionage_upper_bound': self.client_option_sessionage_upper_bound,
+            'bookmarks_count_lower_bound': self.client_option_bookmarks_count_lower_bound,
+            'bookmarks_count_upper_bound': self.client_option_bookmarks_count_upper_bound,
+            'addon_check_type': self.client_option_addon_check_type,
+            'addon_name': self.client_option_addon_name,
+            'screen_resolutions': self.client_option_screen_resolutions,
+        }
+
     def to_dict(self):
         data = {
             'id': self.id,
@@ -326,7 +359,7 @@ class Snippet(SnippetBaseModel):
             'campaign': self.campaign,
             'weight': self.weight,
             'exclude_from_search_engines': [],
-            'client_options': self.client_options,
+            'client_options': self.get_client_options(),
         }
         if self.id:
             data['countries'] = [country.code for country in self.countries.all()]
@@ -502,6 +535,19 @@ class Target(models.Model):
             'filtr_total_bookmarks_count': str,
         }
     )
+    filtr_is_default_browser = models.CharField(max_length=10, blank=True, default='')
+    filtr_profile_age_created = models.CharField(max_length=250, blank=True, default='')
+    filtr_firefox_version = models.CharField(max_length=10, blank=True, default='')
+    filtr_previous_session_end = models.CharField(max_length=250, blank=True, default='')
+    filtr_uses_firefox_sync = models.CharField(max_length=10, blank=True, default='')
+    filtr_country = models.CharField(max_length=1250, blank=True, default='')
+    filtr_is_developer = models.CharField(max_length=250, blank=True, default='')
+    filtr_updates_enabled = models.CharField(max_length=10, blank=True, default='')
+    filtr_updates_autodownload_enabled = models.CharField(max_length=10, blank=True, default='')
+    filtr_current_search_engine = models.CharField(max_length=250, blank=True, default='')
+    filtr_browser_addon = models.CharField(max_length=250, blank=True, default='')
+    filtr_total_bookmarks_count = models.CharField(max_length=250, blank=True, default='')
+
     jexl_expr = models.TextField(blank=True, default='')
 
     class Meta:
@@ -509,9 +555,6 @@ class Target(models.Model):
 
     def __str__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
 
 
 class Campaign(models.Model):
@@ -1530,6 +1573,9 @@ class ASRSnippet(django_mysql.models.Model):
 # checking.
 @receiver(post_save, dispatch_uid='update_asrsnippet_modified')
 def update_asrsnippet_modified_date(sender, instance, **kwargs):
+    if kwargs['raw']:
+        return
+
     now = timezone.now()
     snippets = None
 
