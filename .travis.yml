@@ -11,7 +11,7 @@ env:
     - SECURE_SSL_REDIRECT=False
     - ALLOWED_HOSTS=*
     - SECRET_KEY=foo
-    - DATABASE_URL=mysql://root@db/snippets
+    - DATABASE_URL=postgres://snippets:snippets@db/snippets
     - SITE_URL=http://localhost:8000
     - CACHE_URL=dummy://
     - ENABLE_ADMIN=True
@@ -23,8 +23,8 @@ install:
 before_script:
   - env > .env
 script:
-  - docker run -d --name mariadb -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -e MYSQL_DATABASE=snippets mariadb:10.0
+  - docker run -d --name postgres -e POSTGRES_PASSWORD=snippets -e POSTGRES_USER=snippets -e POSTGRES_DB=snippets postgres:11-alpine
   - docker run ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} flake8 snippets
   # Wait mysql to initialize.
-  - docker run --link mariadb:db -e CHECK_PORT=3306 -e CHECK_HOST=db giorgos/takis
-  - docker run --env-file .env --link mariadb:db ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} ./manage.py test --parallel
+  - docker run --link postgres:db -e CHECK_PORT=5432 -e CHECK_HOST=db giorgos/takis
+  - docker run --env-file .env --link postgres:db ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} ./manage.py test --parallel

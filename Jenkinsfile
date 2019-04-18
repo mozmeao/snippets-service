@@ -39,17 +39,18 @@ conduit {
         dockerRun(docker_image, "flake8 snippets")
       },
       "Unit Test": {
-        def db_name = "mariadb-${env.GIT_COMMIT_SHORT}-${BUILD_NUMBER}"
+        def db_name = "postgres-${env.GIT_COMMIT_SHORT}-${BUILD_NUMBER}"
         def args = [
           "docker_args": ("--name ${db_name} " +
-                          "-e MYSQL_ALLOW_EMPTY_PASSWORD=yes " +
-                          "-e MYSQL_DATABASE=snippets"),
+                          "-e POSTGRES_PASSWORD=snippets " +
+                          "-e POSTGRES_USER=snippets " +
+                          "-e POSTGRES_DB=snippets "),
         ]
 
-        dockerRun("mariadb:10.0", args) {
+        dockerRun("postgres:11-alpine", args) {
           args = [
             "docker_args": ("--link ${db_name}:db " +
-                            "-e CHECK_PORT=3306 " +
+                            "-e CHECK_PORT=5432 " +
                             "-e CHECK_HOST=db")
           ]
           // Takis waits for mysql to come online
@@ -60,7 +61,7 @@ conduit {
                             "-e 'DEBUG=False' " +
                             "-e 'ALLOWED_HOSTS=*' " +
                             "-e 'SECRET_KEY=foo' " +
-                            "-e 'DATABASE_URL=mysql://root@db/snippets' " +
+                            "-e 'DATABASE_URL=postgres://snippets:snippets@db/snippets' " +
                             "-e 'SITE_URL=http://localhost:8000' " +
                             "-e 'CACHE_URL=dummy://' " +
                             "-e 'ENABLE_ADMIN=True' " +
