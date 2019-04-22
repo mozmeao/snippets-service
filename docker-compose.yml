@@ -1,10 +1,11 @@
 version: '3.4'
 services:
   db:
-    image: mariadb:10.0
+    image: postgres:11-alpine
     environment:
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-      - MYSQL_DATABASE=snippets
+      - POSTGRES_PASSWORD=snippets
+      - POSTGRES_USER=snippets
+      - POSTGRES_DB=snippets
   web:
     build:
       context: .
@@ -19,7 +20,7 @@ services:
       - db
     environment:
       - PYTHONDONTWRITEBYTECODE=1
-      - DATABASE_URL=mysql://root@db/snippets
+      - DATABASE_URL=postgres://snippets:snippets@db/snippets
       - DEBUG=True
       - ALLOWED_HOSTS=*
       - SECRET_KEY=59114b6a-2858-4caf-8878-482a24ee9542
