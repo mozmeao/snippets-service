@@ -15,6 +15,8 @@ One time setup of your environment and database:
       for a few seconds for MariaDB to initialize and then re-try the command.
 3. `[docker]$ ./manage.py migrate`
 4. `[docker]$ ./manage.py createsuperuser` (enter any user/email/pass you wish. Email is not required.)
+5. `[docker]$ ./manage.py shell -c 'from snippets.base.util import *; create_countries(); create_locales();'`
+   - Create a list of Countries and Locales from Product Details info.
 
 Start the development server:
 
