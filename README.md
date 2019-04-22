@@ -12,7 +12,7 @@ One time setup of your environment and database:
 1. `$ docker-compose run --service-ports web bash`
 2. `[docker]$ ./manage.py update_product_details`
    -  If you get an error connecting to the database, you probably need to wait
-      for a few seconds for MariaDB to initialize and then re-try the command.
+      for a few seconds for PostgreSQL to initialize and then re-try the command.
 3. `[docker]$ ./manage.py migrate`
 4. `[docker]$ ./manage.py createsuperuser` (enter any user/email/pass you wish. Email is not required.)
 5. `[docker]$ ./manage.py shell -c 'from snippets.base.util import *; create_countries(); create_locales();'`

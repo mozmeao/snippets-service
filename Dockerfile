@@ -11,9 +11,9 @@ RUN adduser --uid 1000 --disabled-password --gecos '' --no-create-home webdev
 # https://github.com/debuerreotype/debuerreotype/issues/10#issuecomment-438342078
 RUN bash -c 'for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done' && \
     apt-get update && \
-    apt-get install -y --no-install-recommends build-essential mariadb-client libmariadbclient-dev \
-                                               libxslt1.1 libxml2 libxml2-dev libxslt1-dev libpq-dev \
-                                               postgresql-client && \
+    apt-get install -y --no-install-recommends build-essential libxslt1.1 libxml2 libxml2-dev \
+                                               libxslt1-dev libpq-dev postgresql-client \
+                                               && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

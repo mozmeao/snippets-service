@@ -450,10 +450,6 @@ django-admin-list-filter-dropdown==1.0.2 \
 bleach==3.1.0 \
     --hash=sha256:213336e49e102af26d9cde77dd2d0397afabc5a6bf2fed985dc35b5d1e285a16 \
     --hash=sha256:3fdf7f77adcf649c9911387df51254b813185e32b2c6619f690b593a617e19fa
-mysqlclient==1.4.2.post1 \
-    --hash=sha256:425e733b05e359a714d6007c0fc44582be66b63e5a3df0a50949274ae16f4bc6 \
-    --hash=sha256:62e4770b6a797b9416bcf70488365b7d6b9c9066878108499c559293bb464380 \
-    --hash=sha256:f257d250f2675d0ef99bd318906f3cfc05cef4a2f385ea695ff32a3f04b9f9a7
 urlwait==0.4 \
     --hash=sha256:fc39ff2c8abbcaad5043e1f79699dcb15a036cc4b0ff4d1aa825ea105d4889ff \
     --hash=sha256:395fc0c2a7f9736858a2c2f449aa20c6e9da1f86bfc2d1fda4f2f5b78a5c115a

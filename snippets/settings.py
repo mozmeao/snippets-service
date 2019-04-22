@@ -99,16 +99,6 @@ DATABASES = {
     'default': config('DATABASE_URL', cast=dj_database_url.parse)
 }
 
-
-if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
-    DATABASES['default']['OPTIONS'] = {
-        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'; SET innodb_strict_mode=1;",
-    }
-    DATABASES['default']['TEST'] = {
-        'CHARSET': 'utf8',
-        'COLLATION': 'utf8_general_ci',
-    }
-
 SILENCED_SYSTEM_CHECKS = [
     'cachalot.E003',
 ]
