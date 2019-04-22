@@ -10,6 +10,7 @@ from django.core.validators import BaseValidator
 from django.utils.deconstruct import deconstructible
 
 import bleach
+from PIL import Image
 
 ALLOWED_TAGS = ['a', 'i', 'b', 'u', 'strong', 'em', 'br']
 ALLOWED_ATTRIBUTES = {'a': ['href', 'data-metric']}
@@ -102,3 +103,10 @@ def validate_regex(regex_str):
         except re.error as exp:
             raise ValidationError(str(exp))
     return regex_str
+
+
+def validate_image_format(image):
+    img = Image.open(image)
+    if img.format not in ['PNG', 'WEBP']:
+        raise ValidationError('Upload only PNG or WebP images.')
+    return image
