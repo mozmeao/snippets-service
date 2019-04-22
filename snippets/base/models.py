@@ -1,4 +1,5 @@
 import copy
+import io
 import hashlib
 import json
 import os
@@ -10,6 +11,7 @@ from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
 from django.core import validators as django_validators
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.urls import reverse
 from django.db import models
 from django.db.models.manager import Manager
@@ -20,6 +22,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 import bleach
+from PIL import Image
 from jinja2 import Markup
 from jinja2.utils import LRUCache
 
@@ -592,6 +595,17 @@ class Icon(models.Model):
                     all_snippets.extend(related_snippets)
 
         return ASRSnippet.objects.filter(pk__in=all_snippets)
+
+    def save(self, *args, **kwargs):
+        image = Image.open(self.image.open())
+
+        if image.format != 'WEBP':
+            output = io.BytesIO()
+            image.save(output, 'WEBP', quality=100, lossless=True, method=6)
+            self.image = InMemoryUploadedFile(
+                output, 'ImageField', '{}.webp'.format(self.image.name), 'image/webp', None, None)
+
+        return super().save(*args, **kwargs)
 
 
 class Template(models.Model):

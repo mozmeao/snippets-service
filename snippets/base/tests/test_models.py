@@ -1,8 +1,11 @@
+import io
 from django.conf import settings
 from django.core.files import File
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test.utils import override_settings
 from django.urls import reverse
 
+from PIL import Image
 from jinja2 import Markup
 from unittest.mock import Mock, patch
 from pyquery import PyQuery as pq
@@ -368,6 +371,30 @@ class IconTests(TestCase):
             delattr(settings_mock, 'CDN_URL')
             settings_mock.SITE_URL = 'http://second-example.com/'
             self.assertEqual(test_file.url, 'http://second-example.com/foo')
+
+    def test_dont_convert_to_webp_if_already_webp(self):
+        with patch('snippets.base.models.InMemoryUploadedFile',
+                   wraps=InMemoryUploadedFile) as imuf:
+            IconFactory()
+        self.assertFalse(imuf.called)
+
+    def test_convert_to_webp_if_not_already_webp(self):
+        """Creates a Icon using the factory and then replaces the image with a PNG
+        image. We expect a WebP image after save().
+
+        """
+        new_icon = io.BytesIO()
+        Image.new('RGB', (30, 30), color='red').save(new_icon, 'PNG')
+
+        icon = IconFactory()
+        icon.image.file = File(new_icon)
+        with patch('snippets.base.models.InMemoryUploadedFile',
+                   wraps=InMemoryUploadedFile) as imuf:
+            icon.save()
+        self.assertTrue(imuf.called)
+        icon.refresh_from_db()
+        image = Image.open(icon.image.open())
+        self.assertEqual(image.format, 'WEBP')
 
 
 class ASRSnippetTests(TestCase):
