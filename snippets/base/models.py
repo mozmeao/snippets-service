@@ -29,7 +29,7 @@ from jinja2.utils import LRUCache
 from snippets.base import util
 from snippets.base.fields import RegexField
 from snippets.base import managers
-from snippets.base.validators import validate_xml_template
+from snippets.base import validators
 
 
 JINJA_ENV = engines['backend']
@@ -85,7 +85,7 @@ class SnippetTemplate(models.Model):
         verbose_name='Priority template', default=False,
         help_text='Set to true to display first in dropdowns for faster selections')
     hidden = models.BooleanField(help_text='Hide from template selection dropdown', default=False)
-    code = models.TextField(validators=[validate_xml_template])
+    code = models.TextField(validators=[validators.validate_xml_template])
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -563,7 +563,8 @@ class Icon(models.Model):
         upload_to=_generate_filename,
         height_field='height',
         width_field='width',
-        help_text=('PNGs only. Note that updating the image will '
+        validators=[validators.validate_image_format],
+        help_text=('PNG and WebP only. Note that updating the image will '
                    'update all snippets using this image.'),
     )
 
