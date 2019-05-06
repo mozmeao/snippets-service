@@ -457,7 +457,9 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'modified',
         'uuid',
         'creator',
-        'preview_url',
+        'preview_url_light_theme',
+        'preview_url_dark_theme',
+
     )
     filter_horizontal = (
         'targets',
@@ -473,7 +475,14 @@ class ASRSnippetAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('ID', {
-            'fields': ('id', 'name', 'status', 'creator', 'preview_url')
+            'fields': (
+                'id',
+                'name',
+                'status',
+                'creator',
+                'preview_url_light_theme',
+                'preview_url_dark_theme',
+            )
         }),
         ('Content', {
             'description': (
@@ -528,16 +537,29 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         statsd.incr('save.asrsnippet')
         super().save_model(request, obj, form, change)
 
-    def preview_url(self, obj):
+    def preview_url_light_theme(self, obj):
         text = f'''
-        <span id="previewLinkUrl">{obj.get_preview_url()}</span>
+        <span id="previewLinkUrlLight">{obj.get_preview_url()}</span>
         <button id="copyPreviewLink" class="btn"
-                data-clipboard-target="#previewLinkUrl"
+                data-clipboard-target="#previewLinkUrlLight"
                 originalText="Copy to Clipboard" type="button">
           Copy to Clipboard
         </button>
         '''
         return mark_safe(text)
+    preview_url_light_theme.short_description = 'Light Themed Preview URL'
+
+    def preview_url_dark_theme(self, obj):
+        text = f'''
+        <span id="previewLinkUrlDark">{obj.get_preview_url(dark=True)}</span>
+        <button id="copyPreviewLink" class="btn"
+                data-clipboard-target="#previewLinkUrlDark"
+                originalText="Copy to Clipboard" type="button">
+          Copy to Clipboard
+        </button>
+        '''
+        return mark_safe(text)
+    preview_url_dark_theme.short_description = 'Dark Themed Preview URL'
 
     def change_view(self, request, *args, **kwargs):
         if request.method == 'POST' and '_saveasnew' in request.POST:
