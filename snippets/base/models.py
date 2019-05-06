@@ -777,6 +777,7 @@ class FundraisingTemplate(Template):
 
     donation_form_url = models.URLField(
         default='https://donate.mozilla.org/?utm_source=desktop-snippet&utm_medium=snippet',
+        validators=[django_validators.URLValidator(schemes=['https'])],
         max_length=500,
     )
     currency_code = models.CharField(max_length=10, default='usd')
