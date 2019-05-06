@@ -404,7 +404,9 @@ class ASRSnippetTests(TestCase):
                                      '<a href="https://example.com/[[snippet_id]]/foo">link</a>'),
             targets=[
                 TargetFactory(jexl_expr='foo == bar'),
-                TargetFactory(jexl_expr='lalo == true')
+                TargetFactory(jexl_expr='lalo == true'),
+                TargetFactory(jexl_expr=''),  # This can be a Target with only
+                                              # CMR which produces no JEXL
             ]
         )
         self.maxDiff = None
