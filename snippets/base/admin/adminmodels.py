@@ -31,6 +31,12 @@ class ClientMatchRuleAdmin(VersionAdmin, admin.ModelAdmin):
     save_on_top = True
     search_fields = ('description',)
 
+    class Media:
+        js = (
+            'js/admin/jquery.are-you-sure.js',
+            'js/admin/alert-page-leaving.js',
+        )
+
 
 class LogEntryAdmin(admin.ModelAdmin):
     list_display = ('user', 'content_type', 'object_id', 'object_repr', 'change_message')
@@ -87,6 +93,12 @@ class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
 class AddonAdmin(admin.ModelAdmin):
     list_display = ('name', 'guid')
 
+    class Media:
+        js = (
+            'js/admin/jquery.are-you-sure.js',
+            'js/admin/alert-page-leaving.js',
+        )
+
 
 class IconAdmin(admin.ModelAdmin):
     search_fields = [
@@ -119,6 +131,10 @@ class IconAdmin(admin.ModelAdmin):
                 'css/admin/IconListSnippets.css',
             )
         }
+        js = (
+            'js/admin/jquery.are-you-sure.js',
+            'js/admin/alert-page-leaving.js',
+        )
 
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
@@ -530,6 +546,8 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             )
         }
         js = (
+            'js/admin/jquery.are-you-sure.js',
+            'js/admin/alert-page-leaving.js',
             'js/admin/clipboard.min.js',
             'js/admin/copy_preview.js',
         )
@@ -650,6 +668,12 @@ class CampaignAdmin(admin.ModelAdmin):
         'name',
     )
 
+    class Media:
+        js = (
+            'js/admin/jquery.are-you-sure.js',
+            'js/admin/alert-page-leaving.js',
+        )
+
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
             obj.creator = request.user
@@ -684,6 +708,12 @@ class CategoryAdmin(admin.ModelAdmin):
         'published_snippets_in_category',
         'total_snippets_in_category',
     )
+
+    class Media:
+        js = (
+            'js/admin/jquery.are-you-sure.js',
+            'js/admin/alert-page-leaving.js',
+        )
 
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
@@ -739,6 +769,12 @@ class TargetAdmin(admin.ModelAdmin):
             'fields': ('creator', ('created', 'modified'), 'jexl_expr'),
         }),
     )
+
+    class Media:
+        js = (
+            'js/admin/jquery.are-you-sure.js',
+            'js/admin/alert-page-leaving.js',
+        )
 
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
