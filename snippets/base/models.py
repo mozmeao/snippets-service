@@ -1465,7 +1465,9 @@ class ASRSnippet(models.Model):
                 rendered_snippet['campaign'] = self.campaign.slug
 
             rendered_snippet['targeting'] = ' && '.join(
-                [target.jexl_expr for target in self.targets.all().order_by('id')]
+                [target.jexl_expr for
+                 target in self.targets.all().order_by('id') if
+                 target.jexl_expr]
             )
 
         return rendered_snippet
