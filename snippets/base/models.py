@@ -35,13 +35,18 @@ from snippets.base import validators
 JINJA_ENV = engines['backend']
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly', 'esr')
-SNIPPET_WEIGHTS = ((33, 'Appear 1/3rd as often as an average snippet'),
-                   (50, 'Appear half as often as an average snippet'),
-                   (66, 'Appear 2/3rds as often as an average snippet'),
-                   (100, 'Appear as often as an average snippet'),
-                   (150, 'Appear 1.5 times as often as an average snippet'),
-                   (200, 'Appear twice as often as an average snippet'),
-                   (300, 'Appear three times as often as an average snippet'))
+SNIPPET_WEIGHTS = (
+    (2, 'Appear 1/50th as often as an average snippet'),
+    (5, 'Appear 1/20th as often as an average snippet'),
+    (10, 'Appear 1/10th as often as an average snippet'),
+    (33, 'Appear 1/3rd as often as an average snippet'),
+    (50, 'Appear half as often as an average snippet'),
+    (66, 'Appear 2/3rds as often as an average snippet'),
+    (100, 'Appear as often as an average snippet'),
+    (150, 'Appear 1.5 times as often as an average snippet'),
+    (200, 'Appear twice as often as an average snippet'),
+    (300, 'Appear three times as often as an average snippet')
+)
 
 
 # NamedTuple that represents a user's client program.
