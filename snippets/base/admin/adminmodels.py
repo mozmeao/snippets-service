@@ -10,7 +10,8 @@ from reversion.admin import VersionAdmin
 from django_ace import AceWidget
 from django_statsd.clients import statsd
 from jinja2.meta import find_undeclared_variables
-from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
+from django_admin_listfilter_dropdown.filters import (RelatedDropdownFilter,
+                                                      RelatedOnlyDropdownFilter)
 
 from snippets.base import forms, models, slack
 from snippets.base.admin import actions, filters
@@ -429,10 +430,12 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'id',
         'name',
         'status',
+        'locale_list',
         'modified',
     )
     list_filter = (
         filters.ModifiedFilter,
+        ('locales', RelatedOnlyDropdownFilter),
         'status',
         filters.ChannelFilter,
         ('campaign', RelatedDropdownFilter),
@@ -601,6 +604,14 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 'publish_on_esr',
             ]
         ])
+
+    def locale_list(self, obj):
+        num_locales = obj.locales.count()
+        locales = obj.locales.all()[:3]
+        active_locales = ', '.join([str(locale) for locale in locales])
+        if num_locales > 3:
+            active_locales += ' and {0} more.'.format(num_locales - 3)
+        return active_locales
 
 
 class CampaignAdmin(admin.ModelAdmin):
