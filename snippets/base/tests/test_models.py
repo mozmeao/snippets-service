@@ -458,9 +458,16 @@ class ASRSnippetTests(TestCase):
     @override_settings(SITE_URL='http://example.com')
     def test_get_preview_url(self):
         snippet = ASRSnippetFactory.create()
-        expected_result = 'about:newtab?endpoint=http://example.com'
+        expected_result = 'about:newtab?theme=light&endpoint=http://example.com'
         expected_result += reverse('asr-preview', kwargs={'uuid': snippet.uuid})
         self.assertEqual(snippet.get_preview_url(), expected_result)
+
+    @override_settings(SITE_URL='http://example.com')
+    def test_get_preview_url_dark(self):
+        snippet = ASRSnippetFactory.create()
+        expected_result = 'about:newtab?theme=dark&endpoint=http://example.com'
+        expected_result += reverse('asr-preview', kwargs={'uuid': snippet.uuid})
+        self.assertEqual(snippet.get_preview_url(dark=True), expected_result)
 
     def test_duplicate(self):
         user = UserFactory.create()

@@ -1482,10 +1482,13 @@ class ASRSnippet(models.Model):
                     channels.append(channel)
         return set(channels)
 
-    def get_preview_url(self):
+    def get_preview_url(self, dark=False):
+        theme = 'light'
+        if dark:
+            theme = 'dark'
         url = reverse('asr-preview', kwargs={'uuid': self.uuid})
         full_url = urljoin(settings.SITE_URL, url)
-        return 'about:newtab?endpoint=' + full_url
+        return 'about:newtab?theme={}&endpoint={}'.format(theme, full_url)
 
     def get_admin_url(self, full=True):
         # Not using reverse() because the `admin:` namespace is not registered
