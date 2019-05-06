@@ -10,7 +10,8 @@ from reversion.admin import VersionAdmin
 from django_ace import AceWidget
 from django_statsd.clients import statsd
 from jinja2.meta import find_undeclared_variables
-from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
+from django_admin_listfilter_dropdown.filters import (RelatedDropdownFilter,
+                                                      RelatedOnlyDropdownFilter)
 
 from snippets.base import forms, models, slack
 from snippets.base.admin import actions, filters
@@ -433,6 +434,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     )
     list_filter = (
         filters.ModifiedFilter,
+        ('locales', RelatedOnlyDropdownFilter),
         'status',
         filters.ChannelFilter,
         ('campaign', RelatedDropdownFilter),
