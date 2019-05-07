@@ -706,7 +706,7 @@ class TargetAdminForm(forms.ModelForm):
         help_text='How many weeks since the last time Firefox was used?'
     )
     filtr_uses_firefox_sync = fields.JEXLChoiceField(
-        'usesFirefoxSync',
+        '(isFxAEnabled == undefined || isFxAEnabled == true) && usesFirefoxSync',
         choices=((None, "I don't care"),
                  ('true', 'Yes',),
                  ('false', 'No')),
