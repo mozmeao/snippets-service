@@ -659,6 +659,7 @@ class Template(models.Model):
 
 class SimpleTemplate(Template):
     VERSION = '1.0.0'
+    NAME = 'Simple'
 
     title_icon = models.ForeignKey(
         Icon,
@@ -765,6 +766,7 @@ class SimpleTemplate(Template):
 class FundraisingTemplate(Template):
     """Also known as EOY Template"""
     VERSION = '1.0.0'
+    NAME = 'Fundraising'
 
     donation_form_url = models.URLField(
         default='https://donate.mozilla.org/?utm_source=desktop-snippet&utm_medium=snippet',
@@ -885,6 +887,7 @@ class FundraisingTemplate(Template):
 
 class FxASignupTemplate(Template):
     VERSION = '1.0.0'
+    NAME = 'FxA Sign up'
 
     scene1_title_icon = models.ForeignKey(
         Icon,
@@ -1008,6 +1011,7 @@ class FxASignupTemplate(Template):
 
 class NewsletterTemplate(Template):
     VERSION = '1.0.0'
+    NAME = 'Newsletter'
 
     scene1_title_icon = models.ForeignKey(
         Icon,
@@ -1151,6 +1155,7 @@ class NewsletterTemplate(Template):
 
 class SendToDeviceTemplate(Template):
     VERSION = '1.0.0'
+    NAME = 'Send to Device'
 
     scene1_title_icon = models.ForeignKey(
         Icon,
@@ -1324,6 +1329,7 @@ class SendToDeviceTemplate(Template):
 
 class SimpleBelowSearchTemplate(Template):
     VERSION = '1.0.0'
+    NAME = 'Simple below Search Bar'
 
     text = models.TextField(
         help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br',

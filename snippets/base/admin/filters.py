@@ -1,10 +1,12 @@
 from distutils.util import strtobool
 from datetime import datetime, timedelta
 
+from django.apps import apps
 from django.contrib import admin
 from django.utils.encoding import force_text
 
 from snippets.base.managers import SnippetQuerySet
+from snippets.base.models import Template
 
 
 class ModifiedFilter(admin.SimpleListFilter):
@@ -100,3 +102,28 @@ class ScheduledFilter(admin.SimpleListFilter):
             return queryset.exclude(publish_start=None, publish_end=None)
         else:
             return queryset.filter(publish_start=None, publish_end=None)
+
+
+class TemplateFilter(admin.SimpleListFilter):
+    title = 'template type'
+    parameter_name = 'template'
+    LOOKUPS = sorted([
+        (model.__name__, model.NAME)
+        for model in apps.get_models()
+        if issubclass(model, Template) and not model.__name__ == 'Template'
+    ], key=lambda x: x[1])
+
+    def lookups(self, request, model_admin):
+        return self.LOOKUPS
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if not value:
+            return queryset
+
+        filters = {}
+        for k, v in self.LOOKUPS:
+            if value != k:
+                filters['template_relation__{}'.format(k.lower())] = None
+
+        return queryset.filter(**filters)
