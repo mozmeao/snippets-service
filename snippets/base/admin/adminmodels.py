@@ -451,6 +451,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     )
     list_filter = (
         filters.ModifiedFilter,
+        filters.TemplateFilter,
         ('locales', RelatedOnlyDropdownFilter),
         'status',
         filters.ChannelFilter,
