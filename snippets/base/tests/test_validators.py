@@ -3,6 +3,7 @@ import json
 from unittest.mock import patch
 
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from PIL import Image
 
@@ -85,19 +86,14 @@ class ImageFormatValidatorTests(TestCase):
         img = Image.new('RGB', (30, 30), color='red')
         fle = io.BytesIO()
         img.save(fle, 'PNG')
+        image = InMemoryUploadedFile(fle, 'ImageField', 'foo.png', 'image/png', None, None)
 
-        self.assertEqual(validate_image_format(fle), fle)
-
-    def test_valid_image_webp(self):
-        img = Image.new('RGB', (30, 30), color='red')
-        fle = io.BytesIO()
-        img.save(fle, 'WEBP')
-
-        self.assertEqual(validate_image_format(fle), fle)
+        self.assertEqual(validate_image_format(image), image)
 
     def test_invalid_image(self):
         img = Image.new('RGB', (30, 30), color='red')
         fle = io.BytesIO()
         img.save(fle, 'JPEG')
+        image = InMemoryUploadedFile(fle, 'ImageField', 'foo.jpg', 'image/jpeg', None, None)
 
-        self.assertRaises(ValidationError, validate_image_format, fle)
+        self.assertRaises(ValidationError, validate_image_format, image)

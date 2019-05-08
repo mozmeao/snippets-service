@@ -141,7 +141,7 @@ class IconFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Icon {0}'.format(n))
     creator = factory.SubFactory(UserFactory)
     image = factory.django.ImageField(width=192, height=192,
-                                      format='WEBP', filename='example.webp')
+                                      format='PNG', filename='example.png')
 
     class Meta:
         model = models.Icon

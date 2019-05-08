@@ -106,7 +106,7 @@ def validate_regex(regex_str):
 
 
 def validate_image_format(image):
-    img = Image.open(image)
-    if img.format not in ['PNG', 'WEBP']:
-        raise ValidationError('Upload only PNG or WebP images.')
+    img = Image.open(image.open())
+    if img.format not in ['PNG']:
+        raise ValidationError('Upload only PNG images.')
     return image
