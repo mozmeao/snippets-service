@@ -1,9 +1,9 @@
 {% spaceless %}
-  From
+  From and including
   {% with widget.subwidgets.0 as widget %}
     {% include widget.template_name %}
   {% endwith %}
-  To
+  up to (excluded)
   {% with widget.subwidgets.1 as widget %}
     {% include widget.template_name %}
   {% endwith %}
