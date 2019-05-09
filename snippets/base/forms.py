@@ -116,6 +116,15 @@ BOOKMARKS_COUNT_CHOICES_ASR = (
     (1000000, '1,000,000'),
 )
 
+NUMBER_OF_SYNC_DEVICES = (
+    (None, 'No limit'),
+    (None, '----------'),
+    (1, '1'),
+    (2, '2'),
+    (5, '5'),
+    (10, '10'),
+)
+
 
 class TemplateSelect(forms.Select):
     """
@@ -775,6 +784,27 @@ class TargetAdminForm(forms.ModelForm):
         required=False,
         label='Number of bookmarks',
         help_text='The number of bookmarks must fall between those two limits.'
+    )
+    filtr_desktop_devices_count = fields.JEXLRangeField(
+        'sync.desktopDevices',
+        choices=NUMBER_OF_SYNC_DEVICES,
+        required=False,
+        label='Desktop Syncing Devices',
+        help_text='Number of Desktop Devices connected to Sync.'
+    )
+    filtr_mobile_devices_count = fields.JEXLRangeField(
+        'sync.mobileDevices',
+        choices=NUMBER_OF_SYNC_DEVICES,
+        required=False,
+        label='Mobile Syncing Devices',
+        help_text='Number of Mobile Devices connected to Sync.'
+    )
+    filtr_total_devices_count = fields.JEXLRangeField(
+        'sync.totalDevices',
+        choices=NUMBER_OF_SYNC_DEVICES,
+        required=False,
+        label='Total Syncing Devices',
+        help_text='Total number of Devices (Mobile and Desktop) connected to Sync.'
     )
 
     class Meta:

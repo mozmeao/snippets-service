@@ -753,13 +753,21 @@ class TargetAdmin(admin.ModelAdmin):
                 'filtr_profile_age_created',
                 'filtr_firefox_version',
                 'filtr_previous_session_end',
-                'filtr_uses_firefox_sync',
                 'filtr_country',
                 'filtr_is_developer',
                 'filtr_current_search_engine',
                 'filtr_browser_addon',
                 'filtr_total_bookmarks_count',
+
             )
+        }),
+        ('Accounts and Sync', {
+            'fields': (
+                'filtr_uses_firefox_sync',
+                'filtr_desktop_devices_count',
+                'filtr_mobile_devices_count',
+                'filtr_total_devices_count',
+            ),
         }),
         ('Advanced Targeting', {
             'fields': (
