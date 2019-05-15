@@ -206,7 +206,7 @@ SNIPPET_BUNDLE_TIMEOUT = config('SNIPPET_BUNDLE_TIMEOUT', default=15 * 60, cast=
 
 BUNDLE_BROTLI_COMPRESS = config('BUNDLE_BROTLI_COMPRESS', default=False, cast=bool)
 
-METRICS_URL = config('METRICS_URL', default='https://snippets-stats.moz.works/foo')
+METRICS_URL = config('METRICS_URL', default='https://snippets-stats.mozilla.org/foo.html')
 METRICS_SAMPLE_RATE = config('METRICS_SAMPLE_RATE', default=0.1, cast=float)
 
 SITE_URL = config('SITE_URL', default='')
