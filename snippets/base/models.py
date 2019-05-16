@@ -512,6 +512,9 @@ class Target(models.Model):
     filtr_current_search_engine = models.CharField(max_length=250, blank=True, default='')
     filtr_browser_addon = models.CharField(max_length=250, blank=True, default='')
     filtr_total_bookmarks_count = models.CharField(max_length=250, blank=True, default='')
+    filtr_desktop_devices_count = models.CharField(max_length=250, blank=True, default='')
+    filtr_mobile_devices_count = models.CharField(max_length=250, blank=True, default='')
+    filtr_total_devices_count = models.CharField(max_length=250, blank=True, default='')
 
     jexl_expr = models.TextField(blank=True, default='')
 
