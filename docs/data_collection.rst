@@ -231,6 +231,11 @@ elements that can be tracked this way include:
 Google Analytics (for Firefox 63 and earlier)
 ---------------------------------------------
 
+ .. note::
+
+   On May 15th the data proxying to GA has been disabled for all versions of
+   Firefox and the proxy server has been shut down.
+
 The `snippets statistics server
 <https://github.com/mozmeao/snippets-stats-proxy>`_ may proxy data to Google
 Analytics, with stripped IP information and with a randomly generated UID unique
