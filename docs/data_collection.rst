@@ -233,8 +233,8 @@ Google Analytics (for Firefox 63 and earlier)
 
  .. note::
 
-   On May 15th the data proxying to GA has been disabled for all versions of
-   Firefox and the proxy server has been shut down.
+   On May 15th 2019 the data proxying to GA has been disabled for all versions
+   of Firefox and the proxy server has been shut down.
 
 The `snippets statistics server
 <https://github.com/mozmeao/snippets-stats-proxy>`_ may proxy data to Google
