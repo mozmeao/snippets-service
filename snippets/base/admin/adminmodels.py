@@ -453,6 +453,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         filters.ModifiedFilter,
         filters.TemplateFilter,
         ('locales', RelatedOnlyDropdownFilter),
+        ('targets', RelatedOnlyDropdownFilter),
         'status',
         filters.ChannelFilter,
         ('campaign', RelatedDropdownFilter),
