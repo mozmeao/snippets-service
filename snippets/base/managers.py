@@ -139,7 +139,7 @@ class ASRSnippetQuerySet(QuerySet):
                                       .distinct()
                                       .evaluate(client))
 
-        return snippets.exclude(targets__client_match_rules__in=failed_rules)
+        return snippets.exclude(targets__client_match_rules__in=failed_rules).distinct()
 
 
 class ASRSnippetManager(Manager):
