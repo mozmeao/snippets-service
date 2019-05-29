@@ -1,0 +1,44 @@
+dev:
+  tags:
+    - meao
+    - aws
+  only:
+    - gitlab
+    - master
+  variables:
+    NAMESPACE: nucleus-dev
+  script:
+    - docker/bin/build_images.sh
+    - docker/bin/push2dockerhub.sh
+    - CLUSTER_NAME=iowa-b bin/update-config.sh
+    - CLUSTER_NAME=frankfurt bin/update-config.sh
+
+
+stage:
+  tags:
+    - meao
+    - aws
+  only:
+    - stage
+  variables:
+    NAMESPACE: nucleus-stage
+  script:
+    - docker/bin/build_images.sh
+    - docker/bin/push2dockerhub.sh
+    - CLUSTER_NAME=frankfurt bin/update-config.sh
+    - CLUSTER_NAME=iowa-b bin/update-config.sh
+
+
+prod:
+  tags:
+    - meao
+    - aws
+  only:
+    - prod
+  variables:
+    NAMESPACE: nucleus-prod
+  script:
+    - docker/bin/build_images.sh
+    - docker/bin/push2dockerhub.sh
+    - CLUSTER_NAME=frankfurt bin/update-config.sh
+    - CLUSTER_NAME=iowa-b bin/update-config.sh
