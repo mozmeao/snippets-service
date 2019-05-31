@@ -28,3 +28,4 @@ COPY . /app
 RUN DEBUG=False SECRET_KEY=foo ALLOWED_HOSTS=localhost, DATABASE_URL=sqlite:/// SITE_URL= ./manage.py collectstatic --noinput
 RUN chown webdev.webdev -R .
 USER webdev
+ENV GIT_SHA $GIT_COMMIT
