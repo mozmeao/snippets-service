@@ -182,9 +182,9 @@ six==1.12.0 \
 html5lib==1.0.1 \
     --hash=sha256:20b159aa3badc9d5ee8f5c647e5efd02ed2a66ab8d354930bd9ff139fc1dc0a3 \
     --hash=sha256:66cb0dcfdbbc4f9c3ba1a63fdb511ffdbd4f513b2b6d81b80cd26ce6b3fb3736
-django-reversion==3.0.3 \
-    --hash=sha256:fd910774f2dabb65ac9d4fec2b032f1c0560f870c4923ce0b1e2f4d4430fc04a \
-    --hash=sha256:830cd9127ff3cda98254526e1b30519da98ce4094bdf25e7c5aabb9207405a76
+django-reversion==3.0.4 \
+    --hash=sha256:1aeed0b723b5be14c4dc7e7c7e03f9538e7ef29c997585e2e8fb414cf38818f4 \
+    --hash=sha256:ed46722389fb2441860d471c7538967dee545bcee891d3d907b04f4baa98f5fa
 django-statsd-mozilla==0.4.0 \
     --hash=sha256:0d87cb63de8107279cbb748caad9aa74c6a44e7e96ccc5dbf07b89f77285a4b8 \
     --hash=sha256:81084f3d426f5184f0a0f1dbfe035cc26b66f041d2184559d916a228d856f0d3
