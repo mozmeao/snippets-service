@@ -1,0 +1,27 @@
+<style>
+ .container {
+     display: grid;
+     grid-template-columns: 200px 200px;
+ }
+ img {
+     padding: 20px;
+     max-width: 90px;
+     max-height: 90px;
+ }
+ .light {
+     background-color: #ffffff;
+ }
+ .dark {
+     background-color: #38383d;
+ }
+</style>
+<div class="container">
+  <div>
+    Light Theme Background
+    <img class="light" src="{{ image.url }}"/>
+  </div>
+  <div>
+    Dark Theme Background
+    <img class="dark" src="{{ image.url }}"/>
+  </div>
+</div>
