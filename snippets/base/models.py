@@ -600,7 +600,7 @@ class Icon(models.Model):
                 if related_snippets:
                     all_snippets.extend(related_snippets)
 
-        return ASRSnippet.objects.filter(pk__in=all_snippets)
+        return ASRSnippet.objects.filter(pk__in=all_snippets).distinct()
 
 
 class Template(models.Model):

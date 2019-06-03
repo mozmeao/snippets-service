@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.utils.encoding import force_text
 
 from snippets.base.managers import SnippetQuerySet
-from snippets.base.models import Template
+from snippets.base import models
 
 
 class ModifiedFilter(admin.SimpleListFilter):
@@ -110,7 +110,7 @@ class TemplateFilter(admin.SimpleListFilter):
     LOOKUPS = sorted([
         (model.__name__, model.NAME)
         for model in apps.get_models()
-        if issubclass(model, Template) and not model.__name__ == 'Template'
+        if issubclass(model, models.Template) and not model.__name__ == 'Template'
     ], key=lambda x: x[1])
 
     def lookups(self, request, model_admin):
@@ -127,3 +127,28 @@ class TemplateFilter(admin.SimpleListFilter):
                 filters['template_relation__{}'.format(k.lower())] = None
 
         return queryset.filter(**filters)
+
+
+class IconPublishedFilter(admin.SimpleListFilter):
+    title = 'Currently Published'
+    parameter_name = 'is_currently_published'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+
+        icon_ids = []
+        for icon in queryset.all():
+            if icon.snippets.filter(status=models.STATUS_CHOICES['Published']).count():
+                icon_ids.append(icon.id)
+
+        if self.value() == 'yes':
+            return queryset.filter(id__in=icon_ids)
+        elif self.value() == 'no':
+            return queryset.exclude(id__in=icon_ids)

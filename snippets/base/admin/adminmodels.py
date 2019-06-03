@@ -122,7 +122,12 @@ class IconAdmin(admin.ModelAdmin):
         'name',
         'width',
         'height',
+        'number_of_snippets',
+        'number_of_published_snippets',
         'preview',
+    ]
+    list_filter = [
+        filters.IconPublishedFilter,
     ]
 
     class Media:
@@ -149,6 +154,12 @@ class IconAdmin(admin.ModelAdmin):
         """Snippets using this icon."""
         template = get_template('base/snippets_related_with_obj.jinja')
         return mark_safe(template.render({'snippets': obj.snippets, 'type': 'Icon'}))
+
+    def number_of_snippets(self, obj):
+        return obj.snippets.count()
+
+    def number_of_published_snippets(self, obj):
+        return obj.snippets.filter(status=models.STATUS_CHOICES['Published']).count()
 
 
 class SimpleTemplateInline(admin.StackedInline):
