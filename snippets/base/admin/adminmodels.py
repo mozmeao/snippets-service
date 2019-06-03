@@ -142,8 +142,8 @@ class IconAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     def preview(self, obj):
-        text = f'<img style="max-width:120px; max-height:120px;" src="{obj.image.url}"/>'
-        return mark_safe(text)
+        template = get_template('base/preview_image.jinja')
+        return mark_safe(template.render({'image': obj.image}))
 
     def snippets(self, obj):
         """Snippets using this icon."""
