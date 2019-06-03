@@ -4,11 +4,14 @@
 if [[ -z "$GIT_COMMIT" ]]; then
     export GIT_COMMIT=$(git rev-parse HEAD)
 fi
-export GIT_COMMIT_SHORT="${GIT_COMMIT:0:9}"
+
 if [[ -z "$DOCKER_REPOSITORY" ]]; then
-    export DOCKER_REPOSITORY="mozmeao/nucleus"
+    export DOCKER_REPOSITORY="mozorg/snippets"
 fi
+
+# match length of git rev-parse HEAD --short
+export GIT_COMMIT_SHORT="${GIT_COMMIT:0:7}"
+
 if [[ -z "$DOCKER_IMAGE_TAG" ]]; then
-    # we are probably going to switch to using GIT_COMMIT_SHORT in the image tag
-    export DOCKER_IMAGE_TAG="${DOCKER_REPOSITORY}:${GIT_COMMIT}"
+    export DOCKER_IMAGE_TAG="${DOCKER_REPOSITORY}:${GIT_COMMIT_SHORT}"
 fi
