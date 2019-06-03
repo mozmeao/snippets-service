@@ -128,7 +128,7 @@ class IconAdmin(admin.ModelAdmin):
     class Media:
         css = {
             'all': (
-                'css/admin/IconListSnippets.css',
+                'css/admin/ListSnippets.css',
             )
         }
         js = (
@@ -147,8 +147,8 @@ class IconAdmin(admin.ModelAdmin):
 
     def snippets(self, obj):
         """Snippets using this icon."""
-        template = get_template('base/snippets_related_with_icon.jinja')
-        return mark_safe(template.render({'snippets': obj.snippets}))
+        template = get_template('base/snippets_related_with_obj.jinja')
+        return mark_safe(template.render({'snippets': obj.snippets, 'type': 'Icon'}))
 
 
 class SimpleTemplateInline(admin.StackedInline):
@@ -733,12 +733,23 @@ class CategoryAdmin(admin.ModelAdmin):
 class TargetAdmin(admin.ModelAdmin):
     form = forms.TargetAdminForm
     save_on_top = True
-    readonly_fields = ('created', 'modified', 'creator', 'jexl_expr')
+    readonly_fields = (
+        'created',
+        'modified',
+        'creator',
+        'jexl_expr',
+        'snippets',
+    )
     filter_horizontal = (
         'client_match_rules',
     )
     search_fields = (
         'name',
+    )
+    list_display = (
+        'name',
+        'number_of_snippets',
+        'number_of_published_snippets',
     )
     fieldsets = (
         ('ID', {'fields': ('name',)}),
@@ -775,12 +786,22 @@ class TargetAdmin(admin.ModelAdmin):
                 'client_match_rules',
             )
         }),
+        ('Snippets', {
+            'fields': (
+                'snippets',
+            )
+        }),
         ('Other Info', {
             'fields': ('creator', ('created', 'modified'), 'jexl_expr'),
         }),
     )
 
     class Media:
+        css = {
+            'all': (
+                'css/admin/ListSnippets.css',
+            )
+        }
         js = (
             'js/admin/jquery.are-you-sure.js',
             'js/admin/alert-page-leaving.js',
@@ -791,3 +812,15 @@ class TargetAdmin(admin.ModelAdmin):
             obj.creator = request.user
         statsd.incr('save.target')
         super().save_model(request, obj, form, change)
+
+    def number_of_snippets(self, obj):
+        return obj.asrsnippet_set.count()
+
+    def number_of_published_snippets(self, obj):
+        return obj.asrsnippet_set.filter(status=models.STATUS_CHOICES['Published']).count()
+
+    def snippets(self, obj):
+        """Snippets using this Target."""
+        template = get_template('base/snippets_related_with_obj.jinja')
+        return mark_safe(template.render({'snippets': obj.asrsnippet_set.all().order_by('id'),
+                                          'type': 'Target'}))
