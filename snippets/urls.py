@@ -24,6 +24,7 @@ urlpatterns = [
 
 if settings.ENABLE_ADMIN:
     urlpatterns += [
+        re_path(r'^taggit/', include('taggit_selectize.urls')),
         path('admin/', admin.site.urls),
     ]
     admin.site.site_header = settings.SITE_HEADER

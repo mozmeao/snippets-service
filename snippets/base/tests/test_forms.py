@@ -294,6 +294,7 @@ class ASRSnippetAdminFormTests(TestCase):
             'name': 'Test',
             'weight': 100,
             'locale': locale.id,
+            'tags': [],
         }
 
         # User should get an error trying to publish on Release

@@ -27,6 +27,7 @@ import bleach
 from PIL import Image
 from jinja2 import Markup
 from jinja2.utils import LRUCache
+from taggit_selectize.managers import TaggableManager
 
 
 from snippets.base import util
@@ -1470,6 +1471,8 @@ class ASRSnippet(models.Model):
     category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.PROTECT,
                                  related_name='snippets')
 
+    tags = TaggableManager(blank=True)
+
     status = models.IntegerField(choices=[(y, x) for x, y in STATUS_CHOICES.items()],
                                  db_index=True, default=100)
 
@@ -1629,6 +1632,7 @@ class ASRSnippet(models.Model):
             'category': self.category.name if self.category else '',
             'url': url,
             'body': body,
+            'tags': ','.join([tag.name for tag in self.tags.all().order_by('name')]),
         }
         return export
 

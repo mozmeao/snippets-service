@@ -1,0 +1,13 @@
+<div id="name">
+  <a href="{{ url('admin:base_asrsnippet_change', object_id=obj.id) }}">
+    {{ obj.name }}
+  </a>
+</div>
+<ul class="tags">
+  {% for tag in obj.tags.all().order_by('name') %}
+    <li class="tag">
+      {{ tag.name }}
+    </li>
+  {% endfor %}
+</ul>
+</div>

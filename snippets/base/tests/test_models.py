@@ -582,6 +582,7 @@ class ASRSnippetTests(TestCase):
             category__name='test-category',
             template_relation__text=(
                 'This is the <b>bold body</b> with a <a href="https://example.com">link</a>.'),
+            add_tags=['foo', 'bar'],
         )
         expected_data = {
             'id': snippet.id,
@@ -589,7 +590,8 @@ class ASRSnippetTests(TestCase):
             'campaign': 'test-campaign',
             'category': 'test-category',
             'url': 'https://example.com',
-            'body': 'This is the bold body with a link.'
+            'body': 'This is the bold body with a link.',
+            'tags': 'bar,foo'
         }
         self.assertEqual(expected_data, snippet.analytics_export())
 

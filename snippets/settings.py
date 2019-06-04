@@ -48,6 +48,9 @@ INSTALLED_APPS = [
     'django_admin_listfilter_dropdown',
     'admin_reorder',
     'django_filters',
+    'taggit',
+    'taggit_helpers',
+    'taggit_selectize',
 
     # Django apps
     'django.contrib.admin',
@@ -374,3 +377,5 @@ IMAGE_OPTIMIZE = config('IMAGE_OPTIMIZE', default=True, cast=bool)
 IMAGE_MAX_DIMENSION = config('IMAGE_MAX_DIMENSION', default=192, cast=int)
 # Set to zero to disable
 IMAGE_MAX_SIZE = config('IMAGE_MAX_SIZE', default=40960, cast=int)
+
+TAGGIT_CASE_INSENSITIVE = True

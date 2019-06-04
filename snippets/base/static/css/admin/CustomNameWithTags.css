@@ -1,0 +1,30 @@
+.field-custom_name_with_tags #name {
+    font-size: 120%;
+    margin-bottom: 10px;
+}
+
+.field-custom_name_with_tags .tags {
+     list-style: none;
+     margin: 0;
+     overflow: hidden;
+     padding: 0;
+ }
+
+.field-custom_name_with_tags li {
+     float: left;
+     list-style: none;
+     font-size: 85%;
+ }
+
+.field-custom_name_with_tags .tag {
+    background: #eee;
+    border-radius: 3px;
+    color: #999;
+    display: inline-block;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 10px 0 10px;
+    position: relative;
+    margin: 0 5px 5px 0;
+    text-decoration: none;
+}
