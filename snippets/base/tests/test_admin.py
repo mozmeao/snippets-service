@@ -2,7 +2,7 @@ from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.test.client import RequestFactory
 
-from unittest.mock import Mock, patch
+from unittest.mock import DEFAULT as DEFAULT_MOCK, Mock, patch
 
 from snippets.base.admin import ASRSnippetAdmin, SnippetAdmin, SnippetTemplateAdmin
 from snippets.base.models import (STATUS_CHOICES, ASRSnippet, Snippet,
@@ -212,7 +212,7 @@ class ASRSnippetAdminTests(TestCase):
 
         self.assertEqual(set(snippets + qa_snippets), set(queryset.all()))
 
-    def test_make_published(self):
+    def test_action_publish_snippet(self):
         to_be_published = ASRSnippetFactory.create_batch(2, status=STATUS_CHOICES['Draft'])
         already_published = ASRSnippetFactory(status=STATUS_CHOICES['Published'])
         ASRSnippetFactory.create_batch(2, status=STATUS_CHOICES['Draft'])
@@ -223,13 +223,41 @@ class ASRSnippetAdminTests(TestCase):
             already_published.id
         ])
 
-        with patch('snippets.base.admin.adminmodels.messages.warning') as warning:
-            with patch('snippets.base.admin.adminmodels.messages.success') as success:
-                ASRSnippetAdmin(ASRSnippet, None).make_published(None, queryset)
+        with patch.multiple('snippets.base.admin.adminmodels.messages',
+                            warning=DEFAULT_MOCK,
+                            success=DEFAULT_MOCK) as message_mocks:
+            with patch('snippets.base.admin.adminmodels.ASRSnippetAdmin.log_change') as log_change:
+                ASRSnippetAdmin(ASRSnippet, None).action_publish_snippet(None, queryset)
 
         self.assertEqual(
             set(ASRSnippet.objects.filter(status=STATUS_CHOICES['Published'])),
             set(to_be_published + [already_published])
         )
-        self.assertTrue(warning.called)
-        self.assertTrue(success.called)
+        self.assertTrue(message_mocks['warning'].called)
+        self.assertTrue(message_mocks['success'].called)
+        self.assertTrue(log_change.called)
+
+    def test_action_unpublish_snippet(self):
+        to_be_unpublished = ASRSnippetFactory.create_batch(2, status=STATUS_CHOICES['Published'])
+        already_unpublished = ASRSnippetFactory(status=STATUS_CHOICES['Draft'])
+        ASRSnippetFactory.create_batch(2, status=STATUS_CHOICES['Approved'])
+
+        queryset = ASRSnippet.objects.filter(id__in=[
+            to_be_unpublished[0].id,
+            to_be_unpublished[1].id,
+            already_unpublished.id
+        ])
+
+        with patch.multiple('snippets.base.admin.adminmodels.messages',
+                            warning=DEFAULT_MOCK,
+                            success=DEFAULT_MOCK) as message_mocks:
+            with patch('snippets.base.admin.adminmodels.ASRSnippetAdmin.log_change') as log_change:
+                ASRSnippetAdmin(ASRSnippet, None).action_unpublish_snippet(None, queryset)
+
+        self.assertEqual(
+            set(ASRSnippet.objects.filter(status=STATUS_CHOICES['Draft'])),
+            set(to_be_unpublished + [already_unpublished])
+        )
+        self.assertTrue(message_mocks['warning'].called)
+        self.assertTrue(message_mocks['success'].called)
+        self.assertTrue(log_change.called)

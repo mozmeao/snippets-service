@@ -1,7 +1,7 @@
 import re
+from datetime import datetime
 
 from django.contrib import admin, messages
-from django.db import transaction
 from django.db.models import TextField, Q
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
@@ -502,7 +502,8 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     view_on_site = False
     actions = (
         actions.duplicate_snippets_action,
-        'make_published',
+        'action_publish_snippet',
+        'action_unpublish_snippet',
     )
 
     fieldsets = (
@@ -619,31 +620,50 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         form.current_user = request.user
         return form
 
-    def make_published(self, request, queryset):
-        clean_queryset = queryset.exclude(status=models.STATUS_CHOICES['Published'])
+    def _action_status_change(self, action, request, queryset):
+        if action == 'publish':
+            status = models.STATUS_CHOICES['Published']
+            no_action_message = 'Skipped {} already published snippets.'
+            success_message = 'Published {} snippets.'
+        else:
+            status = models.STATUS_CHOICES['Draft']
+            no_action_message = 'Skipped {} already unpublished snippets.'
+            success_message = 'Unpublished {} snippets.'
+
+        clean_queryset = queryset.exclude(status=status)
         no_snippets = clean_queryset.count()
         no_already_published_snippets = queryset.count() - no_snippets
 
-        snippets = []
-        with transaction.atomic():
-            for snippet in clean_queryset:
-                snippet.status = models.STATUS_CHOICES['Published']
-                snippet.save()
-                snippets.append(snippet)
+        now = datetime.utcnow()
+        # Create a list of matching snippets before altering them to log action
+        # and send Slack messages.
+        snippets = list(clean_queryset)
+        clean_queryset.update(status=status, modified=now)
 
         for snippet in snippets:
-            slack.send_slack('asr_published', snippet)
+            self.log_change(request, snippet, 'Changed status.')
+            if action == 'publish':
+                slack.send_slack('asr_published', snippet)
 
         if no_already_published_snippets:
-            messages.warning(
-                request, f'Skipped {no_already_published_snippets} already published snippets.')
-        messages.success(request, f'Published {no_snippets} snippets.')
+            messages.warning(request, no_action_message.format(no_already_published_snippets))
+        messages.success(request, success_message.format(no_snippets))
 
-    make_published.short_description = 'Publish selected snippets'
-
+    def action_publish_snippet(self, request, queryset):
+        self._action_status_change('publish', request, queryset)
+    action_publish_snippet.short_description = 'Publish selected snippets'
     # Only users with Publishing permissions on all channels are allowed to
     # mark snippets for publication in bulk.
-    make_published.allowed_permissions = (
+    action_publish_snippet.allowed_permissions = (
+        'global_publish',
+    )
+
+    def action_unpublish_snippet(self, request, queryset):
+        self._action_status_change('unpublish', request, queryset)
+    action_unpublish_snippet.short_description = 'Unpublish selected snippets'
+    # Only users with Publishing permissions on all channels are allowed to
+    # mark snippets for publication in bulk.
+    action_unpublish_snippet.allowed_permissions = (
         'global_publish',
     )
 
