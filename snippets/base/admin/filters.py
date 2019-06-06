@@ -129,7 +129,7 @@ class TemplateFilter(admin.SimpleListFilter):
         return queryset.filter(**filters)
 
 
-class IconPublishedFilter(admin.SimpleListFilter):
+class RelatedPublishedASRSnippetFilter(admin.SimpleListFilter):
     title = 'Currently Published'
     parameter_name = 'is_currently_published'
 
@@ -139,6 +139,18 @@ class IconPublishedFilter(admin.SimpleListFilter):
             ('no', 'No'),
         )
 
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+
+        if self.value() == 'yes':
+            return queryset.filter(snippets__status=models.STATUS_CHOICES['Published']).distinct()
+        elif self.value() == 'no':
+            return queryset.exclude(
+                snippets__status=models.STATUS_CHOICES['Published']).distinct()
+
+
+class IconRelatedPublishedASRSnippetFilter(RelatedPublishedASRSnippetFilter):
     def queryset(self, request, queryset):
         if self.value() is None:
             return queryset

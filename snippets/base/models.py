@@ -533,7 +533,7 @@ class Campaign(models.Model):
     name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(
         max_length=255, blank=False, unique=True,
-        help_text=('Optional campaign slug. Will be added in the stats ping. '
+        help_text=('Campaign slug. Will be added in the stats ping. '
                    'Will be used for snippet blocking if set.'))
 
     def __str__(self):
@@ -1381,9 +1381,10 @@ class ASRSnippet(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=255, unique=True)
 
-    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT,
+                                 related_name='snippets')
     category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.PROTECT,
-                                 related_name='asrsnippets')
+                                 related_name='snippets')
 
     status = models.IntegerField(choices=[(y, x) for x, y in STATUS_CHOICES.items()],
                                  db_index=True, default=100)
@@ -1400,7 +1401,7 @@ class ASRSnippet(models.Model):
             'See the current time in <a target="_blank" href="http://time.is/UTC">UTC</a>'))
 
     locales = models.ManyToManyField('TargetedLocale', blank=True, verbose_name='Targeted Locales')
-    targets = models.ManyToManyField(Target, default=None, blank=True)
+    targets = models.ManyToManyField(Target, default=None, blank=True, related_name='snippets')
 
     weight = models.IntegerField(
         choices=SNIPPET_WEIGHTS, default=100,
@@ -1565,15 +1566,12 @@ def update_asrsnippet_modified_date(sender, instance, **kwargs):
     if isinstance(instance, Template):
         snippets = [instance.snippet.pk]
 
-    elif isinstance(instance, Icon):
+    elif (isinstance(instance, Icon) or
+          isinstance(instance, Campaign) or
+          isinstance(instance, Target)):
         # Convert the value_list Queryset to a list, required for the upcoming
         # update() query to work.
         snippets = [id for id in instance.snippets.values_list('pk', flat=True)]
-
-    elif isinstance(instance, Campaign) or isinstance(instance, Target):
-        # Convert the value_list Queryset to a list, required for the upcoming
-        # update() query to work.
-        snippets = [id for id in instance.asrsnippet_set.values_list('pk', flat=True)]
 
     if snippets:
         ASRSnippet.objects.filter(pk__in=snippets).update(modified=now)

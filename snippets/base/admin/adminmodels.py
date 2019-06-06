@@ -21,6 +21,23 @@ MATCH_LOCALE_REGEX = re.compile(r'(\w+(?:-\w+)*)')
 RESERVED_VARIABLES = ('_', 'snippet_id')
 
 
+class RelatedSnippetsMixin():
+    def related_published_snippets(self, obj):
+        return obj.snippets.filter(status=models.STATUS_CHOICES['Published']).count()
+
+    def related_total_snippets(self, obj):
+        return obj.snippets.count()
+
+    def snippet_list(self, obj):
+        """List Related Snippets."""
+        template = get_template('base/snippets_related_with_obj.jinja')
+        return mark_safe(
+            template.render({
+                'snippets': obj.snippets.all().order_by('-id')
+            })
+        )
+
+
 class ClientMatchRuleAdmin(VersionAdmin, admin.ModelAdmin):
     list_display = ('description', 'is_exclusion', 'startpage_version', 'name',
                     'version', 'locale', 'appbuildid', 'build_target',
@@ -100,7 +117,7 @@ class AddonAdmin(admin.ModelAdmin):
         )
 
 
-class IconAdmin(admin.ModelAdmin):
+class IconAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     search_fields = [
         'name',
         'image',
@@ -111,7 +128,9 @@ class IconAdmin(admin.ModelAdmin):
         'preview',
         'creator',
         'created',
-        'snippets',
+        'snippet_list',
+        'related_total_snippets',
+        'related_published_snippets',
     ]
     list_display_links = [
         'id',
@@ -122,12 +141,12 @@ class IconAdmin(admin.ModelAdmin):
         'name',
         'width',
         'height',
-        'number_of_snippets',
-        'number_of_published_snippets',
+        'related_total_snippets',
+        'related_published_snippets',
         'preview',
     ]
     list_filter = [
-        filters.IconPublishedFilter,
+        filters.IconRelatedPublishedASRSnippetFilter,
     ]
 
     class Media:
@@ -149,17 +168,6 @@ class IconAdmin(admin.ModelAdmin):
     def preview(self, obj):
         template = get_template('base/preview_image.jinja')
         return mark_safe(template.render({'image': obj.image}))
-
-    def snippets(self, obj):
-        """Snippets using this icon."""
-        template = get_template('base/snippets_related_with_obj.jinja')
-        return mark_safe(template.render({'snippets': obj.snippets, 'type': 'Icon'}))
-
-    def number_of_snippets(self, obj):
-        return obj.snippets.count()
-
-    def number_of_published_snippets(self, obj):
-        return obj.snippets.filter(status=models.STATUS_CHOICES['Published']).count()
 
 
 class SimpleTemplateInline(admin.StackedInline):
@@ -687,21 +695,49 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         return active_locales
 
 
-class CampaignAdmin(admin.ModelAdmin):
-    readonly_fields = ('created', 'modified', 'creator',)
-    prepopulated_fields = {'slug': ('name',)}
-
+class CampaignAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
+    readonly_fields = [
+        'created',
+        'modified',
+        'creator',
+        'related_published_snippets',
+        'related_total_snippets',
+        'snippet_list',
+    ]
+    prepopulated_fields = {
+        'slug': ('name',)
+    }
     fieldsets = (
         ('ID', {'fields': ('name', 'slug')}),
+        ('Snippets', {
+            'fields': (
+                'related_published_snippets',
+                'related_total_snippets',
+                'snippet_list',
+            ),
+        }),
         ('Other Info', {
             'fields': ('creator', ('created', 'modified')),
         }),
     )
-    search_fields = (
+    search_fields = [
         'name',
-    )
+    ]
+    list_display = [
+        'name',
+        'related_total_snippets',
+        'related_published_snippets',
+    ]
+    list_filter = [
+        filters.RelatedPublishedASRSnippetFilter,
+    ]
 
     class Media:
+        css = {
+            'all': (
+                'css/admin/ListSnippets.css',
+            )
+        }
         js = (
             'js/admin/jquery.are-you-sure.js',
             'js/admin/alert-page-leaving.js',
@@ -714,35 +750,52 @@ class CampaignAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-class CategoryAdmin(admin.ModelAdmin):
-    readonly_fields = ('created', 'modified', 'creator',
-                       'published_snippets_in_category', 'total_snippets_in_category')
-
-    fieldsets = (
+class CategoryAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
+    readonly_fields = [
+        'created',
+        'modified',
+        'creator',
+        'snippet_list',
+        'related_total_snippets',
+        'related_published_snippets',
+    ]
+    fieldsets = [
         ('ID', {
             'fields': (
                 'name',
                 'description',
-                'published_snippets_in_category',
-                'total_snippets_in_category',
             )
+        }),
+        ('Snippets', {
+            'fields': (
+                'related_published_snippets',
+                'related_total_snippets',
+                'snippet_list',
+            ),
         }),
         ('Other Info', {
             'fields': ('creator', ('created', 'modified')),
         }),
-    )
-    search_fields = (
+    ]
+    search_fields = [
         'name',
         'description',
-    )
-
-    list_display = (
+    ]
+    list_display = [
         'name',
-        'published_snippets_in_category',
-        'total_snippets_in_category',
-    )
+        'related_published_snippets',
+        'related_total_snippets',
+    ]
+    list_filter = [
+        filters.RelatedPublishedASRSnippetFilter,
+    ]
 
     class Media:
+        css = {
+            'all': (
+                'css/admin/ListSnippets.css',
+            )
+        }
         js = (
             'js/admin/jquery.are-you-sure.js',
             'js/admin/alert-page-leaving.js',
@@ -754,35 +807,31 @@ class CategoryAdmin(admin.ModelAdmin):
         statsd.incr('save.category')
         super().save_model(request, obj, form, change)
 
-    def published_snippets_in_category(self, obj):
-        return obj.asrsnippets.filter(status=models.STATUS_CHOICES['Published']).count()
 
-    def total_snippets_in_category(self, obj):
-        return obj.asrsnippets.count()
-
-
-class TargetAdmin(admin.ModelAdmin):
+class TargetAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     form = forms.TargetAdminForm
     save_on_top = True
-    readonly_fields = (
+    readonly_fields = [
         'created',
         'modified',
         'creator',
         'jexl_expr',
-        'snippets',
-    )
-    filter_horizontal = (
+        'snippet_list',
+        'related_total_snippets',
+        'related_published_snippets',
+    ]
+    filter_horizontal = [
         'client_match_rules',
-    )
-    search_fields = (
+    ]
+    search_fields = [
         'name',
-    )
-    list_display = (
+    ]
+    list_display = [
         'name',
-        'number_of_snippets',
-        'number_of_published_snippets',
-    )
-    fieldsets = (
+        'related_published_snippets',
+        'related_total_snippets',
+    ]
+    fieldsets = [
         ('ID', {'fields': ('name',)}),
         ('Product channels', {
             'description': 'What channels will this snippet be available in?',
@@ -819,13 +868,18 @@ class TargetAdmin(admin.ModelAdmin):
         }),
         ('Snippets', {
             'fields': (
-                'snippets',
+                'related_published_snippets',
+                'related_total_snippets',
+                'snippet_list',
             )
         }),
         ('Other Info', {
             'fields': ('creator', ('created', 'modified'), 'jexl_expr'),
         }),
-    )
+    ]
+    list_filter = [
+        filters.RelatedPublishedASRSnippetFilter,
+    ]
 
     class Media:
         css = {
@@ -843,15 +897,3 @@ class TargetAdmin(admin.ModelAdmin):
             obj.creator = request.user
         statsd.incr('save.target')
         super().save_model(request, obj, form, change)
-
-    def number_of_snippets(self, obj):
-        return obj.asrsnippet_set.count()
-
-    def number_of_published_snippets(self, obj):
-        return obj.asrsnippet_set.filter(status=models.STATUS_CHOICES['Published']).count()
-
-    def snippets(self, obj):
-        """Snippets using this Target."""
-        template = get_template('base/snippets_related_with_obj.jinja')
-        return mark_safe(template.render({'snippets': obj.asrsnippet_set.all().order_by('id'),
-                                          'type': 'Target'}))
