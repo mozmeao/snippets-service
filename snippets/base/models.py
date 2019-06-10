@@ -782,7 +782,9 @@ class FundraisingTemplate(Template):
         max_length=255, blank=True,
         help_text='Snippet title displayed before snippet text.',
     )
-    text = models.TextField()
+    text = models.TextField(
+        help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br'
+    )
     text_color = models.CharField(max_length=10, blank=True,)
     background_color = models.CharField(max_length=10, blank=True,)
     highlight_color = models.CharField(
