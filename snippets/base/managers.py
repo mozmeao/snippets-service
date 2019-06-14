@@ -135,7 +135,7 @@ class ASRSnippetQuerySet(QuerySet):
 
         # Filter based on ClientMatchRules
         passed_rules, failed_rules = (ClientMatchRule.objects
-                                      .filter(target__asrsnippet__in=snippets)
+                                      .filter(target__snippets__in=snippets)
                                       .distinct()
                                       .evaluate(client))
 

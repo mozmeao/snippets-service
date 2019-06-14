@@ -1,7 +1,11 @@
 <ul id="snippets-list">
   {%- for snippet in snippets -%}
-    <li><a href="{{ url('admin:base_asrsnippet_change', snippet.id) }}">{{ snippet.id }} - {{ snippet.name }}</a></li>
+    <li>
+      <a href="{{ url('admin:base_asrsnippet_change', snippet.id) }}">
+        {{ snippet.id }} - {{ snippet.name }} - <span {% if snippet.status == 400 %}style="color: #0fb00f; font-weight: bold;"{% endif %}>{{ snippet.get_status_display() }}</span>
+      </a>
+    </li>
   {%- else -%}
-    <li>No snippets using this {{ type }}.</li>
+    <li>No related snippets.</li>
   {%- endfor -%}
 </ul>
