@@ -575,6 +575,27 @@ class SnippetTemplateVariableInlineFormset(forms.models.BaseInlineFormSet):
                 'There can be only one Main Text variable type per template')
 
 
+class AutoTranslatorWidget(forms.Select):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        """For each key available in each Locale.translation JSON dictionary, create an
+        `translation-{key}` attribute. The attribute will be used by
+        `autoTranslatorWidget.js` to translate fields on Locale selection.
+
+        """
+        option = super().create_option(name, value, label, selected,
+                                       index, subindex=None, attrs=None)
+        if value:
+            option['attrs']['translations'] = models.Locale.objects.get(id=value).translations
+
+        return option
+
+    class Media:
+        js = [
+            'js/lib/jquery-3.3.1.min.js',
+            'js/autoTranslatorWidget.js',
+        ]
+
+
 class SimpleTemplateForm(forms.ModelForm):
 
     class Meta:
@@ -642,6 +663,9 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     class Meta:
         model = models.ASRSnippet
         exclude = ['creator', 'created', 'modified']
+        widgets = {
+            'locale': AutoTranslatorWidget,
+        }
 
     class Media:
         js = [
