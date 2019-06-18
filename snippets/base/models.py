@@ -1237,8 +1237,8 @@ class SendToDeviceTemplate(Template):
 
     locale = models.CharField(
         max_length=10,
-        default='en-US',
-        help_text='Two to five character string for the locale code. Default "en-US".',
+        default='EN',
+        help_text='Two to five character string for the locale code. Default "EN".',
     )
     country = models.CharField(
         max_length=10,
