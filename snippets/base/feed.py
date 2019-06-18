@@ -1,9 +1,11 @@
+import operator
 from datetime import timedelta
 from distutils.util import strtobool
 from textwrap import dedent
 from urllib.parse import urlparse
 
 from django.conf import settings
+from django.db.models import Q
 
 import django_filters
 from django_ical.views import ICalFeed
@@ -11,17 +13,24 @@ from django_ical.views import ICalFeed
 from snippets.base import models
 
 
-class CharInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
-    pass
-
-
 class ASRSnippetFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains')
-    locale = CharInFilter(field_name='locales__code', lookup_expr='in')
+    locale = django_filters.CharFilter(method='filter_locale')
     only_scheduled = django_filters.ChoiceFilter(
         method='filter_scheduled', choices=(('true', 'Yes'),
                                             ('false', 'No'),
                                             ('all', 'All')))
+
+    def filter_locale(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        locales = value.split(',')
+        return queryset.filter(
+            operator.or_(
+                *[Q(locale__code=',{},'.format(locale)) for locale in locales]
+            )
+        )
 
     def filter_scheduled(self, queryset, name, value):
         if value == 'all':

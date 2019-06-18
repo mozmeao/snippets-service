@@ -10,6 +10,7 @@ from pyquery import PyQuery as pq
 from snippets.base.models import (STATUS_CHOICES,
                                   Client,
                                   Icon,
+                                  Locale,
                                   SimpleTemplate,
                                   _generate_filename)
 from snippets.base.util import fluent_link_extractor
@@ -446,7 +447,6 @@ class ASRSnippetTests(TestCase):
         user = UserFactory.create()
         snippet = ASRSnippetFactory.create(
             status=STATUS_CHOICES['Published'],
-            locales=['en-us', 'fr'],
         )
         duplicate_snippet = snippet.duplicate(user)
         snippet.refresh_from_db()
@@ -454,7 +454,6 @@ class ASRSnippetTests(TestCase):
         for attr in ['id', 'creator', 'created', 'modified', 'name', 'uuid']:
             self.assertNotEqual(getattr(snippet, attr), getattr(duplicate_snippet, attr))
 
-        self.assertEqual(set(snippet.locales.all()), set(duplicate_snippet.locales.all()))
         self.assertEqual(duplicate_snippet.status, STATUS_CHOICES['Draft'])
         self.assertNotEqual(snippet.template_ng.pk, duplicate_snippet.template_ng.pk)
 
@@ -544,3 +543,10 @@ class ASRSnippetTests(TestCase):
         new_modified = snippet.modified
 
         self.assertNotEqual(old_modified, new_modified)
+
+
+class LocaleTests(TestCase):
+    def test_code_commas_and_case(self):
+        locale = Locale(name='foo', code='Bar')
+        locale.save()
+        self.assertEqual(locale.code, ',bar,')

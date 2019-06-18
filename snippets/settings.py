@@ -328,7 +328,7 @@ ADMIN_REORDER = [
             'base.Target',
             'base.Icon',
             'base.Addon',
-            'base.Template',
+            'base.Locale',
         ]
 
     },

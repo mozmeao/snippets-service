@@ -4,7 +4,7 @@ from snippets.base import models
 
 from .adminmodels import (AddonAdmin, ASRSnippetAdmin, CampaignAdmin, CategoryAdmin,
                           ClientMatchRuleAdmin, LogEntryAdmin, IconAdmin,
-                          SnippetTemplateAdmin, TargetAdmin)
+                          SnippetTemplateAdmin, TargetAdmin, LocaleAdmin)
 from .legacy import (SnippetAdmin, SearchProviderAdmin, TargetedCountryAdmin,
                      TargetedLocaleAdmin)
 
@@ -25,3 +25,4 @@ admin.site.register(admin.models.LogEntry, LogEntryAdmin)
 admin.site.register(models.SnippetTemplate, SnippetTemplateAdmin)
 admin.site.register(models.Target, TargetAdmin)
 admin.site.register(models.Icon, IconAdmin)
+admin.site.register(models.Locale, LocaleAdmin)

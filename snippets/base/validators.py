@@ -110,3 +110,11 @@ def validate_image_format(image):
     if img.format not in ['PNG']:
         raise ValidationError('Upload only PNG images.')
     return image
+
+
+def validate_json_data(data):
+    try:
+        json.loads(data)
+    except ValueError:
+        raise ValidationError('Enter valid JSON string.')
+    return data

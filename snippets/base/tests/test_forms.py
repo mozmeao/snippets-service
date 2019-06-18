@@ -9,8 +9,8 @@ from snippets.base.forms import (ASRSnippetAdminForm, IconWidget,
                                  SnippetAdminForm, TargetAdminForm,
                                  TemplateDataWidget, TemplateSelect)
 from snippets.base.models import STATUS_CHOICES
-from snippets.base.tests import (ASRSnippetFactory, SnippetFactory,
-                                 SnippetTemplateFactory,
+from snippets.base.tests import (ASRSnippetFactory, LocaleFactory,
+                                 SnippetFactory, SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase,
                                  TargetFactory)
 
@@ -265,6 +265,7 @@ class ASRSnippetAdminFormTests(TestCase):
         user = User.objects.create_user(username='admin',
                                         email='foo@example.com',
                                         password='admin')
+        locale = LocaleFactory()
 
         perm_beta = Permission.objects.get(
             codename='publish_on_beta',
@@ -292,6 +293,7 @@ class ASRSnippetAdminFormTests(TestCase):
         data = {
             'name': 'Test',
             'weight': 100,
+            'locale': locale.id,
         }
 
         # User should get an error trying to publish on Release
