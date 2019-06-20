@@ -1,15 +1,18 @@
 import copy
+import io
 import hashlib
 import json
 import os
 import re
 import uuid
+import subprocess
 from collections import namedtuple
 from datetime import datetime
 from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
 from django.core import validators as django_validators
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.urls import reverse
 from django.db import models
 from django.db.models.manager import Manager
@@ -22,6 +25,7 @@ from django.utils.html import format_html
 import bleach
 from jinja2 import Markup
 from jinja2.utils import LRUCache
+
 
 from snippets.base import util
 from snippets.base.fields import RegexField
@@ -601,6 +605,24 @@ class Icon(models.Model):
                     all_snippets.extend(related_snippets)
 
         return ASRSnippet.objects.filter(pk__in=all_snippets).distinct()
+
+    def clean(self):
+        super().clean()
+
+        # Optimize only when settings is True and new file
+        if settings.IMAGE_OPTIMIZE and isinstance(self.image.file, InMemoryUploadedFile):
+            self.image.seek(0)
+            cmd = subprocess.run(
+                ['pngquant', '-', '--quality=95', '--skip-if-larger', '--speed=1'],
+                input=self.image.read(),
+                stdout=subprocess.PIPE
+            )
+            if cmd.stdout:
+                new_image = io.BytesIO(cmd.stdout)
+                self.image.file = InMemoryUploadedFile(
+                    new_image, 'ImageField', self.image.name,
+                    'image/png', len(new_image.read()), None
+                )
 
 
 class Template(models.Model):

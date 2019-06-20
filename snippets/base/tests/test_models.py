@@ -1,8 +1,13 @@
+import io
+import subprocess
+
 from django.conf import settings
 from django.core.files import File
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test.utils import override_settings
 from django.urls import reverse
 
+from PIL import Image
 from jinja2 import Markup
 from unittest.mock import Mock, patch
 from pyquery import PyQuery as pq
@@ -353,6 +358,14 @@ class TemplateTests(TestCase):
 
 
 class IconTests(TestCase):
+    def _build_in_memory_uploaded_file(self):
+        img = Image.new('RGB', (30, 30), color='red')
+        fle = io.BytesIO()
+        img.save(fle, 'PNG')
+        fle.seek(0)
+        size = len(fle.read())
+        fle.seek(0)
+        return InMemoryUploadedFile(fle, 'ImageField', 'foo.png', 'image/png', size, None)
 
     @override_settings(CDN_URL='http://example.com')
     def test_url_with_cdn_url(self):
@@ -369,6 +382,29 @@ class IconTests(TestCase):
             delattr(settings_mock, 'CDN_URL')
             settings_mock.SITE_URL = 'http://second-example.com/'
             self.assertEqual(test_file.url, 'http://second-example.com/foo')
+
+    @override_settings(IMAGE_OPTIMIZE=True)
+    def test_dont_process_existing_files(self):
+        instance = IconFactory.build()
+        with patch('snippets.base.models.subprocess.run') as run_mock:
+            instance.clean()
+        self.assertFalse(run_mock.called)
+
+    @override_settings(IMAGE_OPTIMIZE=False)
+    def test_dont_process_when_setting_off(self):
+        instance = IconFactory()
+        instance.image.file = self._build_in_memory_uploaded_file()
+        with patch('snippets.base.models.subprocess.run') as run_mock:
+            instance.clean()
+        self.assertFalse(run_mock.called)
+
+    @override_settings(IMAGE_OPTIMIZE=True)
+    def test_image_optimization(self):
+        instance = IconFactory.build()
+        instance.image.file = self._build_in_memory_uploaded_file()
+        with patch('snippets.base.models.subprocess.run', wraps=subprocess.run) as run_mock:
+            instance.clean()
+        self.assertTrue(run_mock.called)
 
 
 class ASRSnippetTests(TestCase):

@@ -366,3 +366,5 @@ LOGGING = {
 # (TooManyFields) will be raised due to the number of Snippets selected in the
 # admin tool.
 DATA_UPLOAD_MAX_NUMBER_FIELDS = config('DATA_UPLOAD_MAX_NUMBER_FIELDS', default=1000, cast=int)
+
+IMAGE_OPTIMIZE = config('IMAGE_OPTIMIZE', default=True, cast=bool)
