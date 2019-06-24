@@ -12,6 +12,7 @@ from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
 from django.core import validators as django_validators
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.urls import reverse
 from django.db import models
@@ -23,6 +24,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 import bleach
+from PIL import Image
 from jinja2 import Markup
 from jinja2.utils import LRUCache
 
@@ -572,9 +574,8 @@ class Icon(models.Model):
         upload_to=_generate_filename,
         height_field='height',
         width_field='width',
-        validators=[validators.validate_image_format],
-        help_text=('PNG only. Note that updating the image will '
-                   'update all snippets using this image.'),
+        help_text=('PNG only. A reasonable file size is about 5 KiB. Note that updating the '
+                   'image will update all snippets using this image.'),
     )
 
     def __str__(self):
@@ -609,8 +610,24 @@ class Icon(models.Model):
     def clean(self):
         super().clean()
 
-        # Optimize only when settings is True and new file
-        if settings.IMAGE_OPTIMIZE and isinstance(self.image.file, InMemoryUploadedFile):
+        # If not new file, just return
+        if not isinstance(self.image.file, InMemoryUploadedFile):
+            return
+
+        im = Image.open(self.image.open())
+        if im.format != 'PNG':
+            raise ValidationError({'image': 'Upload only PNG images.'})
+
+        if (settings.IMAGE_MAX_DIMENSION and
+            (im.width > settings.IMAGE_MAX_DIMENSION or
+             im.height > settings.IMAGE_MAX_DIMENSION)):
+            raise ValidationError({
+                'image': 'Upload an image at most {0}x{0}. This image is {1}x{2}.'.format(
+                    settings.IMAGE_MAX_DIMENSION, im.width, im.height)
+            })
+
+        # Optimize only when settings is True
+        if settings.IMAGE_OPTIMIZE:
             self.image.seek(0)
             cmd = subprocess.run(
                 ['pngquant', '-', '--quality=95', '--skip-if-larger', '--speed=1'],
@@ -623,6 +640,12 @@ class Icon(models.Model):
                     new_image, 'ImageField', self.image.name,
                     'image/png', len(new_image.read()), None
                 )
+
+        if settings.IMAGE_MAX_SIZE > 0 and self.image.size > settings.IMAGE_MAX_SIZE:
+            raise ValidationError({
+                'image': 'Upload an image less than {0:.0f} KiB. This image is {1:.0f} KiB.'.format(
+                    settings.IMAGE_MAX_SIZE / 1024, self.image.size / 1024)
+            })
 
 
 class Template(models.Model):

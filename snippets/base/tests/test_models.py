@@ -2,6 +2,7 @@ import io
 import subprocess
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test.utils import override_settings
@@ -405,6 +406,70 @@ class IconTests(TestCase):
         with patch('snippets.base.models.subprocess.run', wraps=subprocess.run) as run_mock:
             instance.clean()
         self.assertTrue(run_mock.called)
+
+    @override_settings(IMAGE_MAX_DIMENSION=0)
+    def test_dimensions_check_disabled(self):
+        instance = IconFactory.build()
+        instance.image.file = self._build_in_memory_uploaded_file()
+        self.assertIsNone(instance.clean())
+
+    @override_settings(IMAGE_MAX_DIMENSION=50)
+    def test_valid_dimensions(self):
+        instance = IconFactory.build()
+        instance.image.file = self._build_in_memory_uploaded_file()
+        self.assertIsNone(instance.clean())
+
+    @override_settings(IMAGE_MAX_DIMENSION=20)
+    def test_invalid_dimensions(self):
+        instance = IconFactory.build()
+        instance.image.file = self._build_in_memory_uploaded_file()
+        try:
+            instance.clean()
+        except ValidationError as e:
+            self.assertEqual(e.message_dict['image'],
+                             ['Upload an image at most 20x20. This image is 30x30.'])
+
+    @override_settings(IMAGE_MAX_SIZE=0)
+    def test_size_test_disabled(self):
+        instance = IconFactory.build()
+        instance.image.file = self._build_in_memory_uploaded_file()
+        self.assertIsNone(instance.clean())
+
+    @override_settings(IMAGE_MAX_SIZE=40960)
+    def test_valid_size(self):
+        instance = IconFactory.build()
+        instance.image.file = self._build_in_memory_uploaded_file()
+        self.assertIsNone(instance.clean())
+
+    @override_settings(IMAGE_MAX_SIZE=1)
+    def test_invalid_size(self):
+        instance = IconFactory.build()
+        instance.image.file = self._build_in_memory_uploaded_file()
+        try:
+            instance.clean()
+        except ValidationError as e:
+            self.assertEqual(e.message_dict['image'],
+                             ['Upload an image less than 0 KiB. This image is 0 KiB.'])
+
+    def test_valid_image_png(self):
+        instance = IconFactory.build()
+        instance.image.file = self._build_in_memory_uploaded_file()
+        self.assertIsNone(instance.clean())
+
+    def test_invalid_image(self):
+        instance = IconFactory.build()
+        img = Image.new('RGB', (30, 30), color='red')
+        fle = io.BytesIO()
+        img.save(fle, 'JPEG')
+        fle.seek(0)
+        size = len(fle.read())
+        fle.seek(0)
+        instance.image.file = InMemoryUploadedFile(
+            fle, 'ImageField', 'foo.jpeg', 'image/jpeg', size, None)
+        try:
+            instance.clean()
+        except ValidationError as e:
+            self.assertEqual(e.message_dict['image'], ['Upload only PNG images.'])
 
 
 class ASRSnippetTests(TestCase):

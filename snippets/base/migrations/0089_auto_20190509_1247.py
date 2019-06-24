@@ -3,7 +3,6 @@
 import django.core.validators
 from django.db import migrations, models
 import snippets.base.models
-import snippets.base.validators
 
 
 class Migration(migrations.Migration):
@@ -26,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='icon',
             name='image',
-            field=models.ImageField(height_field='height', help_text='PNG only. Note that updating the image will update all snippets using this image.', upload_to=snippets.base.models._generate_filename, validators=[snippets.base.validators.validate_image_format], width_field='width'),
+            field=models.ImageField(height_field='height', help_text='PNG only. Note that updating the image will update all snippets using this image.', upload_to=snippets.base.models._generate_filename, validators=[], width_field='width'),
         ),
         migrations.AlterField(
             model_name='snippet',
