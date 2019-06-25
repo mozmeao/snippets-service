@@ -262,26 +262,28 @@ class ASRSnippetManagerTests(TestCase):
 
         self.assertEqual(set(snippets), set([snippet_1, snippet_2, snippet_3]))
 
-    @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
     def test_match_client(self):
         params = {}
         snippet = ASRSnippetFactory.create(
             targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=['en-us'])
+            locale='en-us')
         ASRSnippetFactory.create(
             targets=[TargetFactory(on_release=False, on_startpage_6=True)],
-            locales=['en-us'])
+            locale='en-us')
         self._assert_client_matches_snippets(params, [snippet])
 
-    @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
     def test_match_client_not_matching_channel(self):
         params = {'channel': 'phantom'}
+        # When no matching channel, return release snippets
         snippet = ASRSnippetFactory.create(
             targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=['en-us'])
+            locale='en-us')
+        # For example don't include Beta
+        ASRSnippetFactory.create(
+            targets=[TargetFactory(on_release=False, on_beta=True, on_startpage_6=True)],
+            locale='en-us')
         self._assert_client_matches_snippets(params, [snippet])
 
-    @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
     def test_match_client_match_channel_partially(self):
         """
         Client channels like "release-cck-mozilla14" should match
@@ -290,47 +292,30 @@ class ASRSnippetManagerTests(TestCase):
         params = {'channel': 'release-cck-mozilla14'}
         snippet = ASRSnippetFactory.create(
             targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=['en-us'])
+            locale='en-us')
         ASRSnippetFactory.create(
             targets=[TargetFactory(on_release=False, on_startpage_6=True)],
-            locales=['en-us'])
+            locale='en-us')
         self._assert_client_matches_snippets(params, [snippet])
 
-    @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
-    def test_match_client_not_matching_startpage(self):
-        params = {'startpage_version': '0'}
-        snippet = ASRSnippetFactory.create(
-            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=['en-us'])
-        self._assert_client_matches_snippets(params, [snippet])
-
-    @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
-    def test_match_client_not_matching_name(self):
-        params = {'name': 'unicorn'}
-        snippet = ASRSnippetFactory.create()
-        self._assert_client_matches_snippets(params, [snippet])
-
-    @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
     def test_match_client_not_matching_locale(self):
         params = {'locale': 'en-US'}
         ASRSnippetFactory.create(
             targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=[])
+            locale='fr')
         self._assert_client_matches_snippets(params, [])
 
-    @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
     def test_match_client_match_locale(self):
         params = {}
         snippet = ASRSnippetFactory.create(
             targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=['en-us'])
+            locale='en-us')
         ASRSnippetFactory.create(
             targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=['fr'])
+            locale='fr')
         self._assert_client_matches_snippets(params, [snippet])
 
-    @patch('snippets.base.managers.LANGUAGE_VALUES', ['es-mx', 'es', 'fr'])
-    def test_match_client_multiple_locales(self):
+    def test_match_client_multiple_snippets_for_client_locale(self):
         """
         If there are multiple locales that should match the client's
         locale, include all of them.
@@ -338,39 +323,33 @@ class ASRSnippetManagerTests(TestCase):
         params = {'locale': 'es-mx'}
         snippet_1 = ASRSnippetFactory.create(
             targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=['es'])
+            locale='es')
         snippet_2 = ASRSnippetFactory.create(
             targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=['es-mx'])
-        self._assert_client_matches_snippets(params, [snippet_1, snippet_2])
-
-    @patch('snippets.base.managers.LANGUAGE_VALUES', ['es-mx', 'es', 'fr'])
-    def test_match_client_multiple_locales_distinct(self):
-        """
-        If a snippet has multiple locales and a client matches more
-        than one of them, the snippet should only be included in the
-        queryset once.
-        """
-        params = {'locale': 'es-mx'}
-        snippet = ASRSnippetFactory.create(
-            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=['es', 'es-mx'])
-        self._assert_client_matches_snippets(params, [snippet])
-
-    @patch('snippets.base.managers.LANGUAGE_VALUES', ['en-us', 'fr'])
-    def test_match_client_invalid_locale(self):
-        """
-        If client sends invalid locale return snippets with no locales
-        specified.
-        """
-        params = {'locale': 'foo'}
-        snippet = ASRSnippetFactory.create(
-            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=[])
+            locale='es-mx')
+        # Don't include Spanish (Spain)
         ASRSnippetFactory.create(
             targets=[TargetFactory(on_release=True, on_startpage_6=True)],
-            locales=['en-us'])
-        self._assert_client_matches_snippets(params, [snippet])
+            locale='es-es')
+        self._assert_client_matches_snippets(params, [snippet_1, snippet_2])
+
+    def test_match_client_locale_without_territory(self):
+        params = {'locale': 'es'}
+        snippet_1 = ASRSnippetFactory.create(
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
+            locale='es')
+        # Don't include Spanish (Spain)
+        ASRSnippetFactory.create(
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
+            locale='es-es')
+        self._assert_client_matches_snippets(params, [snippet_1])
+
+    def test_match_locale_with_multiple_codes(self):
+        params = {'locale': 'es-mx'}
+        snippet_1 = ASRSnippetFactory.create(
+            targets=[TargetFactory(on_release=True, on_startpage_6=True)],
+            locale=',es-ar,es-cl,es-mx,')
+        self._assert_client_matches_snippets(params, [snippet_1])
 
     def test_default_is_same_as_nightly(self):
         """ Make sure that default channel follows nightly. """

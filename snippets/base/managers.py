@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Manager
+from django.db.models import Manager, Q
 from django.db.models.query import QuerySet
 
 from product_details import product_details
@@ -109,29 +109,23 @@ class ASRSnippetQuerySet(QuerySet):
     def match_client(self, client):
         from snippets.base.models import CHANNELS, ClientMatchRule, Target
 
-        snippet_filters = {}
-        target_filters = {}
-
         # Retrieve the first channel that starts with the client's channel.
         # Allows things like "release-cck-mozilla14" to match "release".
         if client.channel == 'default':
             client_channel = 'nightly'
         else:
-            client_channel = first(CHANNELS, client.channel.startswith)
-        if client_channel:
-            target_filters.update(**{'on_{0}'.format(client_channel): True})
-        targets = Target.objects.filter(**target_filters).distinct()
+            client_channel = first(CHANNELS, client.channel.startswith) or 'release'
 
-        # Only filter by locale if they pass a valid locale.
-        locales = list(filter(client.locale.lower().startswith, LANGUAGE_VALUES))
-        if locales:
-            snippet_filters.update(locales__code__in=locales)
-        else:
-            # If the locale is invalid, only match snippets with no
-            # locales specified.
-            snippet_filters.update(locales__isnull=True)
+        targets = Target.objects.filter(**{'on_{0}'.format(client_channel): True}).distinct()
 
-        snippets = self.filter(**snippet_filters).filter(targets__in=targets)
+        # Include both Snippets targeted at the specific full locale (e.g.
+        # en-us) but also snippets targeted to all territories (en)
+        full_locale = ',{},'.format(client.locale.lower())
+        splitted_locale = ',{},'.format(client.locale.lower().split('-', 1)[0])
+        snippets = self.filter(Q(locale__code__contains=splitted_locale) |
+                               Q(locale__code__contains=full_locale))
+
+        snippets = snippets.filter(targets__in=targets)
 
         # Filter based on ClientMatchRules
         passed_rules, failed_rules = (ClientMatchRule.objects

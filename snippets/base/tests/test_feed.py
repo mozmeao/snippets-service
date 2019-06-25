@@ -48,9 +48,9 @@ class ASRSnippetFilterTests(TestCase):
         self.assertEqual(set([snippet1]), set(filtr.qs))
 
     def test_locale(self):
-        snippet1 = ASRSnippetFactory.create(locales=['xx', 'de'])
-        snippet2 = ASRSnippetFactory.create(locales=['fr'])
-        ASRSnippetFactory.create(locales=['de'])
+        snippet1 = ASRSnippetFactory.create(locale='xx')
+        snippet2 = ASRSnippetFactory.create(locale='fr')
+        ASRSnippetFactory.create(locale='de')
         filtr = ASRSnippetFilter(QueryDict(query_string='locale=xx,fr'),
                                  queryset=models.ASRSnippet.objects.all())
         self.assertEqual(set([snippet1, snippet2]), set(filtr.qs))

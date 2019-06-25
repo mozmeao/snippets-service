@@ -465,13 +465,13 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'id',
         'name',
         'status',
-        'locale_list',
+        'locale',
         'modified',
     )
     list_filter = (
         filters.ModifiedFilter,
         filters.TemplateFilter,
-        ('locales', RelatedOnlyDropdownFilter),
+        ('locale', RelatedDropdownFilter),
         ('targets', RelatedOnlyDropdownFilter),
         'status',
         filters.ChannelFilter,
@@ -503,7 +503,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     )
     filter_horizontal = (
         'targets',
-        'locales',
     )
     save_on_top = True
     save_as = True
@@ -541,7 +540,10 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 <br/>
                 '''  # noqa
             ),
-            'fields': ('template_chooser',),
+            'fields': (
+                'locale',
+                'template_chooser',
+            ),
             'classes': ('template-fieldset',)
         }),
         ('Publishing Options', {
@@ -550,7 +552,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 'category',
                 'targets',
                 ('publish_start', 'publish_end'),
-                'locales',
                 'weight',)
         }),
         ('Other Info', {
@@ -685,14 +686,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 'publish_on_esr',
             ]
         ])
-
-    def locale_list(self, obj):
-        num_locales = obj.locales.count()
-        locales = obj.locales.all()[:3]
-        active_locales = ', '.join([str(locale) for locale in locales])
-        if num_locales > 3:
-            active_locales += ' and {0} more.'.format(num_locales - 3)
-        return active_locales
 
 
 class CampaignAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
@@ -897,3 +890,11 @@ class TargetAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
             obj.creator = request.user
         statsd.incr('save.target')
         super().save_model(request, obj, form, change)
+
+
+class LocaleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code')
+    search_fields = (
+        'name',
+        'code',
+    )

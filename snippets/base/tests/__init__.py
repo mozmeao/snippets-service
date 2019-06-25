@@ -1,3 +1,6 @@
+import random
+import string
+
 from django.test import TransactionTestCase
 
 import factory
@@ -188,16 +191,17 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
             self.targets.add(target)
 
     @factory.post_generation
-    def locales(self, create, extracted, **kwargs):
+    def locale(self, create, extracted, **kwargs):
         if not create:
             return
 
-        if extracted is None:
-            extracted = ['en-us']
-
-        locales = [models.TargetedLocale.objects.get_or_create(code=code, name=code)[0]
-                   for code in extracted]
-        self.locales.add(*locales)
+        code = extracted or 'en-us'
+        if code[0] != ',':
+            code = ',' + code
+        if code[-1] != ',':
+            code = code + ','
+        locale = models.Locale.objects.get_or_create(code=code, name=code)[0]
+        self.locale = locale
 
 
 class AddonFactory(factory.django.DjangoModelFactory):
@@ -207,3 +211,11 @@ class AddonFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = models.Addon
+
+
+class LocaleFactory(factory.django.DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Locale {}'.format(n))
+    code = factory.LazyAttribute(lambda o: ''.join(random.choices(string.ascii_lowercase, k=4)))
+
+    class Meta:
+        model = models.Locale

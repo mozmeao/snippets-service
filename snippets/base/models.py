@@ -1373,6 +1373,45 @@ class SimpleBelowSearchTemplate(Template):
         return ['text']
 
 
+class Locale(models.Model):
+    name = models.CharField(max_length=100)
+    # Code can be a locale without territory information (e.g. `en`), a locale
+    # with territory information (e.g. `en-us`) or a combination of multiple
+    # locales with or without territory information (e.g. es-mx,es-ar). This is
+    # useful to target locales like LatAm Spanish which are different from
+    # Spain's Spanish (`es-es`). We add commas at the start and at the end of
+    # the code string to create queries matching the exact code in
+    # ASRSnippetManager.
+    code = models.CharField(
+        max_length=255, unique=True,
+        validators=[django_validators.RegexValidator(regex=r'^,?([A-Za-z-]+,?)+$')],
+        help_text=(
+            'Comma separated list of locales with or without territory information. E.g '
+            '`en-us` and `es-mx,es-ar`'
+        )
+    )
+    translations = models.TextField(
+        blank=True, validators=[validators.validate_json_data], default='{}',
+        help_text='JSON dictionary with Template fields as keys and localized strings as values.'
+    )
+
+    def save(self, *args, **kwargs):
+        # Make sure that code always starts and ends with `,` and it's always
+        # lowercase.
+        self.code = self.code.lower()
+        if self.code[0] != ',':
+            self.code = ',' + self.code
+        if self.code[-1] != ',':
+            self.code = self.code + ','
+        super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ('name', 'code')
+
+    def __str__(self):
+        return self.name
+
+
 class ASRSnippet(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
@@ -1401,6 +1440,7 @@ class ASRSnippet(models.Model):
             'See the current time in <a target="_blank" href="http://time.is/UTC">UTC</a>'))
 
     locales = models.ManyToManyField('TargetedLocale', blank=True, verbose_name='Targeted Locales')
+    locale = models.ForeignKey('Locale', blank=False, null=True, on_delete=models.PROTECT)
     targets = models.ManyToManyField(Target, default=None, blank=True, related_name='snippets')
 
     weight = models.IntegerField(

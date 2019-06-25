@@ -9,7 +9,8 @@ from PIL import Image
 
 from snippets.base.validators import (validate_as_router_fluent_variables,
                                       validate_xml_template, validate_xml_variables,
-                                      validate_regex, validate_image_format)
+                                      validate_regex, validate_image_format,
+                                      validate_json_data)
 from snippets.base.tests import TestCase
 
 
@@ -97,3 +98,13 @@ class ImageFormatValidatorTests(TestCase):
         image = InMemoryUploadedFile(fle, 'ImageField', 'foo.jpg', 'image/jpeg', None, None)
 
         self.assertRaises(ValidationError, validate_image_format, image)
+
+
+class ValidateJSONDataTests(TestCase):
+    def test_base(self):
+        data = '{"foo": 3}'
+        self.assertEqual(validate_json_data(data), data)
+
+    def test_invalid_data(self):
+        data = '{"foo": 3'
+        self.assertRaises(ValidationError, validate_json_data, data)
