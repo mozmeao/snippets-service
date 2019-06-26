@@ -1,16 +1,11 @@
-import io
 import json
 from unittest.mock import patch
 
 from django.core.exceptions import ValidationError
-from django.core.files.uploadedfile import InMemoryUploadedFile
-
-from PIL import Image
 
 from snippets.base.validators import (validate_as_router_fluent_variables,
-                                      validate_xml_template, validate_xml_variables,
-                                      validate_regex, validate_image_format,
-                                      validate_json_data)
+                                      validate_xml_template, validate_json_data,
+                                      validate_xml_variables, validate_regex)
 from snippets.base.tests import TestCase
 
 
@@ -80,24 +75,6 @@ class RegexValidatorTests(TestCase):
     def test_invalid_regex(self):
         bogus_regex = r'/(?P\d+)/'
         self.assertRaises(ValidationError, validate_regex, bogus_regex)
-
-
-class ImageFormatValidatorTests(TestCase):
-    def test_valid_image_png(self):
-        img = Image.new('RGB', (30, 30), color='red')
-        fle = io.BytesIO()
-        img.save(fle, 'PNG')
-        image = InMemoryUploadedFile(fle, 'ImageField', 'foo.png', 'image/png', None, None)
-
-        self.assertEqual(validate_image_format(image), image)
-
-    def test_invalid_image(self):
-        img = Image.new('RGB', (30, 30), color='red')
-        fle = io.BytesIO()
-        img.save(fle, 'JPEG')
-        image = InMemoryUploadedFile(fle, 'ImageField', 'foo.jpg', 'image/jpeg', None, None)
-
-        self.assertRaises(ValidationError, validate_image_format, image)
 
 
 class ValidateJSONDataTests(TestCase):

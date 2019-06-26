@@ -125,6 +125,7 @@ class IconAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     readonly_fields = [
         'height',
         'width',
+        'size',
         'preview',
         'creator',
         'created',
@@ -159,6 +160,9 @@ class IconAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
             'js/admin/jquery.are-you-sure.js',
             'js/admin/alert-page-leaving.js',
         )
+
+    def size(self, obj):
+        return '{:.0f} KiB'.format(obj.image.size / 1024)
 
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:

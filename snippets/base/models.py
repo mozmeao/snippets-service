@@ -1,15 +1,19 @@
 import copy
+import io
 import hashlib
 import json
 import os
 import re
 import uuid
+import subprocess
 from collections import namedtuple
 from datetime import datetime
 from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
 from django.core import validators as django_validators
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.urls import reverse
 from django.db import models
 from django.db.models.manager import Manager
@@ -20,8 +24,10 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 import bleach
+from PIL import Image
 from jinja2 import Markup
 from jinja2.utils import LRUCache
+
 
 from snippets.base import util
 from snippets.base.fields import RegexField
@@ -568,9 +574,8 @@ class Icon(models.Model):
         upload_to=_generate_filename,
         height_field='height',
         width_field='width',
-        validators=[validators.validate_image_format],
-        help_text=('PNG only. Note that updating the image will '
-                   'update all snippets using this image.'),
+        help_text=('PNG only. A reasonable file size is about 5 KiB. Note that updating the '
+                   'image will update all snippets using this image.'),
     )
 
     def __str__(self):
@@ -601,6 +606,46 @@ class Icon(models.Model):
                     all_snippets.extend(related_snippets)
 
         return ASRSnippet.objects.filter(pk__in=all_snippets).distinct()
+
+    def clean(self):
+        super().clean()
+
+        # If not new file, just return
+        if not isinstance(self.image.file, InMemoryUploadedFile):
+            return
+
+        im = Image.open(self.image.open())
+        if im.format != 'PNG':
+            raise ValidationError({'image': 'Upload only PNG images.'})
+
+        if (settings.IMAGE_MAX_DIMENSION and
+            (im.width > settings.IMAGE_MAX_DIMENSION or
+             im.height > settings.IMAGE_MAX_DIMENSION)):
+            raise ValidationError({
+                'image': 'Upload an image at most {0}x{0}. This image is {1}x{2}.'.format(
+                    settings.IMAGE_MAX_DIMENSION, im.width, im.height)
+            })
+
+        # Optimize only when settings is True
+        if settings.IMAGE_OPTIMIZE:
+            self.image.seek(0)
+            cmd = subprocess.run(
+                ['pngquant', '-', '--quality=95', '--skip-if-larger', '--speed=1'],
+                input=self.image.read(),
+                stdout=subprocess.PIPE
+            )
+            if cmd.stdout:
+                new_image = io.BytesIO(cmd.stdout)
+                self.image.file = InMemoryUploadedFile(
+                    new_image, 'ImageField', self.image.name,
+                    'image/png', len(new_image.read()), None
+                )
+
+        if settings.IMAGE_MAX_SIZE > 0 and self.image.size > settings.IMAGE_MAX_SIZE:
+            raise ValidationError({
+                'image': 'Upload an image less than {0:.0f} KiB. This image is {1:.0f} KiB.'.format(
+                    settings.IMAGE_MAX_SIZE / 1024, self.image.size / 1024)
+            })
 
 
 class Template(models.Model):
