@@ -42,3 +42,15 @@ td.field-description .vLargeTextField {
     width: 60em;
     height: 3em;
 }
+
+/* Make <input> Text and URLFields larger. */
+.vTextField, .vURLField {
+    width: 80%;
+}
+
+/* Do not allow adding, editing or deleting locales from the ASRSnippet admin to */
+/* avoid breaking the auto-localization feature */
+
+#change_id_locale, #add_id_locale, #delete_id_locale {
+    display: none;
+}
