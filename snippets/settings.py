@@ -82,10 +82,11 @@ MIDDLEWARE = (
 )
 
 HOSTNAME = platform.node()
-DEIS_APP = config('DEIS_APP', default=None)
-DEIS_DOMAIN = config('DEIS_DOMAIN', default=None)
+CLUSTER_NAME = config('CLUSTER_NAME', default=None)
+K8S_NAMESPACE = config('K8S_NAMESPACE', default=None)
+K8S_POD_NAME = config('K8S_POD_NAME', default=None)
 ENABLE_HOSTNAME_MIDDLEWARE = config('ENABLE_HOSTNAME_MIDDLEWARE',
-                                    default=bool(DEIS_APP), cast=bool)
+                                    default=bool(K8S_NAMESPACE), cast=bool)
 
 ROOT_URLCONF = 'snippets.urls'
 
