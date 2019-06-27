@@ -1483,8 +1483,6 @@ class ASRSnippet(models.Model):
         verbose_name='Publish Ends',
         help_text=format_html(
             'See the current time in <a target="_blank" href="http://time.is/UTC">UTC</a>'))
-
-    locales = models.ManyToManyField('TargetedLocale', blank=True, verbose_name='Targeted Locales')
     locale = models.ForeignKey('Locale', blank=False, null=True, on_delete=models.PROTECT)
     targets = models.ManyToManyField(Target, default=None, blank=True, related_name='snippets')
 
