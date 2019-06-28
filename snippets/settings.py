@@ -82,10 +82,11 @@ MIDDLEWARE = (
 )
 
 HOSTNAME = platform.node()
-DEIS_APP = config('DEIS_APP', default=None)
-DEIS_DOMAIN = config('DEIS_DOMAIN', default=None)
+CLUSTER_NAME = config('CLUSTER_NAME', default=None)
+K8S_NAMESPACE = config('K8S_NAMESPACE', default=None)
+K8S_POD_NAME = config('K8S_POD_NAME', default=None)
 ENABLE_HOSTNAME_MIDDLEWARE = config('ENABLE_HOSTNAME_MIDDLEWARE',
-                                    default=bool(DEIS_APP), cast=bool)
+                                    default=bool(K8S_NAMESPACE), cast=bool)
 
 ROOT_URLCONF = 'snippets.urls'
 
@@ -276,16 +277,17 @@ ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
 
 STATSD_HOST = config('STATSD_HOST', default='localhost')
 STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
-STATSD_PREFIX = config('STATSD_PREFIX', DEIS_APP)
+STATSD_PREFIX = config('STATSD_PREFIX', K8S_NAMESPACE)
 STATSD_CLIENT = config('STATSD_CLIENT', 'django_statsd.clients.null')
 
 RAVEN_CONFIG = {
     'dsn': config('SENTRY_DSN', None),
     'release': config('GIT_SHA', None),
     'tags': {
-        'server_full_name': '.'.join(x for x in [HOSTNAME, DEIS_APP, DEIS_DOMAIN] if x),
+        'server_full_name': '.'.join(x for x in [
+            HOSTNAME, K8S_NAMESPACE, CLUSTER_NAME] if x),
         'environment': config('SENTRY_ENVIRONMENT', 'dev'),
-        'site': '.'.join(x for x in [DEIS_APP, DEIS_DOMAIN] if x),
+        'site': '.'.join(x for x in [K8S_NAMESPACE, CLUSTER_NAME] if x),
     }
 }
 

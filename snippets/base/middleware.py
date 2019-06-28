@@ -41,8 +41,9 @@ class HostnameMiddleware(object):
         if not settings.ENABLE_HOSTNAME_MIDDLEWARE:
             raise MiddlewareNotUsed
 
-        values = [getattr(settings, x) for x in ['HOSTNAME', 'DEIS_APP', 'DEIS_DOMAIN']]
-        self.backend_server = '.'.join(x for x in values if x)
+        values = [getattr(settings, x) for x in [
+            'CLUSTER_NAME', 'K8S_NAMESPACE', 'K8S_POD_NAME']]
+        self.backend_server = '/'.join(x for x in values if x)
         self.get_response = get_response
 
     def __call__(self, request):
