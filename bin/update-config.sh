@@ -10,9 +10,12 @@ git clone --depth=1 -b ${CONFIG_BRANCH:=master} ${CONFIG_REPO:=github-mozmar-rob
 cd snippets-config
 
 set -u
-for DEPLOYMENT_YAML in deploy.yaml clock-deploy.yaml; do
-    sed -i -e "s|image: .*|image: ${DOCKER_IMAGE_TAG}|" ${CLUSTER_NAME:=oregon-b}/${NAMESPACE:=snippets-dev}/${DEPLOYMENT_YAML}
-    git add ${CLUSTER_NAME}/${NAMESPACE}/${DEPLOYMENT_YAML}
+for DEPLOYMENT in {admin-,clock-,}deploy.yaml; do
+    DEPLOYMENT_FILE=${CLUSTER_NAME:=oregon-b}/${NAMESPACE:=snippets-dev}/${DEPLOYMENT}
+    if [[ -f ${DEPLOYMENT_FILE} ]]; then
+        sed -i -e "s|image: .*|image: ${DOCKER_IMAGE_TAG}|" ${DEPLOYMENT_FILE}
+        git add ${DEPLOYMENT_FILE}
+    fi
 done
 git commit -m "set image to ${DOCKER_IMAGE_TAG} in ${CLUSTER_NAME}" || echo "nothing new to commit"
 git push
