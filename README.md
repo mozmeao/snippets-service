@@ -69,3 +69,7 @@ for git to ensure that committed code has been properly linted.
 Install the hooks by running:
 
  `$ therapist install`
+
+## Git push triggered deployments
+
+We use [Gitlab Runners](https://docs.gitlab.com/runner/) configured by [.gitlab-ci.yml](./.gitlab.yml) to build and publish [docker images](https://hub.docker.com/r/mozorg/snippets/tags), and automatically update the [config repo](https://github.com/mozmeao/snippets-config) with new image tags depending on which branch has been pushed. Commits to the config repo will in turn trigger automated deployments configured by [.gitlab-ci.yml in the config repo](https://github.com/mozmeao/snippets-config/blob/master/.gitlab-ci.yml) Notifications of these jobs will appear in [#snippets-dev](https://mozilla.slack.com/messages/CDKF7GY48).
