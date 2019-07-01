@@ -3,7 +3,7 @@ dev:
     - meao
     - aws
   only:
-    - gitlab
+    - dev
     - master
   variables:
     NAMESPACE: snippets-dev
@@ -11,9 +11,6 @@ dev:
     - bin/build_images.sh
     - bin/flake8.sh
     - bin/push2dockerhub.sh
-    # no snippets-dev namespace in frankfurt currently
-    # uncomment when mozmeao/infra#1120 is closed
-    # - CLUSTER_NAME=frankfurt bin/update-config.sh
     - CLUSTER_NAME=oregon-b bin/update-config.sh
     
 
@@ -29,9 +26,6 @@ stage:
     - bin/build_images.sh
     - bin/flake8.sh
     - bin/push2dockerhub.sh
-    # no snippets-stage namespace in frankfurt currently
-    # uncomment when mozmeao/infra#1120 is closed
-    # - CLUSTER_NAME=frankfurt bin/update-config.sh
     - CLUSTER_NAME=oregon-b bin/update-config.sh
 
 
@@ -48,22 +42,4 @@ prod:
     - bin/flake8.sh
     - bin/push2dockerhub.sh
     - CLUSTER_NAME=frankfurt bin/update-config.sh
-    - CLUSTER_NAME=oregon-b bin/update-config.sh
-
-
-admin:
-  tags:
-    - meao
-    - aws
-  only:
-    - admin
-    - prod
-  variables:
-    NAMESPACE: snippets-admin
-  script:
-    - bin/build_images.sh
-    - bin/push2dockerhub.sh
-    # no snippets-admin namespace in frankfurt currently
-    # uncomment when mozmeao/infra#1120 is closed
-    # - CLUSTER_NAME=frankfurt bin/update-config.sh
     - CLUSTER_NAME=oregon-b bin/update-config.sh
