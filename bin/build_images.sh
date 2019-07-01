@@ -11,5 +11,6 @@ function imageExists() {
 }
 
 if ! imageExists; then
+    echo $GIT_COMMIT > revision.txt
     docker build -t "$DOCKER_IMAGE_TAG" --pull .
 fi
