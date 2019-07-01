@@ -9,6 +9,7 @@ dev:
     NAMESPACE: snippets-dev
   script:
     - bin/build_images.sh
+    - bin/flake8.sh
     - bin/push2dockerhub.sh
     # no snippets-dev namespace in frankfurt currently
     # uncomment when mozmeao/infra#1120 is closed
@@ -26,6 +27,7 @@ stage:
     NAMESPACE: snippets-stage
   script:
     - bin/build_images.sh
+    - bin/flake8.sh
     - bin/push2dockerhub.sh
     # no snippets-stage namespace in frankfurt currently
     # uncomment when mozmeao/infra#1120 is closed
@@ -43,6 +45,7 @@ prod:
     NAMESPACE: snippets-prod
   script:
     - bin/build_images.sh
+    - bin/flake8.sh
     - bin/push2dockerhub.sh
     - CLUSTER_NAME=frankfurt bin/update-config.sh
     - CLUSTER_NAME=oregon-b bin/update-config.sh
