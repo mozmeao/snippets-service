@@ -367,9 +367,9 @@ django-allow-cidr==0.3.1 \
 netaddr==0.7.19 \
     --hash=sha256:56b3558bd71f3f6999e4c52e349f38660e54a7a8a9943335f73dfc96883e08ca \
     --hash=sha256:38aeec7cdd035081d3a4c306394b19d677623bf76fa0913f6695127c7753aefd
-pip-api==0.0.8 \
-    --hash=sha256:31f31a8f1e74f90af8f13b5a8ca11e84227d88735ad82525e03cc2afb7965c07 \
-    --hash=sha256:5a504d4536ccd1d87f46f7b10442d09bbe5a765a298a4580ab05ea7cfcda6f4b
+pip-api==0.0.10 \
+    --hash=sha256:742b3edb5b077853ffcfec8a849f6ff1a622c6ecf648adb5fa0e4594998fcd46 \
+    --hash=sha256:a685eb315b9f10f6df4ceb66f3710148c8ad7de2d4ff29ee98fed0e4d949ec81
 packaging==19.0 \
     --hash=sha256:9e1cbf8c12b1f1ce0bb5344b8d7ecf66a6f8a6e91bcb0c84593ed6d3ab5c4ab3 \
     --hash=sha256:0c98a5d0be38ed775798ece1b9727178c4469d9c3b4ada66e8e6b7849f8732af
