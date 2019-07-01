@@ -17,7 +17,7 @@ for DEPLOYMENT in {admin-,clock-,}deploy.yaml; do
         git add ${DEPLOYMENT_FILE}
     fi
 done
-cp ${BIN_DIR}/acceptance-tests.sh bin/
+cp ${BIN_DIR}/acceptance-tests.sh .
 git add bin/acceptance-tests.sh
 git commit -m "set image to ${DOCKER_IMAGE_TAG} in ${CLUSTER_NAME}" || echo "nothing new to commit"
 git push
