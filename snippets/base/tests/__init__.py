@@ -203,6 +203,14 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
         locale = models.Locale.objects.get_or_create(code=code, name=code)[0]
         self.locale = locale
 
+    @factory.post_generation
+    def add_tags(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.tags.add(*extracted)
+
 
 class AddonFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Addon {}'.format(n))

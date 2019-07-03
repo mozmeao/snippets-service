@@ -6,12 +6,13 @@ from django.db.models import TextField, Q
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
 
-from reversion.admin import VersionAdmin
 from django_ace import AceWidget
-from django_statsd.clients import statsd
-from jinja2.meta import find_undeclared_variables
 from django_admin_listfilter_dropdown.filters import (RelatedDropdownFilter,
                                                       RelatedOnlyDropdownFilter)
+from django_statsd.clients import statsd
+from jinja2.meta import find_undeclared_variables
+from reversion.admin import VersionAdmin
+from taggit_helpers.admin import TaggitListFilter
 
 from snippets.base import forms, models, slack
 from snippets.base.admin import actions, filters
@@ -463,25 +464,25 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     ]
     list_display_links = (
         'id',
-        'name',
     )
     list_display = (
         'id',
-        'name',
+        'custom_name_with_tags',
         'status',
         'locale',
         'modified',
     )
     list_filter = (
-        filters.ModifiedFilter,
         filters.TemplateFilter,
         ('locale', RelatedDropdownFilter),
         ('targets', RelatedOnlyDropdownFilter),
         'status',
         filters.ChannelFilter,
         ('campaign', RelatedDropdownFilter),
+        TaggitListFilter,
         ('category', RelatedDropdownFilter),
         filters.ScheduledFilter,
+        filters.ModifiedFilter,
     )
     search_fields = (
         'name',
@@ -522,6 +523,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
             'fields': (
                 'id',
                 'name',
+                'tags',
                 'status',
                 'creator',
                 'preview_url_light_theme',
@@ -570,6 +572,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 'css/admin/ASRSnippetAdmin.css',
                 'css/admin/IDFieldHighlight.css',
                 'css/admin/InlineTemplates.css',
+                'css/admin/CustomNameWithTags.css',
             )
         }
         js = (
@@ -623,7 +626,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
     def get_queryset(self, request):
-        queryset = super().get_queryset(request)
+        queryset = super().get_queryset(request).prefetch_related('tags')
         if request.user.is_superuser:
             return queryset
         return queryset.filter(for_qa=False)
@@ -690,6 +693,11 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 'publish_on_esr',
             ]
         ])
+
+    def custom_name_with_tags(self, obj):
+        template = get_template('base/snippets_custom_name_with_tags.jinja')
+        return mark_safe(template.render({'obj': obj}))
+    custom_name_with_tags.short_description = 'Name'
 
 
 class CampaignAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
