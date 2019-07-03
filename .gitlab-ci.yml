@@ -12,8 +12,7 @@ dev:
     - bin/flake8.sh
     - bin/coverage-tests.sh
     - bin/push2dockerhub.sh
-    - CLUSTER_NAME=oregon-b bin/update-config.sh
-    
+    - CLUSTER_NAME=oregon-b ADDITIONAL_BRANCH=dev bin/update-config.sh
 
 stage:
   tags:
@@ -28,8 +27,7 @@ stage:
     - bin/flake8.sh
     - bin/coverage-tests.sh
     - bin/push2dockerhub.sh
-    - CLUSTER_NAME=oregon-b bin/update-config.sh
-
+    - CLUSTER_NAME=oregon-b ADDITIONAL_BRANCH=stage bin/update-config.sh
 
 prod:
   tags:
@@ -44,5 +42,5 @@ prod:
     - bin/flake8.sh
     - bin/coverage-tests.sh
     - bin/push2dockerhub.sh
-    - CLUSTER_NAME=frankfurt bin/update-config.sh
-    - CLUSTER_NAME=oregon-b bin/update-config.sh
+    - CLUSTER_NAME=frankfurt ADDITIONAL_BRANCH=frankfurt-prod bin/update-config.sh
+    - CLUSTER_NAME=oregon-b ADDITIONAL_BRANCH=oregon-b-prod bin/update-config.sh

@@ -21,4 +21,7 @@ cp ${BIN_DIR}/acceptance-tests.sh .
 git add acceptance-tests.sh
 git commit -m "set image to ${DOCKER_IMAGE_TAG} in ${CLUSTER_NAME}" || echo "nothing new to commit"
 git push
+if [[ -n "${ADDITIONAL_BRANCH}" ]]; then
+    git push origin master:${ADDITIONAL_BRANCH}
+fi
 popd
