@@ -77,10 +77,10 @@ class SnippetsFeed(ICalFeed):
     def item_description(self, item):
         description = dedent('''\
         Channels: {}
-        Locales: {}'
+        Locale: {}'
         Preview Link: {}
         '''.format(', '.join(item.channels),
-                   ', '.join(item.locales.values_list('name', flat=True)),
+                   item.locale,
                    item.get_preview_url()))
         return description
 
