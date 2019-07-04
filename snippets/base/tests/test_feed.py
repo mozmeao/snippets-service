@@ -2,6 +2,8 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 from django.http.request import QueryDict
+from django.test import Client
+from django.urls import reverse
 
 from snippets.base import models
 from snippets.base.feed import ASRSnippetFilter, SnippetsFeed
@@ -57,6 +59,12 @@ class ASRSnippetFilterTests(TestCase):
 
 
 class SnippetsFeedTests(TestCase):
+    def test_base(self):
+        ASRSnippetFactory.create_batch(2)
+        client = Client()
+        response = client.get(reverse('ical-feed'), follow=True)
+        self.assertEqual(response.status_code, 200)
+
     def test_item_filtering(self):
         request = Mock()
         request.GET = {}
