@@ -1,48 +1,66 @@
-dev:
+stages:
+  - build
+  - test
+  - deploy
+
+build-images:
+  stage: build
+  tags:
+    - meao
+  script:
+    - bin/build_images.sh
+    - bin/push2dockerhub.sh
+
+run-flake8:
+  stage: test
+  tags:
+    - meao
+  script:
+    - bin/flake8.sh
+
+run-unit-tests:
+  stage: test
+  tags:
+    - meao
+  script:
+    - bin/coverage-tests.sh
+
+.deploy:
+  stage: deploy
   tags:
     - meao
     - aws
+  script:
+    - bin/update-config.sh
+
+dev:
+  extends: .deploy
   only:
-    - dev
     - master
   variables:
     NAMESPACE: snippets-dev
-  script:
-    - bin/build_images.sh
-    - bin/flake8.sh
-    - bin/coverage-tests.sh
-    - bin/push2dockerhub.sh
-    - CLUSTER_NAME=oregon-b bin/update-config.sh
-    
+    CLUSTERS: oregon-b
 
 stage:
-  tags:
-    - meao
-    - aws
+  extends: .deploy
   only:
     - stage
   variables:
     NAMESPACE: snippets-stage
-  script:
-    - bin/build_images.sh
-    - bin/flake8.sh
-    - bin/coverage-tests.sh
-    - bin/push2dockerhub.sh
-    - CLUSTER_NAME=oregon-b bin/update-config.sh
+    CLUSTERS: oregon-b
 
+admin:
+  extends: .deploy
+  only:
+    - admin
+  variables:
+    NAMESPACE: snippets-admin
+    CLUSTERS: oregon-b
 
 prod:
-  tags:
-    - meao
-    - aws
+  extends: .deploy
   only:
     - prod
   variables:
     NAMESPACE: snippets-prod
-  script:
-    - bin/build_images.sh
-    - bin/flake8.sh
-    - bin/coverage-tests.sh
-    - bin/push2dockerhub.sh
-    - CLUSTER_NAME=frankfurt bin/update-config.sh
-    - CLUSTER_NAME=oregon-b bin/update-config.sh
+    CLUSTERS: frankfurt oregon-b
