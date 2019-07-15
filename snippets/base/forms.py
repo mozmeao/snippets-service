@@ -14,8 +14,7 @@ from product_details.version_compare import Version, version_list
 from snippets.base.admin import fields
 from snippets.base import models
 from snippets.base.slack import send_slack
-from snippets.base.validators import (MinValueValidator, validate_as_router_fluent_variables,
-                                      validate_xml_variables)
+from snippets.base.validators import MinValueValidator, validate_xml_variables
 
 
 PROFILE_AGE_CHOICES = (
@@ -675,12 +674,7 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
 
     def clean(self):
         cleaned_data = super().clean()
-        if 'template' in cleaned_data and 'data' in cleaned_data:
-            variables = cleaned_data['template'].get_rich_text_variables()
-            validate_as_router_fluent_variables(cleaned_data['data'], variables)
-
         self._publish_permission_check_asr(cleaned_data)
-
         return cleaned_data
 
     def save(self, *args, **kwargs):

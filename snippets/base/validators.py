@@ -70,11 +70,9 @@ def validate_xml_variables(data):
     return data
 
 
-def validate_as_router_fluent_variables(data, variables):
-    data_dict = json.loads(data)
-
+def validate_as_router_fluent_variables(obj, variables):
     for variable in variables:
-        text = data_dict[variable]
+        text = getattr(obj, variable)
         bleached_text = bleach.clean(
             text,
             tags=ALLOWED_TAGS,
@@ -88,11 +86,11 @@ def validate_as_router_fluent_variables(data, variables):
 
         if text != bleached_text:
             error_msg = (
-                'Variable `{}` contains unsupported tags or insecure links.'
+                'Field contains unsupported tags or insecure links.'
                 'Only {} tags and https links are supported'
-            ).format(variable, ', '.join(ALLOWED_TAGS))
-            raise ValidationError(error_msg)
-    return data
+            ).format(', '.join(ALLOWED_TAGS))
+            raise ValidationError({variable: error_msg})
+    return obj
 
 
 def validate_regex(regex_str):

@@ -1,8 +1,8 @@
-import json
 from unittest.mock import patch
 
 from django.core.exceptions import ValidationError
 
+from snippets.base import models
 from snippets.base.validators import (validate_as_router_fluent_variables,
                                       validate_xml_template, validate_json_data,
                                       validate_xml_variables, validate_regex)
@@ -47,20 +47,24 @@ class XMLTemplateValidatorTests(TestCase):
 class ASRouterFluentVariablesValidatorTests(TestCase):
     @patch('snippets.base.validators.ALLOWED_TAGS', ['a', 'strong'])
     def test_valid(self):
-        data = json.dumps({'text': 'Link to <a href="https://example.com">example.com</a>.',
-                           'foo': 'This is <strong>important</strong>',
-                           'special': 'This is <a href="special:accounts">special link</a>.',
-                           'bar': 'This is not rich text.'})
-        self.assertEqual(validate_as_router_fluent_variables(data, ['text', 'foo']), data)
+        obj = models.SimpleTemplate(
+            text='Link to <a href="https://example.com">example.com</a>.',
+            title='This is important',
+        )
+        self.assertEqual(validate_as_router_fluent_variables(obj, ['text', 'title']), obj)
 
     @patch('snippets.base.validators.ALLOWED_TAGS', 'a')
     def test_invalid_tag(self):
-        data = json.dumps({'text': '<strong>Strong</strong> text.'})
-        self.assertRaises(ValidationError, validate_as_router_fluent_variables, data, ['text'])
+        obj = models.SimpleTemplate(
+            text='<strong>Strong</strong> text.',
+        )
+        self.assertRaises(ValidationError, validate_as_router_fluent_variables, obj, ['text'])
 
     def test_invalid_protocol(self):
-        data = json.dumps({'text': '<a href="http://example.com">Strong</strong> text.'})
-        self.assertRaises(ValidationError, validate_as_router_fluent_variables, data, ['text'])
+        obj = models.SimpleTemplate(
+            text='<a href="http://example.com">Strong</strong> text.',
+        )
+        self.assertRaises(ValidationError, validate_as_router_fluent_variables, obj, ['text'])
 
 
 class RegexValidatorTests(TestCase):

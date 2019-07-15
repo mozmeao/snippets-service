@@ -30,10 +30,9 @@ from jinja2.utils import LRUCache
 from taggit_selectize.managers import TaggableManager
 
 
-from snippets.base import util
+from snippets.base import managers, util, validators
 from snippets.base.fields import RegexField
-from snippets.base import managers
-from snippets.base import validators
+from snippets.base.validators import validate_as_router_fluent_variables
 
 
 JINJA_ENV = engines['backend']
@@ -704,6 +703,10 @@ class Template(models.Model):
             url = match.groupdict()['link']
 
         return url
+
+    def clean(self):
+        super().clean()
+        validate_as_router_fluent_variables(self, self.get_rich_text_fields())
 
 
 class SimpleTemplate(Template):
