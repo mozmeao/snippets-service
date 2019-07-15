@@ -32,7 +32,6 @@ from taggit_selectize.managers import TaggableManager
 
 from snippets.base import managers, util, validators
 from snippets.base.fields import RegexField
-from snippets.base.validators import validate_as_router_fluent_variables
 
 
 JINJA_ENV = engines['backend']
@@ -704,9 +703,53 @@ class Template(models.Model):
 
         return url
 
+    def get_url_fields(self):
+        """ Returns a list of URL field names of the model. """
+        fields = []
+        for field in self._meta.fields:
+            if isinstance(field, models.URLField):
+                fields.append(field.name)
+        return fields
+
+    def add_utm_params(self):
+        """Appends UTM params to links in both Rich Text Fields and URL Fields.
+
+        UTM params get placeholders -like `[[snippet_id`]]`- that will get
+        replaced with actual values when the snippet is rendered to go into a
+        Bundle.
+
+        This separates of snippet content from targeting attributes and allows
+        the same snippet to be scheduled for different channels and during
+        campaigns.
+
+        """
+        params = {
+            'utm_source': 'desktop-snippet',
+            'utm_medium': 'snippet',
+            'utm_campaign': '[[campaign_slug]]',
+            'utm_term': '[[snippet_id]]',
+            'utm_content': '[[channels]]',
+        }
+
+        def _replacer(matchobj):
+            return util.urlparams(matchobj.group(), replace=False, **params)
+
+        for field in self.get_rich_text_fields():
+            value = getattr(self, field)
+            if value:
+                value = re.sub('(?<=href=")(https://.+?)(?=")', _replacer, value)
+                setattr(self, field, value)
+
+        for field in self.get_url_fields():
+            value = getattr(self, field)
+            if value:
+                value = util.urlparams(value, replace=False, **params)
+                setattr(self, field, value)
+
     def clean(self):
         super().clean()
-        validate_as_router_fluent_variables(self, self.get_rich_text_fields())
+        validators.validate_as_router_fluent_variables(self, self.get_rich_text_fields())
+        self.add_utm_params()
 
 
 class SimpleTemplate(Template):
@@ -1530,6 +1573,23 @@ class ASRSnippet(models.Model):
 
         # Add snippet ID to template variables.
         data = util.deep_search_and_replace(data, '[[snippet_id]]', str(self.id))
+
+        # Add campaign when available
+        data = util.deep_search_and_replace(data, '[[campaign_slug]]',
+                                            self.campaign.slug if self.campaign else '')
+
+        # Add Channels
+        CHANNELS_MAP = {
+            'release': 'REL',
+            'beta': 'BETA',
+            'aurora': 'DEV',
+            'nightly': 'NIGHTLY',
+        }
+        channels = '_'.join([
+            # Iterate CHANNELS_MAP instead of self.channels to ensure order
+            CHANNELS_MAP[channel] for channel in CHANNELS_MAP if channel in self.channels
+        ])
+        data = util.deep_search_and_replace(data, '[[channels]]', channels)
 
         rendered_snippet = {
             'id': str(self.id),
