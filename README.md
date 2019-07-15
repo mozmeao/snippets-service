@@ -1,6 +1,6 @@
 # snippets service
 
-[![What's Deployed?](https://img.shields.io/badge/What's_Deployed-%3F-yellow.svg)](https://whatsdeployed.io/s-088) [![Documentation RTFM](https://img.shields.io/badge/Documentation-RTFM-blue.svg)](http://abouthome-snippets-service.readthedocs.org/)
+[![What's Deployed?](https://img.shields.io/badge/What's_Deployed-%3F-yellow.svg)](https://whatsdeployed.io/s-088) [![Documentation RTFM](https://img.shields.io/badge/Documentation-RTFM-blue.svg)](https://abouthome-snippets-service.readthedocs.org/) [![Pipeline](https://img.shields.io/badge/CI-Pipeline-blueviolet.svg)](https://gitlab.com/mozmeao/snippets-service/pipelines) [![Pipeline](https://img.shields.io/badge/CD-Pipeline-ff69b4.svg)](https://gitlab.com/mozmeao/snippets-config/pipelines)
 
 The root of all messaging.
 
