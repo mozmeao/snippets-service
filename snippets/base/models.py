@@ -631,7 +631,7 @@ class Icon(models.Model):
         if settings.IMAGE_OPTIMIZE:
             self.image.seek(0)
             cmd = subprocess.run(
-                ['pngquant', '-', '--quality=95', '--skip-if-larger', '--speed=1'],
+                ['pngquant', '-', '--quality=95', '--skip-if-larger', '--speed=1', '--strip'],
                 input=self.image.read(),
                 stdout=subprocess.PIPE
             )
