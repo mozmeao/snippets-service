@@ -1,6 +1,7 @@
 #!/bin/bash
 set -ex
 # env vars: CLUSTERS, CONFIG_BRANCH, CONFIG_REPO, NAMESPACE
+BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 pushd $(mktemp -d)
 git clone --depth=1 -b ${CONFIG_BRANCH:=master} ${CONFIG_REPO:=github-mozmar-robot:mozmeao/snippets-config} snippets-config
