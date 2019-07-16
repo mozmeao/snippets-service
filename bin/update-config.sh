@@ -2,9 +2,6 @@
 set -ex
 # env vars: CLUSTERS, CONFIG_BRANCH, CONFIG_REPO, NAMESPACE
 
-BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source $BIN_DIR/set_git_env_vars.sh # sets DOCKER_IMAGE_TAG
-
 pushd $(mktemp -d)
 git clone --depth=1 -b ${CONFIG_BRANCH:=master} ${CONFIG_REPO:=github-mozmar-robot:mozmeao/snippets-config} snippets-config
 cd snippets-config
