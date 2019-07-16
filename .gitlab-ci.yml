@@ -11,6 +11,13 @@ build-images:
     - bin/build_images.sh
     - bin/push2dockerhub.sh
 
+check-migrations:
+  stage: test
+  tags:
+    - meao
+  script:
+    - ./manage.py makemigrations  | grep "No changes detected"
+
 run-flake8:
   stage: test
   tags:

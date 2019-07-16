@@ -25,6 +25,8 @@ before_script:
 script:
   - docker run -d --name postgres -e POSTGRES_PASSWORD=snippets -e POSTGRES_USER=snippets -e POSTGRES_DB=snippets postgres:11-alpine
   - docker run ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} flake8 snippets
+  # Check that we don't have missing migrations
+  - ./manage.py makemigrations  | grep "No changes detected"
   # Wait mysql to initialize.
   - docker run --link postgres:db -e CHECK_PORT=5432 -e CHECK_HOST=db giorgos/takis
   - docker run --env-file .env --link postgres:db ${DOCKER_REPOSITORY}:${TRAVIS_COMMIT} ./manage.py test --parallel
