@@ -14,4 +14,4 @@ docker run -e 'DEBUG=False' \
            -e 'ENABLE_ADMIN=True' \
            -e 'SECURE_SSL_REDIRECT=False' \
            ${DOCKER_IMAGE_TAG} \
-           coverage run ./manage.py test --parallel
+           bash -c 'coverage run ./manage.py test --parallel; coverage report'
