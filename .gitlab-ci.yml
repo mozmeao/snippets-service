@@ -20,16 +20,16 @@ build-images:
 .test-stage:
   stage: test
   variables:
-    DEBUG: "False"
-    ALLOWED_HOSTS: "*"
-    SECRET_KEY: "foo"
-    DATABASE_URL: "sqlite:///"
-    SITE_URL: "http://localhost:8000"
-    CACHE_URL: "dummy://"
-    ENABLE_ADMIN: "True"
-    SECURE_SSL_REDIRECT: "False"
+    DOCKER_DEBUG: "False"
+    DOCKER_ALLOWED_HOSTS: "*"
+    DOCKER_SECRET_KEY: "foo"
+    DOCKER_DATABASE_URL: "sqlite:///"
+    DOCKER_SITE_URL: "http://localhost:8000"
+    DOCKER_CACHE_URL: "dummy://"
+    DOCKER_ENABLE_ADMIN: "True"
+    DOCKER_SECURE_SSL_REDIRECT: "False"
   before_script:
-    - env > .docker-env
+    - env | grep "^DOCKER" | sed 's/DOCKER_//' > .docker-env
 
 check-migrations:
   extends: .test-stage
