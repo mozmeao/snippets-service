@@ -22,6 +22,7 @@ run-unit-tests:
   stage: test
   tags:
     - meao
+  coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
   script:
     - bin/coverage-tests.sh
 
