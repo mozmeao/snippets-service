@@ -26,6 +26,9 @@ RUN /bin/bash -c 'if ${DEVELOPMENT}; then pip install -r requirements-dev.txt; f
 
 COPY . /app
 RUN DEBUG=False SECRET_KEY=foo ALLOWED_HOSTS=localhost, DATABASE_URL=sqlite:/// SITE_URL= ./manage.py collectstatic --noinput
-RUN bash -c "if [[ -e revision.txt ]]; then mv revision.txt static/; fi"
+
 RUN chown webdev.webdev -R .
 USER webdev
+
+ARG GIT_SHA=head
+ENV GIT_SHA=${GIT_SHA}
