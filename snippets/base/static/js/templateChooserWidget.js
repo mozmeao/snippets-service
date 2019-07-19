@@ -7,6 +7,7 @@
         if (value) {
             $('.' + value).show();
         }
+        autoTranslate();
     }
 
     // Show correct template on load
