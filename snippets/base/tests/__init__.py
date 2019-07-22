@@ -161,11 +161,10 @@ class SimpleTemplateFactory(factory.django.DjangoModelFactory):
 class ASRSnippetFactory(factory.django.DjangoModelFactory):
     creator = factory.SubFactory(UserFactory)
     name = factory.Sequence(lambda n: 'ASRSnippet {0}'.format(n))
-    campaign = factory.SubFactory(CampaignFactory, creator=factory.SelfAttribute('..creator'))
     category = factory.SubFactory(CategoryFactory, creator=factory.SelfAttribute('..creator'))
 
     template_relation = factory.RelatedFactory(SimpleTemplateFactory, 'snippet')
-    status = models.STATUS_CHOICES['Published']
+    status = models.STATUS_CHOICES['Approved']
 
     class Meta:
         model = models.ASRSnippet
@@ -178,17 +177,6 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
         make the Factory behave like Django Admin.
         """
         self.template_relation = self.template_relation.template_ptr
-
-    @factory.post_generation
-    def targets(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted is None:
-            extracted = [TargetFactory(creator=self.creator)]
-
-        for target in extracted:
-            self.targets.add(target)
 
     @factory.post_generation
     def locale(self, create, extracted, **kwargs):
@@ -227,3 +215,24 @@ class LocaleFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = models.Locale
+
+
+class JobFactory(factory.django.DjangoModelFactory):
+    creator = factory.SubFactory(UserFactory)
+    campaign = factory.SubFactory(CampaignFactory, creator=factory.SelfAttribute('..creator'))
+    status = models.Job.PUBLISHED
+    snippet = factory.SubFactory(ASRSnippetFactory, creator=factory.SelfAttribute('..creator'))
+
+    class Meta:
+        model = models.Job
+
+    @factory.post_generation
+    def targets(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted is None:
+            extracted = [TargetFactory(creator=self.creator)]
+
+        for target in extracted:
+            self.targets.add(target)

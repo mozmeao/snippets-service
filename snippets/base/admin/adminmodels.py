@@ -1,10 +1,11 @@
 import copy
 import re
-from datetime import datetime
 
 from django.contrib import admin, messages
 from django.db.models import TextField, Q
+from django.http import HttpResponseRedirect
 from django.template.loader import get_template
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from django_ace import AceWidget
@@ -15,7 +16,7 @@ from jinja2.meta import find_undeclared_variables
 from reversion.admin import VersionAdmin
 from taggit_helpers.admin import TaggitListFilter
 
-from snippets.base import forms, models, slack
+from snippets.base import forms, models
 from snippets.base.admin import actions, filters
 
 
@@ -471,31 +472,28 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     list_display = [
         'id',
         'custom_name_with_tags',
-        'status',
+        'snippet_status',
         'locale',
         'modified',
     ]
     list_filter = [
         filters.TemplateFilter,
         ['locale', RelatedDropdownFilter],
-        ['targets', RelatedOnlyDropdownFilter],
-        'status',
-        filters.ChannelFilter,
-        ['campaign', RelatedDropdownFilter],
+        ['jobs__targets', RelatedOnlyDropdownFilter],
+        'jobs__status',
+        ['jobs__campaign', RelatedDropdownFilter],
         TaggitListFilter,
         ['category', RelatedDropdownFilter],
-        filters.ScheduledFilter,
         filters.ModifiedFilter,
     ]
     search_fields = [
         'name',
         'id',
-        'campaign__name',
-        'targets__name',
+        'jobs__campaign__name',
+        'jobs__targets__name',
         'category__name',
     ]
     autocomplete_fields = [
-        'campaign',
         'category',
     ]
     preserve_filters = True
@@ -507,19 +505,15 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'creator',
         'preview_url_light_theme',
         'preview_url_dark_theme',
-
+        'job_status',
+        'snippet_status',
     ]
-    filter_horizontal = [
-        'targets',
+    actions = [
+        actions.duplicate_snippets_action,
     ]
     save_on_top = True
     save_as = True
     view_on_site = False
-    actions = [
-        actions.duplicate_snippets_action,
-        'action_publish_snippet',
-        'action_unpublish_snippet',
-    ]
 
     fieldsets = (
         ('ID', {
@@ -527,10 +521,16 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 'id',
                 'name',
                 'tags',
-                'status',
                 'creator',
+                'category',
                 'preview_url_light_theme',
                 'preview_url_dark_theme',
+            )
+        }),
+        ('Status', {
+            'fields': (
+                'snippet_status',
+                'job_status',
             )
         }),
         ('Content', {
@@ -552,18 +552,11 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 '''  # noqa
             ),
             'fields': (
+                'status',
                 'locale',
                 'template_chooser',
             ),
             'classes': ('template-fieldset',)
-        }),
-        ('Publishing Options', {
-            'fields': (
-                'campaign',
-                'category',
-                'targets',
-                ('publish_start', 'publish_end'),
-                'weight',)
         }),
         ('Other Info', {
             'fields': ('uuid', ('created', 'modified')),
@@ -617,6 +610,58 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         return mark_safe(text)
     preview_url_dark_theme.short_description = 'Dark Themed Preview URL'
 
+    def snippet_status(self, obj):
+        if obj.jobs.filter(status=models.Job.PUBLISHED).exists():
+            msg = 'Published'
+        elif obj.jobs.filter(status=models.Job.SCHEDULED).exists():
+            msg = 'Scheduled'
+        else:
+            msg = 'Not Scheduled'
+        return mark_safe(
+            '<span id="snippet_status" class={color_class}>{msg}</span>'.format(
+                color_class=msg.lower(), msg=msg
+            )
+        )
+    snippet_status.short_description = 'Status'
+
+    def job_status(self, obj):
+        changelist_url = '{reverse}?snippet__id__exact={id}'.format(
+            reverse=reverse('admin:base_job_changelist'),
+            id=obj.id,
+        )
+        draft_jobs_count = scheduled_jobs_count = published_jobs_count = 0
+        # Count job types in Python to avoid multiple DB queries.
+        for job in obj.jobs.all():
+            if job.status == models.Job.DRAFT:
+                draft_jobs_count += 1
+            elif job.status == models.Job.SCHEDULED:
+                scheduled_jobs_count += 1
+            elif job.status == models.Job.PUBLISHED:
+                published_jobs_count += 1
+
+        msg = '''
+        <a href="{draft_jobs_link}">{draft_jobs_count} Draft Jobs</a>
+        -
+        <a href="{scheduled_jobs_link}">{scheduled_jobs_count} Scheduled Jobs</a>
+        -
+        <a href="{published_jobs_link}">{published_jobs_count} Published Jobs</a>
+        -
+        <a href="{all_jobs_link}">All Jobs</a>
+        <a href="{add_job_link}" id="addJobButton">Add Job</a>
+
+        '''.format(
+            draft_jobs_link=changelist_url + '&status__exact={}'.format(models.Job.DRAFT),
+            draft_jobs_count=draft_jobs_count,
+            scheduled_jobs_link=changelist_url + '&status__exact={}'.format(models.Job.SCHEDULED),
+            scheduled_jobs_count=scheduled_jobs_count,
+            published_jobs_link=changelist_url + '&status__exact={}'.format(models.Job.PUBLISHED),
+            published_jobs_count=published_jobs_count,
+            all_jobs_link=changelist_url,
+            add_job_link=reverse('admin:base_job_add') + '?snippet={}'.format(obj.id),
+        )
+        return mark_safe(msg)
+    job_status.short_description = 'Jobs'
+
     def change_view(self, request, *args, **kwargs):
         if request.method == 'POST' and '_saveasnew' in request.POST:
             # Always saved cloned snippets as un-published and un-check ready for review.
@@ -639,64 +684,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         form = super().get_form(request, obj, **kwargs)
         form.current_user = request.user
         return form
-
-    def _action_status_change(self, action, request, queryset):
-        if action == 'publish':
-            status = models.STATUS_CHOICES['Published']
-            no_action_message = 'Skipped {} already published snippets.'
-            success_message = 'Published {} snippets.'
-        else:
-            status = models.STATUS_CHOICES['Draft']
-            no_action_message = 'Skipped {} already unpublished snippets.'
-            success_message = 'Unpublished {} snippets.'
-
-        clean_queryset = queryset.exclude(status=status)
-        no_snippets = clean_queryset.count()
-        no_already_published_snippets = queryset.count() - no_snippets
-
-        now = datetime.utcnow()
-        # Create a list of matching snippets before altering them to log action
-        # and send Slack messages.
-        snippets = list(clean_queryset)
-        clean_queryset.update(status=status, modified=now)
-
-        for snippet in snippets:
-            self.log_change(request, snippet, 'Changed status.')
-            if action == 'publish':
-                slack.send_slack('asr_published', snippet)
-
-        if no_already_published_snippets:
-            messages.warning(request, no_action_message.format(no_already_published_snippets))
-        messages.success(request, success_message.format(no_snippets))
-
-    def action_publish_snippet(self, request, queryset):
-        self._action_status_change('publish', request, queryset)
-    action_publish_snippet.short_description = 'Publish selected snippets'
-    # Only users with Publishing permissions on all channels are allowed to
-    # mark snippets for publication in bulk.
-    action_publish_snippet.allowed_permissions = (
-        'global_publish',
-    )
-
-    def action_unpublish_snippet(self, request, queryset):
-        self._action_status_change('unpublish', request, queryset)
-    action_unpublish_snippet.short_description = 'Unpublish selected snippets'
-    # Only users with Publishing permissions on all channels are allowed to
-    # mark snippets for publication in bulk.
-    action_unpublish_snippet.allowed_permissions = (
-        'global_publish',
-    )
-
-    def has_global_publish_permission(self, request):
-        return request.user.has_perms([
-            'base.%s' % perm for perm in [
-                'publish_on_release',
-                'publish_on_beta',
-                'publish_on_aurora',
-                'publish_on_nightly',
-                'publish_on_esr',
-            ]
-        ])
 
     def custom_name_with_tags(self, obj):
         template = get_template('base/snippets_custom_name_with_tags.jinja')
@@ -739,6 +726,7 @@ class CampaignAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     ]
     list_filter = [
         filters.RelatedPublishedASRSnippetFilter,
+        filters.ChannelFilter,
     ]
 
     class Media:
@@ -913,4 +901,183 @@ class LocaleAdmin(admin.ModelAdmin):
     search_fields = (
         'name',
         'code',
+    )
+
+
+class JobAdmin(admin.ModelAdmin):
+    save_on_top = True
+    preserve_filters = True
+    filter_horizontal = [
+        'targets',
+    ]
+    list_display = [
+        'id',
+        'snippet_name',
+        'job_status',
+        'publish_start',
+        'publish_end'
+    ]
+    list_display_links = [
+        'id',
+        'snippet_name',
+    ]
+    list_filter = [
+        'status',
+        ('campaign', RelatedDropdownFilter),
+        ('targets', RelatedOnlyDropdownFilter),
+    ]
+    search_fields = [
+        'uuid',
+        'snippet__name',
+        'campaign__name',
+    ]
+    autocomplete_fields = [
+        'snippet',
+        'campaign',
+    ]
+    readonly_fields = [
+        'snippet_name_linked',
+        'creator',
+        'job_status',
+        'uuid',
+        'id',
+        'created',
+        'modified',
+    ]
+    fieldsets = [
+        ('ID', {
+            'fields': ('id', 'job_status', 'snippet_name_linked', 'creator')
+        }),
+        ('Content', {
+            'fields': ('snippet', 'campaign')
+        }),
+        ('Targeting', {
+            'fields': ('targets', 'weight',)
+        }),
+        ('Publishing Dates', {
+            'fields': (('publish_start', 'publish_end'),)
+        }),
+        ('Other Info', {
+            'fields': (('created', 'modified'),),
+        }),
+    ]
+    actions = [
+        'action_schedule_job',
+        'action_cancel_job',
+    ]
+
+    class Media:
+        css = {
+            'all': [
+                'css/admin/JobAdmin.css',
+            ]
+        }
+        js = [
+            'js/admin/jquery.are-you-sure.js',
+            'js/admin/alert-page-leaving.js',
+        ]
+
+    def snippet_name(self, obj):
+        return obj.snippet.name
+
+    def snippet_name_linked(self, obj):
+        return mark_safe(
+            '<a href="{}">{}</a>'.format(
+                reverse('admin:base_asrsnippet_change', args=[obj.snippet.id]), obj.snippet.name)
+        )
+    snippet_name_linked.short_description = 'Link to Snippet'
+
+    def job_status(self, obj):
+        msg = obj.get_status_display()
+        return mark_safe(
+            '<span id="job_status" class={color_class}>{msg}</span>'.format(
+                color_class=msg.lower(), msg=msg
+            )
+        )
+    job_status.short_description = 'Status'
+
+    def save_model(self, request, obj, form, change):
+        if not obj.creator_id:
+            obj.creator = request.user
+        super().save_model(request, obj, form, change)
+
+    def has_change_permission(self, request, obj=None):
+        """ Allow edit only during Draft stage. """
+        if obj and obj.status == models.Job.DRAFT:
+            return True
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """ Allow deletion only during Draft stage. """
+        if obj and obj.status == models.Job.DRAFT:
+            return True
+        return False
+
+    def has_publish_permission(self, request):
+        return request.user.has_perm('base.change_job')
+
+    def response_change(self, request, obj):
+        # Add logs using admin system
+        if '_cancel' in request.POST:
+            obj.change_status(status=models.Job.CANCELED, user=request.user)
+            return HttpResponseRedirect('.')
+        elif '_schedule' in request.POST:
+            obj.change_status(status=models.Job.SCHEDULED, user=request.user)
+            return HttpResponseRedirect('.')
+        elif '_duplicate' in request.POST:
+            new_job = obj.duplicate(request.user)
+            return HttpResponseRedirect(new_job.get_admin_url(full=False))
+        return super().response_change(request, obj)
+
+    def _changeform_view(self, request, *args, **kwargs):
+        view = super()._changeform_view(request, *args, **kwargs)
+        if hasattr(view, 'context_data'):
+            obj = view.context_data['original']
+            if obj and self.has_publish_permission(request):
+                if obj.status in [models.Job.PUBLISHED, models.Job.SCHEDULED]:
+                    view.context_data['show_cancel'] = True
+                elif obj.status == models.Job.DRAFT:
+                    view.context_data['show_schedule'] = True
+                view.context_data['show_duplicate'] = True
+        return view
+
+    def _action_status_change(self, action, request, queryset):
+        if action == 'schedule':
+            status = models.Job.SCHEDULED
+            no_action_message = 'Skipped {} already scheduled and published Jobs.'
+            success_message = 'Scheduled {} Jobs.'
+            clean_queryset = queryset.filter(status=models.Job.DRAFT)
+        elif action == 'cancel':
+            status = models.Job.CANCELED
+            no_action_message = 'Skipped {} already canceled or completed Jobs.'
+            success_message = 'Canceled {} Jobs.'
+            clean_queryset = queryset.filter(
+                Q(status=models.Job.PUBLISHED) | Q(status=models.Job.SCHEDULED)
+            )
+        else:
+            messages.success(request, 'Error no action')
+            return
+
+        no_jobs = clean_queryset.count()
+        no_already_scheduled_jobs = queryset.count() - no_jobs
+
+        for job in clean_queryset:
+            job.change_status(status=status, user=request.user)
+
+        if no_already_scheduled_jobs:
+            messages.warning(request, no_action_message.format(no_already_scheduled_jobs))
+        messages.success(request, success_message.format(no_jobs))
+
+    def action_schedule_job(self, request, queryset):
+        self._action_status_change('schedule', request, queryset)
+    action_schedule_job.short_description = 'Schedule selected Jobs'
+    action_schedule_job.allowed_permissions = (
+        'publish',
+    )
+
+    def action_cancel_job(self, request, queryset):
+        self._action_status_change('cancel', request, queryset)
+    action_cancel_job.short_description = 'Cancel selected Jobs'
+    action_cancel_job.allowed_permissions = (
+        'publish',
     )

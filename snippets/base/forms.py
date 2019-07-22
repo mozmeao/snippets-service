@@ -261,34 +261,6 @@ class PublishPermissionFormMixIn:
                                'on {} channel.'.format(channel.title()))
                         raise forms.ValidationError(msg)
 
-    def _publish_permission_check_asr(self, cleaned_data):
-        """If Snippet is Published or the current form sets it to Published verify that
-        user has permission to publish on all the selected publication
-        channels.
-
-        This permission model allows users without any publish permissions to
-        edit a Snippet and select the publication channels but prevents them
-        from publishing the snippets.
-
-        A user with publish permission will later review the snippet and set
-        Snippet.published to True. After this point, only users with publish
-        permissions on all selected publication channels are allowed to edit
-        the Snippet, including editing content, un-publishing, alter targeting,
-        etc.
-        """
-        if ((self.instance.status == models.STATUS_CHOICES['Published'] or
-             cleaned_data.get('status') == models.STATUS_CHOICES['Published'])):
-
-            for channel in models.CHANNELS:
-                on_channel = 'on_{}'.format(channel)
-
-                for target in self.instance.targets.all() | self.cleaned_data['targets']:
-                    if getattr(target, on_channel) is True:
-                        if not self.current_user.has_perm('base.publish_on_{}'.format(channel)):
-                            msg = ('You are not allowed to edit or publish '
-                                   'on {} channel.'.format(channel.title()))
-                            raise forms.ValidationError(msg)
-
 
 class BaseSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
     pass
@@ -637,7 +609,7 @@ class SimpleBelowSearchTemplateForm(forms.ModelForm):
         exclude = []
 
 
-class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
+class ASRSnippetAdminForm(forms.ModelForm):
     template_chooser = forms.ChoiceField(
         choices=(
             ('', 'Select Template'),
@@ -672,21 +644,12 @@ class ASRSnippetAdminForm(forms.ModelForm, PublishPermissionFormMixIn):
             'js/admin/inlineMover.js',
         ]
 
-    def clean(self):
-        cleaned_data = super().clean()
-        self._publish_permission_check_asr(cleaned_data)
-        return cleaned_data
-
     def save(self, *args, **kwargs):
         snippet = super().save(*args, **kwargs)
 
         if (('status' in self.changed_data and
              self.instance.status == models.STATUS_CHOICES['Ready for review'])):
             send_slack('asr_ready_for_review', snippet)
-
-        if (('status' in self.changed_data and
-             self.instance.status == models.STATUS_CHOICES['Published'])):
-            send_slack('asr_published', snippet)
 
         return snippet
 

@@ -269,6 +269,7 @@ DEAD_MANS_SNITCH_CSV_EXPORT = config('DEAD_MANS_SNITCH_CSV_EXPORT', default=None
 
 DEAD_MANS_SNITCH_PRODUCT_DETAILS = config('DEAD_MANS_SNITCH_PRODUCT_DETAILS', default=None)
 DEAD_MANS_SNITCH_DISABLE_SNIPPETS = config('DEAD_MANS_SNITCH_DISABLE_SNIPPETS', default=None)
+DEAD_MANS_SNITCH_UPDATE_JOBS = config('DEAD_MANS_SNITCH_UPDATE_JOBS', default=None)
 
 SNIPPETS_PER_PAGE = config('SNIPPETS_PER_PAGE', default=50)
 
@@ -328,6 +329,7 @@ ADMIN_REORDER = [
         'label': 'ASR Snippets',
         'models': [
             'base.ASRSnippet',
+            'base.Job',
             'base.Campaign',
             'base.Category',
             'base.Target',

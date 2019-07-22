@@ -13,8 +13,8 @@ from django_ical.views import ICalFeed
 from snippets.base import models
 
 
-class ASRSnippetFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='icontains')
+class JobFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(field_name='snippet__name', lookup_expr='icontains')
     locale = django_filters.CharFilter(method='filter_locale')
     only_scheduled = django_filters.ChoiceFilter(
         method='filter_scheduled', choices=(('true', 'Yes'),
@@ -28,7 +28,7 @@ class ASRSnippetFilter(django_filters.FilterSet):
         locales = value.split(',')
         return queryset.filter(
             operator.or_(
-                *[Q(locale__code=',{},'.format(locale)) for locale in locales]
+                *[Q(snippet__locale__code=',{},'.format(locale)) for locale in locales]
             )
         )
 
@@ -48,9 +48,9 @@ class ASRSnippetFilter(django_filters.FilterSet):
         fields = []
 
 
-class SnippetsFeed(ICalFeed):
+class JobsFeed(ICalFeed):
     timezone = 'UTC'
-    title = 'Snippets'
+    title = 'Snippet Jobs'
 
     def __call__(self, request, *args, **kwargs):
         self.request = request
@@ -58,18 +58,18 @@ class SnippetsFeed(ICalFeed):
 
     @property
     def product_id(self):
-        return '//{}/Snippets?{}'.format(urlparse(settings.SITE_URL).netloc,
-                                         self.request.GET.urlencode())
+        return '//{}/SnippetJobs?{}'.format(urlparse(settings.SITE_URL).netloc,
+                                            self.request.GET.urlencode())
 
     def items(self):
-        queryset = (models.ASRSnippet.objects
-                    .filter(status=models.STATUS_CHOICES['Published'])
+        queryset = (models.Job.objects
+                    .filter(Q(status=models.Job.PUBLISHED) | Q(status=models.Job.SCHEDULED))
                     .order_by('publish_start'))
-        filtr = ASRSnippetFilter(self.request.GET, queryset=queryset)
+        filtr = JobFilter(self.request.GET, queryset=queryset)
         return filtr.qs
 
     def item_title(self, item):
-        return item.name
+        return item.snippet.name
 
     def item_link(self, item):
         return item.get_admin_url()
@@ -80,8 +80,8 @@ class SnippetsFeed(ICalFeed):
         Locale: {}'
         Preview Link: {}
         '''.format(', '.join(item.channels),
-                   item.locale,
-                   item.get_preview_url()))
+                   item.snippet.locale,
+                   item.snippet.get_preview_url()))
         return description
 
     def item_start_datetime(self, item):

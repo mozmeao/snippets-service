@@ -1,0 +1,22 @@
+#change_id_snippet, #add_id_snippet, #delete_id_snippet {
+    display: none;
+}
+
+
+input[name="_schedule"] {
+    background: green;
+}
+
+input[name="_cancel"] {
+    background: #a41515;
+}
+
+#job_status.published {
+    font-weight: bold;
+    color: #2eb772;
+}
+
+#job_status.scheduled {
+    font-weight: bold;
+    color: orange;
+}
