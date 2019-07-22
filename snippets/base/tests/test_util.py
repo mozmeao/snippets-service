@@ -1,7 +1,9 @@
+from django.http.request import QueryDict
+
 from snippets.base.models import Snippet
 from snippets.base.tests import SnippetFactory, TestCase
 from snippets.base.util import (deep_search_and_replace, first,
-                                fluent_link_extractor, get_object_or_none)
+                                fluent_link_extractor, get_object_or_none, urlparams)
 
 
 class TestGetObjectOrNone(TestCase):
@@ -127,3 +129,21 @@ class DeepSearchAndReplaceTests(TestCase):
             }
         }
         self.assertEqual(generated_data, expected_data)
+
+
+class URLParamsTests(TestCase):
+    def test_base(self):
+        url = 'https://www.example.com/?foo=foo&locale=el&a=5'
+        new_url = urlparams(url, query_dict=QueryDict('a=1&b=2'), **{'foo': 'bar', 'la': 'lo'})
+        self.assertEqual(new_url, 'https://www.example.com/?foo=bar&locale=el&a=1&b=2&la=lo')
+
+    def test_replace_false(self):
+        url = 'https://www.example.com/?foo=foo&locale=el&a=5'
+        new_url = urlparams(url, replace=False,
+                            query_dict=QueryDict('a=1&b=2'), **{'foo': 'bar', 'la': 'lo'})
+        self.assertEqual(new_url, 'https://www.example.com/?foo=foo&locale=el&a=5&b=2&la=lo')
+
+    def test_fragment(self):
+        url = 'https://www.example.com'
+        new_url = urlparams(url, fragment='boing')
+        self.assertEqual(new_url, 'https://www.example.com/#boing')

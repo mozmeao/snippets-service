@@ -538,9 +538,11 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                   <li><code>special:accounts</code> to open Firefox Accounts</li>
                   <li><code>special:appMenu</code> to open the hamburger menu</li>
                 </ol><br/>
-                <strong>Automatically add Snippet ID:</strong><br/>
+                <strong>Content Variables:</strong><br/>
                 You can use <code>[[snippet_id]]</code> in any field and it
                 will be automatically replaced by Snippet ID when served to users.
+                Similarly <code>[[campaign_slug]]</code> gets replaced by Campaign Slug and
+                <code>[[channels]]</code> by targeted channels.
                 <br/>
                 Example: This is a <code>&lt;a href=&quot;https://example.com?utm_term=[[snippet_id]]&quot;&gt;link&lt;/a&gt;</code>
                 <br/>

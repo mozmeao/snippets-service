@@ -1,6 +1,10 @@
 import copy
 import datetime
 import re
+from urllib.parse import ParseResult, urlparse, urlencode
+
+from django.http import QueryDict
+from django.utils.encoding import smart_bytes
 
 from product_details import product_details
 from product_details.version_compare import version_list
@@ -53,6 +57,46 @@ def current_firefox_major_version():
         product_details.firefox_history_major_releases)[0]
 
     return full_version.split('.', 1)[0]
+
+
+def urlparams(url_, fragment=None, query_dict=None, replace=True, **query):
+    """
+    Add a fragment and/or query parameters to a URL.
+    New query params will be appended to exising parameters, except duplicate
+    names, which will be replaced when replace=True otherwise preserved.
+
+    Copied from mozilla/kuma, modified:
+     - to not always replace vars
+     - to not escape `[]` characters
+    """
+    url_ = urlparse(url_)
+    fragment = fragment if fragment is not None else url_.fragment
+
+    q = url_.query
+    new_query_dict = (QueryDict(smart_bytes(q), mutable=True) if
+                      q else QueryDict('', mutable=True))
+    if query_dict:
+        for k, l in query_dict.lists():
+            if not replace and k in new_query_dict:
+                continue
+            new_query_dict[k] = None
+            for v in l:
+                new_query_dict.appendlist(k, v)
+
+    for k, v in query.items():
+        if not replace and k in new_query_dict:
+            continue
+
+        if isinstance(v, list):
+            new_query_dict.setlist(k, v)
+        else:
+            new_query_dict[k] = v
+
+    query_string = urlencode([(k, v) for k, l in new_query_dict.lists() for
+                              v in l if v is not None], safe='[]')
+    new = ParseResult(url_.scheme, url_.netloc, url_.path or '/',
+                      url_.params, query_string, fragment)
+    return new.geturl()
 
 
 def fluent_link_extractor(data, variables):

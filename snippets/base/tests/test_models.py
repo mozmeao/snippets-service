@@ -357,6 +357,30 @@ class TemplateTests(TestCase):
         subtemplate = snippet.template_relation.subtemplate.subtemplate
         self.assertTrue(type(subtemplate) is SimpleTemplate)
 
+    def test_add_utm_params(self):
+        snippet = ASRSnippetFactory(
+            template_relation__text=('This is a <a href="https://www.example.com/?utm_medium=SI">'
+                                     'linked test</a> and <a href="https://example.com">'
+                                     'another link</a> without any params'),
+            template_relation__button_url='https://www.mozilla.org/foo/bar/?lala=lolo',
+        )
+        snippet.template_ng.add_utm_params()
+        self.assertEqual(
+            snippet.template_ng.text,
+            ('This is a <a href="https://www.example.com/?utm_medium=SI'
+             '&utm_source=desktop-snippet&utm_campaign=[[campaign_slug]]'
+             '&utm_term=[[snippet_id]]&utm_content=[[channels]]">linked test</a> and '
+             '<a href="https://example.com/?utm_source=desktop-snippet&utm_medium=snippet'
+             '&utm_campaign=[[campaign_slug]]&utm_term=[[snippet_id]]&utm_content=[[channels]]">'
+             'another link</a> without any params')
+        )
+        self.assertEqual(
+            snippet.template_ng.button_url,
+            ('https://www.mozilla.org/foo/bar/?lala=lolo&utm_source=desktop-snippet'
+             '&utm_medium=snippet&utm_campaign=[[campaign_slug]]&utm_term=[[snippet_id]]'
+             '&utm_content=[[channels]]')
+        )
+
 
 class IconTests(TestCase):
     def _build_in_memory_uploaded_file(self):
@@ -476,9 +500,11 @@ class ASRSnippetTests(TestCase):
     def test_render(self):
         snippet = ASRSnippetFactory.create(
             template_relation__text=('snippet id [[snippet_id]] and with '
-                                     '<a href="https://example.com/[[snippet_id]]/foo">link</a>'),
+                                     'campaign [[campaign_slug]] and '
+                                     '<a href="https://example.com/[[snippet_id]]/foo">link</a> in '
+                                     '[[channels]] channels'),
             targets=[
-                TargetFactory(jexl_expr='foo == bar'),
+                TargetFactory(on_release=True, on_beta=True, jexl_expr='foo == bar'),
                 TargetFactory(jexl_expr='lalo == true'),
                 TargetFactory(jexl_expr=''),  # This can be a Target with only
                                               # CMR which produces no JEXL
@@ -493,7 +519,9 @@ class ASRSnippetTests(TestCase):
             'campaign': snippet.campaign.slug,
             'weight': snippet.weight,
             'content': {
-                'text': 'snippet id {} and with <link0>link</link0>'.format(snippet.id),
+                'text': ('snippet id {} and with campaign {} and '
+                         '<link0>link</link0> in REL_BETA channels').format(snippet.id,
+                                                                            snippet.campaign.slug),
                 'links': {
                     'link0': {
                         'url': 'https://example.com/{}/foo'.format(snippet.id),
