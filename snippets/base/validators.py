@@ -86,8 +86,8 @@ def validate_as_router_fluent_variables(obj, variables):
 
         if text != bleached_text:
             error_msg = (
-                'Field contains unsupported tags or insecure links.'
-                'Only {} tags and https links are supported'
+                'Field contains unsupported tags or insecure links. '
+                'Only {} tags and https links are supported.'
             ).format(', '.join(ALLOWED_TAGS))
             raise ValidationError({variable: error_msg})
     return obj
