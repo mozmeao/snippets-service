@@ -1,3 +1,4 @@
+import copy
 import re
 from datetime import datetime
 
@@ -462,41 +463,41 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         SendToDeviceTemplateInline,
         SimpleBelowSearchTemplateInline,
     ]
-    list_display_links = (
+    list_display_links = [
         'id',
-    )
-    list_display = (
+    ]
+    list_display = [
         'id',
         'custom_name_with_tags',
         'status',
         'locale',
         'modified',
-    )
-    list_filter = (
+    ]
+    list_filter = [
         filters.TemplateFilter,
-        ('locale', RelatedDropdownFilter),
-        ('targets', RelatedOnlyDropdownFilter),
+        ['locale', RelatedDropdownFilter],
+        ['targets', RelatedOnlyDropdownFilter],
         'status',
         filters.ChannelFilter,
-        ('campaign', RelatedDropdownFilter),
+        ['campaign', RelatedDropdownFilter],
         TaggitListFilter,
-        ('category', RelatedDropdownFilter),
+        ['category', RelatedDropdownFilter],
         filters.ScheduledFilter,
         filters.ModifiedFilter,
-    )
-    search_fields = (
+    ]
+    search_fields = [
         'name',
         'id',
         'campaign__name',
         'targets__name',
         'category__name',
-    )
-    autocomplete_fields = (
+    ]
+    autocomplete_fields = [
         'campaign',
         'category',
-    )
+    ]
     preserve_filters = True
-    readonly_fields = (
+    readonly_fields = [
         'id',
         'created',
         'modified',
@@ -505,18 +506,18 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'preview_url_light_theme',
         'preview_url_dark_theme',
 
-    )
-    filter_horizontal = (
+    ]
+    filter_horizontal = [
         'targets',
-    )
+    ]
     save_on_top = True
     save_as = True
     view_on_site = False
-    actions = (
+    actions = [
         actions.duplicate_snippets_action,
         'action_publish_snippet',
         'action_unpublish_snippet',
-    )
+    ]
 
     fieldsets = (
         ('ID', {
@@ -623,9 +624,12 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         return super().change_view(request, *args, **kwargs)
 
     def get_readonly_fields(self, request, obj):
+        fields = copy.copy(self.readonly_fields)
         if not request.user.is_superuser:
-            return self.readonly_fields + ('for_qa',)
-        return self.readonly_fields
+            fields.append('for_qa')
+        if obj is None:
+            fields.append('status')
+        return fields
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request).prefetch_related('tags')
