@@ -1581,6 +1581,7 @@ class ASRSnippet(models.Model):
         # Add Channels
         CHANNELS_MAP = {
             'release': 'REL',
+            'esr': 'ESR',
             'beta': 'BETA',
             'aurora': 'DEV',
             'nightly': 'NIGHTLY',
