@@ -16,7 +16,7 @@ class Command(BaseCommand):
     help = 'Export snippets to CSV'
 
     def handle(self, *args, **options):
-        snippets = ASRSnippet.objects.filter(for_qa=False).order_by('id')
+        snippets = ASRSnippet.objects.filter().order_by('id')
 
         csvfile = io.StringIO()
         csvwriter = csv.writer(csvfile, dialect=csv.excel, quoting=csv.QUOTE_ALL)

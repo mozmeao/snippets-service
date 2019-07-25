@@ -73,6 +73,5 @@ class SnippetsFeedTests(TestCase):
             with patch('snippets.base.feed.ASRSnippetFilter') as ASRSnippetFilterMock:
                 ASRSnippetMock.objects.filter.return_value.order_by.return_value = 'foo'
                 SnippetsFeed()(request)
-        ASRSnippetMock.objects.filter.assert_called_with(for_qa=False,
-                                                         status=models.STATUS_CHOICES['Published'])
+        ASRSnippetMock.objects.filter.assert_called_with(status=models.STATUS_CHOICES['Published'])
         ASRSnippetFilterMock.assert_called_with(request.GET, queryset='foo')
