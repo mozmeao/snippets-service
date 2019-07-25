@@ -184,33 +184,15 @@ class ASRSnippetAdminTests(TestCase):
         asrsnippet = ASRSnippetFactory()
         request = self.factory.get('/')
         admin = ASRSnippetAdmin(ASRSnippet, AdminSite())
+        request.user = UserFactory
 
-        # Not Super User
-        request.user = UserFactory(is_superuser=False)
+        # No obj
+        readonly_fields = admin.get_readonly_fields(request, None)
+        self.assertTrue('status' in readonly_fields)
+
+        # With obj
         readonly_fields = admin.get_readonly_fields(request, asrsnippet)
-        self.assertTrue('for_qa' in readonly_fields)
-
-        # SuperUser
-        request.user = UserFactory(is_superuser=True)
-        readonly_fields = admin.get_readonly_fields(request, asrsnippet)
-        self.assertTrue('for_qa' not in readonly_fields)
-
-    def test_get_queryset(self):
-        snippets = ASRSnippetFactory.create_batch(2)
-        qa_snippets = ASRSnippetFactory.create_batch(2, for_qa=True)
-        request = self.factory.get('/')
-        admin = ASRSnippetAdmin(ASRSnippet, AdminSite())
-
-        # Not Super User
-        request.user = UserFactory(is_superuser=False)
-        queryset = admin.get_queryset(request)
-        self.assertEqual(set(snippets), set(queryset.all()))
-
-        # SuperUser
-        request.user = UserFactory(is_superuser=True)
-        queryset = admin.get_queryset(request)
-
-        self.assertEqual(set(snippets + qa_snippets), set(queryset.all()))
+        self.assertTrue('status' not in readonly_fields)
 
     def test_action_publish_snippet(self):
         to_be_published = ASRSnippetFactory.create_batch(2, status=STATUS_CHOICES['Draft'])

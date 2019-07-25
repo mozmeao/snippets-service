@@ -564,7 +564,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 'weight',)
         }),
         ('Other Info', {
-            'fields': ('uuid', ('created', 'modified'), 'for_qa'),
+            'fields': ('uuid', ('created', 'modified')),
             'classes': ('collapse',)
         }),
     )
@@ -625,17 +625,13 @@ class ASRSnippetAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj):
         fields = copy.copy(self.readonly_fields)
-        if not request.user.is_superuser:
-            fields.append('for_qa')
         if obj is None:
             fields.append('status')
         return fields
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request).prefetch_related('tags')
-        if request.user.is_superuser:
-            return queryset
-        return queryset.filter(for_qa=False)
+        return queryset
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)

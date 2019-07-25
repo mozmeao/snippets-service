@@ -63,7 +63,7 @@ class SnippetsFeed(ICalFeed):
 
     def items(self):
         queryset = (models.ASRSnippet.objects
-                    .filter(for_qa=False, status=models.STATUS_CHOICES['Published'])
+                    .filter(status=models.STATUS_CHOICES['Published'])
                     .order_by('publish_start'))
         filtr = ASRSnippetFilter(self.request.GET, queryset=queryset)
         return filtr.qs
