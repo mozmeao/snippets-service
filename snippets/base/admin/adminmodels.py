@@ -198,7 +198,8 @@ class SimpleTemplateInline(admin.StackedInline):
             'fields': ('section_title_icon', 'section_title_text', 'section_title_url',),
         }),
         ('Main', {
-            'fields': ('icon', 'text', 'button_label', 'button_color', 'button_url'),
+            'fields': ('icon', 'text', 'button_label',
+                       'button_url', 'button_color', 'button_background_color'),
         }),
         ('Extra', {
             'fields': ('block_button_text', 'tall', 'do_not_autoblock'),
@@ -444,7 +445,8 @@ class SimpleBelowSearchTemplateInline(admin.StackedInline):
 
     fieldsets = (
         ('Main', {
-            'fields': ('icon', 'text'),
+            'fields': ('icon', 'title', 'text', 'button_label',
+                       'button_url', 'button_color', 'button_background_color'),
         }),
         ('Extra', {
             'fields': ('block_button_text', 'do_not_autoblock'),
