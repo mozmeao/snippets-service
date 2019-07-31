@@ -762,6 +762,7 @@ class SimpleTemplate(Template):
         null=True,
         on_delete=models.SET_NULL,
         related_name='simple_title_icons',
+        verbose_name='Title Icon',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
                    'PNG. Grayscale.')
     )
@@ -780,18 +781,22 @@ class SimpleTemplate(Template):
     )
     button_label = models.CharField(
         max_length=50, blank=True,
+        verbose_name='Button Label',
         help_text=('Text for a button next to main snippet text that '
                    'links to button_url. Requires button_url.'),
     )
     button_color = models.CharField(
+        verbose_name='Button Color',
         max_length=20, blank=True,
         help_text='The text color of the button. Valid CSS color.',
     )
     button_background_color = models.CharField(
+        verbose_name='Button Background Color',
         max_length=20, blank=True,
         help_text='The text color of the button. Valid CSS color.',
     )
     button_url = models.URLField(
+        verbose_name='Button URL',
         max_length=500,
         blank=True,
         validators=[django_validators.URLValidator(schemes=['https'])],
@@ -802,15 +807,18 @@ class SimpleTemplate(Template):
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
+        verbose_name='Section Title Icon',
         related_name='simple_section_icons',
         help_text=('Section title icon. 32x32px. PNG. '
                    'section_title_text must also be specified to display.'),
     )
     section_title_text = models.CharField(
+        verbose_name='Section Title Text',
         blank=True, max_length=255,
         help_text='Section title text. section_title_icon must also be specified to display.',
     )
     section_title_url = models.URLField(
+        verbose_name='Section Title URL',
         blank=True,
         validators=[django_validators.URLValidator(schemes=['https'])],
         help_text='A url, section_title_text links to this',
@@ -821,10 +829,12 @@ class SimpleTemplate(Template):
                    'to roughly 120px. Defaults to false.'),
     )
     block_button_text = models.CharField(
+        verbose_name='Block Button Text',
         max_length=50, default='Remove this',
         help_text='Tooltip text used for dismiss button.'
     )
     do_not_autoblock = models.BooleanField(
+        verbose_name='Do Not Autoblock',
         default=False, blank=True,
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
@@ -864,11 +874,15 @@ class FundraisingTemplate(Template):
     NAME = 'Fundraising'
 
     donation_form_url = models.URLField(
+        verbose_name='Donation Form URL',
         default='https://donate.mozilla.org/?utm_source=desktop-snippet&utm_medium=snippet',
         validators=[django_validators.URLValidator(schemes=['https'])],
         max_length=500,
     )
-    currency_code = models.CharField(max_length=10, default='usd')
+    currency_code = models.CharField(
+        verbose_name='Currency Code',
+        max_length=10, default='usd'
+    )
     locale = models.CharField(max_length=10, default='en-US')
     title = models.CharField(
         max_length=255, blank=True,
@@ -877,19 +891,27 @@ class FundraisingTemplate(Template):
     text = models.TextField(
         help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br'
     )
-    text_color = models.CharField(max_length=10, blank=True,)
-    background_color = models.CharField(max_length=10, blank=True,)
+    text_color = models.CharField(
+        verbose_name='Text Color',
+        max_length=10, blank=True
+    )
+    background_color = models.CharField(
+        verbose_name='Background Color',
+        max_length=10, blank=True
+    )
     highlight_color = models.CharField(
+        verbose_name='Highlight Color',
         max_length=10,
         help_text='Paragraph em highlight color.',
         blank=True,
         default='#FFE900',
     )
-    donation_amount_first = models.PositiveSmallIntegerField('First')
-    donation_amount_second = models.PositiveSmallIntegerField('Second')
-    donation_amount_third = models.PositiveSmallIntegerField('Third')
-    donation_amount_fourth = models.PositiveSmallIntegerField('Fourth')
+    donation_amount_first = models.PositiveSmallIntegerField(verbose_name='First')
+    donation_amount_second = models.PositiveSmallIntegerField(verbose_name='Second')
+    donation_amount_third = models.PositiveSmallIntegerField(verbose_name='Third')
+    donation_amount_fourth = models.PositiveSmallIntegerField(verbose_name='Fourth')
     selected_button = models.CharField(
+        verbose_name='Selected Button',
         max_length=25,
         choices=(
             ('donation_amount_first', 'First'),
@@ -910,23 +932,28 @@ class FundraisingTemplate(Template):
         Icon,
         blank=True,
         null=True,
+        verbose_name='Title Icon',
         on_delete=models.SET_NULL,
         related_name='fundraising_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
                    'PNG. Grayscale.')
     )
     button_label = models.CharField(
+        verbose_name='Button Label',
         max_length=50,
         help_text=('Text for a button next to main snippet text that links '
                    'to button_url. Requires button_url.'),
     )
     button_color = models.CharField(
+        verbose_name='Button Color',
         max_length=20, blank=True,
         help_text='defaults to firefox theme'
     )
     button_background_color = models.CharField(
+        verbose_name='Button Background Color',
         max_length=20, blank=True, help_text='defaults to firefox theme')
     monthly_checkbox_label_text = models.CharField(
+        verbose_name='Monthly Checkbox Label Text',
         max_length=255,
         default='Make my donation monthly',
     )
@@ -937,10 +964,12 @@ class FundraisingTemplate(Template):
                             blank=True,
                             help_text=('Different styles for the snippet.'))
     block_button_text = models.CharField(
+        verbose_name='Block Button Text',
         max_length=50, default='Remove this',
         help_text='Tooltip text used for dismiss button.'
     )
     do_not_autoblock = models.BooleanField(
+        verbose_name='Do Not Autoblock',
         default=False, blank=True,
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
@@ -991,33 +1020,40 @@ class FxASignupTemplate(Template):
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
+        verbose_name='Scene 1 Title Icon',
         related_name='fxasignup_scene1_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
                    'PNG. Grayscale.')
     )
     scene1_title = models.CharField(
+        verbose_name='Scene 1 Title',
         max_length=255, blank=True,
         help_text='Snippet title displayed before snippet text.',
     )
     scene1_text = models.TextField(
+        verbose_name='Scene 1 Text',
         help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br.',
     )
     scene1_icon = models.ForeignKey(
         Icon,
         on_delete=models.PROTECT,
+        verbose_name='Scene 1 Icon',
         related_name='fxasignup_scene1_icons',
         help_text='Snippet icon. 192x192px PNG.')
     scene1_button_label = models.CharField(
+        verbose_name='Scene 1 Button Label',
         max_length=50,
         default='Learn more',
         help_text='Label for the button on Scene 1 that leads to Scene 2.'
     )
     scene1_button_color = models.CharField(
+        verbose_name='Scene 1 Button Color',
         max_length=20, blank=True,
         help_text=('The text color of the button. Valid CSS color. '
                    'Defaults to Firefox Theme Color.'),
     )
     scene1_button_background_color = models.CharField(
+        verbose_name='Scene 1 Button Background Color',
         max_length=20, blank=True,
         help_text=('The background color of the button. Valid CSS color. '
                    'Defaults to Firefox Theme Color.'),
@@ -1027,23 +1063,28 @@ class FxASignupTemplate(Template):
     # Scene 2
     ###
     scene2_title = models.CharField(
+        verbose_name='Scene 2 Title',
         max_length=255, blank=True,
         help_text='Title displayed before text in scene 2.',
     )
     scene2_text = models.TextField(
+        verbose_name='Scene 2 Text',
         help_text='Scene 2 main text. HTML subset allowed: i, b, u, strong, em, br.',
     )
     scene2_button_label = models.CharField(
+        verbose_name='Scene 2 Button Label',
         max_length=50,
         default='Sign me up',
         help_text='Label for form submit button.',
     )
     scene2_email_placeholder_text = models.CharField(
+        verbose_name='Scene 2 Email Placeholder Text',
         max_length=255,
         default='Your email here',
         help_text='Value to show while input is empty.',
     )
     scene2_dismiss_button_text = models.CharField(
+        verbose_name='Scene 2 Dismiss Button Text',
         max_length=50,
         default='Dismiss',
         help_text='Label for the dismiss button on Scene 2.'
@@ -1053,18 +1094,22 @@ class FxASignupTemplate(Template):
     # Extras
     ###
     utm_term = models.CharField(
+        verbose_name='UTM Term',
         max_length=100, blank=True,
         help_text='Value to pass through to GA as utm_term.',
     )
     utm_campaign = models.CharField(
+        verbose_name='UTM Campaign',
         max_length=100, blank=True,
         help_text='Value to pass through to GA as utm_campaign.',
     )
     block_button_text = models.CharField(
+        verbose_name='Block Button Text',
         max_length=50, default='Remove this',
         help_text='Tooltip text used for dismiss button.'
     )
     do_not_autoblock = models.BooleanField(
+        verbose_name='Do Not Autoblock',
         default=False, blank=True,
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
@@ -1115,33 +1160,40 @@ class NewsletterTemplate(Template):
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
+        verbose_name='Scene 1 Title Icon',
         related_name='newsletter_scene1_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
                    'PNG. Grayscale.')
     )
     scene1_title = models.CharField(
+        verbose_name='Scene 1 Title',
         max_length=255, blank=True,
         help_text='Snippet title displayed before snippet text.',
     )
     scene1_text = models.TextField(
+        verbose_name='Scene 1 Text',
         help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br.',
     )
     scene1_icon = models.ForeignKey(
         Icon,
         on_delete=models.PROTECT,
+        verbose_name='Scene 1 Icon',
         related_name='newsletter_scene1_icons',
         help_text='Snippet icon. 192x192px PNG.')
     scene1_button_label = models.CharField(
+        verbose_name='Scene 1 Button Label',
         max_length=50,
         default='Learn more',
         help_text='Label for the button on Scene 1 that leads to Scene 2.'
     )
     scene1_button_color = models.CharField(
+        verbose_name='Scene 1 Button Color',
         max_length=20, blank=True,
         help_text=('The text color of the button. Valid CSS color. '
                    'Defaults to Firefox Theme Color.'),
     )
     scene1_button_background_color = models.CharField(
+        verbose_name='Scene 1 Button Background Color',
         max_length=20, blank=True,
         help_text=('The background color of the button. Valid CSS color. '
                    'Defaults to Firefox Theme Color.'),
@@ -1151,35 +1203,42 @@ class NewsletterTemplate(Template):
     # Scene 2
     ###
     scene2_title = models.CharField(
+        verbose_name='Scene 2 Title',
         max_length=255, blank=True,
         help_text='Title displayed before text in scene 2.',
     )
     scene2_text = models.TextField(
+        verbose_name='Scene 2 Text',
         help_text='Scene 2 main text. HTML subset allowed: i, b, u, strong, em, br.',
     )
     scene2_button_label = models.CharField(
+        verbose_name='Scene 2 Button Label',
         max_length=50,
         default='Sign me up',
         help_text='Label for form submit button.',
     )
     scene2_email_placeholder_text = models.CharField(
+        verbose_name='Scene 2 Email Placeholder Text',
         max_length=255,
         default='Your email here',
         help_text='Value to show while input is empty.',
     )
     scene2_dismiss_button_text = models.CharField(
+        verbose_name='Scene 2 Dismiss Button Text',
         max_length=50,
         default='Dismiss',
         help_text='Label for the dismiss button on Scene 2.'
     )
 
     scene2_newsletter = models.CharField(
+        verbose_name='Scene 2 Newsletter',
         max_length=50,
         default='mozilla-foundation',
         help_text=('Newsletter/basket id user is subscribing to. Must be a value from the "Slug" '
                    'column here: https://basket.mozilla.org/news/.'),
     )
     scene2_privacy_html = models.TextField(
+        verbose_name='Scene 2 Privacy HTML',
         help_text='Text and link next to the privacy checkbox. Must link to a privacy policy.',
     )
 
@@ -1189,9 +1248,11 @@ class NewsletterTemplate(Template):
         help_text='String for the newsletter locale code.',
     )
     success_text = models.TextField(
+        verbose_name='Success Text',
         help_text='Text of success message after form submission.',
     )
     error_text = models.TextField(
+        verbose_name='Error Text',
         help_text='Text of error message if form submission fails.',
     )
 
@@ -1199,10 +1260,12 @@ class NewsletterTemplate(Template):
     # Extras
     ###
     block_button_text = models.CharField(
+        verbose_name='Block Button Text',
         max_length=50, default='Remove this',
         help_text='Tooltip text used for dismiss button.'
     )
     do_not_autoblock = models.BooleanField(
+        verbose_name='Do Not Autoblock',
         default=False, blank=True,
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
@@ -1259,33 +1322,40 @@ class SendToDeviceTemplate(Template):
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
+        verbose_name='Scene 1 Title Icon',
         related_name='sendtodevice_scene1_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
                    'PNG. Grayscale.')
     )
     scene1_title = models.CharField(
+        verbose_name='Scene 1 Title',
         max_length=255, blank=True,
         help_text='Snippet title displayed before snippet text.',
     )
     scene1_text = models.TextField(
+        verbose_name='Scene 1 Text',
         help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br.',
     )
     scene1_icon = models.ForeignKey(
         Icon,
         on_delete=models.PROTECT,
+        verbose_name='Scene 1 Icon',
         related_name='sendtodevice_scene1_icons',
         help_text='Snippet icon. 192x192 PNG.')
     scene1_button_label = models.CharField(
+        verbose_name='Scene 1 Button Label',
         max_length=50,
         default='Learn more',
         help_text='Label for the button on Scene 1 that leads to Scene 2.'
     )
     scene1_button_color = models.CharField(
+        verbose_name='Scene 1 Button Color',
         max_length=20, blank=True,
         help_text=('The text color of the button. Valid CSS color. '
                    'Defaults to Firefox Theme Color.'),
     )
     scene1_button_background_color = models.CharField(
+        verbose_name='Scene 1 Button Background Color',
         max_length=20, blank=True,
         help_text=('The background color of the button. Valid CSS color. '
                    'Defaults to Firefox Theme Color.'),
@@ -1295,35 +1365,42 @@ class SendToDeviceTemplate(Template):
     # Scene 2
     ###
     scene2_title = models.CharField(
+        verbose_name='Scene 2 Title',
         max_length=255, blank=True,
         help_text='Title displayed before text in scene 2.',
     )
     scene2_text = models.TextField(
+        verbose_name='Scene 2 Text',
         help_text='Scene 2 main text. HTML subset allowed: i, b, u, strong, em, br.',
     )
     scene2_icon = models.ForeignKey(
         Icon,
         on_delete=models.PROTECT,
+        verbose_name='Scene 2 Icon',
         related_name='sendtodevice_scene2_icons',
         help_text='Image to display above the form. 192x192px PNG.'
     )
     scene2_button_label = models.CharField(
+        verbose_name='Scene 2 Button Label',
         max_length=50,
         default='Send',
         help_text='Label for form submit button.',
     )
     scene2_input_placeholder = models.CharField(
+        verbose_name='Scene 2 Input Placeholder',
         max_length=255,
         default='Your email here',
         help_text='Placeholder text for email / phone number field.',
     )
 
     scene2_dismiss_button_text = models.CharField(
+        verbose_name='Scene 2 Dismiss Button Text',
         max_length=50,
         default='Dismiss',
         help_text='Label for the dismiss button on Scene 2.'
     )
     scene2_disclaimer_html = models.TextField(
+        verbose_name='Scene 2 Disclaimer HTML',
         help_text='Text and link underneath the input box.',
     )
 
@@ -1338,28 +1415,34 @@ class SendToDeviceTemplate(Template):
         help_text='Two character string for the country code (used for SMS). Default "us".',
     )
     include_sms = models.BooleanField(
+        verbose_name='Include SMS',
         blank=True,
         default=False,
         help_text='Defines whether SMS is available.',
     )
     message_id_sms = models.CharField(
+        verbose_name='Message ID for SMS',
         max_length=100,
         blank=True,
         help_text='Newsletter/basket id representing the SMS message to be sent.',
     )
     message_id_email = models.CharField(
+        verbose_name='Message ID for Email',
         max_length=100,
         help_text=('Newsletter/basket id representing the email message to be sent. Must be '
                    'a value from the "Slug" column here: https://basket.mozilla.org/news/.'),
     )
 
     success_title = models.TextField(
+        verbose_name='Success Title',
         help_text='Title of success message after form submission.',
     )
     success_text = models.TextField(
+        verbose_name='Success Text',
         help_text='Text of success message after form submission.',
     )
     error_text = models.TextField(
+        verbose_name='Error Text',
         help_text='Text of error message if form submission fails.',
     )
 
@@ -1367,10 +1450,12 @@ class SendToDeviceTemplate(Template):
     # Extras
     ###
     block_button_text = models.CharField(
+        verbose_name='Block Button Text',
         max_length=50, default='Remove this',
         help_text='Tooltip text used for dismiss button.'
     )
     do_not_autoblock = models.BooleanField(
+        verbose_name='Do Not Autoblock',
         default=False, blank=True,
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
@@ -1425,9 +1510,13 @@ class SendToDeviceTemplate(Template):
 
 
 class SimpleBelowSearchTemplate(Template):
-    VERSION = '1.0.0'
+    VERSION = '1.0.1'
     NAME = 'Simple below Search Bar'
 
+    title = models.CharField(
+        max_length=255, blank=True,
+        help_text='Snippet title displayed before snippet text.',
+    )
     text = models.TextField(
         help_text='Main body text of snippet. HTML subset allowed: i, b, u, strong, em, br',
     )
@@ -1437,11 +1526,36 @@ class SimpleBelowSearchTemplate(Template):
         related_name='simple_below_search_icons',
         help_text='Snippet icon. 192x192px PNG.'
     )
+    button_label = models.CharField(
+        verbose_name='Button Label',
+        max_length=50, blank=True,
+        help_text=('Text for a button next to main snippet text that '
+                   'links to button_url. Requires button_url.'),
+    )
+    button_color = models.CharField(
+        verbose_name='Button Color',
+        max_length=20, blank=True,
+        help_text='The text color of the button. Valid CSS color.',
+    )
+    button_background_color = models.CharField(
+        verbose_name='Button Background Color',
+        max_length=20, blank=True,
+        help_text='The text color of the button. Valid CSS color.',
+    )
+    button_url = models.URLField(
+        verbose_name='Button URL',
+        max_length=500,
+        blank=True,
+        validators=[django_validators.URLValidator(schemes=['https'])],
+        help_text='A url, button_label links to this',
+    )
     block_button_text = models.CharField(
+        verbose_name='Block Button Text',
         max_length=50, default='Remove this',
         help_text='Tooltip text used for dismiss button.'
     )
     do_not_autoblock = models.BooleanField(
+        verbose_name='Do Not Autoblock',
         default=False, blank=True,
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
@@ -1453,8 +1567,13 @@ class SimpleBelowSearchTemplate(Template):
 
     def render(self):
         data = {
+            'title': self.title,
             'text': self.text,
             'icon': self.icon.url,
+            'button_label': self.button_label,
+            'button_url': self.button_url,
+            'button_color': self.button_color,
+            'button_background_color': self.button_background_color,
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
         }
