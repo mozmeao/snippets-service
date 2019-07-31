@@ -1704,6 +1704,11 @@ class Job(models.Model):
         verbose_name='Publish Ends',
         help_text=format_html(
             'See the current time in <a target="_blank" href="https://time.is/UTC">UTC</a>'))
+    distributions = models.CharField(
+        default=',default,',
+        max_length=500,
+        help_text='Comma separated list of distributions. Defaults to `default`'
+    )
 
     objects = managers.JobManager()
 
@@ -1846,6 +1851,16 @@ class Job(models.Model):
             'snippet_id': self.snippet.id,
         }
         return export
+
+    def save(self, *args, **kwargs):
+        # Make sure that distributions always starts and ends with `,` and it's always
+        # lowercase.
+        self.distributions = self.distributions.lower()
+        if self.distributions[0] != ',':
+            self.distributions = ',' + self.distributions
+        if self.distributions[-1] != ',':
+            self.distributions = self.distributions + ','
+        super().save(*args, **kwargs)
 
 
 class ASRSnippet(models.Model):

@@ -928,6 +928,7 @@ class JobAdmin(admin.ModelAdmin):
         'status',
         ('campaign', RelatedDropdownFilter),
         ('targets', RelatedOnlyDropdownFilter),
+        ('snippet__locale', RelatedOnlyDropdownFilter),
     ]
     search_fields = [
         'uuid',
@@ -962,6 +963,10 @@ class JobAdmin(admin.ModelAdmin):
         }),
         ('Other Info', {
             'fields': (('created', 'modified'),),
+        }),
+        ('Advanced', {
+            'fields': ('distributions',),
+            'classes': ('collapse',),
         }),
     ]
     actions = [

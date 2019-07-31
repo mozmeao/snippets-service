@@ -16,6 +16,11 @@ from snippets.base.util import create_countries, create_locales
 MANAGE = os.path.join(settings.ROOT, 'manage.py')
 schedule = BlockingScheduler()
 
+# Used for by generate_bundles commands. This is intentionally here and not in
+# a persistent storage to force all bundle regeneration when we restart the
+# service, which is typically when we push new code.
+last_timestamp = 0
+
 
 def call_command(command):
     check_call('python {0} {1}'.format(MANAGE, command), shell=True)
@@ -70,7 +75,14 @@ def job_disable_snippets_past_publish_date():
 @scheduled_job('cron', month='*', day='*', hour='*', minute='*', max_instances=1, coalesce=True)
 @babis.decorator(ping_after=settings.DEAD_MANS_SNITCH_UPDATE_JOBS)
 def job_update_jobs():
+    global last_timestamp
     call_command('update_jobs')
+    utc_now = datetime.datetime.utcnow()
+    if last_timestamp:
+        call_command('generate_bundles --timestamp "{}"'.format(last_timestamp))
+    else:
+        call_command('generate_bundles')
+    last_timestamp = utc_now
 
 
 @scheduled_job('cron', month='*', day='*', hour='08', minute='20', max_instances=1, coalesce=True)
