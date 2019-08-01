@@ -8,7 +8,7 @@ from unittest.mock import ANY, DEFAULT, Mock, patch
 
 from snippets.base.bundles import ONE_DAY, ASRSnippetBundle, SnippetBundle
 from snippets.base.models import Client
-from snippets.base.tests import ASRSnippetFactory, SnippetFactory, TestCase
+from snippets.base.tests import JobFactory, SnippetFactory, TestCase
 
 
 class SnippetBundleTests(TestCase):
@@ -251,7 +251,7 @@ class SnippetBundleTests(TestCase):
 
 class ASRSnippetBundleTests(TestCase):
     def setUp(self):
-        self.snippet1, self.snippet2 = ASRSnippetFactory.create_batch(2)
+        self.job1, self.job2 = JobFactory.create_batch(2)
 
     def _client(self, **kwargs):
         client_kwargs = dict((key, '') for key in Client._fields)
@@ -259,16 +259,16 @@ class ASRSnippetBundleTests(TestCase):
         client_kwargs.update(kwargs)
         return Client(**client_kwargs)
 
-    def test_key_snippets(self):
+    def test_key_jobs(self):
         """
         bundle.key must be different between bundles if they have
-        different snippets.
+        different Jobs.
         """
         client = self._client()
         bundle1 = ASRSnippetBundle(client)
-        bundle1.snippets = [self.snippet1, self.snippet2]
+        bundle1.jobs = [self.job1, self.job2]
         bundle2 = ASRSnippetBundle(client)
-        bundle2.snippets = [self.snippet2]
+        bundle2.jobs = [self.job2]
 
         self.assertNotEqual(bundle1.key, bundle2.key)
 
@@ -308,22 +308,22 @@ class ASRSnippetBundleTests(TestCase):
         client1 = self._client(locale='en-US', startpage_version=4)
         client2 = self._client(locale='en-US', startpage_version=4)
         bundle1 = ASRSnippetBundle(client1)
-        bundle1.snippets = [self.snippet1, self.snippet2]
+        bundle1.jobs = [self.job1, self.job2]
         bundle2 = ASRSnippetBundle(client2)
-        bundle2.snippets = [self.snippet1, self.snippet2]
+        bundle2.jobs = [self.job1, self.job2]
 
         self.assertEqual(bundle1.key, bundle2.key)
 
     def test_key_snippet_modified(self):
         client1 = self._client(locale='en-US', startpage_version=4)
         bundle = ASRSnippetBundle(client1)
-        bundle.snippets = [self.snippet1]
+        bundle.jobs = [self.job1]
         key_1 = bundle.key
 
         # save snippet, touch modified
-        self.snippet1.save()
+        self.job1.snippet.save()
         bundle = ASRSnippetBundle(client1)
-        bundle.snippets = [self.snippet1]
+        bundle.jobs = [self.job1]
         key_2 = bundle.key
         self.assertNotEqual(key_1, key_2)
 
@@ -336,11 +336,11 @@ class ASRSnippetBundleTests(TestCase):
         """
         bundle = ASRSnippetBundle(self._client(locale='fr', startpage_version=6))
         bundle.storage = Mock()
-        bundle.snippets = [self.snippet1, self.snippet2]
-        self.snippet1.render = Mock()
-        self.snippet1.render.return_value = 'snippet1'
-        self.snippet2.render = Mock()
-        self.snippet2.render.return_value = 'snippet2'
+        bundle.jobs = [self.job1, self.job2]
+        self.job1.render = Mock()
+        self.job1.render.return_value = 'job1'
+        self.job2.render = Mock()
+        self.job2.render.return_value = 'job2'
 
         datetime_mock = Mock()
         datetime_mock.utcnow.return_value.isoformat.return_value = 'now'
@@ -356,5 +356,5 @@ class ASRSnippetBundleTests(TestCase):
         # Check content of saved file.
         content_file = mocks['default_storage'].save.call_args[0][1]
         content_json = json.load(content_file)
-        self.assertEqual(content_json['messages'], ['snippet1', 'snippet2'])
+        self.assertEqual(content_json['messages'], ['job1', 'job2'])
         self.assertEqual(content_json['metadata']['generated_at'], 'now')

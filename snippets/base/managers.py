@@ -91,21 +91,7 @@ class SnippetManager(Manager):
         return self.get_queryset().match_client(client)
 
 
-class ASRSnippetQuerySet(QuerySet):
-    def filter_by_available(self):
-        """Datetime filtering of snippets.
-
-        Filter by date in python to avoid caching based on the passing
-        of time.
-        """
-        now = datetime.utcnow()
-        matching_snippets = [
-            snippet for snippet in self if
-            (not snippet.publish_start or snippet.publish_start <= now) and
-            (not snippet.publish_end or snippet.publish_end >= now)
-        ]
-        return matching_snippets
-
+class JobQuerySet(QuerySet):
     def match_client(self, client):
         from snippets.base.models import CHANNELS, ClientMatchRule, Target
 
@@ -118,27 +104,26 @@ class ASRSnippetQuerySet(QuerySet):
 
         targets = Target.objects.filter(**{'on_{0}'.format(client_channel): True}).distinct()
 
-        # Include both Snippets targeted at the specific full locale (e.g.
-        # en-us) but also snippets targeted to all territories (en)
+        # Include both Jobs with Snippets targeted at the specific full locale (e.g.
+        # en-us) but also Snippets targeted to all territories (en)
         full_locale = ',{},'.format(client.locale.lower())
         splitted_locale = ',{},'.format(client.locale.lower().split('-', 1)[0])
-        snippets = self.filter(Q(locale__code__contains=splitted_locale) |
-                               Q(locale__code__contains=full_locale))
-
-        snippets = snippets.filter(targets__in=targets)
+        jobs = self.filter(Q(snippet__locale__code__contains=splitted_locale) |
+                           Q(snippet__locale__code__contains=full_locale))
+        jobs = jobs.filter(targets__in=targets)
 
         # Filter based on ClientMatchRules
         passed_rules, failed_rules = (ClientMatchRule.objects
-                                      .filter(target__snippets__in=snippets)
+                                      .filter(target__jobs__in=jobs)
                                       .distinct()
                                       .evaluate(client))
 
-        return snippets.exclude(targets__client_match_rules__in=failed_rules).distinct()
+        return jobs.exclude(targets__client_match_rules__in=failed_rules).distinct()
 
 
-class ASRSnippetManager(Manager):
+class JobManager(Manager):
     def get_queryset(self):
-        return ASRSnippetQuerySet(self.model)
+        return JobQuerySet(self.model)
 
     def match_client(self, client):
         return self.get_queryset().match_client(client)

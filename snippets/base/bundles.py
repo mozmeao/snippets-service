@@ -14,7 +14,7 @@ from django.utils.functional import cached_property
 import brotli
 
 from snippets.base import util
-from snippets.base.models import STATUS_CHOICES, ASRSnippet, Snippet, Template
+from snippets.base import models
 
 
 ONE_DAY = 60 * 60 * 24
@@ -54,7 +54,7 @@ SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
 TEMPLATES_NG_VERSIONS = '-'.join([
     model.VERSION
     for model in apps.get_models()
-    if issubclass(model, Template) and not model.__name__ == 'Template'
+    if issubclass(model, models.Template) and not model.__name__ == 'Template'
 ])
 
 
@@ -138,7 +138,7 @@ class SnippetBundle(object):
 
     @cached_property
     def snippets(self):
-        return (Snippet.objects
+        return (models.Snippet.objects
                 .filter(published=True)
                 .match_client(self.client)
                 .select_related('template')
@@ -185,10 +185,10 @@ class ASRSnippetBundle(SnippetBundle):
         # Key must change when Snippet or related Template, Campaign or Target
         # get updated.
         key_properties = []
-        for snippet in self.snippets:
+        for job in self.jobs:
             attributes = [
-                snippet.id,
-                snippet.modified.isoformat(),
+                job.id,
+                job.snippet.modified.isoformat(),
             ]
 
             key_properties.append('-'.join([str(x) for x in attributes]))
@@ -210,17 +210,15 @@ class ASRSnippetBundle(SnippetBundle):
         return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.json'.format(self.key))
 
     @cached_property
-    def snippets(self):
-        return (ASRSnippet.objects
-                .filter(status=STATUS_CHOICES['Published'])
-                .select_related('campaign', 'template_relation')
-                .match_client(self.client)
-                .filter_by_available())
+    def jobs(self):
+        return (models.Job.objects.filter(status=models.Job.PUBLISHED)
+                .select_related('snippet')
+                .match_client(self.client))
 
     def generate(self):
         """Generate and save the code for this snippet bundle."""
         # Generate the new AS Router bundle format
-        data = [snippet.render() for snippet in self.snippets]
+        data = [job.render() for job in self.jobs]
         bundle_content = json.dumps({
             'messages': data,
             'metadata': {

@@ -5,12 +5,9 @@ from django.contrib.auth.models import User, Permission
 from unittest.mock import Mock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.forms import (ASRSnippetAdminForm, IconWidget,
-                                 SnippetAdminForm, TargetAdminForm,
+from snippets.base.forms import (IconWidget, SnippetAdminForm, TargetAdminForm,
                                  TemplateDataWidget, TemplateSelect)
-from snippets.base.models import STATUS_CHOICES
-from snippets.base.tests import (ASRSnippetFactory, LocaleFactory,
-                                 SnippetFactory, SnippetTemplateFactory,
+from snippets.base.tests import (SnippetFactory, SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase,
                                  TargetFactory)
 
@@ -254,149 +251,6 @@ class BaseSnippetAdminFormTests(TestCase):
         new_data['on_nightly'] = True
         new_data['published'] = False
         form = SnippetAdminForm(new_data, instance=instance)
-        form.current_user = user
-        self.assertFalse(form.is_valid())
-        self.assertTrue('You are not allowed to edit or publish on Release channel.' in
-                        form.errors['__all__'][0])
-
-
-class ASRSnippetAdminFormTests(TestCase):
-    def test_publish_permission_check_asr(self):
-        user = User.objects.create_user(username='admin',
-                                        email='foo@example.com',
-                                        password='admin')
-        locale = LocaleFactory()
-
-        perm_beta = Permission.objects.get(
-            codename='publish_on_beta',
-            content_type__model='asrsnippet'
-        )
-        user.user_permissions.add(perm_beta)
-
-        perm_nightly = Permission.objects.get(
-            codename='publish_on_nightly',
-            content_type__model='asrsnippet'
-        )
-        user.user_permissions.add(perm_nightly)
-
-        target_release = TargetFactory(
-            on_release=True, on_beta=False, on_esr=False, on_nightly=False, on_aurora=False)
-
-        target_beta = TargetFactory(
-            on_release=False, on_beta=True, on_esr=False, on_nightly=False, on_aurora=False)
-
-        target_nightly = TargetFactory(
-            on_release=False, on_beta=False, on_esr=False, on_nightly=True, on_aurora=False)
-
-        asrsnippet = ASRSnippetFactory(targets=[])
-
-        data = {
-            'name': 'Test',
-            'weight': 100,
-            'locale': locale.id,
-            'tags': [],
-        }
-
-        # User should get an error trying to publish on Release
-        new_data = data.copy()
-        new_data['status'] = STATUS_CHOICES['Published']
-        new_data['targets'] = [target_release]
-        form = ASRSnippetAdminForm(new_data, instance=asrsnippet)
-        form.current_user = user
-        self.assertFalse(form.is_valid())
-        self.assertTrue('You are not allowed to edit or publish on Release channel.' in
-                        form.errors['__all__'][0])
-
-        # User should get an error trying to edit or publish on Release even though Beta
-        # is selected too.
-        new_data = data.copy()
-        new_data['status'] = STATUS_CHOICES['Published']
-        new_data['targets'] = [
-            target_release,
-            target_beta
-        ]
-        form = ASRSnippetAdminForm(new_data, instance=asrsnippet)
-        form.current_user = user
-
-        self.assertFalse(form.is_valid())
-        self.assertTrue('You are not allowed to edit or publish on Release channel.' in
-                        form.errors['__all__'][0])
-
-        # Form is valid if user tries to edit or publish on Beta.
-        new_data = data.copy()
-        new_data['status'] = STATUS_CHOICES['Published']
-        new_data['targets'] = [target_beta]
-        form = ASRSnippetAdminForm(new_data, instance=asrsnippet)
-        form.current_user = user
-        self.assertTrue(form.is_valid())
-
-        # Form is valid if user tries to publish or edit on Beta and Nightly.
-        new_data = data.copy()
-        new_data['status'] = STATUS_CHOICES['Published']
-        new_data['targets'] = [
-            target_beta,
-            target_nightly
-        ]
-        form = ASRSnippetAdminForm(new_data, instance=asrsnippet)
-        form.current_user = user
-        self.assertTrue(form.is_valid())
-
-        # Form is invalid if user tries edit published Snippet on Release.
-        instance = ASRSnippetFactory.create(
-            status=STATUS_CHOICES['Published'], targets=[TargetFactory(on_release=True)]
-        )
-        new_data = data.copy()
-        new_data['targets'] = [
-            target_release,
-            target_beta,
-            target_nightly
-        ]
-        form = ASRSnippetAdminForm(new_data, instance=instance)
-        form.current_user = user
-        self.assertFalse(form.is_valid())
-        self.assertTrue('You are not allowed to edit or publish on Release channel.' in
-                        form.errors['__all__'][0])
-
-        # User cannot unset Release channel and save.
-        instance = ASRSnippetFactory.create(
-            status=STATUS_CHOICES['Published'],
-            targets=[TargetFactory(on_release=True)])
-        new_data = data.copy()
-        new_data['targets'] = [
-            target_beta,
-            target_nightly
-        ]
-        form = ASRSnippetAdminForm(new_data, instance=instance)
-        form.current_user = user
-        self.assertFalse(form.is_valid())
-        self.assertTrue('You are not allowed to edit or publish on Release channel.' in
-                        form.errors['__all__'][0])
-
-        # User can un-publish if they have permission on all channels.
-        instance = ASRSnippetFactory.create(
-            status=STATUS_CHOICES['Published'],
-            targets=[TargetFactory(on_release=False, on_beta=True, on_nightly=True)])
-        new_data = data.copy()
-        new_data['status'] = STATUS_CHOICES['Approved']
-        new_data['targets'] = [
-            target_beta,
-            target_nightly
-        ]
-        form = ASRSnippetAdminForm(new_data, instance=instance)
-        form.current_user = user
-        self.assertTrue(form.is_valid())
-
-        # User cannot un-publish if they don't have permission on all channels.
-        instance = ASRSnippetFactory.create(
-            status=STATUS_CHOICES['Published'],
-            targets=[TargetFactory(on_release=True, on_nightly=True)])
-        new_data = data.copy()
-        new_data['status'] = STATUS_CHOICES['Approved']
-        new_data['targets'] = [
-            target_release,
-            target_nightly
-        ]
-        form = ASRSnippetAdminForm(new_data, instance=instance)
         form.current_user = user
         self.assertFalse(form.is_valid())
         self.assertTrue('You are not allowed to edit or publish on Release channel.' in

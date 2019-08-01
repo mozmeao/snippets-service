@@ -1,5 +1,7 @@
+import copy
 import io
 import subprocess
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -17,12 +19,14 @@ from snippets.base.models import (STATUS_CHOICES,
                                   Client,
                                   Icon,
                                   Locale,
+                                  Job,
                                   SimpleTemplate,
                                   _generate_filename)
 from snippets.base.util import fluent_link_extractor
 from snippets.base.tests import (ASRSnippetFactory,
                                  ClientMatchRuleFactory,
                                  IconFactory,
+                                 JobFactory,
                                  SearchProviderFactory,
                                  SnippetFactory,
                                  SnippetTemplateFactory,
@@ -503,25 +507,15 @@ class ASRSnippetTests(TestCase):
                                      'campaign [[campaign_slug]] and '
                                      '<a href="https://example.com/[[snippet_id]]/foo">link</a> in '
                                      '[[channels]] channels'),
-            targets=[
-                TargetFactory(on_release=True, on_beta=True, jexl_expr='foo == bar'),
-                TargetFactory(jexl_expr='lalo == true'),
-                TargetFactory(jexl_expr=''),  # This can be a Target with only
-                                              # CMR which produces no JEXL
-            ]
         )
-        self.maxDiff = None
         generated_result = snippet.render()
+        self.maxDiff = None
         expected_result = {
-            'id': str(snippet.id),
             'template': snippet.template_ng.code_name,
             'template_version': snippet.template_ng.version,
-            'campaign': snippet.campaign.slug,
-            'weight': snippet.weight,
             'content': {
-                'text': ('snippet id {} and with campaign {} and '
-                         '<link0>link</link0> in REL_BETA channels').format(snippet.id,
-                                                                            snippet.campaign.slug),
+                'text': ('snippet id {} and with campaign [[campaign_slug]] and '
+                         '<link0>link</link0> in [[channels]] channels').format(snippet.id),
                 'links': {
                     'link0': {
                         'url': 'https://example.com/{}/foo'.format(snippet.id),
@@ -532,21 +526,16 @@ class ASRSnippetTests(TestCase):
                 'do_not_autoblock': False,
                 'block_button_text': 'Remove this',
             },
-            'targeting': 'foo == bar && lalo == true'
         }
         self.assertEqual(generated_result, expected_result)
 
     def test_render_preview_only(self):
-        snippet = ASRSnippetFactory.create(
-            template_relation__text='snippet id [[snippet_id]]',
-            targets=[TargetFactory(jexl_expr='foo == bar')])
+        snippet = ASRSnippetFactory.create(template_relation__text='snippet id [[snippet_id]]')
         generated_result = snippet.render(preview=True)
         expected_result = {
             'id': 'preview-{}'.format(snippet.id),
             'template': snippet.template_ng.code_name,
             'template_version': snippet.template_ng.version,
-            'campaign': 'preview-{}'.format(snippet.campaign.slug),
-            'weight': 100,
             'content': {
                 'do_not_autoblock': True,
                 'text': 'snippet id {}'.format(snippet.id),
@@ -575,7 +564,7 @@ class ASRSnippetTests(TestCase):
     def test_duplicate(self):
         user = UserFactory.create()
         snippet = ASRSnippetFactory.create(
-            status=STATUS_CHOICES['Published'],
+            status=STATUS_CHOICES['Approved'],
         )
         duplicate_snippet = snippet.duplicate(user)
         snippet.refresh_from_db()
@@ -591,37 +580,6 @@ class ASRSnippetTests(TestCase):
         snippet = ASRSnippetFactory.create()
         self.assertTrue(snippet.get_admin_url().startswith('http://example.com'))
         self.assertTrue(snippet.get_admin_url(full=False).startswith('/'))
-
-    def test_channels(self):
-        snippet = ASRSnippetFactory.create(
-            targets=[
-                TargetFactory.create(on_release=True),
-                TargetFactory.create(on_beta=True, on_nightly=True),
-                TargetFactory.create(on_release=False, on_esr=False,
-                                     on_aurora=False, on_beta=False, on_nightly=False),
-            ])
-
-        self.assertTrue(snippet.channels, set(['release', 'beta', 'nightly']))
-
-    def test_analytics_export(self):
-        snippet = ASRSnippetFactory.create(
-            name='test-snippet',
-            campaign__name='test-campaign',
-            category__name='test-category',
-            template_relation__text=(
-                'This is the <b>bold body</b> with a <a href="https://example.com">link</a>.'),
-            add_tags=['foo', 'bar'],
-        )
-        expected_data = {
-            'id': snippet.id,
-            'name': 'test-snippet',
-            'campaign': 'test-campaign',
-            'category': 'test-category',
-            'url': 'https://example.com',
-            'body': 'This is the bold body with a link.',
-            'tags': 'bar,foo'
-        }
-        self.assertEqual(expected_data, snippet.analytics_export())
 
     def test_modified_date_updates_when_template_updates(self):
         snippet = ASRSnippetFactory()
@@ -650,10 +608,11 @@ class ASRSnippetTests(TestCase):
         self.assertNotEqual(old_modified, new_modified)
 
     def test_modified_date_updates_when_campaign_updates(self):
-        snippet = ASRSnippetFactory()
+        job = JobFactory()
+        snippet = job.snippet
         old_modified = snippet.modified
 
-        campaign = snippet.campaign
+        campaign = job.campaign
         campaign.name = 'new name'
         campaign.save()
 
@@ -663,13 +622,25 @@ class ASRSnippetTests(TestCase):
         self.assertNotEqual(old_modified, new_modified)
 
     def test_modified_date_updates_when_target_updates(self):
-        new_target = TargetFactory()
-        snippet = ASRSnippetFactory()
-        snippet.targets.add(new_target)
+        target = TargetFactory()
+        job = JobFactory(targets=[target])
+        snippet = job.snippet
         old_modified = snippet.modified
 
-        new_target.name = 'new name'
-        new_target.save()
+        target.name = 'new name'
+        target.save()
+        snippet.refresh_from_db()
+        new_modified = snippet.modified
+
+        self.assertNotEqual(old_modified, new_modified)
+
+    def test_modified_date_updates_when_job_updates(self):
+        job = JobFactory()
+        snippet = job.snippet
+        old_modified = snippet.modified
+
+        job.status = Job.COMPLETED
+        job.save()
         snippet.refresh_from_db()
         new_modified = snippet.modified
 
@@ -681,3 +652,114 @@ class LocaleTests(TestCase):
         locale = Locale(name='foo', code='Bar')
         locale.save()
         self.assertEqual(locale.code, ',bar,')
+
+
+class JobTests(TestCase):
+    def test_channels(self):
+        job = JobFactory.create(
+            targets=[
+                TargetFactory.create(on_release=True),
+                TargetFactory.create(on_beta=True, on_nightly=True),
+                TargetFactory.create(on_release=False, on_esr=False,
+                                     on_aurora=False, on_beta=False, on_nightly=False),
+            ])
+
+        self.assertTrue(job.channels, set(['release', 'beta', 'nightly']))
+
+    def test_clean(self):
+        job_clean = JobFactory.create(publish_start=datetime.utcnow() - timedelta(days=1),
+                                      publish_end=datetime.utcnow())
+        job_clean.clean()
+
+        job_dirty = JobFactory.create(publish_start=datetime.utcnow(),
+                                      publish_end=datetime.utcnow() - timedelta(days=1))
+
+        self.assertRaisesMessage(
+            ValidationError, 'Publish start must come before publish end.', job_dirty.clean)
+
+    def test_render(self):
+        self.maxDiff = None
+        job = JobFactory.create(
+            weight=10, campaign__slug='demo-campaign',
+            targets=[
+                TargetFactory(on_release=False, on_beta=False,
+                              on_esr=False, on_aurora=False, on_nightly=True,
+                              jexl_expr='(la==lo)'),
+                TargetFactory(on_release=False, on_beta=True,
+                              on_esr=False, on_aurora=False, on_nightly=True),
+                TargetFactory(on_release=False, on_beta=True,
+                              on_esr=False, on_aurora=False, on_nightly=True,
+                              jexl_expr='foo==bar'),
+            ]
+        )
+
+        snippet_render = {
+            'template': 'simple_snippet',
+            'template_version': 'xx.xx',
+            'content': {
+                'block_button_text': 'Block me',
+                'text': 'This is text',
+            }
+        }
+        expected_output = copy.deepcopy(snippet_render)
+        expected_output.update({
+            'id': str(job.id),
+            'weight': 10,
+            'campaign': 'demo-campaign',
+            'targeting': '(la==lo) && foo==bar',
+        })
+        job.snippet.render = Mock()
+        job.snippet.render.return_value = snippet_render
+        generated_output = job.render()
+
+        self.assertEqual(generated_output, expected_output)
+
+    def test_change_status(self):
+        job = JobFactory.create(status=Job.DRAFT)
+        with patch('snippets.base.models.slack') as slack_mock:
+            with patch('snippets.base.models.LogEntry') as log_entry_mock:
+                job.change_status(status=Job.SCHEDULED, user=job.creator, send_slack=True)
+
+        job.refresh_from_db()
+
+        self.assertEqual(job.status, Job.SCHEDULED)
+        log_entry_mock.objects.log_action.assert_called()
+        slack_mock._send_slack.assert_called()
+
+    @override_settings(SITE_URL='http://example.com')
+    def test_get_admin_url(self):
+        job = JobFactory.create()
+        self.assertEqual(job.get_admin_url(), f'http://example.com/admin/base/job/{job.id}/change/')
+        self.assertEqual(job.get_admin_url(full=False), f'/admin/base/job/{job.id}/change/')
+
+    def test_duplicate(self):
+        user = UserFactory.create()
+        job = JobFactory.create(status=Job.PUBLISHED)
+        duplicate_job = job.duplicate(user)
+        job.refresh_from_db()
+
+        for attr in ['id', 'creator', 'created', 'modified', 'uuid']:
+            self.assertNotEqual(getattr(job, attr), getattr(duplicate_job, attr))
+
+        self.assertEqual(duplicate_job.status, Job.DRAFT)
+
+    def test_analytics_export(self):
+        snippet = ASRSnippetFactory.create(
+            name='test-snippet',
+            category__name='test-category',
+            template_relation__text=(
+                'This is the <b>bold body</b> with a <a href="https://example.com">link</a>.'),
+            add_tags=['foo', 'bar'],
+        )
+        job = JobFactory.create(snippet=snippet, campaign__name='test-campaign')
+        expected_data = {
+            'id': job.id,
+            'name': 'test-snippet',
+            'campaign': 'test-campaign',
+            'category': 'test-category',
+            'url': 'https://example.com',
+            'body': 'This is the bold body with a link.',
+            'tags': 'bar,foo',
+            'snippet_id': snippet.id,
+        }
+        self.assertEqual(expected_data, job.analytics_export())

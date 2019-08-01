@@ -11,6 +11,8 @@ from datetime import datetime
 from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
+from django.contrib.admin.models import CHANGE, LogEntry
+from django.contrib.admin.options import get_content_type_for_model
 from django.core import validators as django_validators
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -20,6 +22,7 @@ from django.db.models.manager import Manager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template import engines
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.html import format_html
 
@@ -29,8 +32,7 @@ from jinja2 import Markup
 from jinja2.utils import LRUCache
 from taggit_selectize.managers import TaggableManager
 
-
-from snippets.base import managers, util, validators
+from snippets.base import managers, slack, util, validators
 from snippets.base.fields import RegexField
 
 
@@ -71,7 +73,6 @@ STATUS_CHOICES = {
     'Approved': 300,
     'Published': 400,
 }
-
 
 # Cache for compiled snippet templates. Using jinja's built in cache
 # requires either an extra trip to the database/cache or jumping through
@@ -541,6 +542,9 @@ class Campaign(models.Model):
         help_text=('Campaign slug. Will be added in the stats ping. '
                    'Will be used for snippet blocking if set.'))
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return self.name
 
@@ -714,7 +718,7 @@ class Template(models.Model):
     def add_utm_params(self):
         """Appends UTM params to links in both Rich Text Fields and URL Fields.
 
-        UTM params get placeholders -like `[[snippet_id`]]`- that will get
+        UTM params get placeholders -like `[[snippet_id]]`- that will get
         replaced with actual values when the snippet is rendered to go into a
         Bundle.
 
@@ -1623,6 +1627,183 @@ class Locale(models.Model):
         return self.name
 
 
+class Job(models.Model):
+    DRAFT = 0
+    SCHEDULED = 100
+    PUBLISHED = 200
+    CANCELED = 300
+    COMPLETED = 400
+
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    status = models.IntegerField(choices=((DRAFT, 'Draft'),
+                                          (SCHEDULED, 'Scheduled'),
+                                          (PUBLISHED, 'Published'),
+                                          (CANCELED, 'Canceled'),
+                                          (COMPLETED, 'Completed')),
+                                 default=DRAFT,
+                                 db_index=True,
+                                 editable=False)
+
+    snippet = models.ForeignKey('ASRSnippet', null=False, blank=False, on_delete=models.PROTECT,
+                                related_name='jobs')
+
+    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT,
+                                 related_name='jobs')
+    weight = models.IntegerField(
+        choices=SNIPPET_WEIGHTS, default=100,
+        help_text='How often should this snippet be shown to users?')
+    targets = models.ManyToManyField(Target, default=None, blank=False, related_name='jobs')
+
+    publish_start = models.DateTimeField(
+        blank=True, null=True,
+        verbose_name='Publish Starts',
+        help_text=format_html(
+            'See the current time in <a target="_blank" href="https://time.is/UTC">UTC</a>'))
+    publish_end = models.DateTimeField(
+        blank=True, null=True,
+        verbose_name='Publish Ends',
+        help_text=format_html(
+            'See the current time in <a target="_blank" href="https://time.is/UTC">UTC</a>'))
+
+    objects = managers.JobManager()
+
+    class Meta:
+        ordering = ('-publish_start', '-publish_end')
+
+    def __str__(self):
+        return str(self.uuid)
+
+    def clean(self):
+        super().clean()
+
+        if ((all([self.publish_start, self.publish_end]) and
+             self.publish_start >= self.publish_end)):
+            raise ValidationError('Publish start must come before publish end.')
+
+    def render(self):
+        rendered_snippet = self.snippet.render()
+
+        rendered_snippet['id'] = str(self.id)
+
+        # Add weight info
+        rendered_snippet['weight'] = self.weight
+
+        # Add campaign info
+        campaign_slug = self.campaign.slug if self.campaign else ''
+        rendered_snippet = util.deep_search_and_replace(rendered_snippet, '[[campaign_slug]]',
+                                                        campaign_slug)
+        # Include campaign key when needed
+        if campaign_slug:
+            rendered_snippet['campaign'] = campaign_slug
+
+        # Add Channels
+        CHANNELS_MAP = {
+            'release': 'REL',
+            'esr': 'ESR',
+            'beta': 'BETA',
+            'aurora': 'DEV',
+            'nightly': 'NIGHTLY',
+        }
+        channels = '_'.join([
+            # Iterate CHANNELS_MAP instead of self.channels to ensure order
+            CHANNELS_MAP[channel] for channel in CHANNELS_MAP if channel in self.channels
+        ])
+        rendered_snippet = util.deep_search_and_replace(rendered_snippet, '[[channels]]', channels)
+
+        # Add JEXL targeting
+        rendered_snippet['targeting'] = ' && '.join(
+            [target.jexl_expr for
+             target in self.targets.all().order_by('id') if
+             target.jexl_expr]
+        )
+
+        return rendered_snippet
+
+    @property
+    def channels(self):
+        channels = []
+
+        for target in self.targets.all():
+            for channel in CHANNELS:
+                if getattr(target, 'on_{0}'.format(channel), False):
+                    channels.append(channel)
+        return set(channels)
+
+    def change_status(self, status, user=None, send_slack=True):
+        if self.status == status:
+            return
+
+        self.status = status
+        self.save()
+
+        if user:
+            LogEntry.objects.log_action(
+                user_id=user.pk,
+                content_type_id=get_content_type_for_model(self).pk,
+                object_id=self.id,
+                object_repr=str(self),
+                action_flag=CHANGE,
+                change_message='Changed status to {}'.format(self.get_status_display())
+            )
+
+        if send_slack:
+            template = 'slack/job_{}.jinja.json'.format(self.get_status_display().lower())
+            data = render_to_string(template, context={'job': self})
+            slack._send_slack(data)
+
+    def get_admin_url(self, full=True):
+        # Not using reverse() because the `admin:` namespace is not registered
+        # in all clusters and app instances.
+        url = '/admin/base/job/{}/change/'.format(self.id)
+        if full:
+            url = urljoin(settings.ADMIN_REDIRECT_URL or settings.SITE_URL, url)
+        return url
+
+    def duplicate(self, creator):
+        job_copy = copy.deepcopy(self)
+        job_copy.id = None
+        job_copy.created = None
+        job_copy.modified = None
+        job_copy.status = self.DRAFT
+        job_copy.creator = creator
+        job_copy.uuid = uuid.uuid4()
+        job_copy.save()
+
+        for field in self._meta.get_fields():
+            attr = getattr(self, field.name, None)
+            if isinstance(attr, Manager):
+                manager = attr
+                if manager.__class__.__name__ == 'RelatedManager':
+                    for itm in manager.all():
+                        itm_copy = copy.deepcopy(itm)
+                        itm_copy.id = None
+                        getattr(job_copy, field.name).add(itm_copy)
+                elif manager.__class__.__name__ == 'ManyRelatedManager':
+                    for snippet in manager.all():
+                        getattr(job_copy, field.name).add(snippet)
+
+        return job_copy
+
+    def analytics_export(self):
+        body = self.snippet.template_ng.get_main_body(bleached=True)
+        url = self.snippet.template_ng.get_main_url()
+        export = {
+            'id': self.id,
+            'name': self.snippet.name,
+            'campaign': self.campaign.name if self.campaign else '',
+            'category': self.snippet.category.name if self.snippet.category else '',
+            'url': url,
+            'body': body,
+            'tags': ','.join([tag.name for tag in self.snippet.tags.all().order_by('name')]),
+            'snippet_id': self.snippet.id,
+        }
+        return export
+
+
 class ASRSnippet(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
@@ -1638,7 +1819,10 @@ class ASRSnippet(models.Model):
 
     tags = TaggableManager(blank=True)
 
-    status = models.IntegerField(choices=[(y, x) for x, y in STATUS_CHOICES.items()],
+    status = models.IntegerField('Content Status',
+                                 choices=[(100, 'Draft'),
+                                          (200, 'Ready for review'),
+                                          (300, 'Approved')],
                                  db_index=True, default=100)
 
     publish_start = models.DateTimeField(
@@ -1657,8 +1841,6 @@ class ASRSnippet(models.Model):
     weight = models.IntegerField(
         choices=SNIPPET_WEIGHTS, default=100,
         help_text='How often should this snippet be shown to users?')
-
-    objects = managers.ASRSnippetManager()
 
     class Meta:
         ordering = ['-modified']
@@ -1686,30 +1868,9 @@ class ASRSnippet(models.Model):
 
         # Add snippet ID to template variables.
         data = util.deep_search_and_replace(data, '[[snippet_id]]', str(self.id))
-
-        # Add campaign when available
-        data = util.deep_search_and_replace(data, '[[campaign_slug]]',
-                                            self.campaign.slug if self.campaign else '')
-
-        # Add Channels
-        CHANNELS_MAP = {
-            'release': 'REL',
-            'esr': 'ESR',
-            'beta': 'BETA',
-            'aurora': 'DEV',
-            'nightly': 'NIGHTLY',
-        }
-        channels = '_'.join([
-            # Iterate CHANNELS_MAP instead of self.channels to ensure order
-            CHANNELS_MAP[channel] for channel in CHANNELS_MAP if channel in self.channels
-        ])
-        data = util.deep_search_and_replace(data, '[[channels]]', channels)
-
         rendered_snippet = {
-            'id': str(self.id),
             'template': template_code_name,
             'template_version': template_version,
-            'weight': self.weight,
             'content': data,
         }
 
@@ -1718,30 +1879,7 @@ class ASRSnippet(models.Model):
             # Always set do_not_autoblock when previewing.
             rendered_snippet['content']['do_not_autoblock'] = True
 
-            if self.campaign:
-                rendered_snippet['campaign'] = 'preview-{}'.format(self.campaign.slug)
-
-        else:
-            if self.campaign:
-                rendered_snippet['campaign'] = self.campaign.slug
-
-            rendered_snippet['targeting'] = ' && '.join(
-                [target.jexl_expr for
-                 target in self.targets.all().order_by('id') if
-                 target.jexl_expr]
-            )
-
         return rendered_snippet
-
-    @property
-    def channels(self):
-        channels = []
-
-        for target in self.targets.all():
-            for channel in CHANNELS:
-                if getattr(target, 'on_{0}'.format(channel), False):
-                    channels.append(channel)
-        return set(channels)
 
     def get_preview_url(self, dark=False):
         theme = 'light'
@@ -1799,20 +1937,6 @@ class ASRSnippet(models.Model):
 
         return snippet_copy
 
-    def analytics_export(self):
-        body = self.template_ng.get_main_body(bleached=True)
-        url = self.template_ng.get_main_url()
-        export = {
-            'id': self.id,
-            'name': self.name,
-            'campaign': self.campaign.name if self.campaign else '',
-            'category': self.category.name if self.category else '',
-            'url': url,
-            'body': body,
-            'tags': ','.join([tag.name for tag in self.tags.all().order_by('name')]),
-        }
-        return export
-
 
 # We could connect the signal to specific senders using `sender` argument but
 # we would have to connect each template class separately which will create
@@ -1827,12 +1951,15 @@ def update_asrsnippet_modified_date(sender, instance, **kwargs):
     now = timezone.now()
     snippets = None
 
-    if isinstance(instance, Template):
+    if isinstance(instance, Template) or isinstance(instance, Job):
         snippets = [instance.snippet.pk]
 
-    elif (isinstance(instance, Icon) or
-          isinstance(instance, Campaign) or
+    elif (isinstance(instance, Campaign) or
           isinstance(instance, Target)):
+        snippets = [id for id in instance.jobs.values_list('snippet__pk', flat=True)]
+
+    elif isinstance(instance, Icon):
+
         # Convert the value_list Queryset to a list, required for the upcoming
         # update() query to work.
         snippets = [id for id in instance.snippets.values_list('pk', flat=True)]

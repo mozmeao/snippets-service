@@ -18,5 +18,5 @@ urlpatterns = [
     path('csp-violation-capture', views.csp_violation_capture, name='csp-violation-capture'),
     path('healthz/', watchman_views.ping, name='watchman.ping'),
     path('readiness/', watchman_views.status, name='watchman.status'),
-    path('feeds/snippets.ics', feed.SnippetsFeed(), name='ical-feed'),
+    path('feeds/snippets.ics', feed.JobsFeed(), name='ical-feed'),
 ]

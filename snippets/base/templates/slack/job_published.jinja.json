@@ -1,0 +1,9 @@
+{
+  "attachments": [{
+        "pretext": "Update on Job #{{ job.id }}",
+        "title": "Job #{{ job.id }} was just published! :tada:",
+        "title_link": "{{ job.get_admin_url() }}",
+        "text": "Job #{{ job.id }} for Snippet *{{ job.snippet.name }}* (#{{ job.snippet.id }}) was just published on {{ job.channels|join(', ')}} channel(s)!",
+        "color": "#36a64f"
+  }]
+}

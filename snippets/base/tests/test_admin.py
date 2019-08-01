@@ -4,10 +4,11 @@ from django.test.client import RequestFactory
 
 from unittest.mock import DEFAULT as DEFAULT_MOCK, Mock, patch
 
-from snippets.base.admin import ASRSnippetAdmin, SnippetAdmin, SnippetTemplateAdmin
-from snippets.base.models import (STATUS_CHOICES, ASRSnippet, Snippet,
+from snippets.base.admin.adminmodels import ASRSnippetAdmin, JobAdmin, SnippetTemplateAdmin
+from snippets.base.admin.legacy import SnippetAdmin
+from snippets.base.models import (STATUS_CHOICES, ASRSnippet, Job, Snippet,
                                   SnippetTemplate, SnippetTemplateVariable)
-from snippets.base.tests import (ASRSnippetFactory, SnippetTemplateFactory,
+from snippets.base.tests import (ASRSnippetFactory, JobFactory, SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase, UserFactory)
 
 
@@ -194,52 +195,65 @@ class ASRSnippetAdminTests(TestCase):
         readonly_fields = admin.get_readonly_fields(request, asrsnippet)
         self.assertTrue('status' not in readonly_fields)
 
-    def test_action_publish_snippet(self):
-        to_be_published = ASRSnippetFactory.create_batch(2, status=STATUS_CHOICES['Draft'])
-        already_published = ASRSnippetFactory(status=STATUS_CHOICES['Published'])
-        ASRSnippetFactory.create_batch(2, status=STATUS_CHOICES['Draft'])
 
-        queryset = ASRSnippet.objects.filter(id__in=[
-            to_be_published[0].id,
-            to_be_published[1].id,
-            already_published.id
+class JobAdminTests(TestCase):
+    def test_action_schedule_job(self):
+        to_get_scheduled = JobFactory.create_batch(2, status=Job.DRAFT)
+        already_scheduled = JobFactory(status=Job.SCHEDULED)
+        already_published = JobFactory(status=Job.PUBLISHED)
+        cancelled = JobFactory(status=Job.CANCELED)
+        completed = JobFactory(status=Job.COMPLETED)
+        JobFactory.create_batch(2, status=Job.DRAFT)
+
+        queryset = Job.objects.filter(id__in=[
+            to_get_scheduled[0].id,
+            to_get_scheduled[1].id,
+            already_scheduled.id,
+            already_published.id,
+            cancelled.id,
+            completed.id,
         ])
 
+        request = Mock()
+        request.user = UserFactory.create()
         with patch.multiple('snippets.base.admin.adminmodels.messages',
                             warning=DEFAULT_MOCK,
                             success=DEFAULT_MOCK) as message_mocks:
-            with patch('snippets.base.admin.adminmodels.ASRSnippetAdmin.log_change') as log_change:
-                ASRSnippetAdmin(ASRSnippet, None).action_publish_snippet(None, queryset)
+            JobAdmin(Job, None).action_schedule_job(request, queryset)
 
         self.assertEqual(
-            set(ASRSnippet.objects.filter(status=STATUS_CHOICES['Published'])),
-            set(to_be_published + [already_published])
+            set(Job.objects.filter(status=Job.SCHEDULED)),
+            set(to_get_scheduled + [already_scheduled])
         )
         self.assertTrue(message_mocks['warning'].called)
         self.assertTrue(message_mocks['success'].called)
-        self.assertTrue(log_change.called)
 
-    def test_action_unpublish_snippet(self):
-        to_be_unpublished = ASRSnippetFactory.create_batch(2, status=STATUS_CHOICES['Published'])
-        already_unpublished = ASRSnippetFactory(status=STATUS_CHOICES['Draft'])
-        ASRSnippetFactory.create_batch(2, status=STATUS_CHOICES['Approved'])
+    def test_action_cancel_job(self):
+        to_get_canceled = [
+            JobFactory.create(status=Job.PUBLISHED),
+            JobFactory.create(status=Job.SCHEDULED),
+        ]
+        already_cancelled = JobFactory(status=Job.CANCELED)
+        completed = JobFactory(status=Job.COMPLETED)
+        JobFactory.create_batch(2, status=Job.DRAFT)
 
-        queryset = ASRSnippet.objects.filter(id__in=[
-            to_be_unpublished[0].id,
-            to_be_unpublished[1].id,
-            already_unpublished.id
+        queryset = Job.objects.filter(id__in=[
+            to_get_canceled[0].id,
+            to_get_canceled[1].id,
+            already_cancelled.id,
+            completed.id,
         ])
 
+        request = Mock()
+        request.user = UserFactory.create()
         with patch.multiple('snippets.base.admin.adminmodels.messages',
                             warning=DEFAULT_MOCK,
                             success=DEFAULT_MOCK) as message_mocks:
-            with patch('snippets.base.admin.adminmodels.ASRSnippetAdmin.log_change') as log_change:
-                ASRSnippetAdmin(ASRSnippet, None).action_unpublish_snippet(None, queryset)
+            JobAdmin(Job, None).action_cancel_job(request, queryset)
 
         self.assertEqual(
-            set(ASRSnippet.objects.filter(status=STATUS_CHOICES['Draft'])),
-            set(to_be_unpublished + [already_unpublished])
+            set(Job.objects.filter(status=Job.CANCELED)),
+            set(to_get_canceled + [already_cancelled])
         )
         self.assertTrue(message_mocks['warning'].called)
         self.assertTrue(message_mocks['success'].called)
-        self.assertTrue(log_change.called)

@@ -67,6 +67,12 @@ def job_disable_snippets_past_publish_date():
     call_command('disable_snippets_past_publish_date')
 
 
+@scheduled_job('cron', month='*', day='*', hour='*', minute='*', max_instances=1, coalesce=True)
+@babis.decorator(ping_after=settings.DEAD_MANS_SNITCH_UPDATE_JOBS)
+def job_update_jobs():
+    call_command('update_jobs')
+
+
 @scheduled_job('cron', month='*', day='*', hour='08', minute='20', max_instances=1, coalesce=True)
 @babis.decorator(ping_after=settings.DEAD_MANS_SNITCH_CSV_EXPORT)
 def job_export_to_csv():

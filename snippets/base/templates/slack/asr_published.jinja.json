@@ -1,9 +1,0 @@
-{
-  "attachments": [{
-        "pretext": "Update on Snippet #{{ snippet.id }}",
-        "title": "Snippet #{{ snippet.id }} was just published! :tada:",
-        "title_link": "{{ snippet.get_admin_url() }}",
-        "text": "Snippet *#{{ snippet.id }}*: *{{ snippet.name }}* by {{ snippet.creator.get_full_name() }} was just published on {{ snippet.channels|join(', ')}} channel(s)!",
-        "color": "#36a64f"
-  }]
-}
