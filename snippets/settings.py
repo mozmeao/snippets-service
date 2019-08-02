@@ -381,3 +381,6 @@ IMAGE_MAX_DIMENSION = config('IMAGE_MAX_DIMENSION', default=192, cast=int)
 IMAGE_MAX_SIZE = config('IMAGE_MAX_SIZE', default=40960, cast=int)
 
 TAGGIT_CASE_INSENSITIVE = True
+
+# In minutes
+SNIPPETS_PUBLICATION_OFFSET = config('SNIPPETS_PUBLICATION_OFFSET', default=5, cast=int)
