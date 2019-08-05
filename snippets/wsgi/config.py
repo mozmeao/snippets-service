@@ -13,3 +13,4 @@ loglevel = getenv('WSGI_LOG_LEVEL', 'info')
 # See https://github.com/benoitc/gunicorn/issues/1194
 keepalive = getenv('WSGI_KEEP_ALIVE', 2)
 worker_class = getenv('GUNICORN_WORKER_CLASS', 'meinheld.gmeinheld.MeinheldWorker')
+worker_tmp_dir = '/dev/shm'
