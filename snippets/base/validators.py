@@ -5,8 +5,8 @@ from io import StringIO
 import xml.sax
 from xml.sax import ContentHandler
 
+import django.core.validators as django_validators
 from django.core.exceptions import ValidationError
-from django.core.validators import BaseValidator
 from django.utils.deconstruct import deconstructible
 
 import bleach
@@ -17,7 +17,7 @@ ALLOWED_PROTOCOLS = ['https', 'special']
 
 
 @deconstructible
-class MinValueValidator(BaseValidator):
+class MinValueValidator(django_validators.BaseValidator):
     message = 'Ensure this value is greater than or equal to %(limit_value)s.'
     code = 'min_value'
 
@@ -108,3 +108,11 @@ def validate_json_data(data):
     except ValueError:
         raise ValidationError('Enter valid JSON string.')
     return data
+
+
+# URLValidator that also allows `special:*` links
+class URLValidator(django_validators.URLValidator):
+    def __init__(self, schemes=None, **kwargs):
+        self.schemes = ['https', 'special']
+        self.regex = django_validators._lazy_re_compile(
+            r'^(special:\w+)|(' + self.regex.pattern + ')')

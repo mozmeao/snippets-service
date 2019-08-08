@@ -32,8 +32,8 @@ from jinja2 import Markup
 from jinja2.utils import LRUCache
 from taggit_selectize.managers import TaggableManager
 
+import snippets.base.fields as snippet_fields
 from snippets.base import managers, slack, util, validators
-from snippets.base.fields import RegexField
 
 
 JINJA_ENV = engines['backend']
@@ -166,16 +166,16 @@ class ClientMatchRule(models.Model):
     description = models.CharField(max_length=255, unique=True)
     is_exclusion = models.BooleanField(default=False)
 
-    startpage_version = RegexField()
-    name = RegexField()
-    version = RegexField()
-    appbuildid = RegexField()
-    build_target = RegexField()
-    locale = RegexField()
-    channel = RegexField()
-    os_version = RegexField()
-    distribution = RegexField()
-    distribution_version = RegexField()
+    startpage_version = snippet_fields.RegexField()
+    name = snippet_fields.RegexField()
+    version = snippet_fields.RegexField()
+    appbuildid = snippet_fields.RegexField()
+    build_target = snippet_fields.RegexField()
+    locale = snippet_fields.RegexField()
+    channel = snippet_fields.RegexField()
+    os_version = snippet_fields.RegexField()
+    distribution = snippet_fields.RegexField()
+    distribution_version = snippet_fields.RegexField()
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -668,9 +668,47 @@ class Template(models.Model):
                 except Template.DoesNotExist:
                     continue
 
+    def _convert_special_buttons(self, data):
+        local_data = copy.deepcopy(data)
+        to_delete = []
+        to_append = {}
+        for key, value in local_data.items():
+            if key == 'button_url':
+                if value == 'special:appMenu':
+                    to_append['button_action'] = 'OPEN_APPLICATIONS_MENU'
+                    to_append['button_action_args'] = 'appMenu'
+                    to_delete.append(key)
+                elif value == 'special:accounts':
+                    to_append['button_action'] = 'SHOW_FIREFOX_ACCOUNTS'
+                    to_delete.append(key)
+                elif value == 'special:monitor':
+                    to_append['button_action'] = 'ENABLE_FIREFOX_MONITOR'
+                    to_append['button_action_args'] = {
+                        'url': ('https://monitor.firefox.com/oauth/init?'
+                                'utm_source=desktop-snippet&utm_term=[[snippet_id]]&'
+                                'utm_content=[[channels]]&utm_campaign=[[campaign_slug]]&'
+                                'entrypoint=snippets&form_type=email'),
+                        'flowRequestParams': {
+                            'entrypoint': 'snippets',
+                            'utm_term': 'monitor',
+                            'form_type': 'email'
+                        }
+                    }
+                    to_delete.append(key)
+
+        for key in to_delete:
+            local_data.pop(key)
+
+        local_data.update(to_append)
+
+        return local_data
+
     def _process_rendered_data(self, data):
         # Convert links in text fields in fluent format.
         data = util.fluent_link_extractor(data, self.get_rich_text_fields())
+
+        # Convert button special links
+        data = self._convert_special_buttons(data)
 
         # Remove values that are empty strings
         data = {k: v for k, v in data.items() if v != ''}
@@ -711,7 +749,7 @@ class Template(models.Model):
         """ Returns a list of URL field names of the model. """
         fields = []
         for field in self._meta.fields:
-            if isinstance(field, models.URLField):
+            if isinstance(field, snippet_fields.URLField):
                 fields.append(field.name)
         return fields
 
@@ -746,7 +784,8 @@ class Template(models.Model):
 
         for field in self.get_url_fields():
             value = getattr(self, field)
-            if value:
+            # Check that value not starts with special so we don't alter special links
+            if value and not value.startswith('special:'):
                 value = util.urlparams(value, replace=False, **params)
                 setattr(self, field, value)
 
@@ -799,11 +838,10 @@ class SimpleTemplate(Template):
         max_length=20, blank=True,
         help_text='The text color of the button. Valid CSS color.',
     )
-    button_url = models.URLField(
+    button_url = snippet_fields.URLField(
         verbose_name='Button URL',
         max_length=500,
         blank=True,
-        validators=[django_validators.URLValidator(schemes=['https'])],
         help_text='A url, button_label links to this',
     )
     section_title_icon = models.ForeignKey(
@@ -821,10 +859,10 @@ class SimpleTemplate(Template):
         blank=True, max_length=255,
         help_text='Section title text. section_title_icon must also be specified to display.',
     )
-    section_title_url = models.URLField(
+    section_title_url = snippet_fields.URLField(
         verbose_name='Section Title URL',
         blank=True,
-        validators=[django_validators.URLValidator(schemes=['https'])],
+        max_length=500,
         help_text='A url, section_title_text links to this',
     )
     tall = models.BooleanField(
@@ -877,10 +915,9 @@ class FundraisingTemplate(Template):
     VERSION = '1.0.0'
     NAME = 'Fundraising'
 
-    donation_form_url = models.URLField(
+    donation_form_url = snippet_fields.URLField(
         verbose_name='Donation Form URL',
         default='https://donate.mozilla.org/?utm_source=desktop-snippet&utm_medium=snippet',
-        validators=[django_validators.URLValidator(schemes=['https'])],
         max_length=500,
     )
     currency_code = models.CharField(
@@ -1546,11 +1583,10 @@ class SimpleBelowSearchTemplate(Template):
         max_length=20, blank=True,
         help_text='The text color of the button. Valid CSS color.',
     )
-    button_url = models.URLField(
+    button_url = snippet_fields.URLField(
         verbose_name='Button URL',
         max_length=500,
         blank=True,
-        validators=[django_validators.URLValidator(schemes=['https'])],
         help_text='A url, button_label links to this',
     )
     block_button_text = models.CharField(
@@ -1874,8 +1910,6 @@ class ASRSnippet(models.Model):
         template_version = self.template_ng.version
         data = self.template_ng.render()
 
-        # Add snippet ID to template variables.
-        data = util.deep_search_and_replace(data, '[[snippet_id]]', str(self.id))
         rendered_snippet = {
             'template': template_code_name,
             'template_version': template_version,
@@ -1883,9 +1917,15 @@ class ASRSnippet(models.Model):
         }
 
         if preview:
+            for variable in ['campaign_slug', 'channels', 'snippet_id', 'job_id']:
+                rendered_snippet = util.deep_search_and_replace(
+                    rendered_snippet, f'[[{variable}]]', '')
+
             rendered_snippet['id'] = 'preview-{}'.format(self.id)
             # Always set do_not_autoblock when previewing.
             rendered_snippet['content']['do_not_autoblock'] = True
+        else:
+            data = util.deep_search_and_replace(data, '[[snippet_id]]', str(self.id))
 
         return rendered_snippet
 

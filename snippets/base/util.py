@@ -132,6 +132,21 @@ def fluent_link_extractor(data, variables):
                 self.links[keyname] = {
                     'action': 'SHOW_FIREFOX_ACCOUNTS',
                 }
+            elif url == 'special:monitor':
+                self.links[keyname] = {
+                    'action': 'ENABLE_FIREFOX_MONITOR',
+                    'args': {
+                        'url': ('https://monitor.firefox.com/oauth/init?'
+                                'utm_source=desktop-snippet&utm_term=[[snippet_id]]&'
+                                'utm_content=[[channels]]&utm_campaign=[[campaign_slug]]&'
+                                'entrypoint=snippets&form_type=email'),
+                        'flowRequestParams': {
+                            'entrypoint': 'snippets',
+                            'utm_term': 'monitor',
+                            'form_type': 'email'
+                        }
+                    }
+                }
             else:
                 self.links[keyname] = {
                     'url': url,
