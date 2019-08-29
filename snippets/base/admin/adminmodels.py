@@ -913,9 +913,10 @@ class JobAdmin(admin.ModelAdmin):
     list_display = [
         'id',
         'snippet_name',
+        'target_list',
         'job_status',
         'publish_start',
-        'publish_end'
+        'publish_end',
     ]
     list_display_links = [
         'id',
@@ -986,6 +987,16 @@ class JobAdmin(admin.ModelAdmin):
                 reverse('admin:base_asrsnippet_change', args=[obj.snippet.id]), obj.snippet.name)
         )
     snippet_name_linked.short_description = 'Link to Snippet'
+
+    def target_list(self, obj):
+        return mark_safe(
+            '<ul>' +
+            ''.join([
+                f'<li> {target}' for target in obj.targets.values_list('name', flat=True)
+            ]) +
+            '</ul>'
+        )
+    target_list.short_description = 'Targets'
 
     def job_status(self, obj):
         msg = obj.get_status_display()
