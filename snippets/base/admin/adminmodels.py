@@ -544,8 +544,9 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 <strong>Content Variables:</strong><br/>
                 You can use <code>[[snippet_id]]</code> in any field and it
                 will be automatically replaced by Snippet ID when served to users.
-                Similarly <code>[[campaign_slug]]</code> gets replaced by Campaign Slug and
-                <code>[[channels]]</code> by targeted channels.
+                Similarly <code>[[campaign_slug]]</code> gets replaced by Campaign Slug,
+                <code>[[channels]]</code> by targeted channels, <code>[[job_id]]</code>
+                by Job ID.
                 <br/>
                 Example: This is a <code>&lt;a href=&quot;https://example.com?utm_term=[[snippet_id]]&quot;&gt;link&lt;/a&gt;</code>
                 <br/>

@@ -1698,8 +1698,12 @@ class Job(models.Model):
 
         # Add campaign info
         campaign_slug = self.campaign.slug if self.campaign else ''
-        rendered_snippet = util.deep_search_and_replace(rendered_snippet, '[[campaign_slug]]',
-                                                        campaign_slug)
+        rendered_snippet = util.deep_search_and_replace(
+            rendered_snippet, '[[campaign_slug]]', campaign_slug)
+        # Add job id info
+        rendered_snippet = util.deep_search_and_replace(
+            rendered_snippet, '[[job_id]]', str(self.id))
+
         # Include campaign key when needed
         if campaign_slug:
             rendered_snippet['campaign'] = campaign_slug

@@ -723,7 +723,7 @@ class JobTests(TestCase):
             'template_version': 'xx.xx',
             'content': {
                 'block_button_text': 'Block me',
-                'text': 'This is text',
+                'text': 'This is text [[job_id]]',
             }
         }
         expected_output = copy.deepcopy(snippet_render)
@@ -732,6 +732,10 @@ class JobTests(TestCase):
             'weight': 10,
             'campaign': 'demo-campaign',
             'targeting': '(la==lo) && foo==bar',
+            'content': {
+                'block_button_text': 'Block me',
+                'text': f'This is text {job.id}',
+            }
         })
         job.snippet.render = Mock()
         job.snippet.render.return_value = snippet_render
