@@ -530,7 +530,9 @@ class ASRSnippetTests(TestCase):
         self.assertEqual(generated_result, expected_result)
 
     def test_render_preview_only(self):
-        snippet = ASRSnippetFactory.create(template_relation__text='snippet id [[snippet_id]]')
+        snippet = ASRSnippetFactory.create(
+            template_relation__text=('snippet id *[[snippet_id]]* '
+                                     '*[[campaign_slug]]* *[[channels]]* *[[job_id]]*'))
         generated_result = snippet.render(preview=True)
         expected_result = {
             'id': 'preview-{}'.format(snippet.id),
@@ -538,7 +540,8 @@ class ASRSnippetTests(TestCase):
             'template_version': snippet.template_ng.version,
             'content': {
                 'do_not_autoblock': True,
-                'text': 'snippet id {}'.format(snippet.id),
+                # snippet_id, campaign_slug and channels must be replaced with empty string.
+                'text': 'snippet id ** ** ** **',
                 'links': {},
                 'tall': False,
                 'icon': snippet.template_ng.icon.url,

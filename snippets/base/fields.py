@@ -1,6 +1,6 @@
 from django.db import models
 
-from snippets.base.validators import validate_regex
+from snippets.base.validators import URLValidator, validate_regex
 
 
 class RegexField(models.CharField):
@@ -10,3 +10,7 @@ class RegexField(models.CharField):
                   'validators': [validate_regex]}
         myargs.update(kwargs)
         return super(RegexField, self).__init__(*args, **myargs)
+
+
+class URLField(models.CharField):
+    validators = [URLValidator]
