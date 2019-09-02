@@ -93,6 +93,10 @@ class Command(BaseCommand):
                     }
                 })
 
+                # Convert str to bytes.
+                if isinstance(bundle_content, str):
+                    bundle_content = bundle_content.encode('utf-8')
+
                 if settings.BUNDLE_BROTLI_COMPRESS:
                     content_file = ContentFile(brotli.compress(bundle_content))
                     content_file.content_encoding = 'br'
