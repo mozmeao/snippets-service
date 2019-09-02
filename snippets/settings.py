@@ -129,6 +129,7 @@ if not DEBUG_TEMPLATE:
 MEDIA_URL = config('MEDIA_URL', '/media/')
 MEDIA_ROOT = config('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
 MEDIA_BUNDLES_ROOT = config('MEDIA_BUNDLES_ROOT', default='bundles/')
+MEDIA_BUNDLES_PREGEN_ROOT = config('MEDIA_BUNDLES_PREGEN_ROOT', default='bundles-pregen/')
 MEDIA_ICONS_ROOT = config('MEDIA_ICONS_ROOT', default='icons/')
 
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
@@ -260,6 +261,7 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     AWS_CACHE_CONTROL_HEADERS = {
         MEDIA_BUNDLES_ROOT: 'max-age=2592000',  # 1 Month
         MEDIA_ICONS_ROOT: 'max-age=15552000',  # 6 Months
+        MEDIA_BUNDLES_PREGEN_ROOT: 'max-age=600',  # 10 minutes
     }
     AWS_DEFAULT_ACL = 'public-read'
     AWS_BUCKET_ACL = 'public-read'
