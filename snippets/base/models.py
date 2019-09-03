@@ -851,12 +851,23 @@ class SimpleTemplate(Template):
         on_delete=models.SET_NULL,
         verbose_name='Section Title Icon',
         related_name='simple_section_icons',
-        help_text=('Section title icon. 32x32px. PNG. '
+        help_text=('Section title icon. 16x16px. PNG. '
+                   'section_title_text must also be specified to display.'),
+    )
+    section_title_icon_dark_theme = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Section Title Icon - Dark Theme',
+        related_name='simple_section_icons_dark_theme',
+        help_text=('Section title icon - dark theme variant. 16x16px. PNG. '
                    'section_title_text must also be specified to display.'),
     )
     section_title_text = models.CharField(
         verbose_name='Section Title Text',
-        blank=True, max_length=255,
+        blank=True,
+        max_length=255,
         help_text='Section title text. section_title_icon must also be specified to display.',
     )
     section_title_url = snippet_fields.URLField(
@@ -1099,6 +1110,39 @@ class FxASignupTemplate(Template):
         help_text=('The background color of the button. Valid CSS color. '
                    'Defaults to Firefox Theme Color.'),
     )
+    scene1_section_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Section Title Icon',
+        related_name='fxa_scene1_section_icons',
+        help_text=('Section title icon. 16x16px. PNG. '
+                   'scene1_section_title_text must also be specified to display.'),
+    )
+    scene1_section_title_icon_dark_theme = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Section Title Icon - Dark Theme',
+        related_name='fxa_scene1_section_icons_dark_theme',
+        help_text=('Section title icon - dark theme variant. 16x16px. PNG. '
+                   'scene1_section_title_text must also be specified to display.'),
+    )
+    scene1_section_title_text = models.CharField(
+        verbose_name='Section Title Text',
+        blank=True,
+        max_length=255,
+        help_text=('Section title text. scene1_section_title_icon must also '
+                   'be specified to display.'),
+    )
+    scene1_section_title_url = snippet_fields.URLField(
+        verbose_name='Section Title URL',
+        blank=True,
+        max_length=500,
+        help_text='A url, scene1_section_title_text links to this',
+    )
 
     ###
     # Scene 2
@@ -1238,6 +1282,39 @@ class NewsletterTemplate(Template):
         max_length=20, blank=True,
         help_text=('The background color of the button. Valid CSS color. '
                    'Defaults to Firefox Theme Color.'),
+    )
+    scene1_section_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Section Title Icon',
+        related_name='newsletter_scene1_section_icons',
+        help_text=('Section title icon. 16x16px. PNG. '
+                   'scene1_section_title_text must also be specified to display.'),
+    )
+    scene1_section_title_icon_dark_theme = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Section Title Icon - Dark Theme',
+        related_name='newsletter_scene1_section_icons_dark_theme',
+        help_text=('Section title icon - dark theme variant. 16x16px. PNG. '
+                   'scene1_section_title_text must also be specified to display.'),
+    )
+    scene1_section_title_text = models.CharField(
+        verbose_name='Section Title Text',
+        blank=True,
+        max_length=255,
+        help_text=('Section title text. scene1_section_title_icon must also '
+                   'be specified to display.'),
+    )
+    scene1_section_title_url = snippet_fields.URLField(
+        verbose_name='Section Title URL',
+        blank=True,
+        max_length=500,
+        help_text='A url, scene1_section_title_text links to this',
     )
 
     ###
@@ -1400,6 +1477,39 @@ class SendToDeviceTemplate(Template):
         max_length=20, blank=True,
         help_text=('The background color of the button. Valid CSS color. '
                    'Defaults to Firefox Theme Color.'),
+    )
+    scene1_section_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Section Title Icon',
+        related_name='sendtodevice_scene1_section_icons',
+        help_text=('Section title icon. 16x16px. PNG. '
+                   'scene1_section_title_text must also be specified to display.'),
+    )
+    scene1_section_title_icon_dark_theme = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Section Title Icon - Dark Theme',
+        related_name='sendtodevice_scene1_section_icons_dark_theme',
+        help_text=('Section title icon - dark theme variant. 16x16px. PNG. '
+                   'scene1_section_title_text must also be specified to display.'),
+    )
+    scene1_section_title_text = models.CharField(
+        verbose_name='Section Title Text',
+        blank=True,
+        max_length=255,
+        help_text=('Section title text. scene1_section_title_icon must also '
+                   'be specified to display.'),
+    )
+    scene1_section_title_url = snippet_fields.URLField(
+        verbose_name='Section Title URL',
+        blank=True,
+        max_length=500,
+        help_text='A url, scene1_section_title_text links to this',
     )
 
     ###
