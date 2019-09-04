@@ -848,20 +848,10 @@ class SimpleTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         verbose_name='Section Title Icon',
         related_name='simple_section_icons',
         help_text=('Section title icon. 16x16px. PNG. '
-                   'section_title_text must also be specified to display.'),
-    )
-    section_title_icon_dark_theme = models.ForeignKey(
-        Icon,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        verbose_name='Section Title Icon - Dark Theme',
-        related_name='simple_section_icons_dark_theme',
-        help_text=('Section title icon - dark theme variant. 16x16px. PNG. '
                    'section_title_text must also be specified to display.'),
     )
     section_title_text = models.CharField(
@@ -1114,20 +1104,10 @@ class FxASignupTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         verbose_name='Section Title Icon',
         related_name='fxa_scene1_section_icons',
         help_text=('Section title icon. 16x16px. PNG. '
-                   'scene1_section_title_text must also be specified to display.'),
-    )
-    scene1_section_title_icon_dark_theme = models.ForeignKey(
-        Icon,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        verbose_name='Section Title Icon - Dark Theme',
-        related_name='fxa_scene1_section_icons_dark_theme',
-        help_text=('Section title icon - dark theme variant. 16x16px. PNG. '
                    'scene1_section_title_text must also be specified to display.'),
     )
     scene1_section_title_text = models.CharField(
@@ -1213,6 +1193,10 @@ class FxASignupTemplate(Template):
             'scene1_button_label': self.scene1_button_label,
             'scene1_button_color': self.scene1_button_color,
             'scene1_button_background_color': self.scene1_button_background_color,
+            'scene1_section_title_icon':
+                self.scene1_section_title_icon.url if self.scene1_section_title_icon else '',
+            'scene1_section_title_text': self.scene1_section_title_text,
+            'scene1_section_title_url': self.scene1_section_title_url,
             'scene2_title': self.scene2_title,
             'scene2_text': self.scene2_text,
             'scene2_button_label': self.scene2_button_label,
@@ -1287,20 +1271,10 @@ class NewsletterTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         verbose_name='Section Title Icon',
         related_name='newsletter_scene1_section_icons',
         help_text=('Section title icon. 16x16px. PNG. '
-                   'scene1_section_title_text must also be specified to display.'),
-    )
-    scene1_section_title_icon_dark_theme = models.ForeignKey(
-        Icon,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        verbose_name='Section Title Icon - Dark Theme',
-        related_name='newsletter_scene1_section_icons_dark_theme',
-        help_text=('Section title icon - dark theme variant. 16x16px. PNG. '
                    'scene1_section_title_text must also be specified to display.'),
     )
     scene1_section_title_text = models.CharField(
@@ -1402,6 +1376,10 @@ class NewsletterTemplate(Template):
             'scene1_button_label': self.scene1_button_label,
             'scene1_button_color': self.scene1_button_color,
             'scene1_button_background_color': self.scene1_button_background_color,
+            'scene1_section_title_icon':
+                self.scene1_section_title_icon.url if self.scene1_section_title_icon else '',
+            'scene1_section_title_text': self.scene1_section_title_text,
+            'scene1_section_title_url': self.scene1_section_title_url,
             'scene2_title': self.scene2_title,
             'scene2_text': self.scene2_text,
             'scene2_button_label': self.scene2_button_label,
@@ -1482,20 +1460,10 @@ class SendToDeviceTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         verbose_name='Section Title Icon',
         related_name='sendtodevice_scene1_section_icons',
         help_text=('Section title icon. 16x16px. PNG. '
-                   'scene1_section_title_text must also be specified to display.'),
-    )
-    scene1_section_title_icon_dark_theme = models.ForeignKey(
-        Icon,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        verbose_name='Section Title Icon - Dark Theme',
-        related_name='sendtodevice_scene1_section_icons_dark_theme',
-        help_text=('Section title icon - dark theme variant. 16x16px. PNG. '
                    'scene1_section_title_text must also be specified to display.'),
     )
     scene1_section_title_text = models.CharField(
@@ -1543,7 +1511,6 @@ class SendToDeviceTemplate(Template):
         default='Your email here',
         help_text='Placeholder text for email / phone number field.',
     )
-
     scene2_dismiss_button_text = models.CharField(
         verbose_name='Scene 2 Dismiss Button Text',
         max_length=50,
@@ -1625,6 +1592,10 @@ class SendToDeviceTemplate(Template):
             'scene1_button_label': self.scene1_button_label,
             'scene1_button_color': self.scene1_button_color,
             'scene1_button_background_color': self.scene1_button_background_color,
+            'scene1_section_title_icon':
+                self.scene1_section_title_icon.url if self.scene1_section_title_icon else '',
+            'scene1_section_title_text': self.scene1_section_title_text,
+            'scene1_section_title_url': self.scene1_section_title_url,
             'scene2_title': self.scene2_title,
             'scene2_text': self.scene2_text,
             'scene2_icon': self.scene2_icon.url if self.scene2_icon else '',
