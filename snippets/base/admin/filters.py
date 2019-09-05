@@ -61,7 +61,12 @@ class ChannelFilter(admin.SimpleListFilter):
 
         if isinstance(queryset, SnippetQuerySet):
             return queryset.filter(**{self.value(): True})
-        return queryset.filter(**{f'targets__{self.value()}': True}).distinct()
+
+        # ASRSnippets
+        else:
+            if hasattr(queryset.model, 'jobs'):
+                return queryset.filter(**{f'jobs__targets__{self.value()}': True}).distinct()
+            return queryset.filter(**{f'targets__{self.value()}': True}).distinct()
 
 
 class ActivityStreamFilter(admin.SimpleListFilter):
@@ -143,11 +148,16 @@ class RelatedPublishedASRSnippetFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
 
-        if self.value() == 'yes':
-            return queryset.filter(snippets__status=models.STATUS_CHOICES['Published']).distinct()
-        elif self.value() == 'no':
-            return queryset.exclude(
-                snippets__status=models.STATUS_CHOICES['Published']).distinct()
+        if hasattr(queryset.model, 'snippets'):
+            if self.value() == 'yes':
+                return queryset.filter(snippets__jobs__status=models.Job.PUBLISHED).distinct()
+            elif self.value() == 'no':
+                return queryset.exclude(snippets__jobs__status=models.Job.PUBLISHED).distinct()
+        else:
+            if self.value() == 'yes':
+                return queryset.filter(jobs__status=models.Job.PUBLISHED).distinct()
+            elif self.value() == 'no':
+                return queryset.exclude(jobs__status=models.Job.PUBLISHED).distinct()
 
 
 class IconRelatedPublishedASRSnippetFilter(RelatedPublishedASRSnippetFilter):
@@ -157,7 +167,7 @@ class IconRelatedPublishedASRSnippetFilter(RelatedPublishedASRSnippetFilter):
 
         icon_ids = []
         for icon in queryset.all():
-            if icon.snippets.filter(status=models.STATUS_CHOICES['Published']).count():
+            if icon.snippets.filter(jobs__status=models.Job.PUBLISHED).count():
                 icon_ids.append(icon.id)
 
         if self.value() == 'yes':

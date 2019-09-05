@@ -24,9 +24,27 @@ MATCH_LOCALE_REGEX = re.compile(r'(\w+(?:-\w+)*)')
 RESERVED_VARIABLES = ('_', 'snippet_id')
 
 
+class RelatedJobsMixin():
+    def related_published_jobs(self, obj):
+        return obj.jobs.filter(status=models.Job.PUBLISHED).count()
+
+    def related_total_jobs(self, obj):
+        return obj.jobs.count()
+
+    def jobs_list(self, obj):
+        """List Related Jobs."""
+        template = get_template('base/jobs_related_with_obj.jinja')
+        return mark_safe(
+            template.render({
+                'jobs': obj.jobs.all().order_by('-id')
+            })
+        )
+
+
 class RelatedSnippetsMixin():
-    def related_published_snippets(self, obj):
-        return obj.snippets.filter(status=models.STATUS_CHOICES['Published']).count()
+    def related_published_jobs(self, obj):
+        return models.Job.objects.filter(
+            status=models.Job.PUBLISHED, snippet__in=obj.snippets.all()).count()
 
     def related_total_snippets(self, obj):
         return obj.snippets.count()
@@ -134,7 +152,7 @@ class IconAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
         'created',
         'snippet_list',
         'related_total_snippets',
-        'related_published_snippets',
+        'related_published_jobs',
     ]
     list_display_links = [
         'id',
@@ -146,7 +164,7 @@ class IconAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
         'width',
         'height',
         'related_total_snippets',
-        'related_published_snippets',
+        'related_published_jobs',
         'preview',
     ]
     list_filter = [
@@ -156,7 +174,7 @@ class IconAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     class Media:
         css = {
             'all': (
-                'css/admin/ListSnippets.css',
+                'css/admin/ListSnippetsJobs.css',
             )
         }
         js = (
@@ -693,25 +711,25 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     custom_name_with_tags.short_description = 'Name'
 
 
-class CampaignAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
+class CampaignAdmin(RelatedJobsMixin, admin.ModelAdmin):
     readonly_fields = [
         'created',
         'modified',
         'creator',
-        'related_published_snippets',
-        'related_total_snippets',
-        'snippet_list',
+        'related_published_jobs',
+        'related_total_jobs',
+        'jobs_list',
     ]
     prepopulated_fields = {
         'slug': ('name',)
     }
     fieldsets = (
         ('ID', {'fields': ('name', 'slug')}),
-        ('Snippets', {
+        ('Jobs', {
             'fields': (
-                'related_published_snippets',
-                'related_total_snippets',
-                'snippet_list',
+                'related_published_jobs',
+                'related_total_jobs',
+                'jobs_list',
             ),
         }),
         ('Other Info', {
@@ -723,8 +741,8 @@ class CampaignAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     ]
     list_display = [
         'name',
-        'related_total_snippets',
-        'related_published_snippets',
+        'related_total_jobs',
+        'related_published_jobs',
     ]
     list_filter = [
         filters.RelatedPublishedASRSnippetFilter,
@@ -734,7 +752,7 @@ class CampaignAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     class Media:
         css = {
             'all': (
-                'css/admin/ListSnippets.css',
+                'css/admin/ListSnippetsJobs.css',
             )
         }
         js = (
@@ -756,7 +774,7 @@ class CategoryAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
         'creator',
         'snippet_list',
         'related_total_snippets',
-        'related_published_snippets',
+        'related_published_jobs',
     ]
     fieldsets = [
         ('ID', {
@@ -767,7 +785,7 @@ class CategoryAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
         }),
         ('Snippets', {
             'fields': (
-                'related_published_snippets',
+                'related_published_jobs',
                 'related_total_snippets',
                 'snippet_list',
             ),
@@ -782,7 +800,7 @@ class CategoryAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     ]
     list_display = [
         'name',
-        'related_published_snippets',
+        'related_published_jobs',
         'related_total_snippets',
     ]
     list_filter = [
@@ -792,7 +810,7 @@ class CategoryAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     class Media:
         css = {
             'all': (
-                'css/admin/ListSnippets.css',
+                'css/admin/ListSnippetsJobs.css',
             )
         }
         js = (
@@ -807,7 +825,7 @@ class CategoryAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-class TargetAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
+class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
     form = forms.TargetAdminForm
     save_on_top = True
     readonly_fields = [
@@ -815,9 +833,9 @@ class TargetAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
         'modified',
         'creator',
         'jexl_expr',
-        'snippet_list',
-        'related_total_snippets',
-        'related_published_snippets',
+        'jobs_list',
+        'related_total_jobs',
+        'related_published_jobs',
     ]
     filter_horizontal = [
         'client_match_rules',
@@ -827,8 +845,8 @@ class TargetAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     ]
     list_display = [
         'name',
-        'related_published_snippets',
-        'related_total_snippets',
+        'related_published_jobs',
+        'related_total_jobs',
     ]
     fieldsets = [
         ('ID', {'fields': ('name',)}),
@@ -865,11 +883,11 @@ class TargetAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
                 'client_match_rules',
             )
         }),
-        ('Snippets', {
+        ('Jobs', {
             'fields': (
-                'related_published_snippets',
-                'related_total_snippets',
-                'snippet_list',
+                'related_published_jobs',
+                'related_total_jobs',
+                'job_list',
             )
         }),
         ('Other Info', {
@@ -883,7 +901,7 @@ class TargetAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     class Media:
         css = {
             'all': (
-                'css/admin/ListSnippets.css',
+                'css/admin/ListSnippetsJobs.css',
             )
         }
         js = (
@@ -929,6 +947,8 @@ class JobAdmin(admin.ModelAdmin):
         ('campaign', RelatedDropdownFilter),
         ('targets', RelatedOnlyDropdownFilter),
         ('snippet__locale', RelatedOnlyDropdownFilter),
+        filters.ChannelFilter,
+
     ]
     search_fields = [
         'uuid',

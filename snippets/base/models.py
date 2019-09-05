@@ -1871,8 +1871,6 @@ class ASRSnippet(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=255, unique=True)
 
-    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT,
-                                 related_name='snippets')
     category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.PROTECT,
                                  related_name='snippets')
 
@@ -1884,22 +1882,7 @@ class ASRSnippet(models.Model):
                                           (300, 'Approved')],
                                  db_index=True, default=100)
 
-    publish_start = models.DateTimeField(
-        blank=True, null=True,
-        verbose_name='Publish Starts',
-        help_text=format_html(
-            'See the current time in <a target="_blank" href="http://time.is/UTC">UTC</a>'))
-    publish_end = models.DateTimeField(
-        blank=True, null=True,
-        verbose_name='Publish Ends',
-        help_text=format_html(
-            'See the current time in <a target="_blank" href="http://time.is/UTC">UTC</a>'))
     locale = models.ForeignKey('Locale', blank=False, null=True, on_delete=models.PROTECT)
-    targets = models.ManyToManyField(Target, default=None, blank=True, related_name='snippets')
-
-    weight = models.IntegerField(
-        choices=SNIPPET_WEIGHTS, default=100,
-        help_text='How often should this snippet be shown to users?')
 
     class Meta:
         ordering = ['-modified']

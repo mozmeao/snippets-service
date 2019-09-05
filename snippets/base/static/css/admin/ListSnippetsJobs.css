@@ -1,0 +1,8 @@
+#snippets-list, #jobs-list {
+    margin-left: 0px;
+
+}
+
+#snippets-list li, #jobs-list li {
+    list-style-type: disc;
+}

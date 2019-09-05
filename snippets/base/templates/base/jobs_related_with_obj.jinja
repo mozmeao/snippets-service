@@ -1,0 +1,11 @@
+<ul id="jobs-list">
+  {%- for job in jobs -%}
+    <li>
+      <a href="{{ url('admin:base_job_change', job.id) }}">
+        {{ job.id }} - {{ job.snippet.name }} - <span {% if job.status == 200 %}style="color: #0fb00f; font-weight: bold;"{% endif %}>{{ job.get_status_display() }}</span>
+      </a>
+    </li>
+  {%- else -%}
+    <li>No related jobs.</li>
+  {%- endfor -%}
+</ul>
