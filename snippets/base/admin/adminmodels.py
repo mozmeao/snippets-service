@@ -290,15 +290,23 @@ class FxASignupTemplateInline(admin.StackedInline):
         'fxa_signup_snippet',
     ]
     raw_id_fields = [
+        'scene1_section_title_icon',
         'scene1_title_icon',
         'scene1_icon',
     ]
 
     fieldsets = (
+        ('Scene 1 Section', {
+            'fields': (
+                'scene1_section_title_icon',
+                'scene1_section_title_text',
+                'scene1_section_title_url',
+            )
+        }),
         ('Scene 1 Title', {
             'fields': (
                 'scene1_title_icon',
-                'scene1_title'
+                'scene1_title',
             ),
         }),
         ('Scene 1 Main', {
@@ -342,11 +350,19 @@ class NewsletterTemplateInline(admin.StackedInline):
         'newsletter_snippet',
     ]
     raw_id_fields = [
+        'scene1_section_title_icon',
         'scene1_title_icon',
         'scene1_icon',
     ]
 
     fieldsets = (
+        ('Scene 1 Section', {
+            'fields': (
+                'scene1_section_title_icon',
+                'scene1_section_title_text',
+                'scene1_section_title_url',
+            )
+        }),
         ('Scene 1 Title', {
             'fields': (
                 'scene1_title_icon',
@@ -397,12 +413,20 @@ class SendToDeviceTemplateInline(admin.StackedInline):
         'send_to_device_snippet',
     ]
     raw_id_fields = [
+        'scene1_section_title_icon',
         'scene1_title_icon',
         'scene1_icon',
         'scene2_icon',
     ]
 
     fieldsets = (
+        ('Scene 1 Section', {
+            'fields': (
+                'scene1_section_title_icon',
+                'scene1_section_title_text',
+                'scene1_section_title_url',
+            )
+        }),
         ('Scene 1 Title', {
             'fields': (
                 'scene1_title_icon',

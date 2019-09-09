@@ -9,3 +9,4 @@ MANIFEST
 media/*
 database-dumps/*
 .product_details
+.vscode
