@@ -139,11 +139,11 @@ def fluent_link_extractor(data, variables):
                         'url': ('https://monitor.firefox.com/oauth/init?'
                                 'utm_source=desktop-snippet&utm_term=[[snippet_id]]&'
                                 'utm_content=[[channels]]&utm_campaign=[[campaign_slug]]&'
-                                'entrypoint=snippets&form_type=email'),
+                                'entrypoint=snippets&form_type=button'),
                         'flowRequestParams': {
                             'entrypoint': 'snippets',
-                            'utm_term': 'monitor',
-                            'form_type': 'email'
+                            'utm_term': 'snippet-job-[[job_id]]',
+                            'form_type': 'button'
                         }
                     }
                 }
