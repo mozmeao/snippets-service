@@ -1114,7 +1114,9 @@ class JobAdmin(admin.ModelAdmin):
             no_action_message = 'Skipped {} already canceled or completed Jobs.'
             success_message = 'Canceled {} Jobs.'
             clean_queryset = queryset.filter(
-                Q(status=models.Job.PUBLISHED) | Q(status=models.Job.SCHEDULED)
+                Q(status=models.Job.PUBLISHED) |
+                Q(status=models.Job.SCHEDULED) |
+                Q(status=models.Job.DRAFT)
             )
         else:
             messages.success(request, 'Error no action')
