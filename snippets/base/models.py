@@ -1794,7 +1794,7 @@ class Job(models.Model):
     objects = managers.JobManager()
 
     class Meta:
-        ordering = ('-publish_start', '-publish_end')
+        ordering = ['-modified']
 
     def __str__(self):
         return str(self.uuid)
