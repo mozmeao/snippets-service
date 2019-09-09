@@ -558,7 +558,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 <ol>
                   <li><code>special:accounts</code> to open Firefox Accounts</li>
                   <li><code>special:appMenu</code> to open the hamburger menu</li>
-                  <li><code>special:monitor</code> link User to Firefox Monitor and directly authenticate them. Works only in buttons. Works only after Firefox 70.</li>
+                  <li><code>special:monitor</code> link User to Firefox Monitor and directly authenticate them. Works only in buttons. Works only after Firefox 69.</li>
                 </ol><br/>
                 <strong>Content Variables:</strong><br/>
                 You can use <code>[[snippet_id]]</code> in any field and it
