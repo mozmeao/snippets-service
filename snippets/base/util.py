@@ -128,6 +128,11 @@ def fluent_link_extractor(data, variables):
                     'action': 'OPEN_APPLICATIONS_MENU',
                     'args': 'appMenu',
                 }
+            elif url.startswith('special:about'):
+                self.links[keyname] = {
+                    'action': 'OPEN_ABOUT_PAGE',
+                    'args': url.rsplit(':', 1)[1],
+                }
             elif url == 'special:accounts':
                 self.links[keyname] = {
                     'action': 'SHOW_FIREFOX_ACCOUNTS',
