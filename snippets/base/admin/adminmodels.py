@@ -912,7 +912,7 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
             'fields': (
                 'related_published_jobs',
                 'related_total_jobs',
-                'job_list',
+                'jobs_list',
             )
         }),
         ('Other Info', {
