@@ -583,6 +583,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                   <li><code>special:accounts</code> to open Firefox Accounts</li>
                   <li><code>special:appMenu</code> to open the hamburger menu</li>
                   <li><code>special:monitor</code> link User to Firefox Monitor and directly authenticate them. Works only in buttons. Works only after Firefox 69.</li>
+                  <li><code>special:about:ABOUT_PAGE</code> link to an About page. Get a list of About pages by typing <code>about:about</code> in your awesome bar. Example: <code>special:about:protections</code>.
                 </ol><br/>
                 <strong>Content Variables:</strong><br/>
                 You can use <code>[[snippet_id]]</code> in any field and it

@@ -681,6 +681,9 @@ class Template(models.Model):
                 elif value == 'special:accounts':
                     to_append['button_action'] = 'SHOW_FIREFOX_ACCOUNTS'
                     to_delete.append(key)
+                elif value.startswith('special:about'):
+                    to_append['button_action'] = 'OPEN_ABOUT_PAGE'
+                    to_append['button_action_args'] = value.rsplit(':', 1)[1]
                 elif value == 'special:monitor':
                     to_append['button_action'] = 'ENABLE_FIREFOX_MONITOR'
                     to_append['button_action_args'] = {
