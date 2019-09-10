@@ -1182,6 +1182,12 @@ class FxASignupTemplate(Template):
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
     )
+    retry_button_label = models.CharField(
+        verbose_name='Retry Button Label',
+        max_length=50,
+        default='Try again',
+        help_text='Button label after a failed form submission'
+    )
 
     @property
     def code_name(self):
@@ -1209,6 +1215,7 @@ class FxASignupTemplate(Template):
             'utm_campaign': self.utm_campaign,
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
+            'retry_button_label': self.retry_button_label,
         }
         data = self._process_rendered_data(data)
         return data
@@ -1365,6 +1372,12 @@ class NewsletterTemplate(Template):
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
     )
+    retry_button_label = models.CharField(
+        verbose_name='Retry Button Label',
+        max_length=50,
+        default='Try again',
+        help_text='Button label after a failed form submission'
+    )
 
     @property
     def code_name(self):
@@ -1395,6 +1408,7 @@ class NewsletterTemplate(Template):
             'error_text': self.error_text,
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
+            'retry_button_label': self.retry_button_label,
         }
         data = self._process_rendered_data(data)
         return data
@@ -1581,6 +1595,12 @@ class SendToDeviceTemplate(Template):
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
     )
+    retry_button_label = models.CharField(
+        verbose_name='Retry Button Label',
+        max_length=50,
+        default='Try again',
+        help_text='Button label after a failed form submission'
+    )
 
     @property
     def code_name(self):
@@ -1616,6 +1636,7 @@ class SendToDeviceTemplate(Template):
             'error_text': self.error_text,
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
+            'retry_button_label': self.retry_button_label,
         }
         data = self._process_rendered_data(data)
         return data

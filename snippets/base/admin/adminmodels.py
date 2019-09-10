@@ -335,7 +335,8 @@ class FxASignupTemplateInline(admin.StackedInline):
                 'utm_term',
                 'utm_campaign',
                 'block_button_text',
-                'do_not_autoblock'
+                'do_not_autoblock',
+                'retry_button_label',
             ),
         })
     )
@@ -398,7 +399,8 @@ class NewsletterTemplateInline(admin.StackedInline):
         ('Extra', {
             'fields': (
                 'block_button_text',
-                'do_not_autoblock'
+                'do_not_autoblock',
+                'retry_button_label',
             ),
         })
     )
@@ -468,7 +470,8 @@ class SendToDeviceTemplateInline(admin.StackedInline):
         ('Extra', {
             'fields': (
                 'block_button_text',
-                'do_not_autoblock'
+                'do_not_autoblock',
+                'retry_button_label',
             ),
         })
     )
