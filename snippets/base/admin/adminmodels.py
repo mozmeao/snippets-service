@@ -1009,8 +1009,7 @@ class JobAdmin(admin.ModelAdmin):
             'fields': (('created', 'modified'),),
         }),
         ('Advanced', {
-            'fields': ('distributions',),
-            'classes': ('collapse',),
+            'fields': ('distribution',),
         }),
     ]
     actions = [
@@ -1145,3 +1144,7 @@ class JobAdmin(admin.ModelAdmin):
     action_cancel_job.allowed_permissions = (
         'publish',
     )
+
+
+class DistributionAdmin(admin.ModelAdmin):
+    save_on_top = True

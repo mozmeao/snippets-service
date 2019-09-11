@@ -6,7 +6,8 @@ from django.core.management import call_command
 from django.test.utils import override_settings
 
 from snippets.base import models
-from snippets.base.tests import JobFactory, SnippetFactory, TargetFactory, TestCase
+from snippets.base.tests import (DistributionFactory, DistributionBundleFactory, JobFactory,
+                                 SnippetFactory, TargetFactory, TestCase)
 
 
 class DisableSnippetsPastPublishDateTests(TestCase):
@@ -67,6 +68,12 @@ class UpdateJobsTests(TestCase):
 
 
 class GenerateBundles(TestCase):
+    def setUp(self):
+        self.distribution = DistributionFactory.create(name='Default')
+        self.distribution_bundle = DistributionBundleFactory.create(name='Default',
+                                                                    code_name='default')
+        self.distribution_bundle.distributions.add(self.distribution)
+
     def test_generate_all(self):
         with patch('snippets.base.management.commands.generate_bundles.Job') as job_mock:
             job_mock.objects.all.return_value = []
@@ -107,11 +114,29 @@ class GenerateBundles(TestCase):
             snippet__locale=',en,',
             targets=[target],
         )
-        # Job to be included in the bundle
-        published_job = JobFactory(
+        JobFactory(
             status=models.Job.PUBLISHED,
             snippet__locale=',en,',
             targets=[target],
+            distribution__name='not-default',
+        )
+
+        # Jobs to be included in the bundle
+        published_job_1 = JobFactory(
+            status=models.Job.PUBLISHED,
+            snippet__locale=',en,',
+            targets=[target],
+        )
+        published_job_2 = JobFactory(
+            status=models.Job.PUBLISHED,
+            snippet__locale=',en,',
+            targets=[target],
+            distribution__name='other-distribution-part-of-default-bundle',
+        )
+
+        # Add Distribution to the Default DistributionBundle
+        models.DistributionBundle.objects.get(name='Default').distributions.add(
+            models.Distribution.objects.get(name='other-distribution-part-of-default-bundle')
         )
 
         with patch.multiple('snippets.base.management.commands.generate_bundles',
@@ -123,6 +148,7 @@ class GenerateBundles(TestCase):
             call_command('generate_bundles', stdout=Mock())
 
         self.assertEqual(mock['default_storage'].save.call_count, 4)
+
         mock['default_storage'].save.assert_has_calls([
             call('pregen/Firefox/release/en-us/default.json', ANY),
             call('pregen/Firefox/release/en-au/default.json', ANY),
@@ -134,11 +160,12 @@ class GenerateBundles(TestCase):
         # the correct one.
         self.assertEqual(
             len(mock['json'].dumps.call_args_list[0][0][0]['messages']),
-            1
+            2
         )
         self.assertEqual(
-            mock['json'].dumps.call_args_list[0][0][0]['messages'][0]['id'],
-            str(published_job.id)
+            set([mock['json'].dumps.call_args_list[0][0][0]['messages'][0]['id'],
+                 mock['json'].dumps.call_args_list[0][0][0]['messages'][1]['id']]),
+            set([str(published_job_1.id), str(published_job_2.id)])
         )
 
     @override_settings(BUNDLE_BROTLI_COMPRESS=True)

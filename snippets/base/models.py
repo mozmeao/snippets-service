@@ -1790,6 +1790,14 @@ class Job(models.Model):
         max_length=500,
         help_text='Comma separated list of distributions. Defaults to `default`'
     )
+    distribution = models.ForeignKey(
+        'Distribution',
+        null=True,
+        on_delete=models.PROTECT,
+        related_name='jobs',
+        help_text=('Set a Distribution for this Job. It should be normally '
+                   'left to Default. Useful for running Normandy experiments.'),
+    )
 
     objects = managers.JobManager()
 
@@ -1933,16 +1941,6 @@ class Job(models.Model):
         }
         return export
 
-    def save(self, *args, **kwargs):
-        # Make sure that distributions always starts and ends with `,` and it's always
-        # lowercase.
-        self.distributions = self.distributions.lower()
-        if self.distributions[0] != ',':
-            self.distributions = ',' + self.distributions
-        if self.distributions[-1] != ',':
-            self.distributions = self.distributions + ','
-        super().save(*args, **kwargs)
-
 
 class ASRSnippet(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
@@ -2078,18 +2076,19 @@ def update_asrsnippet_modified_date(sender, instance, **kwargs):
     now = timezone.now()
     snippets = None
 
-    if isinstance(instance, Template) or isinstance(instance, Job):
+    if isinstance(instance, (Template, Job)):
         snippets = [instance.snippet.pk]
 
-    elif (isinstance(instance, Campaign) or
-          isinstance(instance, Target)):
-        snippets = [id for id in instance.jobs.values_list('snippet__pk', flat=True)]
+    elif isinstance(instance, (Campaign, Target)):
+        snippets = {id for id in instance.jobs.values_list('snippet__pk', flat=True)}
 
     elif isinstance(instance, Icon):
-
         # Convert the value_list Queryset to a list, required for the upcoming
         # update() query to work.
-        snippets = [id for id in instance.snippets.values_list('pk', flat=True)]
+        snippets = {id for id in instance.snippets.values_list('pk', flat=True)}
+
+    elif isinstance(instance, DistributionBundle):
+        snippets = {id for id in instance.distributions.values_list('jobs__snippet_id', flat=True)}
 
     if snippets:
         ASRSnippet.objects.filter(pk__in=snippets).update(modified=now)
@@ -2108,3 +2107,29 @@ class Addon(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Distribution(models.Model):
+    name = models.CharField(max_length=500, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class DistributionBundle(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=255, unique=True)
+    code_name = models.CharField(max_length=100, unique=True)
+    distributions = models.ManyToManyField(
+        'Distribution'
+    )
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        self.code_name = self.code_name.lower()
+
+        super().save(*args, **kwargs)

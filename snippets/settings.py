@@ -338,6 +338,8 @@ ADMIN_REORDER = [
             'base.Icon',
             'base.Addon',
             'base.Locale',
+            'base.Distribution',
+            'base.DistributionBundle',
         ]
 
     },
