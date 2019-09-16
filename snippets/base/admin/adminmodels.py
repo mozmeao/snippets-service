@@ -336,7 +336,6 @@ class FxASignupTemplateInline(admin.StackedInline):
                 'utm_campaign',
                 'block_button_text',
                 'do_not_autoblock',
-                'retry_button_label',
             ),
         })
     )
@@ -393,6 +392,7 @@ class NewsletterTemplateInline(admin.StackedInline):
                 'locale',
                 'success_text',
                 'error_text',
+                'retry_button_label',
             )
         }),
 
@@ -400,7 +400,6 @@ class NewsletterTemplateInline(admin.StackedInline):
             'fields': (
                 'block_button_text',
                 'do_not_autoblock',
-                'retry_button_label',
             ),
         })
     )
@@ -464,6 +463,7 @@ class SendToDeviceTemplateInline(admin.StackedInline):
                 'success_title',
                 'success_text',
                 'error_text',
+                'retry_button_label',
             )
         }),
 
@@ -471,7 +471,6 @@ class SendToDeviceTemplateInline(admin.StackedInline):
             'fields': (
                 'block_button_text',
                 'do_not_autoblock',
-                'retry_button_label',
             ),
         })
     )

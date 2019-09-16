@@ -1182,12 +1182,6 @@ class FxASignupTemplate(Template):
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
     )
-    retry_button_label = models.CharField(
-        verbose_name='Retry Button Label',
-        max_length=50,
-        default='Try again',
-        help_text='Button label after a failed form submission'
-    )
 
     @property
     def code_name(self):
@@ -1357,6 +1351,12 @@ class NewsletterTemplate(Template):
         verbose_name='Error Text',
         help_text='Text of error message if form submission fails.',
     )
+    retry_button_label = models.CharField(
+        verbose_name='Retry Button Label',
+        max_length=50,
+        default='Try again',
+        help_text='Button label after a failed form submission'
+    )
 
     ###
     # Extras
@@ -1371,12 +1371,6 @@ class NewsletterTemplate(Template):
         default=False, blank=True,
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
-    )
-    retry_button_label = models.CharField(
-        verbose_name='Retry Button Label',
-        max_length=50,
-        default='Try again',
-        help_text='Button label after a failed form submission'
     )
 
     @property
@@ -1580,6 +1574,12 @@ class SendToDeviceTemplate(Template):
         verbose_name='Error Text',
         help_text='Text of error message if form submission fails.',
     )
+    retry_button_label = models.CharField(
+        verbose_name='Retry Button Label',
+        max_length=50,
+        default='Try again',
+        help_text='Button label after a failed form submission'
+    )
 
     ###
     # Extras
@@ -1594,12 +1594,6 @@ class SendToDeviceTemplate(Template):
         default=False, blank=True,
         help_text=('Used to prevent blocking the snippet after the '
                    'CTA (link or button) has been clicked.'),
-    )
-    retry_button_label = models.CharField(
-        verbose_name='Retry Button Label',
-        max_length=50,
-        default='Try again',
-        help_text='Button label after a failed form submission'
     )
 
     @property
