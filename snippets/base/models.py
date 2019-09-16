@@ -1788,14 +1788,8 @@ class Job(models.Model):
         verbose_name='Publish Ends',
         help_text=format_html(
             'See the current time in <a target="_blank" href="https://time.is/UTC">UTC</a>'))
-    distributions = models.CharField(
-        default=',default,',
-        max_length=500,
-        help_text='Comma separated list of distributions. Defaults to `default`'
-    )
     distribution = models.ForeignKey(
         'Distribution',
-        null=True,
         on_delete=models.PROTECT,
         related_name='jobs',
         help_text=('Set a Distribution for this Job. It should be normally '
