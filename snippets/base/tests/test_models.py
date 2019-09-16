@@ -25,6 +25,7 @@ from snippets.base.models import (STATUS_CHOICES,
 from snippets.base.util import fluent_link_extractor
 from snippets.base.tests import (ASRSnippetFactory,
                                  ClientMatchRuleFactory,
+                                 DistributionBundleFactory,
                                  IconFactory,
                                  JobFactory,
                                  SearchProviderFactory,
@@ -586,6 +587,9 @@ class ASRSnippetTests(TestCase):
 
     def test_modified_date_updates_when_template_updates(self):
         snippet = ASRSnippetFactory()
+        # Must refresh from db to get the actual datetime stored in db which
+        # may be different by milliseconds from the original python datetime.
+        snippet.refresh_from_db()
         old_modified = snippet.modified
 
         template = snippet.template_ng
@@ -599,6 +603,9 @@ class ASRSnippetTests(TestCase):
 
     def test_modified_date_updates_when_icon_updates(self):
         snippet = ASRSnippetFactory()
+        # Must refresh from db to get the actual datetime stored in db which
+        # may be different by milliseconds from the original python datetime.
+        snippet.refresh_from_db()
         old_modified = snippet.modified
 
         template = snippet.template_ng
@@ -613,6 +620,9 @@ class ASRSnippetTests(TestCase):
     def test_modified_date_updates_when_campaign_updates(self):
         job = JobFactory()
         snippet = job.snippet
+        # Must refresh from db to get the actual datetime stored in db which
+        # may be different by milliseconds from the original python datetime.
+        snippet.refresh_from_db()
         old_modified = snippet.modified
 
         campaign = job.campaign
@@ -628,6 +638,9 @@ class ASRSnippetTests(TestCase):
         target = TargetFactory()
         job = JobFactory(targets=[target])
         snippet = job.snippet
+        # Must refresh from db to get the actual datetime stored in db which
+        # may be different by milliseconds from the original python datetime.
+        snippet.refresh_from_db()
         old_modified = snippet.modified
 
         target.name = 'new name'
@@ -640,6 +653,9 @@ class ASRSnippetTests(TestCase):
     def test_modified_date_updates_when_job_updates(self):
         job = JobFactory()
         snippet = job.snippet
+        # Must refresh from db to get the actual datetime stored in db which
+        # may be different by milliseconds from the original python datetime.
+        snippet.refresh_from_db()
         old_modified = snippet.modified
 
         job.status = Job.COMPLETED
@@ -647,6 +663,23 @@ class ASRSnippetTests(TestCase):
         snippet.refresh_from_db()
         new_modified = snippet.modified
 
+        self.assertNotEqual(old_modified, new_modified)
+
+    def test_modified_date_updates_when_distribution_bundle_updates(self):
+        job = JobFactory()
+        distribution_bundle = DistributionBundleFactory()
+        distribution_bundle.distributions.add(job.distribution)
+        snippet = job.snippet
+        # Must refresh from db to get the actual datetime stored in db which
+        # may be different by milliseconds from the original python datetime.
+        snippet.refresh_from_db()
+        old_modified = snippet.modified
+
+        distribution_bundle.code_name = 'bar'
+        distribution_bundle.save()
+
+        snippet.refresh_from_db()
+        new_modified = snippet.modified
         self.assertNotEqual(old_modified, new_modified)
 
 

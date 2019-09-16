@@ -217,11 +217,29 @@ class LocaleFactory(factory.django.DjangoModelFactory):
         model = models.Locale
 
 
+class DistributionFactory(factory.django.DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Distribution {}'.format(n))
+
+    class Meta:
+        model = models.Distribution
+        django_get_or_create = ('name',)
+
+
+class DistributionBundleFactory(factory.django.DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Distribution Bundle {}'.format(n))
+    code_name = factory.Sequence(lambda n: 'distribution_bundle_{}'.format(n))
+
+    class Meta:
+        model = models.DistributionBundle
+        django_get_or_create = ('name', 'code_name')
+
+
 class JobFactory(factory.django.DjangoModelFactory):
     creator = factory.SubFactory(UserFactory)
     campaign = factory.SubFactory(CampaignFactory, creator=factory.SelfAttribute('..creator'))
     status = models.Job.PUBLISHED
     snippet = factory.SubFactory(ASRSnippetFactory, creator=factory.SelfAttribute('..creator'))
+    distribution = factory.SubFactory(DistributionFactory, name='Default')
 
     class Meta:
         model = models.Job
