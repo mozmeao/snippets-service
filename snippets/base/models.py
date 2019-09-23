@@ -1209,6 +1209,7 @@ class FxASignupTemplate(Template):
             'utm_campaign': self.utm_campaign,
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
+            'retry_button_label': self.retry_button_label,
         }
         data = self._process_rendered_data(data)
         return data
@@ -1350,6 +1351,12 @@ class NewsletterTemplate(Template):
         verbose_name='Error Text',
         help_text='Text of error message if form submission fails.',
     )
+    retry_button_label = models.CharField(
+        verbose_name='Retry Button Label',
+        max_length=50,
+        default='Try again',
+        help_text='Button label after a failed form submission'
+    )
 
     ###
     # Extras
@@ -1395,6 +1402,7 @@ class NewsletterTemplate(Template):
             'error_text': self.error_text,
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
+            'retry_button_label': self.retry_button_label,
         }
         data = self._process_rendered_data(data)
         return data
@@ -1566,6 +1574,12 @@ class SendToDeviceTemplate(Template):
         verbose_name='Error Text',
         help_text='Text of error message if form submission fails.',
     )
+    retry_button_label = models.CharField(
+        verbose_name='Retry Button Label',
+        max_length=50,
+        default='Try again',
+        help_text='Button label after a failed form submission'
+    )
 
     ###
     # Extras
@@ -1616,6 +1630,7 @@ class SendToDeviceTemplate(Template):
             'error_text': self.error_text,
             'block_button_text': self.block_button_text,
             'do_not_autoblock': self.do_not_autoblock,
+            'retry_button_label': self.retry_button_label,
         }
         data = self._process_rendered_data(data)
         return data
