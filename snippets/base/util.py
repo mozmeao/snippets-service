@@ -142,7 +142,7 @@ def fluent_link_extractor(data, variables):
                     'action': 'ENABLE_FIREFOX_MONITOR',
                     'args': {
                         'url': ('https://monitor.firefox.com/oauth/init?'
-                                'utm_source=desktop-snippet&utm_term=[[snippet_id]]&'
+                                'utm_source=desktop-snippet&utm_term=[[job_id]]&'
                                 'utm_content=[[channels]]&utm_campaign=[[campaign_slug]]&'
                                 'entrypoint=snippets&form_type=button'),
                         'flowRequestParams': {
