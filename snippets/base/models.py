@@ -688,7 +688,7 @@ class Template(models.Model):
                     to_append['button_action'] = 'ENABLE_FIREFOX_MONITOR'
                     to_append['button_action_args'] = {
                         'url': ('https://monitor.firefox.com/oauth/init?'
-                                'utm_source=desktop-snippet&utm_term=[[snippet_id]]&'
+                                'utm_source=desktop-snippet&utm_term=[[job_id]]&'
                                 'utm_content=[[channels]]&utm_campaign=[[campaign_slug]]&'
                                 'entrypoint=snippets&form_type=button'),
                         'flowRequestParams': {
@@ -772,7 +772,7 @@ class Template(models.Model):
             'utm_source': 'desktop-snippet',
             'utm_medium': 'snippet',
             'utm_campaign': '[[campaign_slug]]',
-            'utm_term': '[[snippet_id]]',
+            'utm_term': '[[job_id]]',
             'utm_content': '[[channels]]',
         }
 

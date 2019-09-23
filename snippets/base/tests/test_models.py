@@ -374,15 +374,15 @@ class TemplateTests(TestCase):
             snippet.template_ng.text,
             ('This is a <a href="https://www.example.com/?utm_medium=SI'
              '&utm_source=desktop-snippet&utm_campaign=[[campaign_slug]]'
-             '&utm_term=[[snippet_id]]&utm_content=[[channels]]">linked test</a> and '
+             '&utm_term=[[job_id]]&utm_content=[[channels]]">linked test</a> and '
              '<a href="https://example.com/?utm_source=desktop-snippet&utm_medium=snippet'
-             '&utm_campaign=[[campaign_slug]]&utm_term=[[snippet_id]]&utm_content=[[channels]]">'
+             '&utm_campaign=[[campaign_slug]]&utm_term=[[job_id]]&utm_content=[[channels]]">'
              'another link</a> without any params')
         )
         self.assertEqual(
             snippet.template_ng.button_url,
             ('https://www.mozilla.org/foo/bar/?lala=lolo&utm_source=desktop-snippet'
-             '&utm_medium=snippet&utm_campaign=[[campaign_slug]]&utm_term=[[snippet_id]]'
+             '&utm_medium=snippet&utm_campaign=[[campaign_slug]]&utm_term=[[job_id]]'
              '&utm_content=[[channels]]')
         )
 
