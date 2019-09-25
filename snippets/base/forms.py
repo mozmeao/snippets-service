@@ -214,27 +214,6 @@ class TemplateChooserWidget(forms.Select):
         ]
 
 
-class IconWidget(forms.TextInput):
-    def render(self, name, value, attrs=None, renderer=None):
-        if not attrs:
-            attrs = {}
-        attrs['style'] = 'display:none'
-        original_widget_code = super(IconWidget, self).render(name, value, attrs)
-        widget_code = """
-        <div id="{name}-container">
-          <img src="{value}">
-          <input type="file" class="image-input">
-          {original_widget_code}
-        </div>
-        """.format(name=name, value=value,
-                   original_widget_code=original_widget_code)
-        return mark_safe(widget_code)
-
-    class Media:
-        js = ('js/lib/jquery-3.3.1.min.js',
-              'js/iconWidget.js')
-
-
 class PublishPermissionFormMixIn:
     def _publish_permission_check(self, cleaned_data):
         """If Snippet is Published or the current form sets it to Published verify that
