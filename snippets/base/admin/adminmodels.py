@@ -591,7 +591,8 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 You can use <code>[[snippet_id]]</code> in any field and it
                 will be automatically replaced by Snippet ID when served to users.
                 Similarly <code>[[campaign_slug]]</code> gets replaced by Campaign Slug,
-                <code>[[channels]]</code> by targeted channels, <code>[[job_id]]</code>
+                <code>[[channels]]</code> by targeted channels, <code>[[operating_systems]]</code>
+                by targeted operating systems, and <code>[[job_id]]</code>
                 by Job ID.
                 <br/>
                 Example: This is a <code>&lt;a href=&quot;https://example.com?utm_term=[[snippet_id]]&quot;&gt;link&lt;/a&gt;</code>
@@ -774,6 +775,7 @@ class CampaignAdmin(RelatedJobsMixin, admin.ModelAdmin):
     list_filter = [
         filters.RelatedPublishedASRSnippetFilter,
         filters.ChannelFilter,
+        filters.OSFilter,
     ]
 
     class Media:
@@ -881,6 +883,10 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
             'description': 'What channels will this snippet be available in?',
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
         }),
+        ('Operating systems', {
+            'description': 'On which operating systems will this snippet be available?',
+            'fields': (('on_windows', 'on_macos', 'on_linux'),)
+        }),
         ('Targeting', {
             'fields': (
                 'filtr_is_default_browser',
@@ -975,6 +981,7 @@ class JobAdmin(admin.ModelAdmin):
         ('targets', RelatedOnlyDropdownFilter),
         ('snippet__locale', RelatedOnlyDropdownFilter),
         filters.ChannelFilter,
+        filters.OSFilter,
 
     ]
     search_fields = [

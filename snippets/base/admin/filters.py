@@ -69,6 +69,31 @@ class ChannelFilter(admin.SimpleListFilter):
             return queryset.filter(**{f'targets__{self.value()}': True}).distinct()
 
 
+class OSFilter(admin.SimpleListFilter):
+    title = 'Operating System'
+    parameter_name = 'operating_system'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('on_windows', 'Windows'),
+            ('on_macos', 'macOS'),
+            ('on_linux', 'Linux'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+
+        if isinstance(queryset, SnippetQuerySet):
+            return queryset.filter(**{self.value(): True})
+
+        # ASRSnippets
+        else:
+            if hasattr(queryset.model, 'jobs'):
+                return queryset.filter(**{f'jobs__target__{self.value()}': True}).distinct()
+            return queryset.filter(**{f'targets__{self.value()}': True}).distinct()
+
+
 class ActivityStreamFilter(admin.SimpleListFilter):
     title = 'Activity Stream'
     parameter_name = 'is_activity_stream'

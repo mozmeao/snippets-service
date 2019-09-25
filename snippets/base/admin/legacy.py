@@ -63,6 +63,7 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         'published',
         'ready_for_review',
         filters.ChannelFilter,
+        filters.OSFilter,
         filters.ActivityStreamFilter,
         ('locales', RelatedDropdownFilter),
         ('client_match_rules', RelatedDropdownFilter),
@@ -102,6 +103,10 @@ class SnippetAdmin(QuickEditAdmin, BaseSnippetAdmin):
         ('Product channels', {
             'description': 'What channels will this snippet be available in?',
             'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
+        }),
+        ('Operating systems', {
+            'description': 'On which operating systems will this snippet be available?',
+            'fields': (('on_windows', 'on_macos', 'on_linux'),)
         }),
         ('Startpage Versions', {
             'fields': (('on_startpage_1', 'on_startpage_2', 'on_startpage_3',

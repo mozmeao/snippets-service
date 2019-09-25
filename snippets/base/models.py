@@ -39,6 +39,7 @@ from snippets.base import managers, slack, util, validators
 JINJA_ENV = engines['backend']
 
 CHANNELS = ('release', 'beta', 'aurora', 'nightly', 'esr')
+OSES = ('windows', 'macos', 'linux')
 SNIPPET_WEIGHTS = (
     (2, 'Appear 1/50th as often as an average snippet'),
     (5, 'Appear 1/20th as often as an average snippet'),
@@ -62,6 +63,7 @@ Client = namedtuple('Client', (
     'build_target',
     'locale',
     'channel',
+    'operating_system',
     'os_version',
     'distribution',
     'distribution_version'
@@ -265,6 +267,10 @@ class Snippet(SnippetBaseModel):
                                     db_index=True)
     on_nightly = models.BooleanField(default=False, verbose_name='Nightly', db_index=True)
     on_esr = models.BooleanField(default=False, verbose_name='ESR', db_index=True)
+    
+    on_windows = models.BooleanField(default=True, verbose_name='Windows', db_index=True)
+    on_macos = models.BooleanField(default=True, verbose_name='macOS', db_index=True)
+    on_linux = models.BooleanField(default=True, verbose_name='Linux', db_index=True)
 
     on_startpage_1 = models.BooleanField(default=False, verbose_name='Version 1')
     on_startpage_2 = models.BooleanField(default=False, verbose_name='Version 2')
@@ -407,6 +413,14 @@ class Snippet(SnippetBaseModel):
         return channels
 
     @property
+    def operating_systems(self):
+        oses = []
+        for os in OSES:
+            if getattr(self, 'on_{0}'.format(os), False):
+                oses.append(os)
+        return oses
+
+    @property
     def dict_data(self):
         return json.loads(self.data)
 
@@ -500,6 +514,10 @@ class Target(models.Model):
                                     db_index=True)
     on_nightly = models.BooleanField(default=False, verbose_name='Nightly', db_index=True)
     on_esr = models.BooleanField(default=False, verbose_name='ESR', db_index=True)
+
+    on_windows = models.BooleanField(default=True, verbose_name='Windows', db_index=True)
+    on_macos = models.BooleanField(default=True, verbose_name='macOS', db_index=True)
+    on_linux = models.BooleanField(default=True, verbose_name='Linux', db_index=True)
 
     on_startpage_6 = models.BooleanField(default=True, verbose_name='Activity Stream Router',
                                          db_index=True)
@@ -1882,6 +1900,16 @@ class Job(models.Model):
                 if getattr(target, 'on_{0}'.format(channel), False):
                     channels.append(channel)
         return set(channels)
+
+    @property
+    def operating_systems(self):
+        oses = []
+
+        for target in self.targets.all():
+            for os in OSES:
+                if getattr(target, 'on_{0}'.format(os), False):
+                    oses.append(os)
+        return set(oses)
 
     def change_status(self, status, user=None, send_slack=True):
         if self.status == status:

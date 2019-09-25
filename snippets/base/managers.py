@@ -43,7 +43,7 @@ class SnippetQuerySet(QuerySet):
         return matching_snippets
 
     def match_client(self, client):
-        from snippets.base.models import CHANNELS, ClientMatchRule
+        from snippets.base.models import CHANNELS, OSES, ClientMatchRule
 
         filters = {}
 
