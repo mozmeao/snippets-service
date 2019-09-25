@@ -200,7 +200,6 @@ class TemplateDataWidget(forms.TextInput):
             'all': ('css/templateDataWidget.css',)
         }
         js = [
-            'js/lib/jquery-3.3.1.min.js',
             'js/lib/nunjucks.min.js',
             'js/templateDataWidget.js'
         ]
@@ -209,7 +208,6 @@ class TemplateDataWidget(forms.TextInput):
 class TemplateChooserWidget(forms.Select):
     class Media:
         js = [
-            'js/lib/jquery-3.3.1.min.js',
             'js/templateChooserWidget.js',
         ]
 
@@ -541,7 +539,6 @@ class AutoTranslatorWidget(forms.Select):
 
     class Media:
         js = [
-            'js/lib/jquery-3.3.1.min.js',
             'js/autoTranslatorWidget.js',
         ]
 
@@ -619,7 +616,6 @@ class ASRSnippetAdminForm(forms.ModelForm):
 
     class Media:
         js = [
-            'js/lib/jquery-3.3.1.min.js',
             'js/admin/inlineMover.js',
         ]
 
