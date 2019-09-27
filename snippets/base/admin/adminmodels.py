@@ -457,8 +457,8 @@ class SendToDeviceTemplateInline(admin.StackedInline):
                 'scene2_dismiss_button_text',
 
                 'locale',
-                'country',
                 ('include_sms', 'message_id_sms',),
+                'country',
                 'message_id_email',
                 'success_title',
                 'success_text',

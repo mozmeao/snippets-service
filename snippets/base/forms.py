@@ -601,6 +601,15 @@ class SendToDeviceTemplateForm(forms.ModelForm):
         model = models.SendToDeviceTemplate
         exclude = []
 
+    class Media:
+        css = {
+            'all': ('css/admin/sms-country-toggle.css',),
+        }
+
+        js = [
+            'js/admin/sms-country-toggle.js',
+        ]
+
 
 class SimpleBelowSearchTemplateForm(forms.ModelForm):
 
