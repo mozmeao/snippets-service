@@ -1,0 +1,124 @@
+{% extends 'base/base.jinja' %}
+
+{# Load the tag library #}
+{% block headextras %}
+  <!-- Table styling from Nikhil Krishnan https://codepen.io/nikhil8krishnan -->
+  <style>
+   table {
+       width: 100%;
+   }
+   .tbl-header{
+       background-color: rgba(255,255,255,0.3);
+   }
+   .tbl-content{
+       margin-top: 0px;
+       border: 1px solid rgba(255,255,255,0.3);
+   }
+   th{
+       padding: 20px 15px;
+       text-align: left;
+       font-weight: bold;
+       font-size: 12px;
+       color: black;
+       text-transform: uppercase;
+       width: 200px;
+       background-color: rgba(255,255,255,0.9);
+   }
+   td{
+       padding: 10px;
+       text-align: left;
+       vertical-align:middle;
+       font-size: 14px;
+       color: black;
+       border-bottom: solid 1px rgba(255,255,255,0.1);
+       width: 200px;
+   }
+
+   section{
+       margin: 50px;
+   }
+
+   .index {
+       width: 50px;
+       text-align: center;
+   }
+
+   .snippet-name {
+       width: 500px;
+   }
+
+   .align-center {
+       text-align: center;
+   }
+
+   .odd-row {
+       background-color: rgba(255,255,255,0.8);
+   }
+
+   .even-row {
+       background-color: rgba(255,255,255,0.6);
+   }
+
+   #search-form {
+       margin: 20px;
+
+   }
+
+   .hidden {
+       display: none;
+   }
+
+
+  </style>
+  <script src="{{ static('js/clipboard.min.js') }}"></script>
+  <script src="{{ static('js/copy_preview.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+  <form action="" method="get" id="search-form">
+    {{ filter.form.as_table() }}
+    <button type="submit" class="btn btn-primary">
+      Submit
+    </button>
+  </form>
+  <section>
+      <div id="list-table" class="tbl-content">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <thead>
+          <tr>
+            <th class="index">#</th>
+            <th class="snippet-name">Snippet</th>
+            <th class="align-center">Locale</th>
+            <th class="align-center">Publication Start</th>
+            <th class="align-center">Publication End</th>
+            <th>Targets</th>
+            <th class="align-center">Preview Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for obj in filter.qs %}
+            <tr class="{% if loop.index % 2 == 0 %} odd-row {% else %} even-row {% endif %}">
+              <td class="index">{{ obj.id }}</td>
+              <td class="snippet-name">{{ obj.snippet.name }}</td>
+              <td class="align-center">{{ obj.snippet.locale }}</td>
+              <td class="align-center">{{ obj.publish_start }}</td>
+              <td class="align-center">{{ obj.publish_end }}</td>
+              <td>
+                {% for target in obj.targets.all() %}
+                  <li>{{ target.name }}</li>
+                {% endfor %}
+              </td>
+              <td class="align-center">
+                <button id="copyPreviewLink" class="btn"
+                        data-clipboard-text="{{  obj.snippet.get_preview_url()  }}"
+                        originalText="Copy Preview Link" type="button">
+                  Copy Preview Link
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

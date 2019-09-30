@@ -2,7 +2,6 @@ import json
 import logging
 
 from distutils.util import strtobool
-
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ValidationError
@@ -14,12 +13,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
+from django_filters.views import FilterView
 from django_statsd.clients import statsd
 from raven.contrib.django.models import client as sentry_client
 
 from snippets.base import util
 from snippets.base.bundles import ASRSnippetBundle, SnippetBundle
 from snippets.base.decorators import access_control
+from snippets.base.filters import JobFilter
 from snippets.base.models import ASRSnippet, Client, Snippet, SnippetTemplate
 from snippets.base.util import get_object_or_none
 
@@ -31,6 +32,11 @@ SNIPPET_BUNDLE_TIMEOUT = lazy(_bundle_timeout, int)()  # noqa
 
 class HomeView(TemplateView):
     template_name = 'base/home.jinja'
+
+
+class JobListView(FilterView):
+    template_name = 'base/jobs_list.jinja'
+    filterset_class = JobFilter
 
 
 @cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)

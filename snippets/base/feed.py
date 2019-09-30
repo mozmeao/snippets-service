@@ -1,51 +1,13 @@
-import operator
 from datetime import timedelta
-from distutils.util import strtobool
 from textwrap import dedent
 from urllib.parse import urlparse
 
 from django.conf import settings
 from django.db.models import Q
 
-import django_filters
 from django_ical.views import ICalFeed
 
-from snippets.base import models
-
-
-class JobFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(field_name='snippet__name', lookup_expr='icontains')
-    locale = django_filters.CharFilter(method='filter_locale')
-    only_scheduled = django_filters.ChoiceFilter(
-        method='filter_scheduled', choices=(('true', 'Yes'),
-                                            ('false', 'No'),
-                                            ('all', 'All')))
-
-    def filter_locale(self, queryset, name, value):
-        if not value:
-            return queryset
-
-        locales = value.split(',')
-        return queryset.filter(
-            operator.or_(
-                *[Q(snippet__locale__code=',{},'.format(locale)) for locale in locales]
-            )
-        )
-
-    def filter_scheduled(self, queryset, name, value):
-        if value == 'all':
-            return queryset
-
-        value = strtobool(value)
-
-        if value:
-            return queryset.exclude(publish_start=None, publish_end=None)
-
-        return queryset.filter(publish_start=None, publish_end=None)
-
-    class Meta:
-        model = models.ASRSnippet
-        fields = []
+from snippets.base import filters, models
 
 
 class JobsFeed(ICalFeed):
@@ -65,7 +27,7 @@ class JobsFeed(ICalFeed):
         queryset = (models.Job.objects
                     .filter(Q(status=models.Job.PUBLISHED) | Q(status=models.Job.SCHEDULED))
                     .order_by('publish_start'))
-        filtr = JobFilter(self.request.GET, queryset=queryset)
+        filtr = filters.JobFilter(self.request.GET, queryset=queryset)
         return filtr.qs
 
     def item_title(self, item):
