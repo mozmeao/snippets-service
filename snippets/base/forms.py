@@ -200,7 +200,6 @@ class TemplateDataWidget(forms.TextInput):
             'all': ('css/templateDataWidget.css',)
         }
         js = [
-            'js/lib/jquery-3.3.1.min.js',
             'js/lib/nunjucks.min.js',
             'js/templateDataWidget.js'
         ]
@@ -209,30 +208,8 @@ class TemplateDataWidget(forms.TextInput):
 class TemplateChooserWidget(forms.Select):
     class Media:
         js = [
-            'js/lib/jquery-3.3.1.min.js',
             'js/templateChooserWidget.js',
         ]
-
-
-class IconWidget(forms.TextInput):
-    def render(self, name, value, attrs=None, renderer=None):
-        if not attrs:
-            attrs = {}
-        attrs['style'] = 'display:none'
-        original_widget_code = super(IconWidget, self).render(name, value, attrs)
-        widget_code = """
-        <div id="{name}-container">
-          <img src="{value}">
-          <input type="file" class="image-input">
-          {original_widget_code}
-        </div>
-        """.format(name=name, value=value,
-                   original_widget_code=original_widget_code)
-        return mark_safe(widget_code)
-
-    class Media:
-        js = ('js/lib/jquery-3.3.1.min.js',
-              'js/iconWidget.js')
 
 
 class PublishPermissionFormMixIn:
@@ -562,7 +539,6 @@ class AutoTranslatorWidget(forms.Select):
 
     class Media:
         js = [
-            'js/lib/jquery-3.3.1.min.js',
             'js/autoTranslatorWidget.js',
         ]
 
@@ -649,7 +625,6 @@ class ASRSnippetAdminForm(forms.ModelForm):
 
     class Media:
         js = [
-            'js/lib/jquery-3.3.1.min.js',
             'js/admin/inlineMover.js',
         ]
 

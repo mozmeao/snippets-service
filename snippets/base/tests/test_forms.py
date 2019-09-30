@@ -5,23 +5,11 @@ from django.contrib.auth.models import User, Permission
 from unittest.mock import Mock, patch
 from pyquery import PyQuery as pq
 
-from snippets.base.forms import (IconWidget, SnippetAdminForm, TargetAdminForm,
+from snippets.base.forms import (SnippetAdminForm, TargetAdminForm,
                                  TemplateDataWidget, TemplateSelect)
 from snippets.base.tests import (SnippetFactory, SnippetTemplateFactory,
                                  SnippetTemplateVariableFactory, TestCase,
                                  TargetFactory)
-
-
-class IconWidgetTests(TestCase):
-    def test_basic(self):
-        with patch('snippets.base.forms.forms.TextInput.render') as render_mock:
-            render_mock.return_value = 'original widget code'
-            widget = IconWidget()
-            rendered_widget = widget.render('iconname', 'iconvalue')
-        self.assertTrue('original widget code' in rendered_widget)
-        d = pq(rendered_widget)
-        self.assertEqual(d.find('img').attr('src'), 'iconvalue')
-        self.assertTrue(d.attr('id'), 'iconname')
 
 
 class TemplateSelectTests(TestCase):

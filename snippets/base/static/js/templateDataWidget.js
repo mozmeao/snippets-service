@@ -1,5 +1,6 @@
 /* global nunjucks:false */
-;(function($, nunjucks) {
+;
+function widget($, nunjucks) {
     'use strict';
 
     var VARIABLE_TYPES = {
@@ -313,4 +314,13 @@
     $.fn.exists = function() {
         return this.length !== 0;
     };
-})(jQuery, nunjucks);
+
+}
+// Pure JS implementation of $(document).ready()
+//
+// Deals with DJango Admin loading first this file and then initializing jQuery.
+document.addEventListener(
+    'DOMContentLoaded',
+    widget(django.jQuery, nunjucks),
+    false
+);
