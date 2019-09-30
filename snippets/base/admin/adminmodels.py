@@ -975,10 +975,11 @@ class JobAdmin(admin.ModelAdmin):
         ('targets', RelatedOnlyDropdownFilter),
         ('snippet__locale', RelatedOnlyDropdownFilter),
         filters.ChannelFilter,
-
     ]
     search_fields = [
+        'id',
         'uuid',
+        'snippet__id',
         'snippet__name',
         'campaign__name',
     ]
