@@ -14,15 +14,18 @@ class JobFilter(django_filters.FilterSet):
     )
     locale = django_filters.ModelChoiceFilter(
         label='Locale',
+        empty_label='All Locales',
         queryset=models.Locale.objects.all(),
         field_name='snippet__locale',
     )
     only_scheduled = django_filters.ChoiceFilter(
         label='Include',
         method='filter_scheduled',
+        empty_label=None,
+        null_label='All Snipppets',
+        null_value='all',
         choices=(('true', 'Jobs with Start and End Date'),
-                 ('false', 'Jobs without Start and End Date'),
-                 ('all', 'All Jobs'))
+                 ('false', 'Jobs without Start and End Date'))
     )
 
     def __init__(self, data=None, *args, **kwargs):
@@ -56,7 +59,10 @@ class JobFilter(django_filters.FilterSet):
         if value == 'all':
             return queryset
 
-        value = strtobool(value)
+        try:
+            value = strtobool(value)
+        except ValueError:
+            value = True
 
         if value:
             return queryset.exclude(publish_end=None)

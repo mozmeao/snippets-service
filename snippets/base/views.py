@@ -35,8 +35,14 @@ class HomeView(TemplateView):
 
 
 class JobListView(FilterView):
-    template_name = 'base/jobs_list.jinja'
     filterset_class = JobFilter
+
+    @property
+    def template_name(self):
+        if self.request.GET.get('calendar', 'false') == 'true':
+            return 'base/jobs_list_calendar.jinja'
+
+        return 'base/jobs_list_table.jinja'
 
 
 @cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)

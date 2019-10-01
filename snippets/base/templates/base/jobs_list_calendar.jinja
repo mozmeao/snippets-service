@@ -1,0 +1,97 @@
+{% extends 'base/base.jinja' %}
+
+{% block headextras %}
+  <link href="{{ static('/vendor/fullcalendar/core/main.min.css') }}" rel="stylesheet" />
+  <link href="{{ static('/vendor/fullcalendar/daygrid/main.min.css') }}" rel="stylesheet" />
+
+  <script src="{{ static('/vendor/fullcalendar/core/main.min.js') }}"></script>
+  <script src="{{ static('/vendor/fullcalendar/daygrid/main.min.js') }}"></script>
+
+  <style>
+   table {
+       color: #333;
+       font-family: Helvetica, Arial, sans-serif;
+       width:100%;
+       border-collapse:
+           collapse; border-spacing: 0;
+   }
+   section{
+       margin: 50px;
+   }
+
+   td, th {
+       border: 1px solid transparent; /* No more visible border */
+       height: 30px;
+       transition: all 0.3s;  /* Simple transition for hover effect */
+   }
+
+   th {
+       background: #DFDFDF;  /* Darken header a bit */
+       font-weight: bold;
+   }
+
+   td {
+       background: #FAFAFA;
+       text-align: center;
+   }
+
+  </style>
+  <script>
+   document.addEventListener('DOMContentLoaded', function() {
+       var calendarEl = document.getElementById('calendar');
+
+       var calendar = new FullCalendar.Calendar(calendarEl, {
+           plugins: [ 'dayGrid' ],
+           eventLimit: true,
+           views: {
+               dayGrid: {
+                   eventLimit: 4 // adjust to 6 only for timeGridWeek/timeGridDay
+               }
+           },
+           events: [
+               {% for obj in filter.qs %}
+               {
+                   title: '{{ obj.snippet.name }}',
+                   {%- if obj.publish_start %}
+                   start: '{{ obj.publish_start.strftime('%Y-%m-%d') }}',
+                   {%- endif -%}
+                   {%- if obj.publish_end %}
+                   end: '{{ obj.publish_end.strftime('%Y-%m-%d') }}',
+                   {% endif -%}
+                   url: '{{ obj.snippet.get_preview_url() }}'
+               }{% if not loop.last %},{% endif %}
+               {% endfor %}
+           ],
+           eventClick: function(info) {
+               info.jsEvent.preventDefault(); // don't let the browser navigate
+               if (info.event.url) {
+                   alert(
+                       info.event.title + '\n\nPreview Link:\n' +
+                       info.event.url
+
+                   );
+               }
+           }
+       });
+
+       calendar.render();
+   });
+  </script>
+{% endblock %}
+
+{% block content %}
+  <form action="" method="get" id="search-form">
+    {{ filter.form.as_table() }}
+    View:
+    <select name="calendar">
+      <option value="false">List</option>
+      <option value="true" selected>Calendar</option>
+    </select>
+    <button type="submit" class="btn btn-primary">
+      Submit
+    </button>
+  </form>
+  <section>
+    <div id="calendar"></div>
+  </section>
+{% endblock %}

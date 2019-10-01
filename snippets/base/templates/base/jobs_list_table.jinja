@@ -1,6 +1,5 @@
 {% extends 'base/base.jinja' %}
 
-{# Load the tag library #}
 {% block headextras %}
   <!-- Table styling from Nikhil Krishnan https://codepen.io/nikhil8krishnan -->
   <style>
@@ -77,6 +76,11 @@
 {% block content %}
   <form action="" method="get" id="search-form">
     {{ filter.form.as_table() }}
+    View:
+    <select name="calendar">
+      <option value="false" selected>List</option>
+      <option value="true">Calendar</option>
+    </select>
     <button type="submit" class="btn btn-primary">
       Submit
     </button>
