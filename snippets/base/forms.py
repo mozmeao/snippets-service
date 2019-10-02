@@ -124,6 +124,15 @@ NUMBER_OF_SYNC_DEVICES = (
     (10, '10'),
 )
 
+NUMBER_OF_ADDONS = (
+    (None, 'No limit'),
+    (None, '----------'),
+    (10, '10'),
+    (15, '15'),
+    (20, '20'),
+    (30, '30'),
+)
+
 
 class TemplateSelect(forms.Select):
     """
@@ -740,9 +749,6 @@ class TargetAdminForm(forms.ModelForm):
         label_suffix='?',
         label='Currently used search engine',
         required=False)
-    filtr_browser_addon = fields.JEXLAddonField(
-        label='Browser Add-on',
-        required=False)
     filtr_total_bookmarks_count = fields.JEXLRangeField(
         'totalBookmarksCount',
         choices=BOOKMARKS_COUNT_CHOICES_ASR,
@@ -770,6 +776,35 @@ class TargetAdminForm(forms.ModelForm):
         required=False,
         label='Total Syncing Devices',
         help_text='Total number of Devices (Mobile and Desktop) connected to Sync.'
+    )
+    filtr_can_install_addons = fields.JEXLChoiceField(
+        'xpinstallEnabled',
+        choices=((None, "I don't care"),
+                 ('true', 'Yes',),
+                 ('false', 'No')),
+        required=False,
+        label='Can install Addons',
+        label_suffix='?',
+        help_text='Can the user install new Addons or is the functionality blocked by their Admin?'
+    )
+    filtr_total_addons = fields.JEXLRangeField(
+        '',
+        jexl={
+            'minimum': 'addonsInfo.isFullData && {value} <= addonsInfo.addons|keys|length',  # noqa
+            'maximum': 'addonsInfo.isFullData && addonsInfo.addons|keys|length < {value}' # noqa
+        },
+        choices=NUMBER_OF_ADDONS,
+        required=False,
+        label='Total installed Addons',
+        help_text=("Total number of installed Addons. If you're suggesting more "
+                   "Addons to the user make sure to select `Yes` in the "
+                   "`Can install Addons?` filter."),
+    )
+    filtr_browser_addon = fields.JEXLAddonField(
+        label='Browser Add-on',
+        required=False,
+        help_text=("If you're suggesting more Addons to the user make sure to select `Yes` in the "
+                   "`Can install Addons?` filter."),
     )
 
     class Meta:

@@ -892,9 +892,14 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
                 'filtr_country',
                 'filtr_is_developer',
                 'filtr_current_search_engine',
-                'filtr_browser_addon',
                 'filtr_total_bookmarks_count',
-
+            )
+        }),
+        ('Addons', {
+            'fields': (
+                'filtr_can_install_addons',
+                'filtr_total_addons',
+                'filtr_browser_addon',
             )
         }),
         ('Accounts and Sync', {
