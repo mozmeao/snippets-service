@@ -623,8 +623,8 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         js = (
             'js/admin/jquery.are-you-sure.js',
             'js/admin/alert-page-leaving.js',
-            'js/admin/clipboard.min.js',
-            'js/admin/copy_preview.js',
+            'js/clipboard.min.js',
+            'js/copy_preview.js',
         )
 
     def save_model(self, request, obj, form, change):

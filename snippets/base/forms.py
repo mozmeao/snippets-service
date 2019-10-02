@@ -201,14 +201,14 @@ class TemplateDataWidget(forms.TextInput):
         }
         js = [
             'js/lib/nunjucks.min.js',
-            'js/templateDataWidget.js'
+            'js/admin/templateDataWidget.js'
         ]
 
 
 class TemplateChooserWidget(forms.Select):
     class Media:
         js = [
-            'js/templateChooserWidget.js',
+            'js/admin/templateChooserWidget.js',
         ]
 
 
@@ -539,7 +539,7 @@ class AutoTranslatorWidget(forms.Select):
 
     class Media:
         js = [
-            'js/autoTranslatorWidget.js',
+            'js/admin/autoTranslatorWidget.js',
         ]
 
 
