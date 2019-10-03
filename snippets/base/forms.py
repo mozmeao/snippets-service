@@ -806,6 +806,10 @@ class TargetAdminForm(forms.ModelForm):
         help_text=("If you're suggesting more Addons to the user make sure to select `Yes` in the "
                    "`Can install Addons?` filter."),
     )
+    filtr_firefox_service = fields.JEXLFirefoxServicesField(
+        label='Service Accounts',
+        required=False,
+    )
 
     class Meta:
         model = models.Target

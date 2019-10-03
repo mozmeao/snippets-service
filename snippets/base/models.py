@@ -523,6 +523,7 @@ class Target(models.Model):
     filtr_total_devices_count = models.CharField(max_length=250, blank=True, default='')
     filtr_can_install_addons = models.CharField(max_length=250, blank=True, default='')
     filtr_total_addons = models.CharField(max_length=250, blank=True, default='')
+    filtr_firefox_service = models.CharField(max_length=250, blank=True, default='')
 
     jexl_expr = models.TextField(blank=True, default='')
 
