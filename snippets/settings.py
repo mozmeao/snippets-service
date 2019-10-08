@@ -4,7 +4,9 @@ import platform
 import dj_database_url
 import django_cache_url
 import product_details
+import sentry_sdk
 from decouple import Csv, config
+from sentry_sdk.integrations.django import DjangoIntegration
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -40,7 +42,6 @@ INSTALLED_APPS = [
     'product_details',
     'django_extensions',
     'reversion',
-    'raven.contrib.django.raven_compat',
     'cachalot',
     'mozilla_django_oidc',
     'watchman',
@@ -286,16 +287,14 @@ STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
 STATSD_PREFIX = config('STATSD_PREFIX', K8S_NAMESPACE)
 STATSD_CLIENT = config('STATSD_CLIENT', 'django_statsd.clients.null')
 
-RAVEN_CONFIG = {
-    'dsn': config('SENTRY_DSN', None),
-    'release': config('GIT_SHA', None),
-    'tags': {
-        'server_full_name': '.'.join(x for x in [
-            HOSTNAME, K8S_NAMESPACE, CLUSTER_NAME] if x),
-        'environment': config('SENTRY_ENVIRONMENT', 'dev'),
-        'site': '.'.join(x for x in [K8S_NAMESPACE, CLUSTER_NAME] if x),
-    }
-}
+sentry_sdk.init(
+    dsn=config('SENTRY_DSN', None),
+    integrations=[DjangoIntegration()],
+    release=config('GIT_SHA', None),
+    environment=config('SENTRY_ENVIRONMENT', 'dev'),
+    server_name='.'.join(x for x in [HOSTNAME, K8S_NAMESPACE, CLUSTER_NAME] if x),
+)
+
 
 CACHALOT_ENABLED = config('CACHALOT_ENABLED', default=not DEBUG, cast=bool)
 CACHALOT_TIMEOUT = config('CACHALOT_TIMEOUT', default=300, cast=int)  # 300 = 5 minutes
@@ -354,24 +353,6 @@ ADMIN_REORDER = [
 SLACK_ENABLE = config('SLACK_ENABLE', default=False, cast=bool)
 SLACK_WEBHOOK = config('SLACK_WEBHOOK', default='')
 
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'sentry': {
-            'level': 'DEBUG',
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-        },
-    },
-    'loggers': {
-        'django.security.csrf': {
-            'handlers': ['sentry'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
 
 # Required for the migration to ASRSnippets or SuspiciousOperation
 # (TooManyFields) will be raised due to the number of Snippets selected in the

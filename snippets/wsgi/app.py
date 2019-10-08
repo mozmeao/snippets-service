@@ -14,6 +14,3 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'snippets.settings')  # NOQA
 
 from django.core.wsgi import get_wsgi_application  # NOQA
 application = get_wsgi_application()
-
-from raven.contrib.django.raven_compat.middleware.wsgi import Sentry  # NOQA
-application = Sentry(application)

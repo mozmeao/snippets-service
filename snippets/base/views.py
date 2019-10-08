@@ -1,5 +1,4 @@
 import json
-import logging
 
 from distutils.util import strtobool
 from django.conf import settings
@@ -13,9 +12,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
+import sentry_sdk
 from django_filters.views import FilterView
 from django_statsd.clients import statsd
-from raven.contrib.django.models import client as sentry_client
 
 from snippets.base import util
 from snippets.base.bundles import ASRSnippetBundle, SnippetBundle
@@ -167,11 +166,6 @@ def show_snippet(request, snippet_id, uuid=False):
 @csrf_exempt
 @require_POST
 def csp_violation_capture(request):
-    data = sentry_client.get_data_from_request(request)
-    data.update({
-        'level': logging.INFO,
-        'logger': 'CSP',
-    })
     try:
         csp_data = json.loads(request.body)
     except ValueError:
@@ -184,8 +178,11 @@ def csp_violation_capture(request):
         # Incomplete CSP report
         return HttpResponseBadRequest('Incomplete CSP Report')
 
-    sentry_client.captureMessage(
-        message='CSP Violation: {}'.format(blocked_uri),
-        data=data)
+    with sentry_sdk.configure_scope() as scope:
+        scope.level = 'info'
+        scope.set_tag('logger', 'csp')
+
+        sentry_sdk.capture_message(
+            message='CSP Violation: {}'.format(blocked_uri))
 
     return HttpResponse('Captured CSP violation, thanks for reporting.')
