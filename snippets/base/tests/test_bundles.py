@@ -259,6 +259,15 @@ class ASRSnippetBundleTests(TestCase):
         client_kwargs.update(kwargs)
         return Client(**client_kwargs)
 
+    def test_empty(self):
+        client = self._client(locale='en-US')
+        bundle = ASRSnippetBundle(client)
+        self.assertFalse(bundle.empty)
+
+        client = self._client(locale='it')
+        bundle = ASRSnippetBundle(client)
+        self.assertTrue(bundle.empty)
+
     def test_key_jobs(self):
         """
         bundle.key must be different between bundles if they have

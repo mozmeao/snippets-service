@@ -206,6 +206,10 @@ class ASRSnippetBundle(SnippetBundle):
         return hashlib.sha1(key_string.encode('utf-8')).hexdigest()
 
     @property
+    def empty(self):
+        return len(self.jobs) == 0
+
+    @property
     def filename(self):
         return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.json'.format(self.key))
 
