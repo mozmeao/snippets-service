@@ -209,6 +209,8 @@ CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=not DEBUG, cast=bool)
 CSRF_COOKIE_SAMESITE = config('CSRF_COOKIE_SAMESITE', default='Lax')
 
 SNIPPET_BUNDLE_TIMEOUT = config('SNIPPET_BUNDLE_TIMEOUT', default=15 * 60, cast=int)  # 15 minutes
+SNIPPET_BUNDLE_PREGEN_REDIRECT_TIMEOUT = config(
+    'SNIPPET_BUNDLE_PREGEN_REDIRECT_TIMEOUT', default=60 * 60 * 24, cast=int)  # One day
 
 BUNDLE_BROTLI_COMPRESS = config('BUNDLE_BROTLI_COMPRESS', default=False, cast=bool)
 
@@ -370,9 +372,10 @@ TAGGIT_CASE_INSENSITIVE = True
 # In minutes
 SNIPPETS_PUBLICATION_OFFSET = config('SNIPPETS_PUBLICATION_OFFSET', default=5, cast=int)
 
-
 REDASH_ENDPOINT = config('REDASH_ENDPOINT', default='https://sql.telemetry.mozilla.org')
 REDASH_API_KEY = config('REDASH_API_KEY', default=None)
 REDASH_MAX_WAIT = config('REDASH_MAX_WAIT', default=300)
 REDASH_QUERY_ID = config('REDASH_QUERY_ID', default=63146)
 REDASH_UPDATE_INTERVAL = config('REDASH_UPDATE_INTERVAL', default=600)
+
+USE_PREGEN_BUNDLES = config('USE_PREGEN_BUNDLES', default=False, cast=bool)

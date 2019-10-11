@@ -1,11 +1,11 @@
 from collections import OrderedDict
+from unittest.mock import DEFAULT, patch
 
 from django.contrib.auth.models import User
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.urls import reverse
 
-from unittest.mock import patch
 
 import snippets.base.models
 from snippets.base import views
@@ -107,6 +107,92 @@ class ShowSnippetTests(TestCase):
 
 
 class FetchSnippetsTests(TestCase):
+    def test_base(self):
+        asrclient_kwargs = OrderedDict([
+            ('startpage_version', 6),
+            ('name', 'Firefox'),
+            ('version', '64.0'),
+            ('appbuildid', '20190110041606'),
+            ('build_target', 'Darwin_Universal-gcc3'),
+            ('locale', 'en-US'),
+            ('channel', 'release'),
+            ('os_version', 'Darwin 10.8.0'),
+            ('distribution', 'default'),
+            ('distribution_version', 'default_version'),
+        ])
+        request = RequestFactory().get('/')
+
+        with patch.multiple('snippets.base.views',
+                            fetch_snippet_pregen_bundle=DEFAULT,
+                            fetch_snippet_bundle=DEFAULT) as patches:
+            with override_settings(USE_PREGEN_BUNDLES=False):
+                views.fetch_snippets(request, **asrclient_kwargs)
+                self.assertFalse(patches['fetch_snippet_pregen_bundle'].called)
+                self.assertTrue(patches['fetch_snippet_bundle'].called)
+
+        with patch.multiple('snippets.base.views',
+                            fetch_snippet_pregen_bundle=DEFAULT,
+                            fetch_snippet_bundle=DEFAULT) as patches:
+            with override_settings(USE_PREGEN_BUNDLES=True):
+                views.fetch_snippets(request, **asrclient_kwargs)
+                self.assertTrue(patches['fetch_snippet_pregen_bundle'].called)
+                self.assertFalse(patches['fetch_snippet_bundle'].called)
+
+
+@override_settings(SITE_URL='http://example.org',
+                   MEDIA_BUNDLES_PREGEN_ROOT='/bundles/pregen/')
+class FetchSnippetPregenBundleTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.request = self.factory.get('/')
+        self.asrclient_kwargs = OrderedDict([
+            ('startpage_version', 6),
+            ('name', 'Firefox'),
+            ('version', '70.0'),
+            ('appbuildid', '20190110041606'),
+            ('build_target', 'Darwin_Universal-gcc3'),
+            ('locale', 'el-GR'),
+            ('channel', 'default'),
+            ('os_version', 'Darwin 10.8.0'),
+            ('distribution', 'other-than-default'),
+            ('distribution_version', 'default_version'),
+        ])
+
+    def test_base(self):
+        response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
+        expected_url = (
+            'http://example.org/media/bundles/pregen/Firefox/release/el-gr/other-than-default.json'
+        )
+        self.assertEqual(response.url, expected_url)
+
+    @override_settings(CDN_URL='https://cdn.com')
+    def test_cdn(self):
+        response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
+        expected_url = (
+            'https://cdn.com/media/bundles/pregen/Firefox/release/el-gr/other-than-default.json'
+        )
+        self.assertEqual(response.url, expected_url)
+
+    def test_complicated_channel(self):
+        asrclient_kwargs = self.asrclient_kwargs.copy()
+        asrclient_kwargs['channel'] = 'nightly-cck-δφια'
+        response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
+        expected_url = (
+            'http://example.org/media/bundles/pregen/Firefox/nightly/el-gr/other-than-default.json'
+        )
+        self.assertEqual(response.url, expected_url)
+
+    def test_other_product(self):
+        asrclient_kwargs = self.asrclient_kwargs.copy()
+        asrclient_kwargs['name'] = 'Edge'
+        response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
+        expected_url = (
+            'http://example.org/media/bundles/pregen/Firefox/release/el-gr/other-than-default.json'
+        )
+        self.assertEqual(response.url, expected_url)
+
+
+class FetchSnippetBundleTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.request = self.factory.get('/')
@@ -141,7 +227,7 @@ class FetchSnippetsTests(TestCase):
             bundle.url = '/foo/bar'
             bundle.empty = False
             bundle.cached = True
-            response = views.fetch_snippets(self.request, **self.client_kwargs)
+            response = views.fetch_snippet_bundle(self.request, **self.client_kwargs)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/foo/bar')
@@ -158,7 +244,7 @@ class FetchSnippetsTests(TestCase):
             bundle.url = '/foo/bar'
             bundle.empty = False
             bundle.cached = True
-            response = views.fetch_snippets(self.request, **self.asrclient_kwargs)
+            response = views.fetch_snippet_bundle(self.request, **self.asrclient_kwargs)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/foo/bar')
@@ -176,7 +262,7 @@ class FetchSnippetsTests(TestCase):
             bundle.url = '/foo/bar'
             bundle.empty = False
             bundle.cached = False
-            response = views.fetch_snippets(self.request, **self.client_kwargs)
+            response = views.fetch_snippet_bundle(self.request, **self.client_kwargs)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/foo/bar')
@@ -189,7 +275,7 @@ class FetchSnippetsTests(TestCase):
         with patch.object(views, 'SnippetBundle') as SnippetBundle:
             bundle = SnippetBundle.return_value
             bundle.empty = True
-            response = views.fetch_snippets(self.request, **self.client_kwargs)
+            response = views.fetch_snippet_bundle(self.request, **self.client_kwargs)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'')
@@ -199,7 +285,7 @@ class FetchSnippetsTests(TestCase):
         with patch.object(views, 'ASRSnippetBundle') as ASRSnippetBundle:
             bundle = ASRSnippetBundle.return_value
             bundle.empty = True
-            response = views.fetch_snippets(self.request, **self.asrclient_kwargs)
+            response = views.fetch_snippet_bundle(self.request, **self.asrclient_kwargs)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'{}')
