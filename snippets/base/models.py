@@ -1812,6 +1812,11 @@ class Job(models.Model):
                    'left to Default. Useful for running Normandy experiments.'),
     )
 
+    metric_last_update = models.DateTimeField('Last Update', default='1970-01-01', editable=False)
+    metric_impressions = models.PositiveIntegerField(default=0, editable=False)
+    metric_clicks = models.PositiveIntegerField(default=0, editable=False)
+    metric_blocks = models.PositiveIntegerField(default=0, editable=False)
+
     objects = managers.JobManager()
 
     class Meta:

@@ -2,6 +2,7 @@ import copy
 import re
 
 from django.contrib import admin, messages
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.db.models import TextField, Q
 from django.http import HttpResponseRedirect
 from django.template.loader import get_template
@@ -969,6 +970,9 @@ class JobAdmin(admin.ModelAdmin):
         'job_status',
         'publish_start',
         'publish_end',
+        'metric_impressions_humanized',
+        'metric_clicks_humanized',
+        'metric_blocks_humanized',
     ]
     list_display_links = [
         'id',
@@ -1013,6 +1017,14 @@ class JobAdmin(admin.ModelAdmin):
         }),
         ('Publishing Dates', {
             'fields': (('publish_start', 'publish_end'),)
+        }),
+        ('Metrics', {
+            'fields': (
+                'metric_impressions_humanized',
+                'metric_clicks_humanized',
+                'metric_blocks_humanized',
+                'metric_last_update',
+            ),
         }),
         ('Other Info', {
             'fields': (('created', 'modified'),),
@@ -1065,6 +1077,28 @@ class JobAdmin(admin.ModelAdmin):
             )
         )
     job_status.short_description = 'Status'
+
+    def metric_impressions_humanized(self, obj):
+        return intcomma(obj.metric_impressions)
+    metric_impressions_humanized.short_description = 'Impressions'
+
+    def metric_clicks_humanized(self, obj):
+        if obj.metric_clicks == 0:
+            return 0
+        ratio = (obj.metric_clicks / obj.metric_impressions) * 100
+        return '{} ({:.2f}%)'.format(
+            intcomma(obj.metric_clicks), ratio
+        )
+    metric_clicks_humanized.short_description = 'Clicks'
+
+    def metric_blocks_humanized(self, obj):
+        if obj.metric_blocks == 0:
+            return 0
+        ratio = (obj.metric_blocks / obj.metric_impressions) * 100
+        return '{} ({:.2f}%)'.format(
+            intcomma(obj.metric_blocks), ratio
+        )
+    metric_blocks_humanized.short_description = 'Blocks'
 
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:

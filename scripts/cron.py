@@ -16,7 +16,7 @@ from snippets.base.util import create_countries, create_locales
 MANAGE = os.path.join(settings.ROOT, 'manage.py')
 schedule = BlockingScheduler()
 
-# Used for by generate_bundles commands. This is intentionally here and not in
+# Used by generate_bundles commands. This is intentionally here and not in
 # a persistent storage to force all bundle regeneration when we restart the
 # service, which is typically when we push new code.
 last_timestamp = 0
@@ -83,6 +83,17 @@ def job_update_jobs():
     else:
         call_command('generate_bundles')
     last_timestamp = utc_now
+
+
+@babis.decorator(ping_after=settings.DEAD_MANS_SNITCH_FETCH_METRICS)
+def job_fetch_metrics():
+    call_command('fetch_metrics')
+
+
+if settings.REDASH_API_KEY:
+    scheduled_job(
+        'cron', month='*', day='*', hour='*', minute='*', max_instances=1, coalesce=True
+    )(job_fetch_metrics)
 
 
 @scheduled_job('cron', month='*', day='*', hour='08', minute='20', max_instances=1, coalesce=True)

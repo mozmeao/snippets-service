@@ -513,3 +513,7 @@ taggit-selectize==2.7.1 \
 sentry-sdk==0.12.3 \
     --hash=sha256:1d6a2ee908ec6d8f96c27d78bc39e203df4d586d287c233140af7d8d1aca108a \
     --hash=sha256:15e51e74b924180c98bcd636cb4634945b0a99a124d50b433c3a9dc6a582e8db
+redash-dynamic-query==1.0.4 \
+    --hash=sha256:d2756ad2f7fd21f33cbf8c751ec3fccaf9ad350a27b968cd56b3d1783650b5f9
+pystache==0.5.4 \
+    --hash=sha256:f7bbc265fb957b4d6c7c042b336563179444ab313fb93a719759111eabd3b85a
