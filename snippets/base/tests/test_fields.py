@@ -1,9 +1,9 @@
-from unittest.mock import DEFAULT, patch
+from unittest.mock import DEFAULT, call, patch
 
 from django.core.exceptions import ValidationError
 
 from snippets.base.admin.fields import (JEXLAddonField, JEXLChoiceField, JEXLFirefoxRangeField,
-                                        JEXLRangeField)
+                                        JEXLFirefoxServicesField, JEXLRangeField, )
 from snippets.base.tests import AddonFactory, TestCase
 
 
@@ -125,3 +125,50 @@ class JEXLFirefoxRangeFieldTests(TestCase):
     def test_validate_min_max(self):
         with self.assertRaises(ValidationError):
             self.field.validate('67,65.0')
+
+
+class JEXLFirefoxServicesFieldTests(TestCase):
+    def setUp(self):
+        self.field = JEXLFirefoxServicesField()
+
+    def test_compress(self):
+        self.assertEqual(self.field.compress(data_list=[]), '')
+        self.assertEqual(self.field.compress(data_list=['has_account', 'Pocket']),
+                         'has_account,Pocket')
+
+    def test_to_jexl(self):
+        value = 'has_account,Firefox Lockwise'
+        self.assertEqual(
+            self.field.to_jexl(value),
+            '("Firefox Lockwise" in attachedFxAOAuthClients|mapToProperty("name")) == true')
+
+        value = 'no_account,Firefox Lockwise'
+        self.assertEqual(
+            self.field.to_jexl(value),
+            '("Firefox Lockwise" in attachedFxAOAuthClients|mapToProperty("name")) == false')
+
+        value = ','
+        self.assertEqual(self.field.to_jexl(value), '')
+
+        value = 'has_account,'
+        self.assertEqual(self.field.to_jexl(value), '')
+
+        value = ',Pocket'
+        self.assertEqual(self.field.to_jexl(value), '')
+
+    def test_validate(self):
+        with patch('snippets.base.admin.fields.ChoiceField.validate') as validate_mock:
+            field = JEXLFirefoxServicesField()
+            field.validate('has_account,Pocket')
+        validate_mock.assert_has_calls([call('has_account'), call('Pocket')])
+
+    def test_validate_no_selection(self):
+        self.assertEqual(self.field.validate(','), ',')
+
+    def test_validate_no_addon(self):
+        with self.assertRaises(ValidationError):
+            self.field.validate('has_account,')
+
+    def test_validate_no_action(self):
+        with self.assertRaises(ValidationError):
+            self.field.validate(',Pocket')

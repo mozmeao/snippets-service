@@ -179,3 +179,57 @@ class JEXLAddonField(MultiValueField):
         if not check and addon_id:
             raise ValidationError('You must select a check')
         return value
+
+
+class JEXLFirefoxServicesField(MultiValueField):
+    def __init__(self, **kwargs):
+        check_choices = (
+            (None, "I don't care"),
+            ('no_account', "User hasn't signed up for"),
+            ('has_account', 'User has signed up for'),
+        )
+        service_choices = (
+            (None, '---------'),
+            ('Firefox Lockwise', 'Firefox Lockwise'),
+            ('Firefox Monitor', 'Firefox Monitor'),
+            ('Firefox Send', 'Firefox Send'),
+            ('Firefox Private Network', 'Firefox Private Network'),
+            ('Notes', 'Notes'),
+            ('Pocket', 'Pocket'),
+        )
+        fields = (
+            ChoiceField(choices=check_choices),
+            ChoiceField(choices=service_choices),
+        )
+        super().__init__(fields, **kwargs)
+        self.widget = JEXLMultiWidget(widgets=[f.widget for f in self.fields])
+
+    def compress(self, data_list):
+        if data_list:
+            return f'{data_list[0]},{data_list[1]}'
+        return ''
+
+    def to_jexl(self, value):
+        check, service_name = value.split(',')
+        if not check or not service_name:
+            return ''
+
+        if check == 'no_account':
+            jexl = f'("{service_name}" in attachedFxAOAuthClients|mapToProperty("name")) == false'
+        elif check == 'has_account':
+            jexl = f'("{service_name}" in attachedFxAOAuthClients|mapToProperty("name")) == true'
+
+        return jexl
+
+    def validate(self, value):
+        check, service_name = value.split(',')
+
+        self.fields[0].validate(check)
+        self.fields[1].validate(service_name)
+
+        if check and not service_name:
+            raise ValidationError('You must select an Service.')
+
+        if not check and service_name:
+            raise ValidationError('You must select a check.')
+        return value

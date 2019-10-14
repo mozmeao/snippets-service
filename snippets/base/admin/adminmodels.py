@@ -909,6 +909,7 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
                 'filtr_desktop_devices_count',
                 'filtr_mobile_devices_count',
                 'filtr_total_devices_count',
+                'filtr_firefox_service',
             ),
         }),
         ('Advanced Targeting', {
