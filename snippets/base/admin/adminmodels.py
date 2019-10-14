@@ -1004,6 +1004,10 @@ class JobAdmin(admin.ModelAdmin):
         'id',
         'created',
         'modified',
+        'metric_impressions_humanized',
+        'metric_clicks_humanized',
+        'metric_blocks_humanized',
+        'metric_last_update',
     ]
     fieldsets = [
         ('ID', {
