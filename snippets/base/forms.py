@@ -810,6 +810,19 @@ class TargetAdminForm(forms.ModelForm):
         label='Service Accounts',
         required=False,
     )
+    filtr_operating_system = fields.JEXLChoiceField(
+        'platformName',
+        choices=(
+            (None, "I don't care"),
+            ('"win"', 'Windows',),
+            ('"macosx"', 'macOS'),
+            ('"linux"', 'Linux'),
+        ),
+        required=False,
+        label='Operating System',
+        label_suffix='?',
+        help_text='User\'s operating system.'
+    )
 
     class Meta:
         model = models.Target

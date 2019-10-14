@@ -894,6 +894,7 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
                 'filtr_is_developer',
                 'filtr_current_search_engine',
                 'filtr_total_bookmarks_count',
+                'filtr_operating_system',
             )
         }),
         ('Addons', {
