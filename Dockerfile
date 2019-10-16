@@ -1,4 +1,4 @@
-FROM python:3-slim-buster
+FROM python:3.8-slim-buster
 
 ARG DEVELOPMENT=false
 ENV LANG=C.UTF-8
@@ -13,6 +13,7 @@ RUN bash -c 'for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done' && \
     apt-get update && \
     apt-get install -y --no-install-recommends build-essential libxslt1.1 libxml2 libxml2-dev \
                                                libxslt1-dev libpq-dev postgresql-client pngquant \
+                                               libjpeg-dev  zlib1g-dev libffi-dev \
                                                && \
     rm -rf /var/lib/apt/lists/*
 
