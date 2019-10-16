@@ -678,30 +678,12 @@ class Template(models.Model):
         to_append = {}
         for key, value in local_data.items():
             if key == 'button_url':
-                if value == 'special:appMenu':
-                    to_append['button_action'] = 'OPEN_APPLICATIONS_MENU'
-                    to_append['button_action_args'] = 'appMenu'
+                action, args = util.convert_special_link(value)
+                if action:
+                    to_append['button_action'] = action
                     to_delete.append(key)
-                elif value == 'special:accounts':
-                    to_append['button_action'] = 'SHOW_FIREFOX_ACCOUNTS'
-                    to_delete.append(key)
-                elif value.startswith('special:about'):
-                    to_append['button_action'] = 'OPEN_ABOUT_PAGE'
-                    to_append['button_action_args'] = value.rsplit(':', 1)[1]
-                elif value == 'special:monitor':
-                    to_append['button_action'] = 'ENABLE_FIREFOX_MONITOR'
-                    to_append['button_action_args'] = {
-                        'url': ('https://monitor.firefox.com/oauth/init?'
-                                'utm_source=desktop-snippet&utm_term=[[job_id]]&'
-                                'utm_content=[[channels]]&utm_campaign=[[campaign_slug]]&'
-                                'entrypoint=snippets&form_type=button'),
-                        'flowRequestParams': {
-                            'entrypoint': 'snippets',
-                            'utm_term': 'snippet-job-[[job_id]]',
-                            'form_type': 'button'
-                        }
-                    }
-                    to_delete.append(key)
+                    if args:
+                        to_append['button_action_args'] = args
 
         for key in to_delete:
             local_data.pop(key)

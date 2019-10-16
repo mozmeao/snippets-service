@@ -2,8 +2,9 @@ from django.http.request import QueryDict
 
 from snippets.base.models import Snippet
 from snippets.base.tests import SnippetFactory, TestCase
-from snippets.base.util import (deep_search_and_replace, first,
-                                fluent_link_extractor, get_object_or_none, urlparams)
+from snippets.base.util import (convert_special_link, deep_search_and_replace,
+                                first, fluent_link_extractor,
+                                get_object_or_none, urlparams)
 
 
 class TestGetObjectOrNone(TestCase):
@@ -37,7 +38,7 @@ class TestFirst(TestCase):
         self.assertEqual(first(items, lambda x: x[0] == 17), None)
 
 
-class TestFluentLinkExtractor(TestCase):
+class TestFluentLinkExtractorTests(TestCase):
     def test_multiple_links_with_metrics(self):
         data = {
             'text': ('We have an <a href="http://example.com">example</a> and another'
@@ -97,6 +98,35 @@ class TestFluentLinkExtractor(TestCase):
         self.assertEqual(final_data['title'], generated_data['title'])
         self.assertEqual(final_data['nolinks'], generated_data['nolinks'])
         self.assertEqual(final_data['links'], generated_data['links'])
+
+
+class ConvertSpecialLinkTests(TestCase):
+    def test_base(self):
+        monitor_data = {
+            'url': ('https://monitor.firefox.com/oauth/init?'
+                    'utm_source=desktop-snippet&utm_term=[[job_id]]&'
+                    'utm_content=[[channels]]&utm_campaign=[[campaign_slug]]&'
+                    'entrypoint=snippets&form_type=button'),
+            'flowRequestParams': {
+                'entrypoint': 'snippets',
+                'utm_term': 'snippet-job-[[job_id]]',
+                'form_type': 'button'
+            }
+        }
+        inputs = [
+            ('https://example.com', (None, None)),
+            ('special:appMenu', ('OPEN_APPLICATIONS_MENU', 'appMenu')),
+            ('special:menu:foo', ('OPEN_APPLICATIONS_MENU', 'foo')),
+            ('special:about:login', ('OPEN_ABOUT_PAGE', 'login')),
+            ('special:highlight:foo', ('HIGHLIGHT_FEATURE', 'foo')),
+            ('special:preferences', ('OPEN_PREFERENCES_PAGE', None)),
+            ('special:accounts', ('SHOW_FIREFOX_ACCOUNTS', None)),
+            ('special:monitor', ('ENABLE_FIREFOX_MONITOR', monitor_data)),
+            # This is invalid link but test that the app doesn't choke.
+            ('special:highlight:', ('HIGHLIGHT_FEATURE', '')),
+        ]
+        for url, expected_tuple in inputs:
+            self.assertEqual(convert_special_link(url), expected_tuple)
 
 
 class DeepSearchAndReplaceTests(TestCase):
