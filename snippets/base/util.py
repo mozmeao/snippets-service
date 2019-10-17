@@ -99,6 +99,40 @@ def urlparams(url_, fragment=None, query_dict=None, replace=True, **query):
     return new.geturl()
 
 
+def convert_special_link(url):
+    action = args = None
+    if url == 'special:appMenu':
+        action = 'OPEN_APPLICATIONS_MENU'
+        args = 'appMenu'
+    elif url.startswith('special:menu:'):
+        action = 'OPEN_APPLICATIONS_MENU'
+        args = url.rsplit(':', 1)[1]
+    elif url.startswith('special:about:'):
+        action = 'OPEN_ABOUT_PAGE'
+        args = url.rsplit(':', 1)[1]
+    elif url.startswith('special:highlight:'):
+        action = 'HIGHLIGHT_FEATURE'
+        args = url.rsplit(':', 1)[1]
+    elif url == 'special:preferences':
+        action = 'OPEN_PREFERENCES_PAGE'
+    elif url == 'special:accounts':
+        action = 'SHOW_FIREFOX_ACCOUNTS'
+    elif url == 'special:monitor':
+        action = 'ENABLE_FIREFOX_MONITOR'
+        args = {
+            'url': ('https://monitor.firefox.com/oauth/init?'
+                    'utm_source=desktop-snippet&utm_term=[[job_id]]&'
+                    'utm_content=[[channels]]&utm_campaign=[[campaign_slug]]&'
+                    'entrypoint=snippets&form_type=button'),
+            'flowRequestParams': {
+                'entrypoint': 'snippets',
+                'utm_term': 'snippet-job-[[job_id]]',
+                'form_type': 'button'
+            }
+        }
+    return action, args
+
+
 def fluent_link_extractor(data, variables):
     """Replaces all <a> elements with fluent.js link elements sequentially
     numbered.
@@ -123,35 +157,14 @@ def fluent_link_extractor(data, variables):
             if url_match:
                 url = url_match.group('url')
 
-            if url == 'special:appMenu':
+            action, args = convert_special_link(url)
+
+            if action:
                 self.links[keyname] = {
-                    'action': 'OPEN_APPLICATIONS_MENU',
-                    'args': 'appMenu',
+                    'action': action,
                 }
-            elif url.startswith('special:about'):
-                self.links[keyname] = {
-                    'action': 'OPEN_ABOUT_PAGE',
-                    'args': url.rsplit(':', 1)[1],
-                }
-            elif url == 'special:accounts':
-                self.links[keyname] = {
-                    'action': 'SHOW_FIREFOX_ACCOUNTS',
-                }
-            elif url == 'special:monitor':
-                self.links[keyname] = {
-                    'action': 'ENABLE_FIREFOX_MONITOR',
-                    'args': {
-                        'url': ('https://monitor.firefox.com/oauth/init?'
-                                'utm_source=desktop-snippet&utm_term=[[job_id]]&'
-                                'utm_content=[[channels]]&utm_campaign=[[campaign_slug]]&'
-                                'entrypoint=snippets&form_type=button'),
-                        'flowRequestParams': {
-                            'entrypoint': 'snippets',
-                            'utm_term': 'snippet-job-[[job_id]]',
-                            'form_type': 'button'
-                        }
-                    }
-                }
+                if args:
+                    self.links[keyname]['args'] = args
             else:
                 self.links[keyname] = {
                     'url': url,
