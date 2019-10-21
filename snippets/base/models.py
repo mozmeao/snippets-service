@@ -1788,6 +1788,26 @@ class Job(models.Model):
         verbose_name='Publish Ends',
         help_text=format_html(
             'See the current time in <a target="_blank" href="https://time.is/UTC">UTC</a>'))
+    limit_impressions = models.PositiveIntegerField(
+        blank=True,
+        default=0,
+        verbose_name='Global Impressions Limit',
+        help_text=(
+            'Job will complete if number of Impressions exceeds this number. Set to 0 to disable.'
+        ),
+    )
+    limit_clicks = models.PositiveIntegerField(
+        blank=True,
+        default=0,
+        verbose_name='Global Clicks Limit',
+        help_text='Job will complete if number of Clicks exceeds this number. Set to 0 to disable.',
+    )
+    limit_blocks = models.PositiveIntegerField(
+        blank=True,
+        default=0,
+        verbose_name='Global Block Limit',
+        help_text='Job will complete if number of Blocks exceeds this number. Set to 0 to disable.',
+    )
     distribution = models.ForeignKey(
         'Distribution',
         on_delete=models.PROTECT,
@@ -1873,7 +1893,7 @@ class Job(models.Model):
                     channels.append(channel)
         return set(channels)
 
-    def change_status(self, status, user=None, send_slack=True):
+    def change_status(self, status, user=None, send_slack=True, reason=''):
         if self.status == status:
             return
 
@@ -1881,13 +1901,16 @@ class Job(models.Model):
         self.save()
 
         if user:
+            message = f'Changed status to {self.get_status_display()}.'
+            if reason:
+                message += f' {reason}'
             LogEntry.objects.log_action(
                 user_id=user.pk,
                 content_type_id=get_content_type_for_model(self).pk,
                 object_id=self.id,
                 object_repr=str(self),
                 action_flag=CHANGE,
-                change_message='Changed status to {}'.format(self.get_status_display())
+                change_message=message,
             )
 
         if send_slack:

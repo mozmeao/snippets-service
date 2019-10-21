@@ -1027,6 +1027,14 @@ class JobAdmin(admin.ModelAdmin):
         ('Publishing Dates', {
             'fields': (('publish_start', 'publish_end'),)
         }),
+        # Enable when Rapid Snippet Delivery is On
+        # ('Global Limits', {
+        #     'fields': ((
+        #         'limit_impressions',
+        #         'limit_clicks',
+        #         'limit_blocks',
+        #     ),),
+        # }),
         ('Metrics', {
             'fields': (
                 'metric_impressions_humanized',
