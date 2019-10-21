@@ -101,10 +101,7 @@ def urlparams(url_, fragment=None, query_dict=None, replace=True, **query):
 
 def convert_special_link(url):
     action = args = None
-    if url == 'special:appMenu':
-        action = 'OPEN_APPLICATIONS_MENU'
-        args = 'appMenu'
-    elif url.startswith('special:menu:'):
+    if url.startswith('special:menu:'):
         action = 'OPEN_APPLICATIONS_MENU'
         args = url.rsplit(':', 1)[1]
     elif url.startswith('special:about:'):

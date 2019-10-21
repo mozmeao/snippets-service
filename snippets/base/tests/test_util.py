@@ -51,7 +51,7 @@ class TestFluentLinkExtractorTests(TestCase):
             'title': ('And this another variable with <a href="https://snippets.mozilla.org">more '
                       'links</a>'),
             'special_account': 'With <a href="special:accounts">special accounts link</a>.',
-            'special_appMenu': 'and another <a href="special:appMenu">special menu link</a>.',
+            'special_appMenu': 'and another <a href="special:menu:appMenu">special menu link</a>.',
             'nolinks': 'And finally one with no links.',
         }
         final_data = {
@@ -115,7 +115,6 @@ class ConvertSpecialLinkTests(TestCase):
         }
         inputs = [
             ('https://example.com', (None, None)),
-            ('special:appMenu', ('OPEN_APPLICATIONS_MENU', 'appMenu')),
             ('special:menu:foo', ('OPEN_APPLICATIONS_MENU', 'foo')),
             ('special:about:login', ('OPEN_ABOUT_PAGE', 'login')),
             ('special:highlight:foo', ('HIGHLIGHT_FEATURE', 'foo')),
