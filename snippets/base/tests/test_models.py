@@ -779,6 +779,70 @@ class JobTests(TestCase):
 
         self.assertEqual(generated_output, expected_output)
 
+    def test_render_client_limits(self):
+        # Combined
+        job = JobFactory.create(
+            client_limit_lifetime=100,
+            client_limit_per_hour=10,
+            client_limit_per_month=100,
+            campaign__slug='demo_campaign',
+        )
+        expected_output = {
+            'id': str(job.id),
+            'weight': 100,
+            'campaign': 'demo_campaign',
+            'targeting': '',
+            'frequency': {
+                'lifetime': 100,
+                'custom': [{'period': 3600000, 'cap': 10}, {'period': 2592000000, 'cap': 100}]
+            }
+        }
+        job.snippet.render = Mock()
+        job.snippet.render.return_value = {}
+        generated_output = job.render()
+        self.assertEqual(generated_output, expected_output)
+
+        # Lifetime limit only
+        job = JobFactory.create(
+            client_limit_lifetime=100,
+            campaign__slug='demo_campaign_1',
+        )
+        expected_output = {
+            'id': str(job.id),
+            'weight': 100,
+            'campaign': 'demo_campaign_1',
+            'targeting': '',
+            'frequency': {
+                'lifetime': 100,
+            }
+        }
+        job.snippet.render = Mock()
+        job.snippet.render.return_value = {}
+        generated_output = job.render()
+        self.assertEqual(generated_output, expected_output)
+
+        # Custom limits only
+
+        # Lifetime limit only
+        job = JobFactory.create(
+            client_limit_per_week=9,
+            client_limit_per_fortnight=99,
+            campaign__slug='demo_campaign_2',
+        )
+        expected_output = {
+            'id': str(job.id),
+            'weight': 100,
+            'campaign': 'demo_campaign_2',
+            'targeting': '',
+            'frequency': {
+                'custom': [{'period': 604800000, 'cap': 9}, {'period': 1296000000, 'cap': 99}]
+            }
+        }
+        job.snippet.render = Mock()
+        job.snippet.render.return_value = {}
+        generated_output = job.render()
+        self.assertEqual(generated_output, expected_output)
+
     def test_change_status(self):
         job = JobFactory.create(status=Job.DRAFT)
         with patch('snippets.base.models.slack') as slack_mock:

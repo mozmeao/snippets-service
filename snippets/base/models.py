@@ -1821,6 +1821,31 @@ class Job(models.Model):
     metric_clicks = models.PositiveIntegerField(default=0, editable=False)
     metric_blocks = models.PositiveIntegerField(default=0, editable=False)
 
+    client_limit_lifetime = models.PositiveIntegerField(
+        verbose_name='Max Lifetime Impressions',
+        default=0,
+    )
+    client_limit_per_hour = models.PositiveIntegerField(
+        verbose_name='Max Hourly Impressions',
+        default=0
+    )
+    client_limit_per_day = models.PositiveIntegerField(
+        verbose_name='Max Daily Impressions',
+        default=0
+    )
+    client_limit_per_week = models.PositiveIntegerField(
+        verbose_name='Max Weekly Impressions',
+        default=0
+    )
+    client_limit_per_fortnight = models.PositiveIntegerField(
+        verbose_name='Max Fortnightly Impressions',
+        default=0
+    )
+    client_limit_per_month = models.PositiveIntegerField(
+        verbose_name='Max Monthly Impressions',
+        default=0
+    )
+
     objects = managers.JobManager()
 
     class Meta:
@@ -1880,6 +1905,38 @@ class Job(models.Model):
              target in self.targets.all().order_by('id') if
              target.jexl_expr]
         )
+
+        # Add Client Limits
+        frequency = {}
+        if self.client_limit_lifetime:
+            frequency['lifetime'] = self.client_limit_lifetime
+        if self.client_limit_per_hour:
+            frequency['custom'] = (
+                frequency.get('custom', []) +
+                [{'period': 3600000, 'cap': self.client_limit_per_hour}]
+            )
+        if self.client_limit_per_day:
+            frequency['custom'] = (
+                frequency.get('custom', []) +
+                [{'period': 86400000, 'cap': self.client_limit_per_day}]
+            )
+        if self.client_limit_per_week:
+            frequency['custom'] = (
+                frequency.get('custom', []) +
+                [{'period': 604800000, 'cap': self.client_limit_per_week}]
+            )
+        if self.client_limit_per_fortnight:
+            frequency['custom'] = (
+                frequency.get('custom', []) +
+                [{'period': 1296000000, 'cap': self.client_limit_per_fortnight}]
+            )
+        if self.client_limit_per_month:
+            frequency['custom'] = (
+                frequency.get('custom', []) +
+                [{'period': 2592000000, 'cap': self.client_limit_per_month}]
+            )
+        if frequency:
+            rendered_snippet['frequency'] = frequency
 
         return rendered_snippet
 
