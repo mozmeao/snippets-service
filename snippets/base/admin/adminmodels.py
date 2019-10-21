@@ -584,7 +584,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 <strong>Available deep links:</strong><br/>
                 <ol>
                   <li><code>special:accounts</code> opens Firefox Accounts</li>
-                  <li><code>special:appMenu</code> opens the hamburger menu</li>
                   <li><code>special:monitor</code> links User to Firefox Monitor and directly authenticates them. Works only in buttons. Works only after Firefox 69.</li>
                   <li><code>special:about:ABOUT_PAGE</code> links to an About page. Get a list of About pages by typing <code>about:about</code> in your awesome bar. Example: <code>special:about:protections</code>.
                   <li><code>special:preferences</code> opens the Firefox Preferences tab. Example: <code>special:preferences</code>.
