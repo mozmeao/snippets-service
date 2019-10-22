@@ -20,3 +20,11 @@ input[name="_cancel"] {
     font-weight: bold;
     color: orange;
 }
+
+.ratio-green {
+    color: green;
+}
+
+.ratio-red {
+    color: #a41515;
+}

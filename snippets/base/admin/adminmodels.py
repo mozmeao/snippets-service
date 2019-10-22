@@ -1,12 +1,14 @@
 import copy
 import re
 
+from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.db.models import TextField, Q
 from django.http import HttpResponseRedirect
 from django.template.loader import get_template
 from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from django_ace import AceWidget
@@ -1012,6 +1014,7 @@ class JobAdmin(admin.ModelAdmin):
         'metric_clicks_humanized',
         'metric_blocks_humanized',
         'metric_last_update',
+        'redash_link',
     ]
     fieldsets = [
         ('ID', {
@@ -1028,10 +1031,13 @@ class JobAdmin(admin.ModelAdmin):
         }),
         ('Metrics', {
             'fields': (
-                'metric_impressions_humanized',
-                'metric_clicks_humanized',
-                'metric_blocks_humanized',
+                (
+                    'metric_impressions_humanized',
+                    'metric_clicks_humanized',
+                    'metric_blocks_humanized',
+                ),
                 'metric_last_update',
+                'redash_link',
             ),
         }),
         ('Other Info', {
@@ -1094,19 +1100,29 @@ class JobAdmin(admin.ModelAdmin):
         if obj.metric_clicks == 0:
             return 0
         ratio = (obj.metric_clicks / obj.metric_impressions) * 100
-        return '{} ({:.2f}%)'.format(
-            intcomma(obj.metric_clicks), ratio
-        )
+        ratio_class = 'ratio-red' if ratio < 0.02 else 'ratio-green'
+        return format_html('<span class="{}">{} ({:.2f}%)</span>'.format(
+            ratio_class, intcomma(obj.metric_clicks), ratio
+        ))
     metric_clicks_humanized.short_description = 'Clicks'
 
     def metric_blocks_humanized(self, obj):
         if obj.metric_blocks == 0:
             return 0
         ratio = (obj.metric_blocks / obj.metric_impressions) * 100
-        return '{} ({:.2f}%)'.format(
-            intcomma(obj.metric_blocks), ratio
-        )
+        ratio_class = 'ratio-red' if ratio >= 0.25 else 'ratio-green'
+        return format_html('<span class="{}">{} ({:.2f}%)</span>'.format(
+            ratio_class, intcomma(obj.metric_blocks), ratio
+        ))
     metric_blocks_humanized.short_description = 'Blocks'
+
+    def redash_link(self, obj):
+        link = (f'{settings.REDASH_ENDPOINT}/queries/{settings.REDASH_QUERY_ID}/'
+                f'?p_start_date_{settings.REDASH_QUERY_ID}={obj.publish_start.strftime("%Y%m%d")}'
+                f'&p_end_date_{settings.REDASH_QUERY_ID}={obj.publish_end.strftime("%Y%m%d")}'
+                f'&p_message_id_{settings.REDASH_QUERY_ID}={obj.id}#161888')
+        return format_html(f'<a href="{link}">Explore</a>')
+    redash_link.short_description = 'Explore in Redash'
 
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
