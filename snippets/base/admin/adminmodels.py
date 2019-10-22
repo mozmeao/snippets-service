@@ -7,6 +7,7 @@ from django.db.models import TextField, Q
 from django.http import HttpResponseRedirect
 from django.template.loader import get_template
 from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from django_ace import AceWidget
@@ -1095,18 +1096,20 @@ class JobAdmin(admin.ModelAdmin):
         if obj.metric_clicks == 0:
             return 0
         ratio = (obj.metric_clicks / obj.metric_impressions) * 100
-        return '{} ({:.2f}%)'.format(
-            intcomma(obj.metric_clicks), ratio
-        )
+        ratio_class = 'ratio-red' if ratio < 0.02 else 'ratio-green'
+        return format_html('<span class="{}">{} ({:.2f}%)</span>'.format(
+            ratio_class, intcomma(obj.metric_clicks), ratio
+        ))
     metric_clicks_humanized.short_description = 'Clicks'
 
     def metric_blocks_humanized(self, obj):
         if obj.metric_blocks == 0:
             return 0
         ratio = (obj.metric_blocks / obj.metric_impressions) * 100
-        return '{} ({:.2f}%)'.format(
-            intcomma(obj.metric_blocks), ratio
-        )
+        ratio_class = 'ratio-red' if ratio >= 0.25 else 'ratio-green'
+        return format_html('<span class="{}">{} ({:.2f}%)</span>'.format(
+            ratio_class, intcomma(obj.metric_blocks), ratio
+        ))
     metric_blocks_humanized.short_description = 'Blocks'
 
     def save_model(self, request, obj, form, change):
