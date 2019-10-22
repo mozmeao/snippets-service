@@ -1,6 +1,7 @@
 import copy
 import re
 
+from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.db.models import TextField, Q
@@ -1014,6 +1015,7 @@ class JobAdmin(admin.ModelAdmin):
         'metric_clicks_humanized',
         'metric_blocks_humanized',
         'metric_last_update',
+        'redash_link',
     ]
     fieldsets = [
         ('ID', {
@@ -1030,10 +1032,13 @@ class JobAdmin(admin.ModelAdmin):
         }),
         ('Metrics', {
             'fields': (
-                'metric_impressions_humanized',
-                'metric_clicks_humanized',
-                'metric_blocks_humanized',
+                (
+                    'metric_impressions_humanized',
+                    'metric_clicks_humanized',
+                    'metric_blocks_humanized',
+                ),
                 'metric_last_update',
+                'redash_link',
             ),
         }),
         ('Other Info', {
@@ -1111,6 +1116,14 @@ class JobAdmin(admin.ModelAdmin):
             ratio_class, intcomma(obj.metric_blocks), ratio
         ))
     metric_blocks_humanized.short_description = 'Blocks'
+
+    def redash_link(self, obj):
+        link = (f'{settings.REDASH_ENDPOINT}/queries/{settings.REDASH_QUERY_ID}/'
+                f'?p_start_date_{settings.REDASH_QUERY_ID}={obj.publish_start.strftime("%Y%m%d")}'
+                f'&p_end_date_{settings.REDASH_QUERY_ID}={obj.publish_end.strftime("%Y%m%d")}'
+                f'&p_message_id_{settings.REDASH_QUERY_ID}={obj.id}#161888')
+        return format_html(f'<a href="{link}">Explore</a>')
+    redash_link.short_description = 'Explore in Redash'
 
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
