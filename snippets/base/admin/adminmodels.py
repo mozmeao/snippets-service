@@ -620,6 +620,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         css = {
             'all': (
                 'css/admin/ASRSnippetAdmin.css',
+                'css/admin/descriptionColorize.css',
                 'css/admin/IDFieldHighlight.css',
                 'css/admin/InlineTemplates.css',
                 'css/admin/CustomNameWithTags.css',
@@ -1029,6 +1030,35 @@ class JobAdmin(admin.ModelAdmin):
         ('Publishing Dates', {
             'fields': (('publish_start', 'publish_end'),)
         }),
+        ('Global Limits', {
+            'fields': ((
+                'limit_impressions',
+                'limit_clicks',
+                'limit_blocks',
+            ),),
+        }),
+        ('Client Limits', {
+            'fields': (
+                'client_limit_lifetime',
+                ('client_limit_per_hour',
+                 'client_limit_per_day',
+                 'client_limit_per_week',
+                 'client_limit_per_fortnight',
+                 'client_limit_per_month',),
+            ),
+            'description': (
+                '''
+                Limit the number of impressions of this Job per Firefox Client.<br/><br/>
+                Examples:<br/>
+                <ol>
+                  <li>If <code>Max Weekly Impressions</code> is set to 2, each user will see this Job <i>at most</i> 2 times within 7 days.</li>
+                  <li>Limits can be combined: If <code>Max Weekly Impressions</code> is set to 2 and <code>Max Monthly Impressions</code> is set to 4,
+                      each user will see this Job <i>at most</i> 2 times within 7 days and <i>at most</i> 4 times within 30 days.</li>
+                </ol>
+                <strong>Note</strong>: Counting starts from the time a user gets their first impression. For example when a user first time sees a Job on the 10th day of a month, the fortnight counter will expire on the 25th.<br/>
+                <strong>Note</strong>: This functionality <i>does not</i> guaranty the minimum number of impressions per user but it enforces that a Job won't appear more than planned.
+                '''),  # noqa
+        }),
         ('Metrics', {
             'fields': (
                 (
@@ -1056,6 +1086,8 @@ class JobAdmin(admin.ModelAdmin):
         css = {
             'all': [
                 'css/admin/JobAdmin.css',
+                'css/admin/descriptionColorize.css',
+                'css/admin/IDFieldHighlight.css',
             ]
         }
         js = [

@@ -1,0 +1,11 @@
+.description {
+    padding: 5px 0px 12px 12px;
+    background-color: #def6dee6;
+}
+
+.description code {
+    padding: 2px 4px;
+    font-size: 85%;
+    background-color: #e4e4e4;
+    border-radius: 3px;
+}
