@@ -61,8 +61,7 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
     channel = next((item for item in CHANNELS if channel.startswith(item)), None) or 'release'
     locale = client.locale.lower()
     distribution = client.distribution.lower()
-
-    filename = default_storage.url(
+    filename = (
         f'{settings.MEDIA_BUNDLES_PREGEN_ROOT}/{product}/{channel}/'
         f'{locale}/{distribution}.json'
     )
@@ -70,7 +69,7 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
     if not default_storage.exists(filename):
         return HttpResponse(status=200, content='{}', content_type='application/json')
 
-    full_url = urljoin(settings.CDN_URL or settings.SITE_URL, filename)
+    full_url = urljoin(settings.CDN_URL or settings.SITE_URL, default_storage.url(filename))
 
     return HttpResponseRedirect(full_url)
 
