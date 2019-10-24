@@ -70,6 +70,8 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
         return HttpResponse(status=200, content='{}', content_type='application/json')
 
     full_url = urljoin(settings.CDN_URL or settings.SITE_URL, default_storage.url(filename))
+    # Remove AWS S3 parameters
+    full_url = full_url.split('?')[0]
 
     return HttpResponseRedirect(full_url)
 
