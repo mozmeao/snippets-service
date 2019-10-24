@@ -169,7 +169,9 @@ class FetchSnippetPregenBundleTests(TestCase):
         ])
 
     def test_base(self):
-        response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
+        with patch('snippets.base.views.default_storage.exists') as exists_mock:
+            exists_mock.return_value = True
+            response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
         expected_url = (
             'http://example.org/media/bundles/pregen/Firefox/release/el-gr/other-than-default.json'
         )
@@ -177,7 +179,9 @@ class FetchSnippetPregenBundleTests(TestCase):
 
     @override_settings(CDN_URL='https://cdn.com')
     def test_cdn(self):
-        response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
+        with patch('snippets.base.views.default_storage.exists') as exists_mock:
+            exists_mock.return_value = True
+            response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
         expected_url = (
             'https://cdn.com/media/bundles/pregen/Firefox/release/el-gr/other-than-default.json'
         )
@@ -186,7 +190,9 @@ class FetchSnippetPregenBundleTests(TestCase):
     def test_complicated_channel(self):
         asrclient_kwargs = self.asrclient_kwargs.copy()
         asrclient_kwargs['channel'] = 'nightly-cck-δφια'
-        response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
+        with patch('snippets.base.views.default_storage.exists') as exists_mock:
+            exists_mock.return_value = True
+            response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
         expected_url = (
             'http://example.org/media/bundles/pregen/Firefox/nightly/el-gr/other-than-default.json'
         )
@@ -195,11 +201,20 @@ class FetchSnippetPregenBundleTests(TestCase):
     def test_other_product(self):
         asrclient_kwargs = self.asrclient_kwargs.copy()
         asrclient_kwargs['name'] = 'Edge'
-        response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
+        with patch('snippets.base.views.default_storage.exists') as exists_mock:
+            exists_mock.return_value = True
+            response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
         expected_url = (
             'http://example.org/media/bundles/pregen/Firefox/release/el-gr/other-than-default.json'
         )
         self.assertEqual(response.url, expected_url)
+
+    def test_bundle_doesnt_exist(self):
+        with patch('snippets.base.views.default_storage.exists') as exists_mock:
+            exists_mock.return_value = False
+            response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'{}')
 
 
 class FetchSnippetBundleTests(TestCase):
