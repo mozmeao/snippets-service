@@ -1,5 +1,5 @@
 import json
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from distutils.util import strtobool
 from django.conf import settings
@@ -69,7 +69,8 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
     if not default_storage.exists(filename):
         return HttpResponse(status=200, content='{}', content_type='application/json')
 
-    full_url = urljoin(settings.CDN_URL or settings.SITE_URL, default_storage.url(filename))
+    full_url = urljoin(settings.CDN_URL or settings.SITE_URL,
+                       urlparse(default_storage.url(filename)).path)
     # Remove AWS S3 parameters
     full_url = full_url.split('?')[0]
 
