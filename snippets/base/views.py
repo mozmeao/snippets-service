@@ -1,9 +1,11 @@
 import json
+from urllib.parse import urljoin
 
 from distutils.util import strtobool
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ValidationError
+from django.core.files.storage import default_storage
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.functional import lazy
@@ -20,7 +22,7 @@ from snippets.base import util
 from snippets.base.bundles import ASRSnippetBundle, SnippetBundle
 from snippets.base.decorators import access_control
 from snippets.base.filters import JobFilter
-from snippets.base.models import ASRSnippet, Client, Snippet, SnippetTemplate
+from snippets.base.models import CHANNELS, ASRSnippet, Client, Snippet, SnippetTemplate
 from snippets.base.util import get_object_or_none
 
 
@@ -44,9 +46,33 @@ class JobListView(FilterView):
         return 'base/jobs_list_table.jinja'
 
 
+def fetch_snippets(request, **kwargs):
+    if settings.USE_PREGEN_BUNDLES:
+        return fetch_snippet_pregen_bundle(request, **kwargs)
+    return fetch_snippet_bundle(request, **kwargs)
+
+
+@cache_control(public=True, max_age=settings.SNIPPET_BUNDLE_PREGEN_REDIRECT_TIMEOUT)
+def fetch_snippet_pregen_bundle(request, **kwargs):
+    client = Client(**kwargs)
+    product = 'Firefox'
+    channel = client.channel.lower()
+    channel = next((item for item in CHANNELS if channel.startswith(item)), None) or 'release'
+    locale = client.locale.lower()
+    distribution = client.distribution.lower()
+
+    filename = default_storage.url(
+        f'{settings.MEDIA_BUNDLES_PREGEN_ROOT}/{product}/{channel}/'
+        f'{locale}/{distribution}.json'
+    )
+    full_url = urljoin(settings.CDN_URL or settings.SITE_URL, filename)
+
+    return HttpResponseRedirect(full_url)
+
+
 @cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)
 @access_control(max_age=SNIPPET_BUNDLE_TIMEOUT)
-def fetch_snippets(request, **kwargs):
+def fetch_snippet_bundle(request, **kwargs):
     """
     Return one of the following responses:
     - 200 with empty body when the bundle is empty
