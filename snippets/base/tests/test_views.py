@@ -138,6 +138,16 @@ class FetchSnippetsTests(TestCase):
                 self.assertTrue(patches['fetch_snippet_pregen_bundle'].called)
                 self.assertFalse(patches['fetch_snippet_bundle'].called)
 
+        # Pregen Enabled but old client.
+        with patch.multiple('snippets.base.views',
+                            fetch_snippet_pregen_bundle=DEFAULT,
+                            fetch_snippet_bundle=DEFAULT) as patches:
+            with override_settings(USE_PREGEN_BUNDLES=True):
+                asrclient_kwargs['startpage_version'] = 5
+                views.fetch_snippets(request, **asrclient_kwargs)
+                self.assertFalse(patches['fetch_snippet_pregen_bundle'].called)
+                self.assertTrue(patches['fetch_snippet_bundle'].called)
+
 
 @override_settings(SITE_URL='http://example.org',
                    MEDIA_BUNDLES_PREGEN_ROOT='/bundles/pregen/')

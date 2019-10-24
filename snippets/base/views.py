@@ -47,7 +47,7 @@ class JobListView(FilterView):
 
 
 def fetch_snippets(request, **kwargs):
-    if settings.USE_PREGEN_BUNDLES:
+    if settings.USE_PREGEN_BUNDLES and kwargs['startpage_version'] == 6:
         return fetch_snippet_pregen_bundle(request, **kwargs)
     return fetch_snippet_bundle(request, **kwargs)
 
@@ -67,6 +67,7 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
     )
     full_url = urljoin(settings.CDN_URL or settings.SITE_URL, filename)
 
+    statsd.incr('serve.bundle_pregen')
     return HttpResponseRedirect(full_url)
 
 
