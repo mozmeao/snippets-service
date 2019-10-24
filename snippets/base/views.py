@@ -47,13 +47,14 @@ class JobListView(FilterView):
 
 
 def fetch_snippets(request, **kwargs):
-    if settings.USE_PREGEN_BUNDLES:
+    if settings.USE_PREGEN_BUNDLES and kwargs['startpage_version'] == 6:
         return fetch_snippet_pregen_bundle(request, **kwargs)
     return fetch_snippet_bundle(request, **kwargs)
 
 
 @cache_control(public=True, max_age=settings.SNIPPET_BUNDLE_PREGEN_REDIRECT_TIMEOUT)
 def fetch_snippet_pregen_bundle(request, **kwargs):
+    statsd.incr('serve.bundle_pregen')
     client = Client(**kwargs)
     product = 'Firefox'
     channel = client.channel.lower()
@@ -65,6 +66,10 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
         f'{settings.MEDIA_BUNDLES_PREGEN_ROOT}/{product}/{channel}/'
         f'{locale}/{distribution}.json'
     )
+
+    if not default_storage.exists(filename):
+        return HttpResponse(status=200, content='{}', content_type='application/json')
+
     full_url = urljoin(settings.CDN_URL or settings.SITE_URL, filename)
 
     return HttpResponseRedirect(full_url)
