@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
@@ -60,6 +60,23 @@ class Command(BaseCommand):
             count_limit[limit] = jobs.count()
             count_total_completed += count_limit[limit]
 
+        # Disable Jobs that have Impression, Click or Block limits but don't
+        # have metrics data for at least 24h. This is to handle cases where the
+        # Metrics Pipeline is broken.
+        yesterday = datetime.utcnow() - timedelta(days=1)
+        jobs = (Job.objects
+                .filter(status=Job.PUBLISHED)
+                .exclude(limit_impressions=0, limit_clicks=0, limit_blocks=0)
+                .filter(metric_last_update__lt=yesterday))
+        for job in jobs:
+            job.change_status(
+                status=Job.COMPLETED,
+                user=user,
+                reason=f'Premature termination due to missing metrics.',
+            )
+        count_premature_termination = jobs.count()
+        count_total_completed += count_premature_termination
+
         count_running = Job.objects.filter(status=Job.PUBLISHED).count()
 
         self.stdout.write(
@@ -69,5 +86,6 @@ class Command(BaseCommand):
             f'  - Reached Impressions Limit: {count_limit["impressions"]}\n'
             f'  - Reached Clicks Limit: {count_limit["clicks"]}\n'
             f'  - Reached Blocks Limit: {count_limit["blocks"]}\n'
+            f'  - Premature Termination due to missing metrics: {count_premature_termination}\n'
             f'Total Jobs Running: {count_running}\n'
         )
