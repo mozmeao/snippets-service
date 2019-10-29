@@ -158,55 +158,81 @@ class FetchMetricsTests(TestCase):
 
 class UpdateJobsTests(TestCase):
     def test_base(self):
+        now = datetime.utcnow()
         job_without_end_date = JobFactory(
             status=models.Job.PUBLISHED,
             publish_end=None)
         job_that_has_ended = JobFactory(
             status=models.Job.PUBLISHED,
-            publish_end=datetime.utcnow())
+            publish_end=now)
         job_ending_in_the_future = JobFactory(
             status=models.Job.PUBLISHED,
             limit_impressions=10000,
-            publish_end=datetime.utcnow() + timedelta(days=1))
+            metric_last_update=now,
+            publish_end=now + timedelta(days=1))
         job_scheduled_ready_to_go = JobFactory(
             status=models.Job.SCHEDULED,
-            publish_start=datetime.utcnow())
+            publish_start=now)
         job_scheduled_in_the_future = JobFactory(
             status=models.Job.SCHEDULED,
-            publish_start=datetime.utcnow() + timedelta(days=1))
+            publish_start=now + timedelta(days=1))
         job_impression_limit_reached = JobFactory(
             status=models.Job.PUBLISHED,
             limit_impressions=10000,
             metric_impressions=10000,
-            publish_end=datetime.utcnow() + timedelta(days=1))
+            metric_last_update=now,
+            publish_end=now + timedelta(days=1))
         job_click_limit_reached = JobFactory(
             status=models.Job.PUBLISHED,
             limit_impressions=10000,
             metric_impressions=1000,
             limit_clicks=1000,
             metric_clicks=1001,
-            publish_end=datetime.utcnow() + timedelta(days=1))
+            metric_last_update=now,
+            publish_end=now + timedelta(days=1))
         job_block_limit_reached = JobFactory(
             status=models.Job.PUBLISHED,
             limit_blocks=10,
             metric_blocks=1000,
-            publish_end=datetime.utcnow() + timedelta(days=1)
+            metric_last_update=now - timedelta(minutes=30),
+            publish_end=now + timedelta(days=1)
         )
         job_impression_limit_not_reached = JobFactory(
             status=models.Job.PUBLISHED,
             limit_impressions=100,
             metric_impressions=10,
-            publish_end=datetime.utcnow() + timedelta(days=1))
+            metric_last_update=now - timedelta(hours=12),
+            publish_end=now + timedelta(days=1))
         job_click_limit_not_reached = JobFactory(
             status=models.Job.PUBLISHED,
             limit_clicks=100,
             metric_clicks=10,
-            publish_end=datetime.utcnow() + timedelta(days=1))
+            metric_last_update=now - timedelta(hours=1),
+            publish_end=now + timedelta(days=1))
         job_block_limit_not_reached = JobFactory(
             status=models.Job.PUBLISHED,
             limit_blocks=100,
             metric_blocks=10,
-            publish_end=datetime.utcnow() + timedelta(days=1))
+            metric_last_update=now,
+            publish_end=now + timedelta(days=1))
+        job_impression_limit_not_reached_but_no_data = JobFactory(
+            status=models.Job.PUBLISHED,
+            limit_impressions=100,
+            metric_impressions=10,
+            metric_last_update=now - timedelta(hours=26),
+            publish_end=now + timedelta(days=1))
+        job_click_limit_not_reached_but_no_data = JobFactory(
+            status=models.Job.PUBLISHED,
+            limit_clicks=100,
+            metric_clicks=10,
+            metric_last_update=now - timedelta(hours=30),
+            publish_end=now + timedelta(days=1))
+        job_block_limit_not_reached_but_no_data = JobFactory(
+            status=models.Job.PUBLISHED,
+            limit_blocks=100,
+            metric_blocks=10,
+            metric_last_update=now - timedelta(hours=40),
+            publish_end=now + timedelta(days=1))
 
         job_cancelled = JobFactory(status=models.Job.CANCELED)
         job_completed = JobFactory(status=models.Job.COMPLETED)
@@ -226,6 +252,9 @@ class UpdateJobsTests(TestCase):
         job_impression_limit_not_reached.refresh_from_db()
         job_click_limit_not_reached.refresh_from_db()
         job_block_limit_not_reached.refresh_from_db()
+        job_impression_limit_not_reached_but_no_data.refresh_from_db()
+        job_click_limit_not_reached_but_no_data.refresh_from_db()
+        job_block_limit_not_reached_but_no_data.refresh_from_db()
 
         self.assertEqual(job_without_end_date.status, models.Job.PUBLISHED)
         self.assertEqual(job_that_has_ended.status, models.Job.COMPLETED)
@@ -240,6 +269,9 @@ class UpdateJobsTests(TestCase):
         self.assertEqual(job_impression_limit_not_reached.status, models.Job.PUBLISHED)
         self.assertEqual(job_click_limit_not_reached.status, models.Job.PUBLISHED)
         self.assertEqual(job_block_limit_not_reached.status, models.Job.PUBLISHED)
+        self.assertEqual(job_impression_limit_not_reached_but_no_data.status, models.Job.COMPLETED)
+        self.assertEqual(job_click_limit_not_reached_but_no_data.status, models.Job.COMPLETED)
+        self.assertEqual(job_block_limit_not_reached_but_no_data.status, models.Job.COMPLETED)
 
 
 class GenerateBundles(TestCase):
