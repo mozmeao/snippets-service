@@ -66,9 +66,6 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
         f'{locale}/{distribution}.json'
     )
 
-    if not default_storage.exists(filename):
-        return HttpResponse(status=200, content='{}', content_type='application/json')
-
     full_url = urljoin(settings.CDN_URL or settings.SITE_URL,
                        urlparse(default_storage.url(filename)).path)
     # Remove AWS S3 parameters
