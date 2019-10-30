@@ -2218,3 +2218,23 @@ class DistributionBundle(models.Model):
         self.code_name = self.code_name.lower()
 
         super().save(*args, **kwargs)
+
+
+class DailyJobMetrics(models.Model):
+    data_fetched_on = models.DateTimeField(auto_now_add=True)
+
+    job = models.ForeignKey(Job, on_delete=models.PROTECT)
+    date = models.DateField(editable=False)
+
+    impressions = models.PositiveIntegerField(default=0, editable=False)
+    clicks = models.PositiveIntegerField(default=0, editable=False)
+    blocks = models.PositiveIntegerField(default=0, editable=False)
+
+    class Meta:
+        verbose_name_plural = 'Daily Job Metrics'
+        unique_together = [
+            ('job', 'date')
+        ]
+
+    def __str__(self):
+        return f'{self.date.strftime("%Y%m%d")} - {self.job.id}'
