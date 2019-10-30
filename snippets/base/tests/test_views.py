@@ -209,13 +209,6 @@ class FetchSnippetPregenBundleTests(TestCase):
         )
         self.assertEqual(response.url, expected_url)
 
-    def test_bundle_doesnt_exist(self):
-        with patch('snippets.base.views.default_storage.exists') as exists_mock:
-            exists_mock.return_value = False
-            response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, b'{}')
-
 
 class FetchSnippetBundleTests(TestCase):
     def setUp(self):
