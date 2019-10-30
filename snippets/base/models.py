@@ -1757,6 +1757,7 @@ class Job(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+    completed_on = models.DateTimeField(null=True, editable=False)
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     status = models.IntegerField(choices=((DRAFT, 'Draft'),
@@ -1852,7 +1853,7 @@ class Job(models.Model):
         ordering = ['-modified']
 
     def __str__(self):
-        return str(self.uuid)
+        return str(self.id)
 
     def clean(self):
         super().clean()
@@ -1955,6 +1956,8 @@ class Job(models.Model):
             return
 
         self.status = status
+        if status == self.COMPLETED:
+            self.completed = datetime.utcnow()
         self.save()
 
         if user:
