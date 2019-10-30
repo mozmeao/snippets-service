@@ -169,43 +169,44 @@ class FetchSnippetPregenBundleTests(TestCase):
         ])
 
     def test_base(self):
-        with patch('snippets.base.views.default_storage.exists') as exists_mock:
-            exists_mock.return_value = True
-            response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
+        response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
         expected_url = (
-            'http://example.org/media/bundles/pregen/Firefox/release/el-gr/other-than-default.json'
+            'http://example.org/media/bundles/pregen/Firefox/release/el-gr/default.json'
         )
         self.assertEqual(response.url, expected_url)
 
     @override_settings(CDN_URL='https://cdn.com')
     def test_cdn(self):
-        with patch('snippets.base.views.default_storage.exists') as exists_mock:
-            exists_mock.return_value = True
-            response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
+        response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
         expected_url = (
-            'https://cdn.com/media/bundles/pregen/Firefox/release/el-gr/other-than-default.json'
+            'https://cdn.com/media/bundles/pregen/Firefox/release/el-gr/default.json'
         )
         self.assertEqual(response.url, expected_url)
 
     def test_complicated_channel(self):
         asrclient_kwargs = self.asrclient_kwargs.copy()
         asrclient_kwargs['channel'] = 'nightly-cck-δφια'
-        with patch('snippets.base.views.default_storage.exists') as exists_mock:
-            exists_mock.return_value = True
-            response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
+        response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
         expected_url = (
-            'http://example.org/media/bundles/pregen/Firefox/nightly/el-gr/other-than-default.json'
+            'http://example.org/media/bundles/pregen/Firefox/nightly/el-gr/default.json'
         )
         self.assertEqual(response.url, expected_url)
 
     def test_other_product(self):
         asrclient_kwargs = self.asrclient_kwargs.copy()
         asrclient_kwargs['name'] = 'Edge'
-        with patch('snippets.base.views.default_storage.exists') as exists_mock:
-            exists_mock.return_value = True
-            response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
+        response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
         expected_url = (
-            'http://example.org/media/bundles/pregen/Firefox/release/el-gr/other-than-default.json'
+            'http://example.org/media/bundles/pregen/Firefox/release/el-gr/default.json'
+        )
+        self.assertEqual(response.url, expected_url)
+
+    def test_distribution(self):
+        asrclient_kwargs = self.asrclient_kwargs.copy()
+        asrclient_kwargs['distribution'] = 'experiment-foo-bar'
+        response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
+        expected_url = (
+            'http://example.org/media/bundles/pregen/Firefox/release/el-gr/foo-bar.json'
         )
         self.assertEqual(response.url, expected_url)
 
