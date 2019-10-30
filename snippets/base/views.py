@@ -60,7 +60,20 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
     channel = client.channel.lower()
     channel = next((item for item in CHANNELS if channel.startswith(item)), None) or 'release'
     locale = client.locale.lower()
+
+    # Distribution populated by client's distribution if it starts with
+    # `experiment-`. Otherwise default to `default`.
+    #
+    # This is because non-Mozilla distributors of Firefox (e.g. Linux
+    # Distributions) override the distribution field with their identification.
+    # We want all Firefox clients to get the default bundle for the locale /
+    # channel combination, unless they are part of an experiment.
     distribution = client.distribution.lower()
+    if distribution.startswith('experiment-'):
+        distribution = distribution[11:]
+    else:
+        distribution = 'default'
+
     filename = (
         f'{settings.MEDIA_BUNDLES_PREGEN_ROOT}/{product}/{channel}/'
         f'{locale}/{distribution}.json'
