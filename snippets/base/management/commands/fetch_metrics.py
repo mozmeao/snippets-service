@@ -79,7 +79,7 @@ class Command(BaseCommand):
                 'message_id': job.id,
             }
             try:
-                result = redash.query(settings.REDASH_QUERY_ID, bind_data)
+                result = redash.query(settings.REDASH_JOB_QUERY_ID, bind_data)
             except Exception as exp:
                 # Capture the exception but don't quit
                 sentry_sdk.capture_exception(exp)

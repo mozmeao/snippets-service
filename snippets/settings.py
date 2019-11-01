@@ -275,6 +275,7 @@ DEAD_MANS_SNITCH_PRODUCT_DETAILS = config('DEAD_MANS_SNITCH_PRODUCT_DETAILS', de
 DEAD_MANS_SNITCH_DISABLE_SNIPPETS = config('DEAD_MANS_SNITCH_DISABLE_SNIPPETS', default=None)
 DEAD_MANS_SNITCH_UPDATE_JOBS = config('DEAD_MANS_SNITCH_UPDATE_JOBS', default=None)
 DEAD_MANS_SNITCH_FETCH_METRICS = config('DEAD_MANS_SNITCH_FETCH_METRICS', default=None)
+DEAD_MANS_SNITCH_FETCH_DAILY_METRICS = config('DEAD_MANS_SNITCH_FETCH_DAILY_METRICS', default=None)
 
 SNIPPETS_PER_PAGE = config('SNIPPETS_PER_PAGE', default=50)
 
@@ -345,6 +346,13 @@ ADMIN_REORDER = [
 
     },
     {
+        'app': 'base',
+        'label': 'Metrics',
+        'models': [
+            'base.DailyJobMetrics',
+        ]
+    },
+    {
         'app': 'auth',
         'label': 'Admin',
         'models': ['auth.User', 'auth.Group', 'admin.LogEntry']
@@ -375,7 +383,8 @@ SNIPPETS_PUBLICATION_OFFSET = config('SNIPPETS_PUBLICATION_OFFSET', default=5, c
 REDASH_ENDPOINT = config('REDASH_ENDPOINT', default='https://sql.telemetry.mozilla.org')
 REDASH_API_KEY = config('REDASH_API_KEY', default=None)
 REDASH_MAX_WAIT = config('REDASH_MAX_WAIT', default=300)
-REDASH_QUERY_ID = config('REDASH_QUERY_ID', default=63146)
+REDASH_JOB_QUERY_ID = config('REDASH_JOB_QUERY_ID', default=63146)
+REDASH_DAILY_QUERY_ID = config('REDASH_DAILY_QUERY_ID', default=65755)
 REDASH_UPDATE_INTERVAL = config('REDASH_UPDATE_INTERVAL', default=600)
 
 USE_PREGEN_BUNDLES = config('USE_PREGEN_BUNDLES', default=False, cast=bool)

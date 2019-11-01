@@ -90,10 +90,18 @@ def job_fetch_metrics():
     call_command('fetch_metrics')
 
 
+@babis.decorator(ping_after=settings.DEAD_MANS_SNITCH_FETCH_DAILY_METRICS)
+def job_fetch_daily_metrics():
+    call_command('fetch_daily_metrics')
+
+
 if settings.REDASH_API_KEY:
     scheduled_job(
         'cron', month='*', day='*', hour='*', minute='*', max_instances=1, coalesce=True
     )(job_fetch_metrics)
+    scheduled_job(
+        'cron', month='*', day='*', hour='4', minute='0', max_instances=1, coalesce=True
+    )(job_fetch_daily_metrics)
 
 
 @scheduled_job('cron', month='*', day='*', hour='08', minute='20', max_instances=1, coalesce=True)

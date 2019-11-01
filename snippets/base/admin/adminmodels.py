@@ -1019,7 +1019,7 @@ class JobAdmin(admin.ModelAdmin):
     ]
     fieldsets = [
         ('ID', {
-            'fields': ('id', 'job_status', 'snippet_name_linked', 'creator')
+            'fields': ('id', ('job_status', 'completed_on'), 'snippet_name_linked', 'creator')
         }),
         ('Content', {
             'fields': ('snippet', 'campaign')
@@ -1247,3 +1247,28 @@ class JobAdmin(admin.ModelAdmin):
 
 class DistributionAdmin(admin.ModelAdmin):
     save_on_top = True
+
+
+class DailyJobMetrics(admin.ModelAdmin):
+    list_display = ('id', 'job', 'data_fetched_on')
+    search_fields = ('job__id', 'job__snippet__name', 'job__snippet__id')
+    fieldsets = [
+        ('Metrics', {
+            'fields': (
+                'job',
+                'date',
+                'impressions',
+                'clicks',
+                'blocks',
+            ),
+        }),
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
