@@ -1016,10 +1016,11 @@ class JobAdmin(admin.ModelAdmin):
         'metric_blocks_humanized',
         'metric_last_update',
         'redash_link',
+        'completed_on',
     ]
     fieldsets = [
         ('ID', {
-            'fields': ('id', 'job_status', 'snippet_name_linked', 'creator')
+            'fields': ('id', ('job_status', 'completed_on'), 'snippet_name_linked', 'creator')
         }),
         ('Content', {
             'fields': ('snippet', 'campaign')
