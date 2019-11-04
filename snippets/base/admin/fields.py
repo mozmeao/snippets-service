@@ -117,7 +117,7 @@ class JEXLFirefoxRangeField(JEXLRangeField):
         min_version = 64
         # Need to be able to dynamically change this, probably using
         # product_details. Issue #855
-        max_version = 74
+        max_version = 84
 
         choices = (
             [(None, 'No limit')] +
