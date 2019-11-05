@@ -855,6 +855,16 @@ class JobTests(TestCase):
         log_entry_mock.objects.log_action.assert_called()
         slack_mock._send_slack.assert_called()
 
+    def test_change_status_to_completed(self):
+        job = JobFactory.create(status=Job.DRAFT)
+        with patch('snippets.base.models.datetime') as datetime_mock:
+            datetime_mock.utcnow.return_value = datetime(2019, 1, 1, 0, 0)
+            job.change_status(status=Job.COMPLETED, user=None, send_slack=False)
+
+        job.refresh_from_db()
+        self.assertEqual(job.status, Job.COMPLETED)
+        self.assertEqual(job.completed_on, datetime(2019, 1, 1, 0, 0))
+
     @override_settings(SITE_URL='http://example.com')
     def test_get_admin_url(self):
         job = JobFactory.create()

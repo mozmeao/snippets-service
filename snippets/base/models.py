@@ -1957,7 +1957,7 @@ class Job(models.Model):
 
         self.status = status
         if status == self.COMPLETED:
-            self.completed = datetime.utcnow()
+            self.completed_on = datetime.utcnow()
         self.save()
 
         if user:
