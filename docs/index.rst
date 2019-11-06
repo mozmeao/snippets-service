@@ -15,4 +15,5 @@ Contents
    developing
    contributing
    data_collection
+   list_of_targetting_attributes
    geolocation
