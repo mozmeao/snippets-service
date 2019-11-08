@@ -17,6 +17,17 @@ build-images:
     - docker build -t ${DOCKER_IMAGE_TAG} --build-arg GIT_SHA=${CI_COMMIT_SHA} --pull .
     - docker push ${DOCKER_IMAGE_TAG}
 
+build-jupyter:
+  stage: build
+  only:
+    - jupyter
+  tags:
+    - meao
+  script:
+    - docker-compose build jupyter
+    - docker tag snippets-service_jupyter mozorg/snippets:jupyter
+    - docker push mozorg/snippets:jupyter
+
 .test-stage:
   stage: test
   variables:

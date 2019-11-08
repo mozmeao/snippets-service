@@ -21,6 +21,23 @@ services:
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - DATABASE_URL=postgres://snippets:snippets@db/snippets
+      - PROD_DETAILS_DIR=./.product_details/
+    command:
+      ./bin/run-dev.sh
+  jupyter:
+    build:
+      context: .
+      args:
+        DEVELOPMENT: "true"
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - DATABASE_URL=postgres://snippets:snippets@db/snippets
       - DEBUG=True
       - ALLOWED_HOSTS=*
       - SECRET_KEY=59114b6a-2858-4caf-8878-482a24ee9542
@@ -29,4 +46,4 @@ services:
       - CSP_REPORT_ENABLE=False
       - PROD_DETAILS_DIR=./.product_details/
     command:
-      ./bin/run-dev.sh
+      jupyter notebook --ip=0.0.0.0

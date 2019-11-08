@@ -5,7 +5,7 @@ ENV LANG=C.UTF-8
 EXPOSE 8000
 CMD ["./bin/run-prod.sh"]
 
-RUN adduser --uid 1000 --disabled-password --gecos '' --no-create-home webdev
+RUN adduser --uid 1000 --disabled-password --gecos '' webdev
 
 # Debian slim images needs the man directories created
 # https://github.com/debuerreotype/debuerreotype/issues/10#issuecomment-438342078
