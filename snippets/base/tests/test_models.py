@@ -881,6 +881,9 @@ class JobTests(TestCase):
             self.assertNotEqual(getattr(job, attr), getattr(duplicate_job, attr))
 
         self.assertEqual(duplicate_job.status, Job.DRAFT)
+        self.assertEqual(duplicate_job.metric_impressions, 0)
+        self.assertEqual(duplicate_job.metric_clicks, 0)
+        self.assertEqual(duplicate_job.metric_blocks, 0)
 
     def test_analytics_export(self):
         snippet = ASRSnippetFactory.create(

@@ -1994,6 +1994,9 @@ class Job(models.Model):
         job_copy.status = self.DRAFT
         job_copy.creator = creator
         job_copy.uuid = uuid.uuid4()
+        job_copy.metric_impressions = 0
+        job_copy.metric_clicks = 0
+        job_copy.metric_blocks = 0
         job_copy.save()
 
         for field in self._meta.get_fields():
