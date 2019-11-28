@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from unittest.mock import DEFAULT, patch
 
 from django.contrib.auth.models import User
@@ -108,7 +107,7 @@ class ShowSnippetTests(TestCase):
 
 class FetchSnippetsTests(TestCase):
     def test_base(self):
-        asrclient_kwargs = OrderedDict([
+        asrclient_kwargs = dict([
             ('startpage_version', 6),
             ('name', 'Firefox'),
             ('version', '64.0'),
@@ -155,7 +154,7 @@ class FetchSnippetPregenBundleTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.request = self.factory.get('/')
-        self.asrclient_kwargs = OrderedDict([
+        self.asrclient_kwargs = dict([
             ('startpage_version', 6),
             ('name', 'Firefox'),
             ('version', '70.0'),
@@ -215,7 +214,7 @@ class FetchSnippetBundleTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.request = self.factory.get('/')
-        self.client_kwargs = OrderedDict([
+        self.client_kwargs = dict([
             ('startpage_version', 4),
             ('name', 'Firefox'),
             ('version', '23.0a1'),
@@ -227,7 +226,7 @@ class FetchSnippetBundleTests(TestCase):
             ('distribution', 'default'),
             ('distribution_version', 'default_version'),
         ])
-        self.asrclient_kwargs = OrderedDict([
+        self.asrclient_kwargs = dict([
             ('startpage_version', 6),
             ('name', 'Firefox'),
             ('version', '64.0'),
