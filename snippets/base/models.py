@@ -2055,13 +2055,6 @@ class ASRSnippet(models.Model):
         ordering = ['-modified']
         verbose_name = 'ASR Snippet'
         verbose_name_plural = 'ASR Snippets'
-        permissions = (
-            ('publish_on_release', 'Publish snippets on Release'),
-            ('publish_on_beta', 'Publish snippets on Beta'),
-            ('publish_on_aurora', 'Publish snippets on Aurora'),
-            ('publish_on_nightly', 'Publish snippets on Nightly'),
-            ('publish_on_esr', 'Publish snippets on ESR'),
-        )
 
     def __str__(self):
         return self.name
