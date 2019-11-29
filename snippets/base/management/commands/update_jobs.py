@@ -67,6 +67,8 @@ class Command(BaseCommand):
         jobs = (Job.objects
                 .filter(status=Job.PUBLISHED)
                 .exclude(limit_impressions=0, limit_clicks=0, limit_blocks=0)
+                # Exclude Jobs with limits which haven't been updated once yet.
+                .exclude(metric_last_update='1970-01-01')
                 .filter(metric_last_update__lt=yesterday))
         for job in jobs:
             job.change_status(

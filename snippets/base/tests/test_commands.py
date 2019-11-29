@@ -233,6 +233,11 @@ class UpdateJobsTests(TestCase):
             metric_blocks=10,
             metric_last_update=now - timedelta(hours=40),
             publish_end=now + timedelta(days=1))
+        job_block_limit_not_reached_just_created = JobFactory(
+            status=models.Job.PUBLISHED,
+            limit_blocks=100,
+            metric_blocks=10,
+            publish_end=now + timedelta(days=1))
 
         job_cancelled = JobFactory(status=models.Job.CANCELED)
         job_completed = JobFactory(status=models.Job.COMPLETED)
@@ -255,6 +260,7 @@ class UpdateJobsTests(TestCase):
         job_impression_limit_not_reached_but_no_data.refresh_from_db()
         job_click_limit_not_reached_but_no_data.refresh_from_db()
         job_block_limit_not_reached_but_no_data.refresh_from_db()
+        job_block_limit_not_reached_just_created.refresh_from_db()
 
         self.assertEqual(job_without_end_date.status, models.Job.PUBLISHED)
         self.assertEqual(job_that_has_ended.status, models.Job.COMPLETED)
@@ -272,6 +278,7 @@ class UpdateJobsTests(TestCase):
         self.assertEqual(job_impression_limit_not_reached_but_no_data.status, models.Job.COMPLETED)
         self.assertEqual(job_click_limit_not_reached_but_no_data.status, models.Job.COMPLETED)
         self.assertEqual(job_block_limit_not_reached_but_no_data.status, models.Job.COMPLETED)
+        self.assertEqual(job_block_limit_not_reached_just_created.status, models.Job.PUBLISHED)
 
 
 class GenerateBundles(TestCase):
