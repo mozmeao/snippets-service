@@ -1997,6 +1997,7 @@ class Job(models.Model):
         job_copy.metric_impressions = 0
         job_copy.metric_clicks = 0
         job_copy.metric_blocks = 0
+        job_copy.completed_on = None
         job_copy.save()
 
         for field in self._meta.get_fields():
