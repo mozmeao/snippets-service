@@ -873,7 +873,13 @@ class JobTests(TestCase):
 
     def test_duplicate(self):
         user = UserFactory.create()
-        job = JobFactory.create(status=Job.PUBLISHED)
+        job = JobFactory.create(
+            status=Job.PUBLISHED,
+            metric_impressions=500,
+            metric_clicks=500,
+            metric_blocks=500,
+            completed_on=datetime.utcnow()
+        )
         duplicate_job = job.duplicate(user)
         job.refresh_from_db()
 
@@ -884,6 +890,7 @@ class JobTests(TestCase):
         self.assertEqual(duplicate_job.metric_impressions, 0)
         self.assertEqual(duplicate_job.metric_clicks, 0)
         self.assertEqual(duplicate_job.metric_blocks, 0)
+        self.assertEqual(duplicate_job.completed_on, None)
 
     def test_analytics_export(self):
         snippet = ASRSnippetFactory.create(
