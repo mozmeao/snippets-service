@@ -1150,10 +1150,12 @@ class JobAdmin(admin.ModelAdmin):
     metric_blocks_humanized.short_description = 'Blocks'
 
     def redash_link(self, obj):
-        link = (f'{settings.REDASH_ENDPOINT}/queries/{settings.REDASH_QUERY_ID}/'
-                f'?p_start_date_{settings.REDASH_QUERY_ID}={obj.publish_start.strftime("%Y%m%d")}'
-                f'&p_end_date_{settings.REDASH_QUERY_ID}={obj.publish_end.strftime("%Y%m%d")}'
-                f'&p_message_id_{settings.REDASH_QUERY_ID}={obj.id}#161888')
+        link = (
+            f'{settings.REDASH_ENDPOINT}/queries/{settings.REDASH_JOB_QUERY_ID}/'
+            f'?p_start_date_{settings.REDASH_JOB_QUERY_ID}={obj.publish_start.strftime("%Y%m%d")}'
+            f'&p_end_date_{settings.REDASH_JOB_QUERY_ID}={obj.publish_end.strftime("%Y%m%d")}'
+            f'&p_message_id_{settings.REDASH_JOB_QUERY_ID}={obj.id}#161888'
+        )
         return format_html(f'<a href="{link}">Explore</a>')
     redash_link.short_description = 'Explore in Redash'
 
