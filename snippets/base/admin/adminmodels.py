@@ -1150,13 +1150,27 @@ class JobAdmin(admin.ModelAdmin):
     metric_blocks_humanized.short_description = 'Blocks'
 
     def redash_link(self, obj):
-        link = (
+
+        link_legacy = (
             f'{settings.REDASH_ENDPOINT}/queries/{settings.REDASH_JOB_QUERY_ID}/'
-            f'?p_start_date_{settings.REDASH_JOB_QUERY_ID}={obj.publish_start.strftime("%Y%m%d")}'
-            f'&p_end_date_{settings.REDASH_JOB_QUERY_ID}={obj.publish_end.strftime("%Y%m%d")}'
+            f'?p_start_date_{settings.REDASH_JOB_QUERY_ID}={obj.publish_start.strftime("%Y-%m-%d")}'
+            f'&p_end_date_{settings.REDASH_JOB_QUERY_ID}={obj.publish_end.strftime("%Y-%m-%d")}'
             f'&p_message_id_{settings.REDASH_JOB_QUERY_ID}={obj.id}#161888'
         )
-        return format_html(f'<a href="{link}">Explore</a>')
+        link_bigquery = (
+            f'{settings.REDASH_ENDPOINT}/queries/{settings.REDASH_JOB_QUERY_BIGQUERY_ID}/'
+            f'?p_start_date_{settings.REDASH_JOB_QUERY_BIGQUERY_ID}='
+            f'{obj.publish_start.strftime("%Y-%m-%d")}'
+            f'&p_end_date_{settings.REDASH_JOB_QUERY_BIGQUERY_ID}='
+            f'{obj.publish_end.strftime("%Y-%m-%d")}'
+            f'&p_message_id_{settings.REDASH_JOB_QUERY_BIGQUERY_ID}={obj.id}#169041'
+        )
+
+        return format_html(
+            f'<a href="{link_legacy}">Explore</a> - '
+            f'<a href="{link_bigquery}">Explore BigQuery (Fx 62+)</a>'
+        )
+
     redash_link.short_description = 'Explore in Redash'
 
     def save_model(self, request, obj, form, change):
@@ -1253,7 +1267,7 @@ class DistributionAdmin(admin.ModelAdmin):
 
 
 class DailyJobMetrics(admin.ModelAdmin):
-    list_display = ('id', 'job', 'data_fetched_on')
+    list_display = ('id', 'job', 'date', 'data_fetched_on')
     search_fields = ('job__id', 'job__snippet__name', 'job__snippet__id')
     fieldsets = [
         ('Metrics', {
