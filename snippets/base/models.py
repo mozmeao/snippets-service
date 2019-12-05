@@ -2093,7 +2093,7 @@ class ASRSnippet(models.Model):
         if dark:
             theme = 'dark'
         url = reverse('asr-preview', kwargs={'uuid': self.uuid})
-        full_url = urljoin(settings.SITE_URL, url)
+        full_url = urljoin(settings.ADMIN_REDIRECT_URL or settings.SITE_URL, url)
         return 'about:newtab?theme={}&endpoint={}'.format(theme, full_url)
 
     def get_admin_url(self, full=True):
