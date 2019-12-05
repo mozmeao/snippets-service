@@ -2229,9 +2229,61 @@ class DailyJobMetrics(models.Model):
 
     class Meta:
         verbose_name_plural = 'Daily Job Metrics'
-        unique_together = [
-            ('job', 'date')
-        ]
+        unique_together = [('job', 'date')]
 
     def __str__(self):
         return f'{self.date.strftime("%Y%m%d")} - {self.job.id}'
+
+
+class DailySnippetsMetrics(models.Model):
+    data_fetched_on = models.DateTimeField(auto_now_add=True)
+
+    snippet = models.ForeignKey(ASRSnippet, on_delete=models.PROTECT)
+    date = models.DateField(editable=False)
+
+    impressions = models.PositiveIntegerField(default=0, editable=False)
+    clicks = models.PositiveIntegerField(default=0, editable=False)
+    blocks = models.PositiveIntegerField(default=0, editable=False)
+
+    class Meta:
+        verbose_name_plural = 'Daily Snippets Metrics'
+        unique_together = [('snippet', 'date')]
+
+    def __str__(self):
+        return f'{self.date.strftime("%Y%m%d")} - {self.snippet.id}'
+
+
+class DailyChannelMetrics(models.Model):
+    data_fetched_on = models.DateTimeField(auto_now_add=True)
+
+    channel = models.CharField(max_length=255)
+    date = models.DateField(editable=False)
+
+    impressions = models.PositiveIntegerField(default=0, editable=False)
+    clicks = models.PositiveIntegerField(default=0, editable=False)
+    blocks = models.PositiveIntegerField(default=0, editable=False)
+
+    class Meta:
+        verbose_name_plural = 'Daily Channel Metrics'
+        unique_together = [('channel', 'date')]
+
+    def __str__(self):
+        return f'{self.date.strftime("%Y%m%d")} - {self.channel}'
+
+
+class DailyCountryMetrics(models.Model):
+    data_fetched_on = models.DateTimeField(auto_now_add=True)
+
+    country = models.CharField(max_length=255)
+    date = models.DateField(editable=False)
+
+    impressions = models.PositiveIntegerField(default=0, editable=False)
+    clicks = models.PositiveIntegerField(default=0, editable=False)
+    blocks = models.PositiveIntegerField(default=0, editable=False)
+
+    class Meta:
+        verbose_name_plural = 'Daily Country Metrics'
+        unique_together = [('country', 'date')]
+
+    def __str__(self):
+        return f'{self.date.strftime("%Y%m%d")} - {self.country}'
