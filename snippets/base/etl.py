@@ -10,15 +10,15 @@ BQ_DATA_BEGIN_DATE = date(2019, 12, 4)
 JOBS_BEGIN_DATE = date(2019, 10, 1)
 
 REDASH_QUERY_IDS = {
-    'original-jobs': 63146, # settings.REDASH_JOB_QUERY_ID
-    'original-daily': 65755, # settings.REDASH_DAILY_QUERY_ID
+    'original-jobs': 63146,  # settings.REDASH_JOB_QUERY_ID
+    'original-daily': 65755,  # settings.REDASH_DAILY_QUERY_ID
     'redshift-message-id': 66846,
     'bq-message-id': 66826,
     'redshift-country': 66816,
     'bq-country': 66849,
     'redshift-channel': 66815,
     'bq-channel': 66850,
-}
+    }
 
 redash = RedashDynamicQuery(
     endpoint=settings.REDASH_ENDPOINT,
@@ -59,7 +59,7 @@ def snippet_metrics_from_rows(rows, metrics=None, snippet_ids=None):
             message_id = int(row['message_id'])
             counts = int(row['counts'])
             event = row['event']
-        except:
+        except ValueError as e:
             continue
         if message_id not in snippet_ids:
             continue
@@ -67,7 +67,7 @@ def snippet_metrics_from_rows(rows, metrics=None, snippet_ids=None):
         metrics[date].setdefault(
             message_id, DailySnippetsMetrics(
                 snippet_id=message_id, date=date))
-        add_metric_event_counts(metrics[date][message_id])
+        add_metric_event_counts(metrics[date][message_id], event, counts)
     return metrics
 
 
@@ -82,7 +82,7 @@ def job_metrics_from_rows(rows, metrics=None, job_ids=None):
             message_id = int(row['message_id'])
             counts = int(row['counts'])
             event = row['event']
-        except:
+        except ValueError as e:
             continue
         if message_id not in job_ids:
             continue
@@ -106,7 +106,7 @@ def update_message_metrics(begin_date=None, end_date=None):
         if end_date >= BQ_DATA_BEGIN_DATE:
             bq_rows = redash_rows('bq-message-id', begin_date, end_date)
             metrics = job_metrics_from_rows(
-            bq_rows, metrics=metrics, job_ids=job_ids)
+                bq_rows, metrics=metrics, job_ids=job_ids)
         with atomic():
             DailyJobMetrics.objects.filter(date__gte=begin_date, date__lte=end_date).delete()
             DailyJobMetrics.objects.bulk_create(
@@ -137,7 +137,7 @@ def channel_metrics_from_rows(rows, metrics=None):
             date = datetime.strptime(row['date'], '%Y-%m-%d').date()
             event = row['event']
             counts = int(row['counts'])
-        except:
+        except ValueError as e:
             continue
         metrics.setdefault(date, {})
         metrics[date].setdefault(
@@ -158,7 +158,6 @@ def update_channel_metrics(begin_date=None, end_date=None):
     metrics = channel_metrics_from_rows(redshift_rows)
     if end_date >= BQ_DATA_BEGIN_DATE:
         bq_rows = redash_rows('bq-channel', begin_date, end_date)
-        #print(f'fetched {len(bq_rows)} from BQ for {begin_date} to {end_date}')
         metrics = channel_metrics_from_rows(bq_rows, metrics=metrics)
     with atomic():
         DailyChannelMetrics.objects.filter(date__gte=begin_date, date__lte=end_date).delete()
@@ -175,7 +174,7 @@ def country_metrics_from_rows(rows, metrics=None):
             country = row['country_code']
             event = row['event']
             counts = int(row['counts'])
-        except:
+        except ValueError as e:
             continue
         metrics.setdefault(date, {})
         metrics[date].setdefault(
@@ -195,7 +194,7 @@ def update_country_metrics(begin_date=None, end_date=None):
     metrics = country_metrics_from_rows(redshift_rows)
     if end_date >= BQ_DATA_BEGIN_DATE:
         bq_rows = redash_rows('bq-country', begin_date, end_date)
-        metrics = country_metrics_from_rows(redshift_rows, metrics=metrics)
+        metrics = country_metrics_from_rows(bq_rows, metrics=metrics)
     with atomic():
         DailyCountryMetrics.objects.filter(date__gte=begin_date, date__lte=end_date).delete()
         DailyCountryMetrics.objects.bulk_create(
