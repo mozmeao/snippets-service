@@ -61,13 +61,13 @@ class FetchMetricsTests(TestCase):
         )
 
         request_data_first = {
-            'start_date': '20500105',
-            'end_date': '20500113',
+            'start_date': '2050-01-05',
+            'end_date': '2050-01-13',
             'message_id': job_running.id,
         }
         request_data_second = {
-            'start_date': '20190101',
-            'end_date': (job_ended_yesterday.publish_end + timedelta(days=7)).strftime('%Y%m%d'),
+            'start_date': '2019-01-01',
+            'end_date': (job_ended_yesterday.publish_end + timedelta(days=7)).strftime('%Y-%m-%d'),
             'message_id': job_ended_yesterday.id,
         }
         return_data_first = {
@@ -100,6 +100,26 @@ class FetchMetricsTests(TestCase):
                     'rows': [
                         {
                             'event': 'IMPRESSION',
+                            'counts': 10,
+                        },
+                        {
+                            'event': 'BLOCK',
+                            'counts': 5,
+                        },
+                        {
+                            'event': 'CLICK_BUTTON',
+                            'counts': 10,
+                        }
+                    ]
+                }
+            }
+        }
+        return_data_third = {
+            'query_result': {
+                'data': {
+                    'rows': [
+                        {
+                            'event': 'IMPRESSION',
                             'counts': 250,
                         },
                         {
@@ -118,24 +138,49 @@ class FetchMetricsTests(TestCase):
                 }
             }
         }
+        return_data_fourth = {
+            'query_result': {
+                'data': {
+                    'rows': [
+                        {
+                            'event': 'IMPRESSION',
+                            'counts': 20,
+                        },
+                        {
+                            'event': 'BLOCK',
+                            'counts': 50,
+                        },
+                        {
+                            'event': 'CLICK',
+                            'counts': 10,
+                        },
+                    ]
+                }
+            }
+        }
+
         with patch('snippets.base.management.commands.fetch_metrics.RedashDynamicQuery') as rdq:
-            rdq.return_value.query.side_effect = [return_data_first, return_data_second]
+            rdq.return_value.query.side_effect = [
+                return_data_first, return_data_second, return_data_third, return_data_fourth
+            ]
             call_command('fetch_metrics', stdout=Mock())
 
         rdq.return_value.query.assert_has_calls([
             call(settings.REDASH_JOB_QUERY_ID, request_data_first),
+            call(settings.REDASH_JOB_QUERY_BIGQUERY_ID, request_data_first),
             call(settings.REDASH_JOB_QUERY_ID, request_data_second),
+            call(settings.REDASH_JOB_QUERY_BIGQUERY_ID, request_data_second),
         ])
 
         job_running.refresh_from_db()
-        self.assertEqual(job_running.metric_impressions, 100)
-        self.assertEqual(job_running.metric_blocks, 10)
-        self.assertEqual(job_running.metric_clicks, 110)
+        self.assertEqual(job_running.metric_impressions, 110)
+        self.assertEqual(job_running.metric_blocks, 15)
+        self.assertEqual(job_running.metric_clicks, 120)
 
         job_ended_yesterday.refresh_from_db()
-        self.assertEqual(job_ended_yesterday.metric_impressions, 250)
-        self.assertEqual(job_ended_yesterday.metric_blocks, 100)
-        self.assertEqual(job_ended_yesterday.metric_clicks, 35)
+        self.assertEqual(job_ended_yesterday.metric_impressions, 270)
+        self.assertEqual(job_ended_yesterday.metric_blocks, 150)
+        self.assertEqual(job_ended_yesterday.metric_clicks, 45)
 
     def test_no_data_fetched(self):
         JobFactory(status=models.Job.PUBLISHED,
@@ -154,6 +199,40 @@ class FetchMetricsTests(TestCase):
         with patch('snippets.base.management.commands.fetch_metrics.RedashDynamicQuery') as rdq:
             rdq.return_value.query.return_value = return_data
             self.assertRaises(CommandError, call_command, 'fetch_metrics', stdout=Mock())
+
+    def test_no_data_fetched_from_one_source(self):
+        # Test that even if one of the two data sources fail, the metrics are
+        # not saved in the db.
+        job = JobFactory(status=models.Job.PUBLISHED,
+                         publish_start='2050-01-05 01:00',
+                         publish_end='2050-01-06 02:00')
+        with patch('snippets.base.management.commands.fetch_metrics.RedashDynamicQuery') as rdq:
+            rdq.return_value.query.side_effect = [
+                {
+                    'query_result': {
+                        'data': {
+                            'rows': [
+                                {
+                                    'event': 'IMPRESSION',
+                                    'counts': 20,
+                                },
+                                {
+                                    'event': 'BLOCK',
+                                    'counts': 50,
+                                },
+                                {
+                                    'event': 'CLICK',
+                                    'counts': 10,
+                                },
+                            ]
+                        }
+                    }
+                },
+                Exception('error'),
+            ]
+            self.assertRaises(CommandError, call_command, 'fetch_metrics', stdout=Mock())
+            job.refresh_from_db()
+            self.assertEqual(job.metric_last_update, datetime(1970, 1, 1, 0, 0))
 
 
 class UpdateJobsTests(TestCase):
@@ -469,9 +548,9 @@ class FetchDailyMetricsTests(TestCase):
         )
 
         request_data = {
-            'date': '20500105',
+            'date': '2050-01-05',
         }
-        return_data = {
+        return_data_1 = {
             'query_result': {
                 'data': {
                     'rows': [
@@ -530,19 +609,45 @@ class FetchDailyMetricsTests(TestCase):
                 }
             }
         }
+        return_data_2 = {
+            'query_result': {
+                'data': {
+                    'rows': [
+                        {
+                            'message_id': str(job_running.id),
+                            'event': 'IMPRESSION',
+                            'counts': 50,
+                        },
+                        {
+                            'message_id': str(job_running.id),
+                            'event': 'BLOCK',
+                            'counts': 10,
+                        },
+                        {
+                            'message_id': str(job_running.id),
+                            'event': 'CLICK',
+                            'counts': 25,
+                        },
+                    ]
+                }
+            }
+        }
 
         with patch('snippets.base.management.commands.fetch_daily_metrics.RedashDynamicQuery') as rdq:  # noqa
-            rdq.return_value.query.return_value = return_data
-            call_command('fetch_daily_metrics', date='20500105', stdout=Mock())
+            rdq.return_value.query.side_effect = [return_data_1, return_data_2]
+            call_command('fetch_daily_metrics', date='2050-01-05', stdout=Mock())
 
-        rdq.return_value.query.assert_called_with(settings.REDASH_DAILY_QUERY_ID, request_data)
+        rdq.return_value.query.assert_has_calls([
+            call(settings.REDASH_DAILY_QUERY_ID, request_data),
+            call(settings.REDASH_DAILY_QUERY_BIGQUERY_ID, request_data)
+        ])
 
         self.assertTrue(
             models.DailyJobMetrics.objects.filter(
                 job=job_running,
-                impressions=250,
-                blocks=100,
-                clicks=35,
+                impressions=300,
+                blocks=110,
+                clicks=60,
             ).exists()
         )
         self.assertTrue(
@@ -589,4 +694,4 @@ class FetchDailyMetricsTests(TestCase):
         with patch('snippets.base.management.commands.fetch_daily_metrics.RedashDynamicQuery') as rdq:  # noqa
             rdq.return_value.query.return_value = return_data
             self.assertRaises(CommandError, call_command, 'fetch_daily_metrics',
-                              date='20500105', stdout=Mock())
+                              date='2050-01-05', stdout=Mock())

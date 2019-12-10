@@ -28,7 +28,7 @@ class Command(BaseCommand):
             )
 
         else:
-            date = datetime.strptime(options['date'], '%Y%m%d')
+            date = datetime.strptime(options['date'], '%Y-%m-%d')
 
         last_week = date - timedelta(days=7)  # date - 7 since we 're fetching data for yesterday.
         date_next_day = date + timedelta(days=1)
@@ -48,6 +48,8 @@ class Command(BaseCommand):
                 # Publish start before the end of day of interest and still
                 # not completed.
                 (Q(publish_start__lt=date_next_day) & Q(completed_on=None)) |
+                # Or running in the day of interest.
+                (Q(publish_start__lt=date_next_day) & Q(publish_end__gt=date)) |
                 # Or completed during the last 7 days before EOD of the day of interest.
                 (Q(completed_on__gte=last_week) & Q(completed_on__lt=date_next_day))
             )
@@ -60,12 +62,15 @@ class Command(BaseCommand):
         self.stdout.write(f'Fetching data for {date} for {jobs.count()} jobs.')
 
         bind_data = {
-            'date': date.strftime('%Y%m%d'),
+            'date': date.strftime('%Y-%m-%d'),
         }
-        result = redash.query(settings.REDASH_DAILY_QUERY_ID, bind_data)
+        rows = []
+        for query in [settings.REDASH_DAILY_QUERY_ID, settings.REDASH_DAILY_QUERY_BIGQUERY_ID]:
+            self.stdout.write(f'Fetching Query {query}')
+            result = redash.query(query, bind_data)
+            rows += result['query_result']['data']['rows']
 
         data_fetched = False
-        rows = result['query_result']['data']['rows']
         for job in jobs:
             impressions = 0
             clicks = 0
@@ -74,9 +79,9 @@ class Command(BaseCommand):
             job_rows = [row for row in rows if row['message_id'] == str(job.id)]
             for row in job_rows:
                 if row['event'] == 'IMPRESSION':
-                    impressions = row['counts']
+                    impressions += row['counts']
                 elif row['event'] == 'BLOCK':
-                    blocks = row['counts']
+                    blocks += row['counts']
                 elif row['event'] in ['CLICK', 'CLICK_BUTTON']:
                     clicks += row['counts']
 
@@ -86,12 +91,13 @@ class Command(BaseCommand):
 
             data_fetched = True
 
-            DailyJobMetrics.objects.update_or_create(
+            DailyJobMetrics.objects.filter(date=date, job=job).update_or_create(
                 date=date,
                 job=job,
                 impressions=impressions,
                 blocks=blocks,
                 clicks=clicks,
+                data_fetched_on=datetime.utcnow(),
             )
 
         if jobs and not data_fetched:

@@ -69,39 +69,51 @@ class Command(BaseCommand):
 
         self.stdout.write(f'Fetching Updates for {jobs.count()} Jobs.')
 
-        data_fetched = False
+        data_fetched_global = False
         for job in jobs:
-            bind_data = {
-                'start_date': job.publish_start.strftime('%Y%m%d'),
-                # Publish end date plus 7 days to include delayed metrics
-                # received with delay.
-                'end_date': (job.publish_end + timedelta(days=7)).strftime('%Y%m%d'),
-                'message_id': job.id,
-            }
-            try:
-                result = redash.query(settings.REDASH_JOB_QUERY_ID, bind_data)
-            except Exception as exp:
-                # Capture the exception but don't quit
-                sentry_sdk.capture_exception(exp)
-                continue
-
             impressions = 0
             clicks = 0
             blocks = 0
-            try:
-                for row in result['query_result']['data']['rows']:
-                    if row['event'] == 'IMPRESSION':
-                        impressions = row['counts']
-                    elif row['event'] == 'BLOCK':
-                        blocks = row['counts']
-                    elif row['event'] in ['CLICK', 'CLICK_BUTTON']:
-                        clicks += row['counts']
-            except KeyError as exp:
-                # Capture the exception but don't quit
-                sentry_sdk.capture_exception(exp)
+            bind_data = {
+                'start_date': job.publish_start.strftime('%Y-%m-%d'),
+                # Publish end date plus 7 days to include metrics received with
+                # delay.
+                'end_date': (job.publish_end + timedelta(days=7)).strftime('%Y-%m-%d'),
+                'message_id': job.id,
+            }
+
+            data_fetched = 0
+            for query in [settings.REDASH_JOB_QUERY_ID, settings.REDASH_JOB_QUERY_BIGQUERY_ID]:
+                try:
+                    result = redash.query(query, bind_data)
+                except Exception as exp:
+                    # Capture the exception but don't quit
+                    sentry_sdk.capture_exception(exp)
+                    continue
+
+                try:
+                    for row in result['query_result']['data']['rows']:
+                        if row['event'] == 'IMPRESSION':
+                            impressions += row['counts']
+                        elif row['event'] == 'BLOCK':
+                            blocks += row['counts']
+                        elif row['event'] in ['CLICK', 'CLICK_BUTTON']:
+                            clicks += row['counts']
+                except KeyError as exp:
+                    # Capture the exception but don't quit
+                    sentry_sdk.capture_exception(exp)
+                    continue
+                else:
+                    data_fetched += 1
+
+            # We didn't fetch data from both data sources for this job, don't
+            # save it.
+            if data_fetched != 2:
                 continue
-            else:
-                data_fetched = True
+
+            # We fetched data for job, mark the ETL job `working` to update
+            # DeadMansSnitch.
+            data_fetched_global = True
 
             # Use update to avoid triggering Django signals and updating Job's
             # and ASRSnippet's modified date.
@@ -112,7 +124,7 @@ class Command(BaseCommand):
                 metric_last_update=now,
             )
 
-        if jobs and not data_fetched:
+        if jobs and not data_fetched_global:
             # We didn't manage to fetch data for any of the jobs. Something is
             # wrong.
             raise CommandError('Cannot fetch data from Telemetry.')
