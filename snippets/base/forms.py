@@ -615,7 +615,12 @@ class ASRSnippetAdminForm(forms.ModelForm):
             ('simple_below_search_snippet', 'Simple Below Search'),
         ),
         widget=TemplateChooserWidget,
-        required=False,
+        label='Template',
+    )
+    locale = forms.ModelChoiceField(
+        queryset=models.Locale.objects.all(),
+        empty_label='Select Locale',
+        widget=AutoTranslatorWidget,
     )
 
     def __init__(self, *args, **kwargs):
@@ -628,9 +633,6 @@ class ASRSnippetAdminForm(forms.ModelForm):
     class Meta:
         model = models.ASRSnippet
         exclude = ['creator', 'created', 'modified']
-        widgets = {
-            'locale': AutoTranslatorWidget,
-        }
 
     class Media:
         js = [
