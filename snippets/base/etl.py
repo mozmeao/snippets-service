@@ -17,8 +17,7 @@ REDASH_QUERY_IDS = {
     'redshift-country': 66816,
     'bq-country': 66849,
     'redshift-channel': 66815,
-    'bq-channel': 66850,
-    }
+    'bq-channel': 66850}
 
 redash = RedashDynamicQuery(
     endpoint=settings.REDASH_ENDPOINT,
@@ -59,7 +58,7 @@ def snippet_metrics_from_rows(rows, metrics=None, snippet_ids=None):
             message_id = int(row['message_id'])
             counts = int(row['counts'])
             event = row['event']
-        except ValueError as e:
+        except ValueError:
             continue
         if message_id not in snippet_ids:
             continue
@@ -82,7 +81,7 @@ def job_metrics_from_rows(rows, metrics=None, job_ids=None):
             message_id = int(row['message_id'])
             counts = int(row['counts'])
             event = row['event']
-        except ValueError as e:
+        except ValueError:
             continue
         if message_id not in job_ids:
             continue
@@ -137,7 +136,7 @@ def channel_metrics_from_rows(rows, metrics=None):
             date = datetime.strptime(row['date'], '%Y-%m-%d').date()
             event = row['event']
             counts = int(row['counts'])
-        except ValueError as e:
+        except ValueError:
             continue
         metrics.setdefault(date, {})
         metrics[date].setdefault(
@@ -174,7 +173,7 @@ def country_metrics_from_rows(rows, metrics=None):
             country = row['country_code']
             event = row['event']
             counts = int(row['counts'])
-        except ValueError as e:
+        except ValueError:
             continue
         metrics.setdefault(date, {})
         metrics[date].setdefault(
