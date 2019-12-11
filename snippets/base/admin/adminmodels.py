@@ -1291,7 +1291,7 @@ class DailyJobMetrics(admin.ModelAdmin):
         return False
 
 
-class DailySnippetsMetrics(admin.ModelAdmin):
+class DailySnippetMetrics(admin.ModelAdmin):
     list_display = ('id', 'snippet', 'data_fetched_on')
     search_fields = ('snippet__id', 'snippet__name')
     fieldsets = [

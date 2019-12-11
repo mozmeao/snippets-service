@@ -2235,7 +2235,7 @@ class DailyJobMetrics(models.Model):
         return f'{self.date.strftime("%Y%m%d")} - {self.job.id}'
 
 
-class DailySnippetsMetrics(models.Model):
+class DailySnippetMetrics(models.Model):
     data_fetched_on = models.DateTimeField(auto_now_add=True)
 
     snippet = models.ForeignKey(ASRSnippet, on_delete=models.PROTECT)
