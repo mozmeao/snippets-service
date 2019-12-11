@@ -1289,3 +1289,78 @@ class DailyJobMetrics(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+class DailySnippetMetrics(admin.ModelAdmin):
+    list_display = ('id', 'snippet', 'data_fetched_on')
+    search_fields = ('snippet__id', 'snippet__name')
+    fieldsets = [
+        ('Metrics', {
+            'fields': (
+                'snippet',
+                'date',
+                'impressions',
+                'clicks',
+                'blocks',
+            ),
+        }),
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class DailyChannelMetrics(admin.ModelAdmin):
+    list_display = ('id', 'channel', 'data_fetched_on')
+    search_fields = ('channel',)
+    fieldsets = [
+        ('Metrics', {
+            'fields': (
+                'channel',
+                'date',
+                'impressions',
+                'clicks',
+                'blocks',
+            ),
+        }),
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class DailyCountryMetrics(admin.ModelAdmin):
+    list_display = ('id', 'country', 'data_fetched_on')
+    search_fields = ('country',)
+    fieldsets = [
+        ('Metrics', {
+            'fields': (
+                'country',
+                'date',
+                'impressions',
+                'clicks',
+                'blocks',
+            ),
+        }),
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

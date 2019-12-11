@@ -350,6 +350,9 @@ ADMIN_REORDER = [
         'label': 'Metrics',
         'models': [
             'base.DailyJobMetrics',
+            'base.DailySnippetMetrics',
+            'base.DailyChannelMetrics',
+            'base.DailyCountryMetrics',
         ]
     },
     {
