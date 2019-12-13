@@ -1267,7 +1267,7 @@ class DistributionAdmin(admin.ModelAdmin):
 
 
 class DailyJobMetrics(admin.ModelAdmin):
-    list_display = ('id', 'job', 'date', 'data_fetched_on')
+    list_display = ('id', 'job', 'date', 'impressions', 'clicks', 'blocks', 'data_fetched_on')
     search_fields = ('job__id', 'job__snippet__name', 'job__snippet__id')
     fieldsets = [
         ('Metrics', {
@@ -1292,8 +1292,19 @@ class DailyJobMetrics(admin.ModelAdmin):
 
 
 class DailySnippetMetrics(admin.ModelAdmin):
-    list_display = ('id', 'snippet', 'data_fetched_on')
-    search_fields = ('snippet__id', 'snippet__name')
+    list_display = [
+        'id',
+        'snippet',
+        'date',
+        'impressions',
+        'clicks',
+        'blocks',
+        'data_fetched_on'
+    ]
+    search_fields = [
+        'snippet__id',
+        'snippet__name'
+    ]
     fieldsets = [
         ('Metrics', {
             'fields': (
@@ -1317,8 +1328,19 @@ class DailySnippetMetrics(admin.ModelAdmin):
 
 
 class DailyChannelMetrics(admin.ModelAdmin):
-    list_display = ('id', 'channel', 'data_fetched_on')
-    search_fields = ('channel',)
+    list_display = [
+        'id',
+        'channel',
+        'date',
+        'channel',
+        'impressions',
+        'clicks',
+        'blocks',
+        'data_fetched_on'
+    ]
+    search_fields = [
+        'channel'
+    ]
     fieldsets = [
         ('Metrics', {
             'fields': (
@@ -1342,8 +1364,18 @@ class DailyChannelMetrics(admin.ModelAdmin):
 
 
 class DailyCountryMetrics(admin.ModelAdmin):
-    list_display = ('id', 'country', 'data_fetched_on')
-    search_fields = ('country',)
+    list_display = [
+        'id',
+        'date',
+        'country',
+        'impressions',
+        'clicks',
+        'blocks',
+        'data_fetched_on'
+    ]
+    search_fields = [
+        'country'
+    ]
     fieldsets = [
         ('Metrics', {
             'fields': (
