@@ -16,7 +16,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             '--date',
-            help='Fetch data for date. Defaults to yesterday. In YYYYMMDD format.',
+            help='Fetch data for date. Defaults to yesterday. In YYYY-MM-DD format.',
         )
 
     def handle(self, *args, **options):
@@ -66,7 +66,6 @@ class Command(BaseCommand):
         }
         rows = []
         for query in [settings.REDASH_DAILY_QUERY_ID, settings.REDASH_DAILY_QUERY_BIGQUERY_ID]:
-            self.stdout.write(f'Fetching Query {query}')
             result = redash.query(query, bind_data)
             rows += result['query_result']['data']['rows']
 
@@ -91,9 +90,8 @@ class Command(BaseCommand):
 
             data_fetched = True
 
-            DailyJobMetrics.objects.filter(date=date, job=job).update_or_create(
-                date=date,
-                job=job,
+            DailyJobMetrics.objects.update_or_create(date=date, job=job)
+            DailyJobMetrics.objects.filter(date=date, job=job).update(
                 impressions=impressions,
                 blocks=blocks,
                 clicks=clicks,
