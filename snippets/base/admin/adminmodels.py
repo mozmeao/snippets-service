@@ -1168,7 +1168,7 @@ class JobAdmin(admin.ModelAdmin):
 
         return format_html(
             f'<a href="{link_legacy}">Explore</a> - '
-            f'<a href="{link_bigquery}">Explore BigQuery (Fx 62+)</a>'
+            f'<a href="{link_bigquery}">Explore BigQuery (Fx 72+)</a>'
         )
 
     redash_link.short_description = 'Explore in Redash'
