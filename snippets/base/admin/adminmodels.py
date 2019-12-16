@@ -1,5 +1,6 @@
 import copy
 import re
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib import admin, messages
@@ -1150,11 +1151,13 @@ class JobAdmin(admin.ModelAdmin):
     metric_blocks_humanized.short_description = 'Blocks'
 
     def redash_link(self, obj):
-
+        publish_end = (
+            obj.publish_end or datetime.utcnow() + timedelta(days=1)
+        ).strftime("%Y-%m-%d")
         link_legacy = (
             f'{settings.REDASH_ENDPOINT}/queries/{settings.REDASH_JOB_QUERY_ID}/'
             f'?p_start_date_{settings.REDASH_JOB_QUERY_ID}={obj.publish_start.strftime("%Y-%m-%d")}'
-            f'&p_end_date_{settings.REDASH_JOB_QUERY_ID}={obj.publish_end.strftime("%Y-%m-%d")}'
+            f'&p_end_date_{settings.REDASH_JOB_QUERY_ID}={publish_end}'
             f'&p_message_id_{settings.REDASH_JOB_QUERY_ID}={obj.id}#161888'
         )
         link_bigquery = (
@@ -1162,7 +1165,7 @@ class JobAdmin(admin.ModelAdmin):
             f'?p_start_date_{settings.REDASH_JOB_QUERY_BIGQUERY_ID}='
             f'{obj.publish_start.strftime("%Y-%m-%d")}'
             f'&p_end_date_{settings.REDASH_JOB_QUERY_BIGQUERY_ID}='
-            f'{obj.publish_end.strftime("%Y-%m-%d")}'
+            f'{publish_end}'
             f'&p_message_id_{settings.REDASH_JOB_QUERY_BIGQUERY_ID}={obj.id}#169041'
         )
 
