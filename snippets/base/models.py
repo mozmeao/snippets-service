@@ -1975,7 +1975,7 @@ class Job(models.Model):
 
         if send_slack:
             template = 'slack/job_{}.jinja.json'.format(self.get_status_display().lower())
-            data = render_to_string(template, context={'job': self})
+            data = render_to_string(template, context={'job': self, 'reason': reason})
             slack._send_slack(data)
 
     def get_admin_url(self, full=True):
