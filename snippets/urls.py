@@ -32,7 +32,7 @@ if settings.ENABLE_ADMIN:
 
 elif settings.ADMIN_REDIRECT_URL:
     urlpatterns.append(
-        path('admin/', RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL))
+        path('admin/', RedirectView.as_view(url=f'{settings.ADMIN_REDIRECT_URL}/admin/'))
     )
 
 if settings.OIDC_ENABLE:
