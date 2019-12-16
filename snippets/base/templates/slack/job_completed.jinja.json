@@ -3,7 +3,7 @@
         "pretext": "Update on Job #{{ job.id }}",
         "title": "Job #{{ job.id }} completed.",
         "title_link": "{{ job.get_admin_url() }}",
-        "text": "Job #{{ job.id }} for Snippet *{{ job.snippet.name }}* (#{{ job.snippet.id }}) completed publication.",
+        "text": "Job #{{ job.id }} for Snippet *{{ job.snippet.name }}* (#{{ job.snippet.id }}) completed publication.{% if reason %} Reason: {{ reason }}{% endif %}",
         "color": "#36a64f"
   }]
 }
