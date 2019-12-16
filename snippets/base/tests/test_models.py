@@ -554,7 +554,7 @@ class ASRSnippetTests(TestCase):
     @override_settings(SITE_URL='http://example.com')
     def test_get_preview_url(self):
         snippet = ASRSnippetFactory.create()
-        expected_result = 'about:newtab?theme=light&endpoint=http://example.com'
+        expected_result = 'about:newtab?theme=light&dir=ltr&endpoint=http://example.com'
         expected_result += reverse('asr-preview', kwargs={'uuid': snippet.uuid})
         self.assertEqual(snippet.get_preview_url(), expected_result)
 
@@ -562,14 +562,22 @@ class ASRSnippetTests(TestCase):
                        ADMIN_REDIRECT_URL='http://admin.example.com')
     def test_get_preview_url_admin(self):
         snippet = ASRSnippetFactory.create()
-        expected_result = 'about:newtab?theme=light&endpoint=http://admin.example.com'
+        expected_result = 'about:newtab?theme=light&dir=ltr&endpoint=http://admin.example.com'
         expected_result += reverse('asr-preview', kwargs={'uuid': snippet.uuid})
         self.assertEqual(snippet.get_preview_url(), expected_result)
 
     @override_settings(SITE_URL='http://example.com')
     def test_get_preview_url_dark(self):
         snippet = ASRSnippetFactory.create()
-        expected_result = 'about:newtab?theme=dark&endpoint=http://example.com'
+        expected_result = 'about:newtab?theme=dark&dir=ltr&endpoint=http://example.com'
+        expected_result += reverse('asr-preview', kwargs={'uuid': snippet.uuid})
+        self.assertEqual(snippet.get_preview_url(dark=True), expected_result)
+
+    @override_settings(SITE_URL='http://example.com')
+    def test_get_preview_url_rtl(self):
+        snippet = ASRSnippetFactory.create()
+        snippet.locale.rtl = True
+        expected_result = 'about:newtab?theme=dark&dir=rtl&endpoint=http://example.com'
         expected_result += reverse('asr-preview', kwargs={'uuid': snippet.uuid})
         self.assertEqual(snippet.get_preview_url(dark=True), expected_result)
 

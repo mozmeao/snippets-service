@@ -1730,6 +1730,10 @@ class Locale(models.Model):
         blank=True, validators=[validators.validate_json_data], default='{}',
         help_text='JSON dictionary with Template fields as keys and localized strings as values.'
     )
+    rtl = models.BooleanField(
+        default=False,
+        help_text='Is Right-To-Left language?'
+    )
 
     def save(self, *args, **kwargs):
         # Make sure that code always starts and ends with `,` and it's always
@@ -2077,7 +2081,8 @@ class ASRSnippet(models.Model):
             theme = 'dark'
         url = reverse('asr-preview', kwargs={'uuid': self.uuid})
         full_url = urljoin(settings.ADMIN_REDIRECT_URL or settings.SITE_URL, url)
-        return 'about:newtab?theme={}&endpoint={}'.format(theme, full_url)
+        rtl = 'rtl' if self.locale.rtl else 'ltr'
+        return f'about:newtab?theme={theme}&dir={rtl}&endpoint={full_url}'
 
     def get_admin_url(self, full=True):
         # Not using reverse() because the `admin:` namespace is not registered
