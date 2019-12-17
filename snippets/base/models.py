@@ -513,6 +513,7 @@ class Target(models.Model):
     filtr_uses_firefox_sync = models.CharField(max_length=10, blank=True, default='')
     filtr_country = models.CharField(max_length=1250, blank=True, default='')
     filtr_is_developer = models.CharField(max_length=250, blank=True, default='')
+    filtr_needs_update = models.CharField(max_length=250, blank=True, default='')
     filtr_updates_enabled = models.CharField(max_length=10, blank=True, default='')
     filtr_updates_autodownload_enabled = models.CharField(max_length=10, blank=True, default='')
     filtr_current_search_engine = models.CharField(max_length=250, blank=True, default='')

@@ -891,6 +891,7 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
         ('Targeting', {
             'fields': (
                 'filtr_is_default_browser',
+                'filtr_needs_update',
                 'filtr_updates_enabled',
                 'filtr_updates_autodownload_enabled',
                 'filtr_profile_age_created',
