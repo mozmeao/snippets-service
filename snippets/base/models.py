@@ -2222,7 +2222,7 @@ class DailyJobMetrics(models.Model):
     data_fetched_on = models.DateTimeField(auto_now_add=True)
 
     job = models.ForeignKey(Job, on_delete=models.PROTECT)
-    date = models.DateField(editable=False)
+    date = models.DateField(editable=False, db_index=True)
 
     impressions = models.PositiveIntegerField(default=0, editable=False)
     clicks = models.PositiveIntegerField(default=0, editable=False)
@@ -2240,7 +2240,7 @@ class DailySnippetMetrics(models.Model):
     data_fetched_on = models.DateTimeField(auto_now_add=True)
 
     snippet = models.ForeignKey(ASRSnippet, on_delete=models.PROTECT)
-    date = models.DateField(editable=False)
+    date = models.DateField(editable=False, db_index=True)
 
     impressions = models.PositiveIntegerField(default=0, editable=False)
     clicks = models.PositiveIntegerField(default=0, editable=False)
@@ -2257,8 +2257,8 @@ class DailySnippetMetrics(models.Model):
 class DailyChannelMetrics(models.Model):
     data_fetched_on = models.DateTimeField(auto_now_add=True)
 
-    channel = models.CharField(max_length=255)
-    date = models.DateField(editable=False)
+    channel = models.CharField(max_length=255, db_index=True)
+    date = models.DateField(editable=False, db_index=True)
 
     impressions = models.PositiveIntegerField(default=0, editable=False)
     clicks = models.PositiveIntegerField(default=0, editable=False)
@@ -2275,8 +2275,8 @@ class DailyChannelMetrics(models.Model):
 class DailyCountryMetrics(models.Model):
     data_fetched_on = models.DateTimeField(auto_now_add=True)
 
-    country = models.CharField(max_length=255)
-    date = models.DateField(editable=False)
+    country = models.CharField(max_length=255, db_index=True)
+    date = models.DateField(editable=False, db_index=True)
 
     impressions = models.PositiveIntegerField(default=0, editable=False)
     clicks = models.PositiveIntegerField(default=0, editable=False)
