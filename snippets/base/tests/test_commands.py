@@ -236,6 +236,7 @@ class FetchMetricsTests(TestCase):
 
 
 class UpdateJobsTests(TestCase):
+    @override_settings(SNIPPETS_PUBLICATION_OFFSET=5)
     def test_base(self):
         now = datetime.utcnow()
         job_without_end_date = JobFactory(
@@ -249,9 +250,12 @@ class UpdateJobsTests(TestCase):
             limit_impressions=10000,
             metric_last_update=now,
             publish_end=now + timedelta(days=1))
-        job_scheduled_ready_to_go = JobFactory(
+        job_scheduled_not_ready_to_go = JobFactory(
             status=models.Job.SCHEDULED,
             publish_start=now)
+        job_scheduled_ready_to_go = JobFactory(
+            status=models.Job.SCHEDULED,
+            publish_start=now - timedelta(minutes=10))
         job_scheduled_in_the_future = JobFactory(
             status=models.Job.SCHEDULED,
             publish_start=now + timedelta(days=1))
@@ -326,6 +330,7 @@ class UpdateJobsTests(TestCase):
         job_without_end_date.refresh_from_db()
         job_that_has_ended.refresh_from_db()
         job_ending_in_the_future.refresh_from_db()
+        job_scheduled_not_ready_to_go.refresh_from_db()
         job_scheduled_ready_to_go.refresh_from_db()
         job_scheduled_in_the_future.refresh_from_db()
         job_cancelled.refresh_from_db()
@@ -344,6 +349,7 @@ class UpdateJobsTests(TestCase):
         self.assertEqual(job_without_end_date.status, models.Job.PUBLISHED)
         self.assertEqual(job_that_has_ended.status, models.Job.COMPLETED)
         self.assertEqual(job_ending_in_the_future.status, models.Job.PUBLISHED)
+        self.assertEqual(job_scheduled_not_ready_to_go.status, models.Job.SCHEDULED)
         self.assertEqual(job_scheduled_ready_to_go.status, models.Job.PUBLISHED)
         self.assertEqual(job_scheduled_in_the_future.status, models.Job.SCHEDULED)
         self.assertEqual(job_cancelled.status, models.Job.CANCELED)

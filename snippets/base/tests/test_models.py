@@ -721,31 +721,6 @@ class JobTests(TestCase):
         self.assertRaisesMessage(
             ValidationError, 'Publish start must come before publish end.', job_dirty.clean)
 
-    @override_settings(SNIPPETS_PUBLICATION_OFFSET=5)
-    def test_clean_publication_offset(self):
-        utcnow = datetime.utcnow()
-
-        job_no_publish_start = JobFactory.create(publish_start=None, publish_end=None)
-        with patch('snippets.base.models.datetime') as datetime_mock:
-            datetime_mock.utcnow.return_value = utcnow
-            job_no_publish_start.clean()
-        self.assertEqual(job_no_publish_start.publish_start, utcnow + timedelta(minutes=5))
-
-        job_publish_start_distant_future = JobFactory.create(
-            publish_start=utcnow + timedelta(days=5), publish_end=None)
-        with patch('snippets.base.models.datetime') as datetime_mock:
-            datetime_mock.utcnow.return_value = utcnow
-            job_publish_start_distant_future.clean()
-        self.assertEqual(job_publish_start_distant_future.publish_start, utcnow + timedelta(days=5))
-
-        job_publish_start_now = JobFactory.create(
-            publish_start=utcnow, publish_end=None)
-
-        with patch('snippets.base.models.datetime') as datetime_mock:
-            datetime_mock.utcnow.return_value = utcnow
-            job_publish_start_now.clean()
-        self.assertEqual(job_publish_start_now.publish_start, utcnow + timedelta(minutes=5))
-
     def test_render(self):
         self.maxDiff = None
         job = JobFactory.create(

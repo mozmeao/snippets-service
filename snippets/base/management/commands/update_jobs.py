@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -21,8 +22,10 @@ class Command(BaseCommand):
         # Publish Scheduled Jobs with `publish_start` before now or without
         # publish_start.
         jobs = Job.objects.filter(status=Job.SCHEDULED).filter(
-            Q(publish_start__lte=now) | Q(publish_start=None)
+            Q(publish_start__lte=now - timedelta(minutes=settings.SNIPPETS_PUBLICATION_OFFSET)) |
+            Q(publish_start=None)
         )
+
         count_published = jobs.count()
         for job in jobs:
             job.change_status(
