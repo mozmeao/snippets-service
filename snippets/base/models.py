@@ -7,7 +7,7 @@ import re
 import uuid
 import subprocess
 from collections import namedtuple
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib.parse import urljoin, urlparse
 
 from django.conf import settings
@@ -1858,10 +1858,6 @@ class Job(models.Model):
 
     def clean(self):
         super().clean()
-
-        self.publish_start = max(
-            datetime.utcnow() + timedelta(minutes=settings.SNIPPETS_PUBLICATION_OFFSET),
-            self.publish_start or datetime.utcnow())
 
         if ((all([self.publish_start, self.publish_end]) and
              self.publish_start >= self.publish_end)):
