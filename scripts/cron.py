@@ -97,7 +97,7 @@ def job_fetch_daily_metrics():
 
 if settings.REDASH_API_KEY:
     scheduled_job(
-        'cron', month='*', day='*', hour='*', minute='*', max_instances=1, coalesce=True
+        'cron', month='*', day='*', hour='*', minute='10', max_instances=1, coalesce=True
     )(job_fetch_metrics)
     scheduled_job(
         'cron', month='*', day='*', hour='4', minute='0', max_instances=1, coalesce=True
