@@ -188,14 +188,19 @@ class JEXLFirefoxServicesField(MultiValueField):
             ('no_account', "User hasn't signed up for"),
             ('has_account', 'User has signed up for'),
         )
+        # Verify IDs using
+        # curl -s https://oauth.stage.mozaws.net/v1/client/<ID> | jq .
+        # Incomplete list of IDs
+        # https://docs.telemetry.mozilla.org/datasets/fxa_metrics/attribution.html#service-attribution  # noqa
         service_choices = (
             (None, '---------'),
-            ('Firefox Lockwise', 'Firefox Lockwise'),
-            ('Firefox Monitor', 'Firefox Monitor'),
-            ('Firefox Send', 'Firefox Send'),
-            ('Firefox Private Network', 'Firefox Private Network'),
-            ('Notes', 'Notes'),
-            ('Pocket', 'Pocket'),
+            ('e7ce535d93522896|98adfa37698f255b', 'Firefox Lockwise'),
+            ('802d56ef2a9af9fa', 'Firefox Monitor'),
+            ('1f30e32975ae5112|20f7931c9054d833', 'Firefox Send'),
+            ('a8c528140153d1c6|565585c1745a144d|e6eb0d1e856335fc', 'Firefox Private Network'),
+            ('7ad9917f6c55fb77', 'Firefox Reality'),
+            ('7377719276ad44ee|749818d3f2e7857f', 'Pocket'),
+
         )
         fields = (
             ChoiceField(choices=check_choices),
@@ -210,14 +215,21 @@ class JEXLFirefoxServicesField(MultiValueField):
         return ''
 
     def to_jexl(self, value):
-        check, service_name = value.split(',')
-        if not check or not service_name:
+        check, ids = value.split(',')
+        ids = ids.split('|') if ids else ''
+
+        if not check or not ids:
             return ''
 
+        jexl = '('
+        for id in ids:
+            jexl += f'("{id}" in attachedFxAOAuthClients|mapToProperty("id")) || '
+        jexl = jexl[:-4]
+
         if check == 'no_account':
-            jexl = f'("{service_name}" in attachedFxAOAuthClients|mapToProperty("name")) == false'
+            jexl += ') == false'
         elif check == 'has_account':
-            jexl = f'("{service_name}" in attachedFxAOAuthClients|mapToProperty("name")) == true'
+            jexl += ') == true'
 
         return jexl
 

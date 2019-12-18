@@ -137,15 +137,18 @@ class JEXLFirefoxServicesFieldTests(TestCase):
                          'has_account,Pocket')
 
     def test_to_jexl(self):
-        value = 'has_account,Firefox Lockwise'
+        value = 'has_account,e7ce535d93522896|98adfa37698f255b'
         self.assertEqual(
             self.field.to_jexl(value),
-            '("Firefox Lockwise" in attachedFxAOAuthClients|mapToProperty("name")) == true')
+            '(("e7ce535d93522896" in attachedFxAOAuthClients|mapToProperty("id")) '
+            '|| ("98adfa37698f255b" in attachedFxAOAuthClients|mapToProperty("id"))) == true'
+        )
 
-        value = 'no_account,Firefox Lockwise'
+        value = 'no_account,e7ce535d93522896'
         self.assertEqual(
             self.field.to_jexl(value),
-            '("Firefox Lockwise" in attachedFxAOAuthClients|mapToProperty("name")) == false')
+            '(("e7ce535d93522896" in attachedFxAOAuthClients|mapToProperty("id"))) == false'
+        )
 
         value = ','
         self.assertEqual(self.field.to_jexl(value), '')
