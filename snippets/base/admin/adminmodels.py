@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.humanize.templatetags.humanize import intcomma
-from django.db.models import TextField, Q
+from django.db.models import Sum, TextField, Q
 from django.http import HttpResponseRedirect
 from django.template.loader import get_template
 from django.urls import reverse
@@ -981,7 +981,9 @@ class JobAdmin(admin.ModelAdmin):
         'publish_end',
         'metric_impressions_humanized',
         'metric_clicks_humanized',
+        'metric_clicks_ctr',
         'metric_blocks_humanized',
+        'metric_blocks_ctr',
     ]
     list_display_links = [
         'id',
@@ -1016,6 +1018,8 @@ class JobAdmin(admin.ModelAdmin):
         'metric_impressions_humanized',
         'metric_clicks_humanized',
         'metric_blocks_humanized',
+        'metric_clicks_ctr',
+        'metric_blocks_ctr',
         'metric_last_update',
         'redash_link',
         'completed_on',
@@ -1064,11 +1068,9 @@ class JobAdmin(admin.ModelAdmin):
         }),
         ('Metrics', {
             'fields': (
-                (
-                    'metric_impressions_humanized',
-                    'metric_clicks_humanized',
-                    'metric_blocks_humanized',
-                ),
+                'metric_impressions_humanized',
+                ('metric_clicks_humanized', 'metric_clicks_ctr'),
+                ('metric_blocks_humanized', 'metric_blocks_ctr'),
                 'metric_last_update',
                 'redash_link',
             ),
@@ -1127,29 +1129,42 @@ class JobAdmin(admin.ModelAdmin):
         )
     job_status.short_description = 'Status'
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.annotate(
+            impressions=Sum('dailyjobmetrics__impressions'),
+            clicks=Sum('dailyjobmetrics__clicks'),
+            blocks=Sum('dailyjobmetrics__blocks'),
+        )
+        return queryset
+
     def metric_impressions_humanized(self, obj):
-        return intcomma(obj.metric_impressions)
+        return intcomma(obj.impressions or 0)
     metric_impressions_humanized.short_description = 'Impressions'
 
     def metric_clicks_humanized(self, obj):
-        if obj.metric_clicks == 0:
-            return 0
-        ratio = (obj.metric_clicks / obj.metric_impressions) * 100
-        ratio_class = 'ratio-red' if ratio < 0.02 else 'ratio-green'
-        return format_html('<span class="{}">{} ({:.2f}%)</span>'.format(
-            ratio_class, intcomma(obj.metric_clicks), ratio
-        ))
+        return intcomma(obj.clicks or 0)
     metric_clicks_humanized.short_description = 'Clicks'
 
     def metric_blocks_humanized(self, obj):
-        if obj.metric_blocks == 0:
-            return 0
-        ratio = (obj.metric_blocks / obj.metric_impressions) * 100
-        ratio_class = 'ratio-red' if ratio >= 0.25 else 'ratio-green'
-        return format_html('<span class="{}">{} ({:.2f}%)</span>'.format(
-            ratio_class, intcomma(obj.metric_blocks), ratio
-        ))
+        return intcomma(obj.blocks or 0)
     metric_blocks_humanized.short_description = 'Blocks'
+
+    def metric_clicks_ctr(self, obj):
+        if not (obj.clicks or obj.impressions):
+            return 'N/A'
+        ratio = (obj.clicks / obj.impressions) * 100
+        ratio_class = 'ratio-red' if ratio < 0.02 else 'ratio-green'
+        return format_html(f'<span class="{ratio_class}">{ratio:.2f}%</span>')
+    metric_clicks_ctr.short_description = 'CTR'
+
+    def metric_blocks_ctr(self, obj):
+        if not (obj.blocks or obj.impressions):
+            return 'N/A'
+        ratio = (obj.blocks / obj.impressions) * 100
+        ratio_class = 'ratio-red' if ratio < 0.25 else 'ratio-green'
+        return format_html(f'<span class="{ratio_class}">{ratio:.2f}%</span>')
+    metric_blocks_ctr.short_description = 'CTR'
 
     def redash_link(self, obj):
         publish_end = (
