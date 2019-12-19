@@ -28,3 +28,22 @@ input[name="_cancel"] {
 .ratio-red {
     color: #a41515;
 }
+
+#result_list .column-metric_impressions_humanized,
+#result_list .column-metric_clicks_humanized,
+#result_list .column-metric_blocks_humanized {
+    text-align: right;
+}
+
+#result_list .field-metric_impressions_humanized,
+#result_list .field-metric_clicks_humanized,
+#result_list .field-metric_blocks_humanized {
+    text-align: right;
+}
+
+#result_list .column-metric_clicks_ctr,
+#result_list .column-metric_blocks_ctr,
+#result_list .field-metric_clicks_ctr,
+#result_list .field-metric_blocks_ctr {
+    text-align: left;
+}
