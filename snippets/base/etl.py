@@ -4,7 +4,7 @@ from django.db.transaction import atomic
 from redash_dynamic_query import RedashDynamicQuery
 from snippets.base.models import (
     ASRSnippet, DailyChannelMetrics, DailyCountryMetrics, DailyJobMetrics,
-    DailySnippetsMetrics, Job)
+    DailySnippetMetrics, Job)
 
 BQ_DATA_BEGIN_DATE = date(2019, 12, 4)
 JOBS_BEGIN_DATE = date(2019, 10, 1)
@@ -54,7 +54,7 @@ def snippet_metrics_from_rows(rows, metrics=None, snippet_ids=None):
         metrics = {}
     for row in rows:
         try:
-            date = datetime.strptime(row['date'], '%Y-%m-%d')
+            date = datetime.strptime(row['date'], '%Y-%m-%d').date()
             message_id = int(row['message_id'])
             counts = int(row['counts'])
             event = row['event']
@@ -64,7 +64,7 @@ def snippet_metrics_from_rows(rows, metrics=None, snippet_ids=None):
             continue
         metrics.setdefault(date, {})
         metrics[date].setdefault(
-            message_id, DailySnippetsMetrics(
+            message_id, DailySnippetMetrics(
                 snippet_id=message_id, date=date))
         add_metric_event_counts(metrics[date][message_id], event, counts)
     return metrics
