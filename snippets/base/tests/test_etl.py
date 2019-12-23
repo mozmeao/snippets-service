@@ -110,3 +110,13 @@ class ETLTests(TestCase):
         assert snippet1.dailysnippetmetrics_set.all()[0].impressions == 11
         assert snippet2.dailysnippetmetrics_set.all()[0].blocks == 22
         assert job.dailyjobmetrics_set.all()[0].clicks == 66
+
+    @patch('snippets.base.etl.redash.query',
+           return_value={'query_result':{'data': {'rows': ['mock rows']}}})
+    def test_redash_rows(self, query):
+        d = date(2019, 12, 19)
+        for query_name, redash_id in etl.REDASH_QUERY_IDS.items():
+            assert etl.redash_rows(query_name, d, d) == ['mock rows']
+            query.assert_called_with(
+                redash_id,
+                {'begin_date': '2019-12-19', 'end_date': '2019-12-19'})
