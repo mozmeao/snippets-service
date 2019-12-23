@@ -5,7 +5,7 @@ from unittest.mock import patch
 from snippets.base import etl
 from snippets.base.models import (DailyChannelMetrics, DailyCountryMetrics,
                                   DailySnippetMetrics)
-
+from snippets.base.tests import ASRSnippetFactory, JobFactory
 
 class ETLTests(TestCase):
 
@@ -100,3 +100,13 @@ class ETLTests(TestCase):
         assert dcm['us'].impressions == 22
         assert dcm['fr'].blocks == 44
         assert dcm['de'].clicks == 66
+
+    @patch('snippets.base.etl.redash_rows', return_value=message_rows)
+    def test_update_message_metrics(self, redash_rows):
+        snippet1 = ASRSnippetFactory()
+        snippet2 = ASRSnippetFactory()
+        job = JobFactory(id=3)
+        etl.update_message_metrics()
+        assert snippet1.dailysnippetmetrics_set.all()[0].impressions == 11
+        assert snippet2.dailysnippetmetrics_set.all()[0].blocks == 22
+        assert job.dailyjobmetrics_set.all()[0].clicks == 66

@@ -112,8 +112,8 @@ def update_message_metrics(begin_date=None, end_date=None):
                 dm for mv in metrics.values() for dm in mv.values())
     metrics = snippet_metrics_from_rows(redshift_rows)
     with atomic():
-        DailySnippetsMetrics.objects.filter(date__gte=begin_date, date__lte=end_date).delete()
-        DailySnippetsMetrics.objects.bulk_create(
+        DailySnippetMetrics.objects.filter(date__gte=begin_date, date__lte=end_date).delete()
+        DailySnippetMetrics.objects.bulk_create(
             dm for mv in metrics.values() for dm in mv.values())
 
 
