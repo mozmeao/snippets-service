@@ -112,11 +112,10 @@ class ETLTests(TestCase):
         assert job.dailyjobmetrics_set.all()[0].clicks == 66
 
     @patch('snippets.base.etl.redash.query',
-           return_value={'query_result':{'data': {'rows': ['mock rows']}}})
+           return_value={'query_result': {'data': {'rows': ['mock rows']}}})
     def test_redash_rows(self, query):
         d = date(2019, 12, 19)
-        for query_name, redash_id in etl.REDASH_QUERY_IDS.items():
-            assert etl.redash_rows(query_name, d, d) == ['mock rows']
-            query.assert_called_with(
-                redash_id,
-                {'begin_date': '2019-12-19', 'end_date': '2019-12-19'})
+        query_name, query_id = next(iter(etl.REDASH_QUERY_IDS.items()))
+        assert etl.redash_rows(query_name, d, d) == ['mock rows']
+        bind_data = {'begin_date': str(d), 'end_date': str(d)}
+        query.assert_called_with(query_id, bind_data)

@@ -32,8 +32,7 @@ def redash_source_url(query_id_or_name):
 
 def redash_rows(query_name, begin_date, end_date):
     query_id = REDASH_QUERY_IDS[query_name]
-    bind_data = {'begin_date': datetime.strftime(begin_date, '%Y-%m-%d'),
-                 'end_date': datetime.strftime(end_date, '%Y-%m-%d')}
+    bind_data = {'begin_date': str(begin_date), 'end_date': str(end_date)}
     result = redash.query(query_id, bind_data)
     return result['query_result']['data']['rows']
 
