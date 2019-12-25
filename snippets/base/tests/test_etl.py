@@ -1,11 +1,11 @@
-from datetime import date, datetime
+from datetime import date
 from django.test import TestCase
 from unittest.mock import patch
 
 from snippets.base import etl
-from snippets.base.models import (DailyChannelMetrics, DailyCountryMetrics,
-                                  DailySnippetMetrics)
+from snippets.base.models import DailyChannelMetrics, DailyCountryMetrics
 from snippets.base.tests import ASRSnippetFactory, JobFactory
+
 
 class ETLTests(TestCase):
 

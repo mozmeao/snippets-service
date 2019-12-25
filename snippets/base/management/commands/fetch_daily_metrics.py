@@ -6,6 +6,7 @@ from django.db.models import Q
 
 from redash_dynamic_query import RedashDynamicQuery
 
+from snippets.base import etl
 from snippets.base.models import DailyJobMetrics, Job
 
 
@@ -103,4 +104,7 @@ class Command(BaseCommand):
             # wrong.
             raise CommandError('Cannot fetch data from Telemetry.')
 
+        date_str = str(date.date())
+        etl.update_channel_metrics(date_str, date_str)
+        etl.update_country_metrics(date_str, date_str)
         self.stdout.write(self.style.SUCCESS('Done'))
