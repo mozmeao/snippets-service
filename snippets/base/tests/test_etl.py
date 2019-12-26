@@ -128,4 +128,3 @@ class ETLTests(TestCase):
         url += '?p_begin_date_66850=2019-12-19&p_end_date_66850=2019-12-20'
         assert etl.redash_source_url('bq-channel', begin_date='2019-12-19',
                                      end_date='2019-12-20') == url
-

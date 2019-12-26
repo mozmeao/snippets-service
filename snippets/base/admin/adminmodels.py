@@ -1285,9 +1285,10 @@ class DistributionAdmin(admin.ModelAdmin):
     save_on_top = True
 
 
-class DailyJobMetrics(admin.ModelAdmin):
+class DailyJobMetricsAdmin(admin.ModelAdmin):
     list_display = ('id', 'job', 'date', 'impressions', 'clicks', 'blocks', 'data_fetched_on')
     search_fields = ('job__id', 'job__snippet__name', 'job__snippet__id')
+    readonly_fields = ['redash_link']
     fieldsets = [
         ('Metrics', {
             'fields': (
@@ -1296,6 +1297,7 @@ class DailyJobMetrics(admin.ModelAdmin):
                 'impressions',
                 'clicks',
                 'blocks',
+                'redash_link'
             ),
         }),
     ]
@@ -1309,8 +1311,21 @@ class DailyJobMetrics(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    def redash_link(self, obj):
+        link_legacy = etl.redash_source_url(
+            'redshift-message-id', begin_date=obj.date, end_date=obj.date)
+        # bq needs later end_date due to use of timestamps
+        link_bigquery = etl.redash_source_url(
+            'bq-message-id', begin_date=obj.date,
+            end_date=obj.date + timedelta(days=1))
 
-class DailySnippetMetrics(admin.ModelAdmin):
+        return format_html(f'<a href="{link_legacy}">Redshift</a> - '
+                           f'<a href="{link_bigquery}">BigQuery (Fx 72+)</a>')
+
+    redash_link.short_description = 'Explore in Redash'
+
+
+class DailySnippetMetricsAdmin(admin.ModelAdmin):
     list_display = [
         'id',
         'snippet',
@@ -1324,6 +1339,7 @@ class DailySnippetMetrics(admin.ModelAdmin):
         'snippet__id',
         'snippet__name'
     ]
+    readonly_fields = ['redash_link']
     fieldsets = [
         ('Metrics', {
             'fields': (
@@ -1332,6 +1348,7 @@ class DailySnippetMetrics(admin.ModelAdmin):
                 'impressions',
                 'clicks',
                 'blocks',
+                'redash_link'
             ),
         }),
     ]
@@ -1345,8 +1362,20 @@ class DailySnippetMetrics(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    def redash_link(self, obj):
+        link_legacy = etl.redash_source_url(
+            'redshift-message-id', begin_date=obj.date, end_date=obj.date)
+        # bq needs later end_date due to use of timestamps
+        link_bigquery = etl.redash_source_url(
+            'bq-message-id', begin_date=obj.date,
+            end_date=obj.date + timedelta(days=1))
 
-class DailyChannelMetrics(admin.ModelAdmin):
+        return format_html(f'<a href="{link_legacy}">Redshift</a> - '
+                           f'<a href="{link_bigquery}">BigQuery (Fx 72+)</a>')
+
+    redash_link.short_description = 'Explore in Redash'
+
+class DailyChannelMetricsAdmin(admin.ModelAdmin):
     list_display = [
         'id',
         'channel',
@@ -1395,7 +1424,7 @@ class DailyChannelMetrics(admin.ModelAdmin):
     redash_link.short_description = 'Explore in Redash'
 
 
-class DailyCountryMetrics(admin.ModelAdmin):
+class DailyCountryMetricsAdmin(admin.ModelAdmin):
     list_display = [
         'id',
         'date',
@@ -1434,10 +1463,9 @@ class DailyCountryMetrics(admin.ModelAdmin):
                                             begin_date=obj.date,
                                             end_date=obj.date)
         # bq needs different end_date due to use of timestamps
-        end_date += timedelta(days=1)
         link_bigquery = etl.redash_source_url('bq-country',
-                                              begin_date=date,
-                                              end_date=end_date)
+                                              begin_date=obj.date,
+                                              end_date=obj.date + timedelta(days=1))
 
         return format_html(f'<a href="{link_legacy}">Redshift</a> - '
                            f'<a href="{link_bigquery}">BigQuery (Fx 72+)</a>')
