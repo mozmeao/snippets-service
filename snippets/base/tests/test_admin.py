@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.test.client import RequestFactory

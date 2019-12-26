@@ -1375,6 +1375,7 @@ class DailySnippetMetricsAdmin(admin.ModelAdmin):
 
     redash_link.short_description = 'Explore in Redash'
 
+
 class DailyChannelMetricsAdmin(admin.ModelAdmin):
     list_display = [
         'id',
