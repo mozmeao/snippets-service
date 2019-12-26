@@ -20,7 +20,7 @@ from jinja2.meta import find_undeclared_variables
 from reversion.admin import VersionAdmin
 from taggit_helpers.admin import TaggitListFilter
 
-from snippets.base import forms, models
+from snippets.base import etl, forms, models
 from snippets.base.admin import actions, filters
 
 
@@ -1357,9 +1357,8 @@ class DailyChannelMetrics(admin.ModelAdmin):
         'blocks',
         'data_fetched_on'
     ]
-    search_fields = [
-        'channel'
-    ]
+    search_fields = ['channel']
+    readonly_fields = ['redash_link']
     fieldsets = [
         ('Metrics', {
             'fields': (
@@ -1368,6 +1367,7 @@ class DailyChannelMetrics(admin.ModelAdmin):
                 'impressions',
                 'clicks',
                 'blocks',
+                'redash_link',
             ),
         }),
     ]
@@ -1380,6 +1380,19 @@ class DailyChannelMetrics(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def redash_link(self, obj):
+        link_legacy = etl.redash_source_url(
+            'redshift-channel', begin_date=obj.date, end_date=obj.date)
+        # bq needs later end_date due to use of timestamps
+        link_bigquery = etl.redash_source_url(
+            'bq-channel', begin_date=obj.date,
+            end_date=obj.date + timedelta(days=1))
+
+        return format_html(f'<a href="{link_legacy}">Redshift</a> - '
+                           f'<a href="{link_bigquery}">BigQuery (Fx 72+)</a>')
+
+    redash_link.short_description = 'Explore in Redash'
 
 
 class DailyCountryMetrics(admin.ModelAdmin):
@@ -1392,9 +1405,8 @@ class DailyCountryMetrics(admin.ModelAdmin):
         'blocks',
         'data_fetched_on'
     ]
-    search_fields = [
-        'country'
-    ]
+    search_fields = ['country']
+    readonly_fields = ['redash_link']
     fieldsets = [
         ('Metrics', {
             'fields': (
@@ -1403,6 +1415,7 @@ class DailyCountryMetrics(admin.ModelAdmin):
                 'impressions',
                 'clicks',
                 'blocks',
+                'redash_link',
             ),
         }),
     ]
@@ -1415,3 +1428,18 @@ class DailyCountryMetrics(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def redash_link(self, obj):
+        link_legacy = etl.redash_source_url('redshift-country',
+                                            begin_date=obj.date,
+                                            end_date=obj.date)
+        # bq needs different end_date due to use of timestamps
+        end_date += timedelta(days=1)
+        link_bigquery = etl.redash_source_url('bq-country',
+                                              begin_date=date,
+                                              end_date=end_date)
+
+        return format_html(f'<a href="{link_legacy}">Redshift</a> - '
+                           f'<a href="{link_bigquery}">BigQuery (Fx 72+)</a>')
+
+    redash_link.short_description = 'Explore in Redash'

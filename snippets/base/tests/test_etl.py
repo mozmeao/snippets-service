@@ -1,5 +1,6 @@
 from datetime import date
 from django.test import TestCase
+from django.test.utils import override_settings
 from unittest.mock import patch
 
 from snippets.base import etl
@@ -119,3 +120,12 @@ class ETLTests(TestCase):
         assert etl.redash_rows(query_name, d, d) == ['mock rows']
         bind_data = {'begin_date': str(d), 'end_date': str(d)}
         query.assert_called_with(query_id, bind_data)
+
+    @override_settings(REDASH_ENDPOINT='https://sql.telemetry.mozilla.org')
+    def test_redash_source_url(self):
+        url = 'https://sql.telemetry.mozilla.org/queries/66850/source'
+        assert etl.redash_source_url('bq-channel') == url
+        url += '?p_begin_date_66850=2019-12-19&p_end_date_66850=2019-12-20'
+        assert etl.redash_source_url('bq-channel', begin_date='2019-12-19',
+                                     end_date='2019-12-20') == url
+

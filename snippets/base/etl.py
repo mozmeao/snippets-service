@@ -1,10 +1,14 @@
 from datetime import date, datetime, timedelta
+from urllib.parse import urlencode
+
 from django.conf import settings
 from django.db.transaction import atomic
 from redash_dynamic_query import RedashDynamicQuery
+
 from snippets.base.models import (
     ASRSnippet, DailyChannelMetrics, DailyCountryMetrics, DailyJobMetrics,
     DailySnippetMetrics, Job)
+
 
 BQ_DATA_BEGIN_DATE = date(2019, 12, 4)
 JOBS_BEGIN_DATE = date(2019, 10, 1)
@@ -25,9 +29,13 @@ redash = RedashDynamicQuery(
     max_wait=settings.REDASH_MAX_WAIT)
 
 
-def redash_source_url(query_id_or_name):
+def redash_source_url(query_id_or_name, **params):
     query_id = REDASH_QUERY_IDS.get(query_id_or_name, query_id_or_name)
-    return f'{settings.REDASH_ENDPOINT}/queries/{query_id}/source'
+    url = f'{settings.REDASH_ENDPOINT}/queries/{query_id}/source'
+    if params:
+        url += '?' + urlencode({f'p_{key}_{query_id}': value
+                                for key, value in params.items()})
+    return url
 
 
 def redash_rows(query_name, begin_date, end_date):
