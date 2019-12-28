@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from django.test import TestCase
 from django.test.utils import override_settings
 from unittest.mock import patch
@@ -93,6 +93,13 @@ class ETLTests(TestCase):
         assert dcm['beta'].blocks == 44
         assert dcm['aurora'].clicks == 66
 
+    @patch('snippets.base.etl.redash_rows', return_value=channel_rows)
+    def test_update_channel_metrics_same_begin_end_date(self, redash_rows):
+        d = etl.BQ_DATA_BEGIN_DATE
+        etl.update_channel_metrics(begin_date=d, end_date=d)
+        redash_rows.assert_called_with('bq-channel', d, d + timedelta(days=1))
+        redash_rows.assert_any_call('redshift-channel', d, d)
+
     @patch('snippets.base.etl.redash_rows', return_value=country_rows)
     def test_update_country_metrics(self, redash_rows):
         etl.update_country_metrics()
@@ -101,6 +108,13 @@ class ETLTests(TestCase):
         assert dcm['us'].impressions == 22
         assert dcm['fr'].blocks == 44
         assert dcm['de'].clicks == 66
+
+    @patch('snippets.base.etl.redash_rows', return_value=country_rows)
+    def test_update_country_metrics_same_begin_end_date(self, redash_rows):
+        d = etl.BQ_DATA_BEGIN_DATE
+        etl.update_country_metrics(begin_date=d, end_date=d)
+        redash_rows.assert_called_with('bq-country', d, d + timedelta(days=1))
+        redash_rows.assert_any_call('redshift-country', d, d)
 
     @patch('snippets.base.etl.redash_rows', return_value=message_rows)
     def test_update_message_metrics(self, redash_rows):
@@ -111,6 +125,14 @@ class ETLTests(TestCase):
         assert snippet1.dailysnippetmetrics_set.all()[0].impressions == 11
         assert snippet2.dailysnippetmetrics_set.all()[0].blocks == 22
         assert job.dailyjobmetrics_set.all()[0].clicks == 66
+
+    @patch('snippets.base.etl.redash_rows', return_value=message_rows)
+    def test_update_message_metrics_same_begin_end_date(self, redash_rows):
+        d = etl.BQ_DATA_BEGIN_DATE
+        etl.update_message_metrics(begin_date=d, end_date=d)
+        redash_rows.assert_called_with('bq-message-id', d,
+                                       d + timedelta(days=1))
+        redash_rows.assert_any_call('redshift-message-id', d, d)
 
     @patch('snippets.base.etl.redash.query',
            return_value={'query_result': {'data': {'rows': ['mock rows']}}})

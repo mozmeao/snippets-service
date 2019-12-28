@@ -110,6 +110,8 @@ def update_message_metrics(begin_date=None, end_date=None):
         job_ids = set(Job.objects.values_list('id', flat=True))
         metrics = job_metrics_from_rows(redshift_rows, job_ids=job_ids)
         if end_date >= BQ_DATA_BEGIN_DATE:
+            if begin_date == end_date:
+                end_date += timedelta(days=1)
             bq_rows = redash_rows('bq-message-id', begin_date, end_date)
             metrics = job_metrics_from_rows(
                 bq_rows, metrics=metrics, job_ids=job_ids)
@@ -163,6 +165,8 @@ def update_channel_metrics(begin_date=None, end_date=None):
     redshift_rows = redash_rows('redshift-channel', begin_date, end_date)
     metrics = channel_metrics_from_rows(redshift_rows)
     if end_date >= BQ_DATA_BEGIN_DATE:
+        if begin_date == end_date:
+            end_date += timedelta(days=1)
         bq_rows = redash_rows('bq-channel', begin_date, end_date)
         metrics = channel_metrics_from_rows(bq_rows, metrics=metrics)
     with atomic():
@@ -199,6 +203,8 @@ def update_country_metrics(begin_date=None, end_date=None):
     redshift_rows = redash_rows('redshift-country', begin_date, end_date)
     metrics = country_metrics_from_rows(redshift_rows)
     if end_date >= BQ_DATA_BEGIN_DATE:
+        if begin_date == end_date:
+            end_date += timedelta(days=1)
         bq_rows = redash_rows('bq-country', begin_date, end_date)
         metrics = country_metrics_from_rows(bq_rows, metrics=metrics)
     with atomic():
