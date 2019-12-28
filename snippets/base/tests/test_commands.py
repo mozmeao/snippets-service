@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from unittest.mock import ANY, DEFAULT, Mock, call, patch
 
@@ -639,18 +639,18 @@ class FetchDailyMetricsTests(TestCase):
             }
         }
 
-        with patch('snippets.base.management.commands.fetch_daily_metrics.RedashDynamicQuery') as rdq:  # noqa
+        fdm = 'snippets.base.management.commands.fetch_daily_metrics.'
+        with patch(fdm + 'RedashDynamicQuery') as rdq, patch(fdm + 'etl') as etl:
             rdq.return_value.query.side_effect = [return_data_1, return_data_2]
-            with patch('snippets.base.management.commands.fetch_daily_metrics.etl') as etl:
-                date_str = '2050-01-05'
-                call_command('fetch_daily_metrics', date=date_str, stdout=Mock())
+            d = date(2050, 1, 5)
+            call_command('fetch_daily_metrics', date=str(d), stdout=Mock())
 
-        rdq.return_value.query.assert_has_calls([
-            call(settings.REDASH_DAILY_QUERY_ID, request_data),
-            call(settings.REDASH_DAILY_QUERY_BIGQUERY_ID, request_data)
-        ])
-        etl.update_channel_metrics.assert_called_with(date_str, date_str)
-        etl.update_country_metrics.assert_called_with(date_str, date_str)
+            rdq.return_value.query.assert_has_calls([
+                call(settings.REDASH_DAILY_QUERY_ID, request_data),
+                call(settings.REDASH_DAILY_QUERY_BIGQUERY_ID, request_data)
+            ])
+            etl.update_channel_metrics.assert_called_with(d, d)
+            etl.update_country_metrics.assert_called_with(d, d)
 
         self.assertTrue(
             models.DailyJobMetrics.objects.filter(
