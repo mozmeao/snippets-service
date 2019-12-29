@@ -17,6 +17,14 @@ build-images:
   script:
     - docker build -t ${DOCKER_IMAGE_TAG} --build-arg GIT_SHA=${CI_COMMIT_SHA} --pull .
     - docker push ${DOCKER_IMAGE_TAG}
+
+build-jupyter:
+  stage: build
+  only:
+    - jupyter
+  tags:
+    - meao
+  script:
     - docker build -t ${JUPYTER_IMAGE_TAG} --build-arg DEVELOPMENT=true .
     - docker push ${JUPYTER_IMAGE_TAG}
 
