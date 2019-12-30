@@ -6,6 +6,7 @@ from django.db.models import Q
 
 from redash_dynamic_query import RedashDynamicQuery
 
+from snippets.base import etl
 from snippets.base.models import DailyJobMetrics, Job
 
 
@@ -25,10 +26,10 @@ class Command(BaseCommand):
             date = (
                 datetime(year=now.year, month=now.month, day=now.day, hour=0, minute=0, second=0) -
                 timedelta(days=1)
-            )
+            ).date()
 
         else:
-            date = datetime.strptime(options['date'], '%Y-%m-%d')
+            date = datetime.strptime(options['date'], '%Y-%m-%d').date()
 
         last_week = date - timedelta(days=7)  # date - 7 since we 're fetching data for yesterday.
         date_next_day = date + timedelta(days=1)
@@ -61,9 +62,7 @@ class Command(BaseCommand):
 
         self.stdout.write(f'Fetching data for {date} for {jobs.count()} jobs.')
 
-        bind_data = {
-            'date': date.strftime('%Y-%m-%d'),
-        }
+        bind_data = {'date': str(date)}
         rows = []
         for query in [settings.REDASH_DAILY_QUERY_ID, settings.REDASH_DAILY_QUERY_BIGQUERY_ID]:
             result = redash.query(query, bind_data)
@@ -103,4 +102,6 @@ class Command(BaseCommand):
             # wrong.
             raise CommandError('Cannot fetch data from Telemetry.')
 
+        etl.update_channel_metrics(date, date)
+        etl.update_country_metrics(date, date)
         self.stdout.write(self.style.SUCCESS('Done'))
