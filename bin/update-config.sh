@@ -16,6 +16,11 @@ for CLUSTER in ${CLUSTERS}; do
             git add ${DEPLOYMENT_FILE}
         fi
     done
+    DEPLOYMENT_FILE=${CLUSTER}/${NAMESPACE}/jupyter-deploy.yaml
+    if [[ -f ${DEPLOYMENT_FILE} && -n "{JUPYTER_IMAGE_TAG}" ]]; then
+        sed -i -e "s|image: .*|image: ${JUPYTER_IMAGE_TAG}|" ${DEPLOYMENT_FILE}
+        git add ${DEPLOYMENT_FILE}
+    fi
 done
 
 cp ${BIN_DIR}/acceptance-tests.sh .
