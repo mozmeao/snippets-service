@@ -182,9 +182,10 @@ def country_metrics_from_rows(rows, metrics=None):
         try:
             date = datetime.strptime(row['date'], '%Y-%m-%d').date()
             country = row['country_code']
+            assert country
             event = row['event']
             counts = int(row['counts'])
-        except ValueError:
+        except (AssertionError, ValueError):
             continue
         metrics.setdefault(date, {})
         metrics[date].setdefault(
