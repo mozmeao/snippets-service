@@ -1,6 +1,7 @@
 variables:
   DOCKER_REPOSITORY: "mozorg/snippets"
   DOCKER_IMAGE_TAG: "${DOCKER_REPOSITORY}:${CI_COMMIT_SHORT_SHA}"
+  JUPYTER_IMAGE_TAG: "${DOCKER_REPOSITORY}:jupyter-${CI_COMMIT_SHORT_SHA}"
   # Cannot use $DOCKER_IMAGE_TAG because it contains other variables itself.
   DOCKER_RUN_CMD: "docker run --env-file .docker-env ${DOCKER_REPOSITORY}:${CI_COMMIT_SHORT_SHA}"
 
@@ -16,6 +17,16 @@ build-images:
   script:
     - docker build -t ${DOCKER_IMAGE_TAG} --build-arg GIT_SHA=${CI_COMMIT_SHA} --pull .
     - docker push ${DOCKER_IMAGE_TAG}
+
+build-jupyter:
+  stage: build
+  only:
+    - jupyter
+  tags:
+    - meao
+  script:
+    - docker build -t ${JUPYTER_IMAGE_TAG} --build-arg DEVELOPMENT=true .
+    - docker push ${JUPYTER_IMAGE_TAG}
 
 .test-stage:
   stage: test
