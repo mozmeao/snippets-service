@@ -276,9 +276,9 @@ django-ical==1.5 \
 icalendar==4.0.3 \
     --hash=sha256:83f7248b7485ddd29c7d69b706b21c441e34855d9c1d888939fd24aefdd9d19b \
     --hash=sha256:07c2447a1d44cbb27c90b8c6a5c98e890cc1853c6223e2a52195cddec26c6356
-python-dateutil==2.8.0 \
-    --hash=sha256:7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493df2fb \
-    --hash=sha256:c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e
+python-dateutil==2.8.1 \
+    --hash=sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a \
+    --hash=sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c
 babis==0.2.2 \
     --hash=sha256:c5cba6b0170ed02020d2cdd999da9d9fa4f4d4e725833e3ed98dad1b898d311b \
     --hash=sha256:31095db6b412062b1dcdad9d94ff4c207299fb90135a950e430567863b20f071
