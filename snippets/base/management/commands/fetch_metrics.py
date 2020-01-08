@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.db.models import Q
 
 import sentry_sdk
 from redash_dynamic_query import RedashDynamicQuery
@@ -23,8 +22,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         now = datetime.utcnow()
-        today = datetime(year=now.year, month=now.month, day=now.day, hour=0, minute=0, second=0)
-        before_seven_days = today - timedelta(days=7)
 
         if not settings.REDASH_API_KEY:
             raise CommandError('Enviroment variable REDASH_API_KEY is required.')
@@ -35,37 +32,11 @@ class Command(BaseCommand):
             max_wait=settings.REDASH_MAX_WAIT,
         )
 
-        if options['force_update']:
-            jobs = Job.objects.exclude(Q(publish_end=None))
-        else:
-            # Update Jobs if when PUBLISHED haven't been updated for
-            # REDASH_UPDATE_INTERVAL seconds or when COMPLETED haven't been
-            # updated for 8 hours. Typically we need 15 seconds of Telemetry
-            # time per Job, so that's more than 10 minutes for 50 Jobs. With
-            # this trick we reduce the number of queries made in 24 hours
-            # against Telemetry, while still maintaining good enough data
-            # freshness.
-            last_update_timestamp_published = (
-                now - timedelta(seconds=settings.REDASH_UPDATE_INTERVAL))
-            last_update_timestamp_completed = now - timedelta(hours=8)
-            jobs = Job.objects.filter(
-                Q(id__in=(
-                    Job.objects.exclude(
-                        Q(publish_end=None) |
-                        Q(metric_last_update__gte=last_update_timestamp_published)
-                    ) .filter(
-                        Q(status=Job.PUBLISHED)
-                    )
-                )) |
-                Q(id__in=(
-                    Job.objects.exclude(
-                        Q(publish_end=None) |
-                        Q(metric_last_update__gte=last_update_timestamp_completed)
-                    ) .filter(
-                        (Q(status=Job.COMPLETED) & Q(publish_end__gte=before_seven_days))
-                    )
-                ))
-            ).order_by('id')
+        jobs = Job.objects.filter(status=Job.PUBLISHED).exclude(
+            limit_impressions=0,
+            limit_clicks=0,
+            limit_blocks=0,
+        ).order_by('id')
 
         self.stdout.write(f'Fetching Updates for {jobs.count()} Jobs.')
 
@@ -76,13 +47,16 @@ class Command(BaseCommand):
             blocks = 0
             bind_data = {
                 'start_date': job.publish_start.strftime('%Y-%m-%d'),
-                # Publish end date plus 7 days to include metrics received with
-                # delay.
-                'end_date': (job.publish_end + timedelta(days=7)).strftime('%Y-%m-%d'),
+                'end_date': now.strftime('%Y-%m-%d'),
                 'message_id': job.id,
             }
 
             data_fetched = 0
+            # We need to fetch metrics from two different data sources
+            # (RedShift and BigQuery) to capture all metrics. Firefox
+            # switched to BigQuery on Firefox 72. We expect to be able
+            # to remove RedShift querying in a year from 72's launch
+            # (Jan 2021). Issue #1285
             for query in [settings.REDASH_JOB_QUERY_ID, settings.REDASH_JOB_QUERY_BIGQUERY_ID]:
                 try:
                     result = redash.query(query, bind_data)

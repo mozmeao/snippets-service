@@ -1810,6 +1810,12 @@ class Job(models.Model):
         verbose_name='Global Block Limit',
         help_text='Job will complete if number of Blocks exceeds this number. Set to 0 to disable.',
     )
+    # metric_* fields are used to stop Jobs which have reached limits set in limit_* fields.
+    metric_last_update = models.DateTimeField('Last Update', default='1970-01-01', editable=False)
+    metric_impressions = models.PositiveIntegerField(default=0, editable=False)
+    metric_clicks = models.PositiveIntegerField(default=0, editable=False)
+    metric_blocks = models.PositiveIntegerField(default=0, editable=False)
+
     distribution = models.ForeignKey(
         'Distribution',
         on_delete=models.PROTECT,
@@ -1817,11 +1823,6 @@ class Job(models.Model):
         help_text=('Set a Distribution for this Job. It should be normally '
                    'left to Default. Useful for running Normandy experiments.'),
     )
-
-    metric_last_update = models.DateTimeField('Last Update', default='1970-01-01', editable=False)
-    metric_impressions = models.PositiveIntegerField(default=0, editable=False)
-    metric_clicks = models.PositiveIntegerField(default=0, editable=False)
-    metric_blocks = models.PositiveIntegerField(default=0, editable=False)
 
     client_limit_lifetime = models.PositiveIntegerField(
         verbose_name='Max Lifetime Impressions',
