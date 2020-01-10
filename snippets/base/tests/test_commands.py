@@ -33,42 +33,28 @@ class DisableSnippetsPastPublishDateTests(TestCase):
 @override_settings(REDASH_API_KEY='secret')
 class FetchMetricsTests(TestCase):
     def test_base(self):
-        now = datetime.utcnow()
         job_running = JobFactory(
             status=models.Job.PUBLISHED,
             publish_start='2050-01-05 01:00',
-            publish_end='2050-01-06 02:00')
-        job_ended_yesterday = JobFactory(
-            status=models.Job.COMPLETED,
-            publish_start='2019-01-01 01:00',
-            publish_end=now - timedelta(days=1))
-        # Without end date
-        JobFactory(
-            status=models.Job.PUBLISHED,
-            publish_start='2050-01-05 01:00',
-            publish_end=None)
-        # Ended before then days
-        JobFactory(
-            status=models.Job.COMPLETED,
-            publish_start=now - timedelta(days=11),
-            publish_end=now - timedelta(days=10))
-        # Ended yesteday but updated before 4 hours
-        JobFactory(
-            status=models.Job.COMPLETED,
-            publish_start='2019-01-01 01:00',
-            publish_end=now - timedelta(days=1),
-            metric_last_update=now - timedelta(hours=4),
+            publish_end='2050-01-08 02:00',
+            limit_impressions=1000,
         )
-
+        # Without end date
+        job_running2 = JobFactory(
+            status=models.Job.PUBLISHED,
+            publish_start='2050-01-04 01:00',
+            publish_end=None,
+            limit_blocks=1000,
+        )
         request_data_first = {
             'start_date': '2050-01-05',
-            'end_date': '2050-01-13',
+            'end_date': '2050-01-06',
             'message_id': job_running.id,
         }
         request_data_second = {
-            'start_date': '2019-01-01',
-            'end_date': (job_ended_yesterday.publish_end + timedelta(days=7)).strftime('%Y-%m-%d'),
-            'message_id': job_ended_yesterday.id,
+            'start_date': '2050-01-04',
+            'end_date': '2050-01-06',
+            'message_id': job_running2.id,
         }
         return_data_first = {
             'query_result': {
@@ -160,10 +146,12 @@ class FetchMetricsTests(TestCase):
         }
 
         with patch('snippets.base.management.commands.fetch_metrics.RedashDynamicQuery') as rdq:
-            rdq.return_value.query.side_effect = [
-                return_data_first, return_data_second, return_data_third, return_data_fourth
-            ]
-            call_command('fetch_metrics', stdout=Mock())
+            with patch('snippets.base.management.commands.fetch_metrics.datetime', wraps=datetime) as datetime_mock:  # noqa
+                datetime_mock.utcnow.return_value = datetime(2050, 1, 6)
+                rdq.return_value.query.side_effect = [
+                    return_data_first, return_data_second, return_data_third, return_data_fourth
+                ]
+                call_command('fetch_metrics', stdout=Mock())
 
         rdq.return_value.query.assert_has_calls([
             call(settings.REDASH_JOB_QUERY_ID, request_data_first),
@@ -177,15 +165,18 @@ class FetchMetricsTests(TestCase):
         self.assertEqual(job_running.metric_blocks, 15)
         self.assertEqual(job_running.metric_clicks, 120)
 
-        job_ended_yesterday.refresh_from_db()
-        self.assertEqual(job_ended_yesterday.metric_impressions, 270)
-        self.assertEqual(job_ended_yesterday.metric_blocks, 150)
-        self.assertEqual(job_ended_yesterday.metric_clicks, 45)
+        job_running2.refresh_from_db()
+        self.assertEqual(job_running2.metric_impressions, 270)
+        self.assertEqual(job_running2.metric_blocks, 150)
+        self.assertEqual(job_running2.metric_clicks, 45)
 
     def test_no_data_fetched(self):
-        JobFactory(status=models.Job.PUBLISHED,
-                   publish_start='2050-01-05 01:00',
-                   publish_end='2050-01-06 02:00')
+        JobFactory(
+            status=models.Job.PUBLISHED,
+            publish_start='2050-01-05 01:00',
+            publish_end='2050-01-06 02:00',
+            limit_clicks=1000,
+        )
 
         # Error raised while fetch Telemetry Data
         with patch('snippets.base.management.commands.fetch_metrics.RedashDynamicQuery') as rdq:
@@ -203,9 +194,12 @@ class FetchMetricsTests(TestCase):
     def test_no_data_fetched_from_one_source(self):
         # Test that even if one of the two data sources fail, the metrics are
         # not saved in the db.
-        job = JobFactory(status=models.Job.PUBLISHED,
-                         publish_start='2050-01-05 01:00',
-                         publish_end='2050-01-06 02:00')
+        job = JobFactory(
+            status=models.Job.PUBLISHED,
+            publish_start='2050-01-05 01:00',
+            publish_end='2050-01-06 02:00',
+            limit_clicks=1000,
+        )
         with patch('snippets.base.management.commands.fetch_metrics.RedashDynamicQuery') as rdq:
             rdq.return_value.query.side_effect = [
                 {
