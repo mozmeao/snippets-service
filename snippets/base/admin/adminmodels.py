@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.admin.utils import flatten_fieldsets
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.db.models import Sum, TextField, Q
 from django.http import HttpResponseRedirect
@@ -1108,6 +1109,26 @@ class JobAdmin(admin.ModelAdmin):
         )
     snippet_name_linked.short_description = 'Link to Snippet'
 
+    def get_readonly_fields(self, request, obj):
+        fields = copy.copy(self.readonly_fields)
+
+        # If Completed or Cancelled make all fields read-only.
+        if obj.status in [models.Job.CANCELED, models.Job.COMPLETED]:
+            fields = flatten_fieldsets(self.get_fieldsets(request, obj))
+
+        # If Published only changing of Publish End, Client Impression
+        # Limits and Global Impression, Click, Block Limits.
+        if obj.status in [models.Job.PUBLISHED]:
+            fields = flatten_fieldsets(self.get_fieldsets(request, obj))
+            for field in [
+                    'publish_end', 'client_limit_lifetime',
+                    'client_limit_per_hour', 'client_limit_per_day',
+                    'client_limit_per_week', 'client_limit_per_fortnight',
+                    'client_limit_per_month', 'limit_impressions', 'limit_clicks',
+                    'limit_blocks']:
+                fields.remove(field)
+        return fields
+
     def target_list(self, obj):
         return mark_safe(
             '<ul>' +
@@ -1194,12 +1215,6 @@ class JobAdmin(admin.ModelAdmin):
         if not obj.creator_id:
             obj.creator = request.user
         super().save_model(request, obj, form, change)
-
-    def has_change_permission(self, request, obj=None):
-        """ Allow edit only during Draft stage. """
-        if obj and obj.status == models.Job.DRAFT:
-            return True
-        return False
 
     def has_delete_permission(self, request, obj=None):
         """ Allow deletion only during Draft stage. """
