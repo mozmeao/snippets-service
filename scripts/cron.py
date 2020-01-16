@@ -104,12 +104,6 @@ if settings.REDASH_API_KEY:
     )(job_fetch_daily_metrics)
 
 
-@scheduled_job('cron', month='*', day='*', hour='08', minute='20', max_instances=1, coalesce=True)
-@babis.decorator(ping_after=settings.DEAD_MANS_SNITCH_CSV_EXPORT)
-def job_export_to_csv():
-    call_command('export_to_csv')
-
-
 def run():
     try:
         schedule.start()

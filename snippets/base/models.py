@@ -2013,21 +2013,6 @@ class Job(models.Model):
 
         return job_copy
 
-    def analytics_export(self):
-        body = self.snippet.template_ng.get_main_body(bleached=True)
-        url = self.snippet.template_ng.get_main_url()
-        export = {
-            'id': self.id,
-            'name': self.snippet.name,
-            'campaign': self.campaign.name if self.campaign else '',
-            'category': self.snippet.category.name if self.snippet.category else '',
-            'url': url,
-            'body': body,
-            'tags': ','.join([tag.name for tag in self.snippet.tags.all().order_by('name')]),
-            'snippet_id': self.snippet.id,
-        }
-        return export
-
 
 class ASRSnippet(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
