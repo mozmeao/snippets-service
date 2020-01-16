@@ -1109,8 +1109,10 @@ class JobAdmin(admin.ModelAdmin):
         )
     snippet_name_linked.short_description = 'Link to Snippet'
 
-    def get_readonly_fields(self, request, obj):
+    def get_readonly_fields(self, request, obj=None):
         fields = copy.copy(self.readonly_fields)
+        if not obj:
+            return fields
 
         # If Completed or Cancelled make all fields read-only.
         if obj.status in [models.Job.CANCELED, models.Job.COMPLETED]:
