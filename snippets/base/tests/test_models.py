@@ -874,24 +874,3 @@ class JobTests(TestCase):
         self.assertEqual(duplicate_job.metric_clicks, 0)
         self.assertEqual(duplicate_job.metric_blocks, 0)
         self.assertEqual(duplicate_job.completed_on, None)
-
-    def test_analytics_export(self):
-        snippet = ASRSnippetFactory.create(
-            name='test-snippet',
-            category__name='test-category',
-            template_relation__text=(
-                'This is the <b>bold body</b> with a <a href="https://example.com">link</a>.'),
-            add_tags=['foo', 'bar'],
-        )
-        job = JobFactory.create(snippet=snippet, campaign__name='test-campaign')
-        expected_data = {
-            'id': job.id,
-            'name': 'test-snippet',
-            'campaign': 'test-campaign',
-            'category': 'test-category',
-            'url': 'https://example.com',
-            'body': 'This is the bold body with a link.',
-            'tags': 'bar,foo',
-            'snippet_id': snippet.id,
-        }
-        self.assertEqual(expected_data, job.analytics_export())
