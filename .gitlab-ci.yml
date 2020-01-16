@@ -20,8 +20,6 @@ build-images:
 
 build-jupyter:
   stage: build
-  only:
-    - jupyter
   tags:
     - meao
   script:
