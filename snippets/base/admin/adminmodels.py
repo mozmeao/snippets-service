@@ -1084,6 +1084,7 @@ class JobAdmin(admin.ModelAdmin):
     actions = [
         'action_schedule_job',
         'action_cancel_job',
+        'action_delete_job',
     ]
 
     class Media:
@@ -1292,6 +1293,22 @@ class JobAdmin(admin.ModelAdmin):
         self._action_status_change('cancel', request, queryset)
     action_cancel_job.short_description = 'Cancel selected Jobs'
     action_cancel_job.allowed_permissions = (
+        'publish',
+    )
+
+    def action_delete_job(self, request, queryset):
+        original_job_count = queryset.count()
+        queryset.filter(status=models.Job.DRAFT).delete()
+        new_job_count = queryset.count()
+
+        if original_job_count != new_job_count:
+            message = f'Successfully deleted {original_job_count - new_job_count} Draft Jobs.'
+            messages.success(request, message)
+
+        if new_job_count:
+            messages.warning(request, f'Cannot remove {new_job_count} Jobs not in Draft state.')
+    action_delete_job.short_description = 'Delete selected Draft Jobs'
+    action_delete_job.allowed_permissions = (
         'publish',
     )
 

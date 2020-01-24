@@ -265,6 +265,32 @@ class JobAdminTests(TestCase):
         self.assertTrue(message_mocks['warning'].called)
         self.assertTrue(message_mocks['success'].called)
 
+    def test_action_delete_job(self):
+        to_get_deleted = [
+            JobFactory.create(status=Job.DRAFT),
+            JobFactory.create(status=Job.DRAFT),
+        ]
+        to_remain = [
+            JobFactory(status=Job.CANCELED),
+            JobFactory(status=Job.COMPLETED),
+            JobFactory(status=Job.PUBLISHED),
+        ]
+        queryset = Job.objects.filter(id__in=[x.id for x in to_get_deleted + to_remain])
+
+        request = Mock()
+        request.user = UserFactory.create()
+        with patch.multiple('snippets.base.admin.adminmodels.messages',
+                            warning=DEFAULT_MOCK,
+                            success=DEFAULT_MOCK) as message_mocks:
+            JobAdmin(Job, None).action_delete_job(request, queryset)
+
+        self.assertEqual(
+            set(Job.objects.all()),
+            set(to_remain)
+        )
+        self.assertTrue(message_mocks['warning'].called)
+        self.assertTrue(message_mocks['success'].called)
+
 
 class DailyMetricsAdminTests(TestCase):
     def test_channel_redash_link(self):
