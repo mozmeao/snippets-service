@@ -461,6 +461,64 @@ class GenerateBundles(TestCase):
             set([str(published_job_1.id), str(published_job_2.id)])
         )
 
+    @override_settings(
+        MEDIA_BUNDLES_PREGEN_ROOT='pregen',
+        NIGHTLY_INCLUDES_RELEASE=True,
+    )
+    def test_nightly_includes_release(self):
+        release_job = JobFactory(
+            status=models.Job.PUBLISHED,
+            snippet__locale=',en,',
+            targets=[
+                TargetFactory(
+                    on_release=True, on_beta=True, on_nightly=False, on_esr=False, on_aurora=False)
+            ]
+        )
+        nightly_job = JobFactory(
+            status=models.Job.PUBLISHED,
+            snippet__locale=',en,',
+            targets=[
+                TargetFactory(
+                    on_release=True, on_beta=False, on_nightly=True, on_esr=False, on_aurora=False)
+            ]
+        )
+
+        # Beta only job, not to be included
+        JobFactory(
+            status=models.Job.PUBLISHED,
+            snippet__locale=',en,',
+            targets=[
+                TargetFactory(
+                    on_release=False, on_beta=True, on_nightly=False, on_esr=False, on_aurora=False)
+            ]
+        )
+
+        with patch.multiple('snippets.base.management.commands.generate_bundles',
+                            json=DEFAULT,
+                            product_details=DEFAULT,
+                            default_storage=DEFAULT) as mock:
+            mock['json'].dumps.return_value = ''
+            mock['product_details'].languages.keys.return_value = ['en-us']
+            call_command('generate_bundles', stdout=Mock())
+
+        # Loop to find the nighlty bundle
+        for arg_list in mock['json'].dumps.call_args_list:
+            if arg_list[0][0]['metadata']['channel'] == 'nightly':
+                self.assertEqual(
+                    len(arg_list[0][0]['messages']),
+                    2
+                )
+                self.assertEqual(
+                    set([arg_list[0][0]['messages'][0]['id'],
+                         arg_list[0][0]['messages'][1]['id']]),
+                    set([str(release_job.id), str(nightly_job.id)])
+                )
+                self.assertEqual(
+                    set([arg_list[0][0]['messages'][0]['targeting'],
+                         arg_list[0][0]['messages'][1]['targeting']]),
+                    set(['', 'false'])
+                )
+
     @override_settings(BUNDLE_BROTLI_COMPRESS=True)
     def test_brotli_called(self):
         with patch('snippets.base.management.commands.generate_bundles.brotli') as brotli_mock:

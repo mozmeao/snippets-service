@@ -389,3 +389,6 @@ REDASH_UPDATE_INTERVAL = config('REDASH_UPDATE_INTERVAL', default=600)
 USE_PREGEN_BUNDLES = config('USE_PREGEN_BUNDLES', default=False, cast=bool)
 
 NOTEBOOK_ARGUMENTS = ['--ip', '0.0.0.0']
+
+
+NIGHTLY_INCLUDES_RELEASE = config('NIGHTLY_INCLUDES_RELEASE', default=False, cast=bool)

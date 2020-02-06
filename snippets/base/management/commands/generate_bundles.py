@@ -59,11 +59,24 @@ class Command(BaseCommand):
             distributions = distribution_bundle.distributions.all()
 
             for channel, locale in combinations_to_process:
+                additional_jobs = []
+                if channel == 'nightly' and settings.NIGHTLY_INCLUDES_RELEASE:
+                    additional_jobs = Job.objects.filter(
+                        status=Job.PUBLISHED).filter(**{
+                            'targets__on_release': True,
+                            'distribution__in': distributions,
+                        })
+
                 channel_jobs = Job.objects.filter(
-                    status=Job.PUBLISHED).filter(**{
-                        'targets__on_{}'.format(channel): True,
-                        'distribution__in': distributions,
-                    })
+                    status=Job.PUBLISHED).filter(
+                        Q(**{
+                            'targets__on_{}'.format(channel): True,
+                            'distribution__in': distributions,
+                        }))
+
+                all_jobs = Job.objects.filter(
+                    Q(id__in=additional_jobs) | Q(id__in=channel_jobs)
+                )
 
                 locales_to_process = [
                     key.lower() for key in product_details.languages.keys()
@@ -79,9 +92,9 @@ class Command(BaseCommand):
                     filename = os.path.join(settings.MEDIA_BUNDLES_PREGEN_ROOT, filename)
                     full_locale = ',{},'.format(locale_to_process.lower())
                     splitted_locale = ',{},'.format(locale_to_process.lower().split('-', 1)[0])
-                    bundle_jobs = channel_jobs.filter(
+                    bundle_jobs = all_jobs.filter(
                         Q(snippet__locale__code__contains=splitted_locale) |
-                        Q(snippet__locale__code__contains=full_locale))
+                        Q(snippet__locale__code__contains=full_locale)).distinct()
 
                     # If there 're no Published Jobs for the channel / locale /
                     # distribution combination, delete the current bundle file if
@@ -92,12 +105,21 @@ class Command(BaseCommand):
                             default_storage.delete(filename)
                         continue
 
-                    data = [job.render() for job in bundle_jobs]
+                    data = []
+                    channel_job_ids = list(channel_jobs.values_list('id', flat=True))
+                    for job in bundle_jobs:
+                        if job.id in channel_job_ids:
+                            render = job.render()
+                        else:
+                            render = job.render(always_eval_to_false=True)
+                        data.append(render)
+
                     bundle_content = json.dumps({
                         'messages': data,
                         'metadata': {
                             'generated_at': datetime.utcnow().isoformat(),
                             'number_of_snippets': len(data),
+                            'channel': channel,
                         }
                     })
 

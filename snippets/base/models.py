@@ -1864,7 +1864,13 @@ class Job(models.Model):
              self.publish_start >= self.publish_end)):
             raise ValidationError('Publish start must come before publish end.')
 
-    def render(self):
+    def render(self, always_eval_to_false=False):
+        """Argument always_eval_to_false supports bundle generation for the
+        nightly channel where we want all Release snippets to get
+        included for the Fx team to monitor JEXL engine performance,
+        but we don't want them to actually show. See #1308
+
+        """
         rendered_snippet = self.snippet.render()
 
         rendered_snippet['id'] = str(self.id)
@@ -1897,13 +1903,16 @@ class Job(models.Model):
             CHANNELS_MAP[channel] for channel in CHANNELS_MAP if channel in self.channels
         ])
         rendered_snippet = util.deep_search_and_replace(rendered_snippet, '[[channels]]', channels)
-
         # Add JEXL targeting
         rendered_snippet['targeting'] = ' && '.join(
             [target.jexl_expr for
              target in self.targets.all().order_by('id') if
              target.jexl_expr]
         )
+        if always_eval_to_false:
+            if rendered_snippet['targeting']:
+                rendered_snippet['targeting'] += ' && '
+            rendered_snippet['targeting'] += 'false'
 
         # Add Client Limits
         frequency = {}

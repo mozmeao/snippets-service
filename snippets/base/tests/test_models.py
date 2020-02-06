@@ -762,6 +762,20 @@ class JobTests(TestCase):
 
         self.assertEqual(generated_output, expected_output)
 
+    def test_render_always_eval_to_false(self):
+        job = JobFactory.create(
+            weight=10, campaign__slug='demo-campaign',
+            targets=[
+                TargetFactory(on_release=False, on_beta=False,
+                              on_esr=False, on_aurora=False, on_nightly=True,
+                              jexl_expr='(la==lo)'),
+            ]
+        )
+        job.snippet.render = Mock()
+        job.snippet.render.return_value = {}
+        generated_output = job.render(always_eval_to_false=True)
+        self.assertEqual(generated_output['targeting'], '(la==lo) && false')
+
     def test_render_client_limits(self):
         # Combined
         job = JobFactory.create(
