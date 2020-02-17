@@ -51,38 +51,32 @@ class Command(BaseCommand):
                 'message_id': job.id,
             }
 
-            data_fetched = 0
-            # We need to fetch metrics from two different data sources
-            # (RedShift and BigQuery) to capture all metrics. Firefox
-            # switched to BigQuery on Firefox 72. We expect to be able
-            # to remove RedShift querying in a year from 72's launch
-            # (Jan 2021). Issue #1285
-            for query in [settings.REDASH_JOB_QUERY_ID, settings.REDASH_JOB_QUERY_BIGQUERY_ID]:
-                try:
-                    result = redash.query(query, bind_data)
-                except Exception as exp:
-                    # Capture the exception but don't quit
-                    sentry_sdk.capture_exception(exp)
-                    continue
+            data_fetched = False
+            try:
+                result = redash.query(settings.REDASH_JOB_QUERY_BIGQUERY_ID, bind_data)
+            except Exception as exp:
+                # Capture the exception but don't quit
+                sentry_sdk.capture_exception(exp)
+                continue
 
-                try:
-                    for row in result['query_result']['data']['rows']:
-                        if row['event'] == 'IMPRESSION':
-                            impressions += row['counts']
-                        elif row['event'] == 'BLOCK':
-                            blocks += row['counts']
-                        elif row['event'] in ['CLICK', 'CLICK_BUTTON']:
-                            clicks += row['counts']
-                except KeyError as exp:
-                    # Capture the exception but don't quit
-                    sentry_sdk.capture_exception(exp)
-                    continue
-                else:
-                    data_fetched += 1
+            try:
+                for row in result['query_result']['data']['rows']:
+                    if row['event'] == 'IMPRESSION':
+                        impressions += row['counts']
+                    elif row['event'] == 'BLOCK':
+                        blocks += row['counts']
+                    elif row['event'] in ['CLICK', 'CLICK_BUTTON']:
+                        clicks += row['counts']
+            except KeyError as exp:
+                # Capture the exception but don't quit
+                sentry_sdk.capture_exception(exp)
+                continue
+            else:
+                data_fetched = True
 
             # We didn't fetch data from both data sources for this job, don't
             # save it.
-            if data_fetched != 2:
+            if not data_fetched:
                 continue
 
             # We fetched data for job, mark the ETL job `working` to update

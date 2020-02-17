@@ -1192,12 +1192,6 @@ class JobAdmin(admin.ModelAdmin):
         publish_end = (
             obj.publish_end or datetime.utcnow() + timedelta(days=1)
         ).strftime("%Y-%m-%d")
-        link_legacy = (
-            f'{settings.REDASH_ENDPOINT}/queries/{settings.REDASH_JOB_QUERY_ID}/'
-            f'?p_start_date_{settings.REDASH_JOB_QUERY_ID}={obj.publish_start.strftime("%Y-%m-%d")}'
-            f'&p_end_date_{settings.REDASH_JOB_QUERY_ID}={publish_end}'
-            f'&p_message_id_{settings.REDASH_JOB_QUERY_ID}={obj.id}#161888'
-        )
         link_bigquery = (
             f'{settings.REDASH_ENDPOINT}/queries/{settings.REDASH_JOB_QUERY_BIGQUERY_ID}/'
             f'?p_start_date_{settings.REDASH_JOB_QUERY_BIGQUERY_ID}='
@@ -1208,8 +1202,7 @@ class JobAdmin(admin.ModelAdmin):
         )
 
         return format_html(
-            f'<a href="{link_legacy}">Explore</a> - '
-            f'<a href="{link_bigquery}">Explore BigQuery (Fx 72+)</a>'
+            f'<a href="{link_bigquery}">Explore Redash</a>'
         )
 
     redash_link.short_description = 'Explore in Redash'
