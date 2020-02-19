@@ -2035,8 +2035,7 @@ class ASRSnippet(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=255, unique=True)
 
-    category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.PROTECT,
-                                 related_name='snippets')
+    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='snippets')
 
     tags = TaggableManager(blank=True)
 
