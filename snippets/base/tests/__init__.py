@@ -140,6 +140,14 @@ class CategoryFactory(factory.django.DjangoModelFactory):
         model = models.Category
 
 
+class ProductFactory(factory.django.DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Campaign {0}'.format(n))
+    creator = factory.SubFactory(UserFactory)
+
+    class Meta:
+        model = models.Product
+
+
 class IconFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Icon {0}'.format(n))
     creator = factory.SubFactory(UserFactory)
@@ -162,7 +170,7 @@ class ASRSnippetFactory(factory.django.DjangoModelFactory):
     creator = factory.SubFactory(UserFactory)
     name = factory.Sequence(lambda n: 'ASRSnippet {0}'.format(n))
     category = factory.SubFactory(CategoryFactory, creator=factory.SelfAttribute('..creator'))
-
+    product = factory.SubFactory(ProductFactory, creator=factory.SelfAttribute('..creator'))
     template_relation = factory.RelatedFactory(SimpleTemplateFactory, 'snippet')
     status = models.STATUS_CHOICES['Approved']
 

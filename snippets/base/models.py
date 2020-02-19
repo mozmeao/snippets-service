@@ -570,6 +570,22 @@ class Category(models.Model):
         return '{}: {}'.format(self.name, self.description)
 
 
+class Product(models.Model):
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=False)
+
+    class Meta:
+        verbose_name_plural = 'products'
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name
+
+
 class Icon(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
@@ -2036,6 +2052,8 @@ class ASRSnippet(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='snippets')
+    product = models.ForeignKey(Product, null=True, on_delete=models.PROTECT,
+                                related_name='snippets')
 
     tags = TaggableManager(blank=True)
 
