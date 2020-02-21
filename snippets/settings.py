@@ -330,6 +330,7 @@ ADMIN_REORDER = [
             'base.Job',
             'base.Campaign',
             'base.Category',
+            'base.Product',
             'base.Target',
             'base.Icon',
             'base.Addon',

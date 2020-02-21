@@ -533,6 +533,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         ['jobs__campaign', RelatedDropdownFilter],
         TaggitListFilter,
         ['category', RelatedDropdownFilter],
+        ['product', RelatedDropdownFilter],
         filters.ModifiedFilter,
     ]
     search_fields = [
@@ -541,9 +542,11 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         'jobs__campaign__name',
         'jobs__targets__name',
         'category__name',
+        'product__name',
     ]
     autocomplete_fields = [
         'category',
+        'product',
     ]
     preserve_filters = True
     readonly_fields = [
@@ -572,6 +575,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                 'tags',
                 'creator',
                 'category',
+                'product',
                 'preview_url_light_theme',
                 'preview_url_dark_theme',
             )
@@ -857,6 +861,64 @@ class CategoryAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
         if not obj.creator_id:
             obj.creator = request.user
         statsd.incr('save.category')
+        super().save_model(request, obj, form, change)
+
+
+class ProductAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
+    readonly_fields = [
+        'created',
+        'modified',
+        'creator',
+        'snippet_list',
+        'related_total_snippets',
+        'related_published_jobs',
+    ]
+    fieldsets = [
+        ('ID', {
+            'fields': (
+                'name',
+                'description',
+            )
+        }),
+        ('Snippets', {
+            'fields': (
+                'related_published_jobs',
+                'related_total_snippets',
+                'snippet_list',
+            ),
+        }),
+        ('Other Info', {
+            'fields': ('creator', ('created', 'modified')),
+        }),
+    ]
+    search_fields = [
+        'name',
+        'description',
+    ]
+    list_display = [
+        'name',
+        'related_published_jobs',
+        'related_total_snippets',
+    ]
+    list_filter = [
+        filters.RelatedPublishedASRSnippetFilter,
+    ]
+
+    class Media:
+        css = {
+            'all': (
+                'css/admin/ListSnippetsJobs.css',
+            )
+        }
+        js = (
+            'js/admin/jquery.are-you-sure.js',
+            'js/admin/alert-page-leaving.js',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if not obj.creator_id:
+            obj.creator = request.user
+        statsd.incr('save.product')
         super().save_model(request, obj, form, change)
 
 
