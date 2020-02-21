@@ -2052,8 +2052,7 @@ class ASRSnippet(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='snippets')
-    product = models.ForeignKey(Product, null=True, on_delete=models.PROTECT,
-                                related_name='snippets')
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='snippets')
 
     tags = TaggableManager(blank=True)
 
