@@ -35,15 +35,8 @@ class HomeView(TemplateView):
     template_name = 'base/home.jinja'
 
 
-class JobListView(FilterView):
-    filterset_class = JobFilter
-
-    @property
-    def template_name(self):
-        if self.request.GET.get('calendar', 'false') == 'true':
-            return 'base/jobs_list_calendar.jinja'
-
-        return 'base/jobs_list_table.jinja'
+class JobListView(TemplateView):
+    template_name = 'base/temporarilyDisabled.jinja'
 
 
 def fetch_snippets(request, **kwargs):
