@@ -505,3 +505,6 @@ redash-dynamic-query==1.0.4 \
     --hash=sha256:d2756ad2f7fd21f33cbf8c751ec3fccaf9ad350a27b968cd56b3d1783650b5f9
 pystache==0.5.4 \
     --hash=sha256:f7bbc265fb957b4d6c7c042b336563179444ab313fb93a719759111eabd3b85a
+django-ratelimit==2.0.0 \
+    --hash=sha256:40dd23dcdda413d2199bb88b4d9151bf66ea19586b2047ada313ddcf77e2959c \
+    --hash=sha256:ddb6bd68a7a25fab335a0441671681ce9993167e640a2301a2e0e07ce9dd46fb
