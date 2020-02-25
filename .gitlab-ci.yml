@@ -42,6 +42,8 @@ run-flake8:
   extends: .test-stage
   tags:
     - meao
+  rules:
+    - allow_failure: true
   script:
     - ${DOCKER_RUN_CMD} flake8 snippets
 
