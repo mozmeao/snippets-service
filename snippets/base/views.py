@@ -17,6 +17,7 @@ from django.views.generic import TemplateView
 import sentry_sdk
 from django_filters.views import FilterView
 from django_statsd.clients import statsd
+from ratelimit.decorators import ratelimit
 
 from snippets.base import util
 from snippets.base.bundles import ASRSnippetBundle, SnippetBundle
@@ -35,8 +36,20 @@ class HomeView(TemplateView):
     template_name = 'base/home.jinja'
 
 
-class JobListView(TemplateView):
-    template_name = 'base/temporarilyDisabled.jinja'
+class JobListView(FilterView):
+    filterset_class = JobFilter
+
+    @ratelimit(rate=settings.RATELIMIT_RATE, block=True,
+               key=lambda g, r: r.META.get('HTTP_X_FORWARDED_FOR', r.META['REMOTE_ADDR']))
+    def get(self, request, **kwargs):
+        return super().get(request, **kwargs)
+
+    @property
+    def template_name(self):
+        if self.request.GET.get('calendar', 'false') == 'true':
+            return 'base/jobs_list_calendar.jinja'
+
+        return 'base/jobs_list_table.jinja'
 
 
 def fetch_snippets(request, **kwargs):

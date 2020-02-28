@@ -389,3 +389,6 @@ REDASH_UPDATE_INTERVAL = config('REDASH_UPDATE_INTERVAL', default=600)
 USE_PREGEN_BUNDLES = config('USE_PREGEN_BUNDLES', default=False, cast=bool)
 
 NIGHTLY_INCLUDES_RELEASE = config('NIGHTLY_INCLUDES_RELEASE', default=False, cast=bool)
+
+RATELIMIT_ENABLE = config('RATELIMIT_ENABLE', default=False, cast=bool)
+RATELIMIT_RATE = config('RATELIMIT_RATE', default='10/m')
