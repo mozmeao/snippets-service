@@ -8,6 +8,7 @@ from django.core.management.base import CommandError
 from django.test.utils import override_settings
 
 from snippets.base import models
+from snippets.base.management.commands import fetch_daily_metrics
 from snippets.base.tests import (DistributionFactory, DistributionBundleFactory, JobFactory,
                                  SnippetFactory, TargetFactory, TestCase)
 
@@ -496,185 +497,48 @@ class GenerateBundles(TestCase):
 @override_settings(REDASH_API_KEY='secret')
 class FetchDailyMetricsTests(TestCase):
     def test_base(self):
-        job_running = JobFactory(
-            status=models.Job.PUBLISHED,
-            completed_on=None,
-            publish_start='2050-01-05 01:00',
-            publish_end='2050-01-12 02:00')
-        job_completed_within_the_day = JobFactory(
-            status=models.Job.COMPLETED,
-            completed_on='2050-01-05 13:00',
-            publish_start='2050-01-05 12:00',
-            publish_end='2050-01-05 13:00'
-        )
-        job_completed_within_seven_days = JobFactory(
-            status=models.Job.COMPLETED,
-            completed_on='2050-01-03 13:01',
-            publish_start='2050-01-02 12:00',
-            publish_end='2050-01-03 13:00'
-        )
-        job_completed_within_seven_days_but_no_stats_for_said_date = JobFactory(
-            status=models.Job.COMPLETED,
-            completed_on='2050-01-03 14:00',
-            publish_start='2050-01-03 08:00',
-            publish_end='2050-01-03 09:00'
-        )
-        job_completed_long_ago = JobFactory(
-            status=models.Job.COMPLETED,
-            completed_on='2040-01-03 13:01',
-            publish_start='2040-01-02 12:00',
-            publish_end='2040-01-03 13:00'
-        )
+        with patch('snippets.base.management.commands.fetch_daily_metrics.etl') as etl_mock:
+            etl_mock.update_impressions.return_value = True
+            etl_mock.update_job_metrics.return_value = True
 
-        request_data = {
-            'date': '2050-01-05',
-        }
-        return_data_1 = {
-            'query_result': {
-                'data': {
-                    'rows': [
-                        {
-                            'message_id': str(job_running.id),
-                            'event': 'IMPRESSION',
-                            'counts': 250,
-                        },
-                        {
-                            'message_id': str(job_running.id),
-                            'event': 'BLOCK',
-                            'counts': 100,
-                        },
-                        {
-                            'message_id': str(job_running.id),
-                            'event': 'CLICK',
-                            'counts': 25,
-                        },
-                        {
-                            'message_id': str(job_running.id),
-                            'event': 'CLICK_BUTTON',
-                            'counts': 10,
-                        },
-                        {
-                            'message_id': str(job_completed_within_the_day.id),
-                            'event': 'IMPRESSION',
-                            'counts': 50,
-                        },
-                        {
-                            'message_id': str(job_completed_within_the_day.id),
-                            'event': 'BLOCK',
-                            'counts': 30,
-                        },
-                        {
-                            'message_id': str(job_completed_within_seven_days.id),
-                            'event': 'IMPRESSION',
-                            'counts': 150,
-                        },
-                        {
-                            'message_id': str(job_completed_within_seven_days.id),
-                            'event': 'BLOCK',
-                            'counts': 150,
-                        },
-                        {
-                            'message_id': str(job_completed_within_seven_days.id),
-                            'event': 'CLICK',
-                            'counts': 250,
-                        },
-                        # Stats for not tracked ID
-                        {
-                            'message_id': '10',
-                            'event': 'IMPRESSION',
-                            'counts': 250,
-                        },
-                    ]
-                }
-            }
-        }
-        return_data_2 = {
-            'query_result': {
-                'data': {
-                    'rows': [
-                        {
-                            'message_id': str(job_running.id),
-                            'event': 'IMPRESSION',
-                            'counts': 50,
-                        },
-                        {
-                            'message_id': str(job_running.id),
-                            'event': 'BLOCK',
-                            'counts': 10,
-                        },
-                        {
-                            'message_id': str(job_running.id),
-                            'event': 'CLICK',
-                            'counts': 25,
-                        },
-                    ]
-                }
-            }
-        }
+            call_command('fetch_daily_metrics', date='2050-01-05', stdout=Mock())
 
-        fdm = 'snippets.base.management.commands.fetch_daily_metrics.'
-        with patch(fdm + 'RedashDynamicQuery') as rdq, patch(fdm + 'etl') as etl:
-            rdq.return_value.query.side_effect = [return_data_1, return_data_2]
-            d = date(2050, 1, 5)
-            call_command('fetch_daily_metrics', date=str(d), stdout=Mock())
+        etl_mock.update_impressions.assert_called()
+        etl_mock.update_impressions.call_args[0][0] == date(2050, 1, 5)
 
-            rdq.return_value.query.assert_has_calls([
-                call(settings.REDASH_DAILY_QUERY_ID, request_data),
-                call(settings.REDASH_DAILY_QUERY_BIGQUERY_ID, request_data)
-            ])
-            etl.update_channel_metrics.assert_called_with(d, d)
-            etl.update_country_metrics.assert_called_with(d, d)
-
-        self.assertTrue(
-            models.DailyJobMetrics.objects.filter(
-                job=job_running,
-                impressions=300,
-                blocks=110,
-                clicks=60,
-            ).exists()
-        )
-        self.assertTrue(
-            models.DailyJobMetrics.objects.filter(
-                job=job_completed_within_the_day,
-                impressions=50,
-                blocks=30,
-                clicks=0,
-            ).exists()
-        )
-        self.assertTrue(
-            models.DailyJobMetrics.objects.filter(
-                job=job_completed_within_seven_days,
-                impressions=150,
-                blocks=150,
-                clicks=250,
-            ).exists()
-        )
-        self.assertFalse(
-            models.DailyJobMetrics.objects.filter(
-                job=job_completed_within_seven_days_but_no_stats_for_said_date,
-            ).exists()
-        )
-        self.assertFalse(
-            models.DailyJobMetrics.objects.filter(
-                job=job_completed_long_ago,
-            ).exists()
-        )
-        self.assertFalse(
-            models.DailyJobMetrics.objects.filter(
-                job__id=10,
-            ).exists()
-        )
+        etl_mock.update_job_metrics.assert_called()
+        etl_mock.update_job_metrics.call_args[0][0] == date(2050, 1, 5)
 
     def test_no_data_fetched(self):
-        JobFactory(status=models.Job.PUBLISHED,
-                   publish_start='2050-01-05 01:00',
-                   publish_end='2050-01-06 02:00')
-
         # Error raised while processing empty Telemetry Data
-        return_data = {
-            'query_result': {'data': {'rows': []}}
-        }
-        with patch('snippets.base.management.commands.fetch_daily_metrics.RedashDynamicQuery') as rdq:  # noqa
-            rdq.return_value.query.return_value = return_data
+        with patch('snippets.base.management.commands.fetch_daily_metrics.etl') as etl_mock:
+            etl_mock.update_impressions.return_value = False
+            etl_mock.update_job_metrics.return_value = True
+
             self.assertRaises(CommandError, call_command, 'fetch_daily_metrics',
                               date='2050-01-05', stdout=Mock())
+
+    def test_fetch_all_missing_dates(self):
+        three_days_ago = date.today() - timedelta(days=3)
+        two_days_ago = date.today() - timedelta(days=2)
+        yesterday = date.today() - timedelta(days=1)
+
+        # Assume that we have data for yesterday but not for before
+        # that.
+        models.JobDailyPerformance.objects.create(job=JobFactory(), date=yesterday)
+
+        with patch('snippets.base.management.commands.fetch_daily_metrics.etl') as etl_mock:
+            with patch.object(fetch_daily_metrics, 'METRICS_START_DATE', new=three_days_ago):
+                etl_mock.update_impressions.return_value = True
+                etl_mock.update_job_metrics.return_value = True
+                call_command('fetch_daily_metrics', stdout=Mock())
+
+        self.assertEqual(len(etl_mock.update_impressions.mock_calls), 2)
+        self.assertEqual(len(etl_mock.update_job_metrics.mock_calls), 2)
+
+        etl_mock.update_impressions.has_calls(
+            [call(two_days_ago), call(three_days_ago)], any_order=True
+        )
+        etl_mock.update_job_metrics.has_calls(
+            [call(two_days_ago), call(three_days_ago)], any_order=True
+        )

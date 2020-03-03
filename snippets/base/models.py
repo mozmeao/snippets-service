@@ -13,6 +13,7 @@ from urllib.parse import urljoin, urlparse
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.admin.options import get_content_type_for_model
+from django.contrib.postgres.fields import JSONField
 from django.core import validators as django_validators
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -78,6 +79,14 @@ STATUS_CHOICES = {
 # requires either an extra trip to the database/cache or jumping through
 # hoops.
 template_cache = LRUCache(100)
+
+
+IMPRESSION_THRESHOLD_SECONDS = 5
+# Percentage of sessions out of total sessions that stayed on
+# about:home or about:newtab for more than 5 seconds. Calculated
+# manually and to be used as fallback in case actual data for a date
+# do not exist.
+DEFAULT_IMPRESSION_PERCENTAGE = 0.63
 
 
 class SnippetTemplate(models.Model):
@@ -2230,15 +2239,84 @@ class DistributionBundle(models.Model):
         super().save(*args, **kwargs)
 
 
-class DailyJobMetrics(models.Model):
+class JobDailyPerformance(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.PROTECT, related_name='metrics')
     data_fetched_on = models.DateTimeField(auto_now_add=True)
-
-    job = models.ForeignKey(Job, on_delete=models.PROTECT)
     date = models.DateField(editable=False, db_index=True)
+    impression = models.PositiveIntegerField(default=0, editable=False)
+    adj_impression = models.PositiveIntegerField(default=0, editable=False)
+    click = models.PositiveIntegerField(default=0, editable=False)
+    block = models.PositiveIntegerField(default=0, editable=False)
+    dismiss = models.PositiveIntegerField(default=0, editable=False)
+    go_to_scene2 = models.PositiveIntegerField(default=0, editable=False)
+    subscribe_success = models.PositiveIntegerField(default=0, editable=False)
+    subscribe_error = models.PositiveIntegerField(default=0, editable=False)
+    other_click = models.PositiveIntegerField(default=0, editable=False)
+    details = JSONField(default=dict)
 
+    class Meta:
+        unique_together = ('job', 'date')
+
+    def save(self, *args, **kwargs):
+        self.adj_impression = self.calculate_adj_impression()
+        return super().save(*args, **kwargs)
+
+    def calculate_adj_impression(self):
+        try:
+            di = DailyImpressions.objects.get(date=self.date)
+        except DailyImpressions.DoesNotExist:
+            percentage = DEFAULT_IMPRESSION_PERCENTAGE
+        else:
+            total_impressions = 0
+            valid_impressions = 0
+
+            for detail in di.details:
+                total_impressions += detail['counts']
+                if int(detail['duration']) >= IMPRESSION_THRESHOLD_SECONDS:
+                    valid_impressions += detail['counts']
+
+            if total_impressions < 100_000:
+                # Sample too small, set default
+                percentage = DEFAULT_IMPRESSION_PERCENTAGE
+            else:
+                percentage = valid_impressions / total_impressions
+
+        adj_im = int((self.impression * percentage) + 0.5)
+
+        return adj_im
+
+    @property
+    def adj_block_rate(self):
+        return float(f'{(self.block / self.adj_impression) * 100:.4f}')
+
+    @property
+    def adj_click_rate(self):
+        return float(f'{(self.click / self.adj_impression) * 100:.4f}')
+
+    @property
+    def click_rate(self):
+        return float(f'{(self.click / self.impression) * 100:.4f}')
+
+
+class DailyImpressions(models.Model):
+    data_fetched_on = models.DateTimeField(auto_now_add=True)
+    date = models.DateField(editable=False, db_index=True, unique=True)
+    details = JSONField(default=dict, editable=False)
+
+
+class MetricsAbstractModel(models.Model):
+    data_fetched_on = models.DateTimeField(auto_now_add=True)
+    date = models.DateField(editable=False, db_index=True)
     impressions = models.PositiveIntegerField(default=0, editable=False)
     clicks = models.PositiveIntegerField(default=0, editable=False)
     blocks = models.PositiveIntegerField(default=0, editable=False)
+
+    class Meta:
+        abstract = True
+
+
+class DailyJobMetrics(MetricsAbstractModel):
+    job = models.ForeignKey(Job, on_delete=models.PROTECT)
 
     class Meta:
         verbose_name_plural = 'Daily Job Metrics'
@@ -2248,33 +2326,8 @@ class DailyJobMetrics(models.Model):
         return f'{self.date.strftime("%Y%m%d")} - {self.job.id}'
 
 
-class DailySnippetMetrics(models.Model):
-    data_fetched_on = models.DateTimeField(auto_now_add=True)
-
-    snippet = models.ForeignKey(ASRSnippet, on_delete=models.PROTECT)
-    date = models.DateField(editable=False, db_index=True)
-
-    impressions = models.PositiveIntegerField(default=0, editable=False)
-    clicks = models.PositiveIntegerField(default=0, editable=False)
-    blocks = models.PositiveIntegerField(default=0, editable=False)
-
-    class Meta:
-        verbose_name_plural = 'Daily Snippets Metrics'
-        unique_together = [('snippet', 'date')]
-
-    def __str__(self):
-        return f'{self.date.strftime("%Y%m%d")} - {self.snippet.id}'
-
-
-class DailyChannelMetrics(models.Model):
-    data_fetched_on = models.DateTimeField(auto_now_add=True)
-
+class DailyChannelMetrics(MetricsAbstractModel):
     channel = models.CharField(max_length=255, db_index=True)
-    date = models.DateField(editable=False, db_index=True)
-
-    impressions = models.PositiveIntegerField(default=0, editable=False)
-    clicks = models.PositiveIntegerField(default=0, editable=False)
-    blocks = models.PositiveIntegerField(default=0, editable=False)
 
     class Meta:
         verbose_name_plural = 'Daily Channel Metrics'
@@ -2284,15 +2337,8 @@ class DailyChannelMetrics(models.Model):
         return f'{self.date.strftime("%Y%m%d")} - {self.channel}'
 
 
-class DailyCountryMetrics(models.Model):
-    data_fetched_on = models.DateTimeField(auto_now_add=True)
-
+class DailyCountryMetrics(MetricsAbstractModel):
     country = models.CharField(max_length=255, db_index=True)
-    date = models.DateField(editable=False, db_index=True)
-
-    impressions = models.PositiveIntegerField(default=0, editable=False)
-    clicks = models.PositiveIntegerField(default=0, editable=False)
-    blocks = models.PositiveIntegerField(default=0, editable=False)
 
     class Meta:
         verbose_name_plural = 'Daily Country Metrics'

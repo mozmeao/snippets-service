@@ -6,17 +6,23 @@ from django.test.client import RequestFactory
 from unittest.mock import DEFAULT as DEFAULT_MOCK, Mock, patch
 
 from snippets.base import etl
-from snippets.base.admin.adminmodels import (
-    ASRSnippetAdmin, DailyChannelMetricsAdmin, DailyCountryMetricsAdmin,
-    DailyJobMetricsAdmin, DailySnippetMetricsAdmin, JobAdmin,
-    SnippetTemplateAdmin)
+from snippets.base.admin.adminmodels import (ASRSnippetAdmin,
+                                             DailyChannelMetricsAdmin,
+                                             DailyCountryMetricsAdmin,
+                                             DailyJobMetricsAdmin,
+                                             JobAdmin,
+                                             SnippetTemplateAdmin)
 from snippets.base.admin.legacy import SnippetAdmin
-from snippets.base.models import (
-    STATUS_CHOICES, ASRSnippet, DailyChannelMetrics, DailyCountryMetrics,
-    DailyJobMetrics, DailySnippetMetrics, Job, Snippet, SnippetTemplate,
-    SnippetTemplateVariable)
-from snippets.base.tests import (ASRSnippetFactory, JobFactory, SnippetTemplateFactory,
-                                 SnippetTemplateVariableFactory, TestCase, UserFactory)
+from snippets.base.models import (STATUS_CHOICES, ASRSnippet,
+                                  DailyChannelMetrics,
+                                  DailyCountryMetrics,
+                                  DailyJobMetrics, Job, Snippet,
+                                  SnippetTemplate,
+                                  SnippetTemplateVariable)
+from snippets.base.tests import (ASRSnippetFactory, JobFactory,
+                                 SnippetTemplateFactory,
+                                 SnippetTemplateVariableFactory,
+                                 TestCase, UserFactory)
 
 
 class SnippetAdminTests(TestCase):
@@ -321,18 +327,6 @@ class DailyMetricsAdminTests(TestCase):
         metrics_admin = DailyJobMetricsAdmin(
             DailyJobMetrics, AdminSite())
         metrics = DailyJobMetrics(date=date(2019, 12, 26))
-        html = metrics_admin.redash_link(metrics)
-        bq_url = etl.redash_source_url(
-            'bq-message-id', begin_date=metrics.date, end_date='2019-12-27')
-        assert f'href="{bq_url}"' in html
-        redshift_url = etl.redash_source_url(
-            'redshift-message-id', begin_date=metrics.date, end_date=metrics.date)
-        assert f'href="{redshift_url}"' in html
-
-    def test_snippet_redash_link(self):
-        metrics_admin = DailySnippetMetricsAdmin(
-            DailySnippetMetrics, AdminSite())
-        metrics = DailySnippetMetrics(date=date(2019, 12, 26))
         html = metrics_admin.redash_link(metrics)
         bq_url = etl.redash_source_url(
             'bq-message-id', begin_date=metrics.date, end_date='2019-12-27')
