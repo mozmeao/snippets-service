@@ -1079,6 +1079,7 @@ class JobAdmin(admin.ModelAdmin):
         'created',
         'modified',
         'impressions_humanized',
+        'adj_impressions_humanized',
         'clicks_humanized',
         'blocks_humanized',
         'clicks_ctr',
