@@ -42,10 +42,10 @@ class JobFilterTests(TestCase):
         self.assertEqual(set([job1, job2, job3]), set(filtr.qs))
 
     def test_name(self):
-        JobFactory.create(snippet__id=20000, snippet__name='foo 1')
-        JobFactory.create(snippet__id=20001, snippet__name='foo 2')
-        job = JobFactory.create(snippet__id=20002, snippet__name='bar 1')
-        JobFactory.create(snippet__name='foo lala foo')
+        JobFactory.create(id=2990, snippet__id=20000, snippet__name='foo 1')
+        JobFactory.create(id=2991, snippet__id=20001, snippet__name='foo 2')
+        job = JobFactory.create(id=2992, snippet__id=20002, snippet__name='bar 1')
+        JobFactory.create(id=2993, snippet__name='foo lala foo')
         filtr = JobFilter(
             QueryDict(query_string='only_scheduled=all&name=bar'),
             queryset=models.Job.objects.all()

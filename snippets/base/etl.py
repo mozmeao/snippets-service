@@ -1,27 +1,21 @@
-from datetime import date, datetime, timedelta
+import collections
+import json
+
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.db.transaction import atomic
 from redash_dynamic_query import RedashDynamicQuery
 
-from snippets.base.models import (
-    ASRSnippet, DailyChannelMetrics, DailyCountryMetrics, DailyJobMetrics,
-    DailySnippetMetrics, Job)
+from snippets.base.models import CHANNELS, DailyImpressions, JobDailyPerformance, Job
 
-
-BQ_DATA_BEGIN_DATE = date(2019, 12, 4)
-JOBS_BEGIN_DATE = date(2019, 10, 1)
 
 REDASH_QUERY_IDS = {
-    'original-jobs': 63146,  # settings.REDASH_JOB_QUERY_ID
-    'original-daily': 65755,  # settings.REDASH_DAILY_QUERY_ID
-    'redshift-message-id': 66846,
-    'bq-message-id': 66826,
-    'redshift-country': 66816,
-    'bq-country': 66849,
-    'redshift-channel': 66815,
-    'bq-channel': 66850}
+    'redshift-job': 68135,
+    'bq-job': 68136,
+    'redshift-impressions': 68345,
+    'bq-impressions': 68341,
+}
 
 redash = RedashDynamicQuery(
     endpoint=settings.REDASH_ENDPOINT,
@@ -38,177 +32,169 @@ def redash_source_url(query_id_or_name, **params):
     return url
 
 
-def redash_rows(query_name, begin_date, end_date):
+def redash_rows(query_name, date):
     query_id = REDASH_QUERY_IDS[query_name]
-    bind_data = {'begin_date': str(begin_date), 'end_date': str(end_date)}
+    bind_data = {'date': str(date)}
     result = redash.query(query_id, bind_data)
     return result['query_result']['data']['rows']
 
 
-def add_metric_event_counts(metric, event, counts):
-    if event == 'IMPRESSION':
-        metric.impressions += counts
-    elif event == 'BLOCK':
-        metric.blocks += counts
-    elif event in ('CLICK', 'CLICK_BUTTON'):
-        metric.clicks += counts
-
-
-def snippet_metrics_from_rows(rows, metrics=None, snippet_ids=None):
-    if not snippet_ids:
-        snippet_ids = set(ASRSnippet.objects.values_list('id', flat=True))
-    if not metrics:
-        metrics = {}
-    for row in rows:
-        try:
-            date = datetime.strptime(row['date'], '%Y-%m-%d').date()
-            message_id = int(row['message_id'])
-            counts = int(row['counts'])
-            event = row['event']
-        except ValueError:
+def prosses_rows(rows, key='message_id'):
+    job_ids = [str(x) for x in Job.objects.all().values_list('id', flat=True)]
+    new_rows = []
+    for row in sorted(rows, key=lambda x: x[key]):
+        # Remove rows with invalid Job IDs
+        if row['message_id'] not in job_ids:
             continue
-        if message_id not in snippet_ids:
+
+        # Redash uses {} instead of null
+        if row['event_context'] == '{}':
+            row['event_context'] = ''
+
+        # Sometimes data in Telemetry populate `event_context`, some
+        # other times it uses `additional_properties['value']` to
+        # place the event context. Extract information from both
+        # places to identify the event.
+        properties = json.loads(row.get('additional_properties', '{}'))
+        event = row['event_context'] or properties.get('value', '') or row['event']
+
+        if event in ['CLICK_BUTTON', 'CLICK']:
+            event = 'click'
+        elif event == 'IMPRESSION':
+            event = 'impression'
+        elif event == 'BLOCK':
+            event = 'block'
+        elif event == 'DISMISS':
+            event = 'dismiss'
+        elif event == 'scene1-button-learn-more':
+            event = 'go_to_scene2'
+        elif event in ['subscribe-success',
+                       'subscribe-error',
+                       'conversion-subscribe-activation']:
+            event = event.replace('-', '_')
+        else:
+            # Ignore invalid event
             continue
-        metrics.setdefault(date, {})
-        metrics[date].setdefault(
-            message_id, DailySnippetMetrics(
-                snippet_id=message_id, date=date))
-        add_metric_event_counts(metrics[date][message_id], event, counts)
-    return metrics
+
+        row['event'] = event
+
+        # Normalize channel name, based on what kind of snippets they get.
+        channel = row['channel']
+        if not channel:
+            channel = 'release'
+        row['channel'] = next(
+            (item for item in CHANNELS if
+             channel.startswith(item)), 'release'
+        )
+
+        # Normalize country
+        country_code = row['country_code']
+        if country_code in ['ERROR', None]:
+            row['country_code'] = 'XX'
+
+        # Not needed anymore
+        row.pop('event_context', None)
+        row.pop('additional_properties', None)
+
+        new_rows.append(row)
+
+    # Aggregate counts of same events for the global count.
+    processed = collections.defaultdict(dict)
+    for row in new_rows:
+        event = row['event']
+        processed[row[key]][event] = processed[row[key]].get(event, 0) + row['counts']
+
+        detail = [{
+            'event': row['event'],
+            'channel': row['channel'],
+            'country': row['country_code'],
+            'counts': row['counts'],
+        }]
+
+        if not processed[row[key]].get('details'):
+            processed[row[key]]['details'] = detail
+        else:
+            for drow in processed[row[key]]['details']:
+                if ((drow['event'] == row['event'] and
+                     drow['channel'] == row['channel'] and
+                     drow['country'] == row['country_code'])):
+                    drow['counts'] += row['counts']
+                    break
+            else:
+                processed[row[key]]['details'] += detail
+
+    # Last pass for multi-scene snippets: Click events here refer to
+    #  clicks of secondary links listed on the template that go to
+    #  terms of services or additional information and are displayed
+    #  in the small text below the input element. These do not count
+    #  clicking on `Learn more` (i.e. going from scene 1 to scene 2)
+    #  or the main Call To Action. The later is measured in
+    #  `conversion_subscribe_activation` and this is the value which
+    #  is important to us and thus we rename this to `clicks`.
+    for k, v in processed.items():
+        if 'conversion_subscribe_activation' in v:
+            processed[k]['other_click'] = processed[k].get('click', 0)
+            processed[k]['click'] = processed[k].pop('conversion_subscribe_activation')
+            for row in processed[k]['details']:
+                if row['event'] == 'click':
+                    row['event'] = 'other_click'
+                elif row['event'] == 'conversion_subscribe_activation':
+                    row['event'] = 'click'
+
+    return processed
 
 
-def job_metrics_from_rows(rows, metrics=None, job_ids=None):
-    if not job_ids:
-        job_ids = set(Job.objects.values_list('id', flat=True))
-    if not metrics:
-        metrics = {}
-    for row in rows:
-        try:
-            date = datetime.strptime(row['date'], '%Y-%m-%d').date()
-            message_id = int(row['message_id'])
-            counts = int(row['counts'])
-            event = row['event']
-        except ValueError:
-            continue
-        if message_id not in job_ids:
-            continue
-        metrics.setdefault(date, {})
-        metrics[date].setdefault(
-            message_id, DailyJobMetrics(
-                job_id=message_id, date=date))
-        add_metric_event_counts(metrics[date][message_id], event, counts)
-    return metrics
+def update_job_metrics(date):
+    rows = []
+    for query in ['redshift-job', 'bq-job']:
+        rows += redash_rows(query, date)
 
-
-def update_message_metrics(begin_date=None, end_date=None):
-    if not end_date:
-        end_date = date.today() - timedelta(days=1)
-    if not begin_date:
-        begin_date = end_date - timedelta(days=1)
-    redshift_rows = redash_rows('redshift-message-id', begin_date, end_date)
-    if end_date >= JOBS_BEGIN_DATE:
-        job_ids = set(Job.objects.values_list('id', flat=True))
-        metrics = job_metrics_from_rows(redshift_rows, job_ids=job_ids)
-        if end_date >= BQ_DATA_BEGIN_DATE:
-            if begin_date == end_date:
-                end_date += timedelta(days=1)
-            bq_rows = redash_rows('bq-message-id', begin_date, end_date)
-            metrics = job_metrics_from_rows(
-                bq_rows, metrics=metrics, job_ids=job_ids)
-        with atomic():
-            DailyJobMetrics.objects.filter(date__gte=begin_date, date__lte=end_date).delete()
-            DailyJobMetrics.objects.bulk_create(
-                dm for mv in metrics.values() for dm in mv.values())
-    metrics = snippet_metrics_from_rows(redshift_rows)
+    processed = prosses_rows(rows, key='message_id')
     with atomic():
-        DailySnippetMetrics.objects.filter(date__gte=begin_date, date__lte=end_date).delete()
-        DailySnippetMetrics.objects.bulk_create(
-            dm for mv in metrics.values() for dm in mv.values())
+        JobDailyPerformance.objects.filter(date=date).delete()
+        for job, data in processed.items():
+            JobDailyPerformance.objects.create(
+                date=date,
+                job=Job.objects.get(id=job),
+                **data
+            )
+    return len(processed) > 0
 
 
-def channel_metrics_from_rows(rows, metrics=None):
-    valid_channels = ('release', 'beta', 'aurora', 'nightly', 'default')
-    if metrics is None:
-        metrics = {}
+def update_impressions(date):
+    rows = []
+
+    for query in ['redshift-impressions', 'bq-impressions']:
+        rows += redash_rows(query, date)
+
+    details = []
     for row in rows:
-        release_channel = row['release_channel']
-        if not release_channel:
-            continue
-        valid = False
-        for c in valid_channels:
-            if release_channel.startswith(c):
-                release_channel = c
-                valid = True
-        if not valid:
-            continue
-        try:
-            date = datetime.strptime(row['date'], '%Y-%m-%d').date()
-            event = row['event']
-            counts = int(row['counts'])
-        except ValueError:
-            continue
-        metrics.setdefault(date, {})
-        metrics[date].setdefault(
-            release_channel,
-            DailyChannelMetrics(
-                channel=release_channel,
-                date=date))
-        add_metric_event_counts(metrics[date][release_channel], event, counts)
-    return metrics
+        # Normalize channel name, based on what kind of snippets they get.
+        channel = row['channel']
+        if not channel:
+            channel = 'release'
+        channel = next(
+            (item for item in CHANNELS if
+             channel.startswith(item)), 'release'
+        )
 
+        # Aggregate counts of the same duration and the same channel.
+        for item in details:
+            if (item['channel'] == channel and item['duration'] == row['duration']):
+                item['counts'] += row['counts']
+                break
+        else:
+            details.append({
+                'channel': channel,
+                'duration': row['duration'],
+                'counts': row['counts'],
+            })
 
-def update_channel_metrics(begin_date=None, end_date=None):
-    if not end_date:
-        end_date = date.today() - timedelta(days=1)
-    if not begin_date:
-        begin_date = end_date - timedelta(days=1)
-    redshift_rows = redash_rows('redshift-channel', begin_date, end_date)
-    metrics = channel_metrics_from_rows(redshift_rows)
-    if end_date >= BQ_DATA_BEGIN_DATE:
-        if begin_date == end_date:
-            end_date += timedelta(days=1)
-        bq_rows = redash_rows('bq-channel', begin_date, end_date)
-        metrics = channel_metrics_from_rows(bq_rows, metrics=metrics)
     with atomic():
-        DailyChannelMetrics.objects.filter(date__gte=begin_date, date__lte=end_date).delete()
-        DailyChannelMetrics.objects.bulk_create(
-            dm for mv in metrics.values() for dm in mv.values())
+        DailyImpressions.objects.filter(date=date).delete()
+        DailyImpressions.objects.create(
+            date=date,
+            details=details
+        )
 
-
-def country_metrics_from_rows(rows, metrics=None):
-    if metrics is None:
-        metrics = {}
-    for row in rows:
-        try:
-            date = datetime.strptime(row['date'], '%Y-%m-%d').date()
-            country = row['country_code']
-            assert country
-            event = row['event']
-            counts = int(row['counts'])
-        except (AssertionError, ValueError):
-            continue
-        metrics.setdefault(date, {})
-        metrics[date].setdefault(
-            country, DailyCountryMetrics(
-                country=country,
-                date=date))
-        add_metric_event_counts(metrics[date][country], event, counts)
-    return metrics
-
-
-def update_country_metrics(begin_date=None, end_date=None):
-    if not end_date:
-        end_date = date.today() - timedelta(days=1)
-    if not begin_date:
-        begin_date = end_date - timedelta(days=1)
-    redshift_rows = redash_rows('redshift-country', begin_date, end_date)
-    metrics = country_metrics_from_rows(redshift_rows)
-    if end_date >= BQ_DATA_BEGIN_DATE:
-        if begin_date == end_date:
-            end_date += timedelta(days=1)
-        bq_rows = redash_rows('bq-country', begin_date, end_date)
-        metrics = country_metrics_from_rows(bq_rows, metrics=metrics)
-    with atomic():
-        DailyCountryMetrics.objects.filter(date__gte=begin_date, date__lte=end_date).delete()
-        DailyCountryMetrics.objects.bulk_create(
-            dm for mv in metrics.values() for dm in mv.values())
+    return len(details)

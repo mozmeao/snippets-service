@@ -57,8 +57,9 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.postgres',
+    'django.contrib.sessions',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
 ]
@@ -344,8 +345,15 @@ ADMIN_REORDER = [
         'app': 'base',
         'label': 'Metrics',
         'models': [
+            'base.JobDailyPerformance',
+            'base.DailyImpressions',
+        ]
+    },
+    {
+        'app': 'base',
+        'label': 'Legacy Metrics',
+        'models': [
             'base.DailyJobMetrics',
-            'base.DailySnippetMetrics',
             'base.DailyChannelMetrics',
             'base.DailyCountryMetrics',
         ]
@@ -353,7 +361,11 @@ ADMIN_REORDER = [
     {
         'app': 'auth',
         'label': 'Admin',
-        'models': ['auth.User', 'auth.Group', 'admin.LogEntry']
+        'models': [
+            'auth.User',
+            'auth.Group',
+            'admin.LogEntry'
+        ]
     },
 ]
 
@@ -381,9 +393,9 @@ SNIPPETS_PUBLICATION_OFFSET = config('SNIPPETS_PUBLICATION_OFFSET', default=5, c
 REDASH_ENDPOINT = config('REDASH_ENDPOINT', default='https://sql.telemetry.mozilla.org')
 REDASH_API_KEY = config('REDASH_API_KEY', default=None)
 REDASH_MAX_WAIT = config('REDASH_MAX_WAIT', default=300)
-REDASH_DAILY_QUERY_ID = config('REDASH_DAILY_QUERY_ID', default=65755)
+REDASH_JOB_QUERY_ID = config('REDASH_JOB_QUERY_ID', default=63146)
 REDASH_JOB_QUERY_BIGQUERY_ID = config('REDASH_JOB_QUERY_BIGQUERY_ID', default=66681)
-REDASH_DAILY_QUERY_BIGQUERY_ID = config('REDASH_DAILY_QUERY_BIGQUERY_ID', default=66785)
+
 REDASH_UPDATE_INTERVAL = config('REDASH_UPDATE_INTERVAL', default=600)
 
 USE_PREGEN_BUNDLES = config('USE_PREGEN_BUNDLES', default=False, cast=bool)

@@ -1,152 +1,253 @@
-from datetime import date, timedelta
-from django.test import TestCase
-from django.test.utils import override_settings
+from datetime import date
 from unittest.mock import patch
 
+from django.test import TestCase
+from django.test.utils import override_settings
+
 from snippets.base import etl
-from snippets.base.models import DailyChannelMetrics, DailyCountryMetrics
-from snippets.base.tests import ASRSnippetFactory, JobFactory
+from snippets.base.models import DailyImpressions, JobDailyPerformance
+from snippets.base.tests import JobFactory
 
 
-class ETLTests(TestCase):
-
-    country_rows = [
-        {'date': '2019-12-19', 'country_code': 'us', 'counts': '11',
-         'event': 'IMPRESSION'},
-        {'date': '2019-12-19', 'country_code': 'fr', 'counts': '22',
-         'event': 'BLOCK'},
-        {'date': '2019-12-19', 'country_code': 'de', 'counts': '33',
-         'event': 'CLICK'}]
-    message_rows = [
-        {'date': '2019-12-19', 'message_id': '1', 'counts': '11',
-         'event': 'IMPRESSION'},
-        {'date': '2019-12-19', 'message_id': '2', 'counts': '22',
-         'event': 'BLOCK'},
-        {'date': '2019-12-19', 'message_id': '3', 'counts': '33',
-         'event': 'CLICK'},
-        {'date': '2019-12-19', 'message_id': '4', 'counts': '44',
-         'event': 'IMPRESSION'},
-        {'date': 'foo', 'message_id': 'bar', 'counts': 'baz', 'event': 'qux'}]
-    channel_rows = [
-        {'date': '2019-12-19', 'release_channel': 'release', 'counts': '11',
-         'event': 'IMPRESSION'},
-        {'date': '2019-12-19', 'release_channel': 'beta', 'counts': '22',
-         'event': 'BLOCK'},
-        {'date': '2019-12-19', 'release_channel': 'auroraa', 'counts': '33',
-         'event': 'CLICK'},
-        {'date': '2019-12-19', 'release_channel': 'foo', 'counts': '44',
-         'event': 'IMPRESSION'},
-        {'date': 'foo', 'release_channel': 'bar', 'counts': 'baz',
-         'event': 'qux'}]
-
-    def test_snippet_metrics_from_rows(self):
-        snippet_ids = [1, 2, 3]
-        metrics = etl.snippet_metrics_from_rows(self.message_rows, snippet_ids=snippet_ids)
-        d = date(2019, 12, 19)
-        assert metrics[d][1].impressions == 11
-        assert metrics[d][2].blocks == 22
-        assert metrics[d][3].clicks == 33
-        assert metrics[d].get(4) is None
-        assert metrics[d].get('foo') is None
-
-        metrics = etl.snippet_metrics_from_rows(self.message_rows, metrics, snippet_ids)
-        assert metrics[d][1].impressions == 22
-        assert metrics[d][2].blocks == 44
-        assert metrics[d][3].clicks == 66
-        assert metrics[d].get(4) is None
-        assert metrics[d].get('foo') is None
-
-    def test_channel_metrics_from_rows(self):
-        metrics = etl.channel_metrics_from_rows(self.channel_rows)
-        d = date(2019, 12, 19)
-        assert metrics[d]['release'].impressions == 11
-        assert metrics[d]['beta'].blocks == 22
-        assert metrics[d]['aurora'].clicks == 33
-        assert metrics[d].get('foo') is None
-        assert metrics[d].get('bar') is None
-
-        metrics = etl.channel_metrics_from_rows(self.channel_rows, metrics)
-        assert metrics[d]['release'].impressions == 22
-        assert metrics[d]['beta'].blocks == 44
-        assert metrics[d]['aurora'].clicks == 66
-        assert metrics[d].get('foo') is None
-        assert metrics[d].get('bar') is None
-
-    def test_country_metrics_from_rows(self):
-        metrics = etl.country_metrics_from_rows(self.country_rows)
-        d = date(2019, 12, 19)
-        assert metrics[d]['us'].impressions == 11
-        assert metrics[d]['fr'].blocks == 22
-        assert metrics[d]['de'].clicks == 33
-
-        metrics = etl.country_metrics_from_rows(self.country_rows, metrics)
-        assert metrics[d]['us'].impressions == 22
-        assert metrics[d]['fr'].blocks == 44
-        assert metrics[d]['de'].clicks == 66
-
-    @patch('snippets.base.etl.redash_rows', return_value=channel_rows)
-    def test_update_channel_metrics(self, redash_rows):
-        etl.update_channel_metrics()
-        dcm = {m.channel: m for m in DailyChannelMetrics.objects.all()}
-        assert len(dcm) == 3
-        assert dcm['release'].impressions == 22
-        assert dcm['beta'].blocks == 44
-        assert dcm['aurora'].clicks == 66
-
-    @patch('snippets.base.etl.redash_rows', return_value=channel_rows)
-    def test_update_channel_metrics_same_begin_end_date(self, redash_rows):
-        d = etl.BQ_DATA_BEGIN_DATE
-        etl.update_channel_metrics(begin_date=d, end_date=d)
-        redash_rows.assert_called_with('bq-channel', d, d + timedelta(days=1))
-        redash_rows.assert_any_call('redshift-channel', d, d)
-
-    @patch('snippets.base.etl.redash_rows', return_value=country_rows)
-    def test_update_country_metrics(self, redash_rows):
-        etl.update_country_metrics()
-        dcm = {m.country: m for m in DailyCountryMetrics.objects.all()}
-        assert len(dcm) == 3
-        assert dcm['us'].impressions == 22
-        assert dcm['fr'].blocks == 44
-        assert dcm['de'].clicks == 66
-
-    @patch('snippets.base.etl.redash_rows', return_value=country_rows)
-    def test_update_country_metrics_same_begin_end_date(self, redash_rows):
-        d = etl.BQ_DATA_BEGIN_DATE
-        etl.update_country_metrics(begin_date=d, end_date=d)
-        redash_rows.assert_called_with('bq-country', d, d + timedelta(days=1))
-        redash_rows.assert_any_call('redshift-country', d, d)
-
-    @patch('snippets.base.etl.redash_rows', return_value=message_rows)
-    def test_update_message_metrics(self, redash_rows):
-        snippet1 = ASRSnippetFactory()
-        snippet2 = ASRSnippetFactory()
-        job = JobFactory(id=3)
-        etl.update_message_metrics()
-        assert snippet1.dailysnippetmetrics_set.all()[0].impressions == 11
-        assert snippet2.dailysnippetmetrics_set.all()[0].blocks == 22
-        assert job.dailyjobmetrics_set.all()[0].clicks == 66
-
-    @patch('snippets.base.etl.redash_rows', return_value=message_rows)
-    def test_update_message_metrics_same_begin_end_date(self, redash_rows):
-        d = etl.BQ_DATA_BEGIN_DATE
-        etl.update_message_metrics(begin_date=d, end_date=d)
-        redash_rows.assert_called_with('bq-message-id', d,
-                                       d + timedelta(days=1))
-        redash_rows.assert_any_call('redshift-message-id', d, d)
-
+class TestRedashRows(TestCase):
     @patch('snippets.base.etl.redash.query',
            return_value={'query_result': {'data': {'rows': ['mock rows']}}})
-    def test_redash_rows(self, query):
+    def test_base(self, query):
         d = date(2019, 12, 19)
         query_name, query_id = next(iter(etl.REDASH_QUERY_IDS.items()))
-        assert etl.redash_rows(query_name, d, d) == ['mock rows']
-        bind_data = {'begin_date': str(d), 'end_date': str(d)}
+        assert etl.redash_rows(query_name, d) == ['mock rows']
+        bind_data = {'date': str(d)}
         query.assert_called_with(query_id, bind_data)
 
+
+class TestRedashSourceURL(TestCase):
     @override_settings(REDASH_ENDPOINT='https://sql.telemetry.mozilla.org')
-    def test_redash_source_url(self):
-        url = 'https://sql.telemetry.mozilla.org/queries/66850/source'
-        assert etl.redash_source_url('bq-channel') == url
-        url += '?p_begin_date_66850=2019-12-19&p_end_date_66850=2019-12-20'
-        assert etl.redash_source_url('bq-channel', begin_date='2019-12-19',
-                                     end_date='2019-12-20') == url
+    def test_base(self):
+        url = 'https://sql.telemetry.mozilla.org/queries/68136/source'
+        assert etl.redash_source_url('bq-job') == url
+        url += '?p_date_68136=2019-12-19'
+        assert etl.redash_source_url('bq-job', date='2019-12-19') == url
+
+
+class TestUpdateJobMetrics(TestCase):
+    def test_base(self):
+        JobFactory.create(id=1000)
+        JobFactory.create(id=2000)
+
+        rows = [
+            [
+                {
+                    'message_id': '1000',
+                    'event_context': '{}',
+                    'event': 'CLICK_BUTTON',
+                    'channel': 'release',
+                    'country_code': 'GR',
+                    'counts': 5,
+                },
+                {
+                    'message_id': '1000',
+                    'event_context': '{}',
+                    'event': 'IMPRESSION',
+                    'channel': 'release',
+                    'country_code': 'ES',
+                    'counts': 30,
+                },
+                {
+                    'message_id': '1000',
+                    'event_context': '{}',
+                    'event': 'IMPRESSION',
+                    'channel': 'release',
+                    'country_code': 'IT',
+                    'counts': 50,
+                },
+                {
+                    'message_id': '1000',
+                    'event_context': '{}',
+                    'event': 'BLOCK',
+                    'channel': 'releases',
+                    'country_code': 'UK',
+                    'counts': 23,
+                },
+                {
+                    'message_id': '1000',
+                    'event_context': '{}',
+                    'event': 'BLOCK',
+                    'channel': 'beta-test',
+                    'country_code': 'SW',
+                    'counts': 27,
+                },
+                # To be discarded
+                {
+                    'message_id': '500',
+                    'event_context': '{}',
+                    'event': 'CLICK',
+                    'channel': 'demo',
+                    'country_code': 'GR',
+                    'counts': 5,
+                }
+            ],
+            [
+                {
+                    'message_id': '1000',
+                    'event_context': '',
+                    'event': 'CLICK',
+                    'channel': 'release',
+                    'country_code': 'GR',
+                    'counts': 6,
+                },
+                {
+                    'message_id': '2000',
+                    'event_context': '{}',
+                    'event': 'CLICK_BUTTON',
+                    'additional_properties': '{"value": "scene1-button-learn-more", "foo": "bar"}',
+                    'channel': 'release',
+                    'country_code': 'GR',
+                    'counts': 44,
+                },
+                {
+                    'message_id': '2000',
+                    'event_context': '{}',
+                    'event': 'CLICK_BUTTON',
+                    'channel': 'release',
+                    'country_code': 'BG',
+                    'counts': 3,
+                },
+                {
+                    'message_id': '2000',
+                    'event_context': '{}',
+                    'event': 'CLICK_BUTTON',
+                    'channel': 'release',
+                    'country_code': 'AL',
+                    'counts': 1,
+                },
+                {
+                    'message_id': '2000',
+                    'event_context': 'conversion-subscribe-activation',
+                    'event': 'CLICK_BUTTON',
+                    'additional_properties': '{"foo": "bar"}',
+                    'channel': 'release',
+                    'country_code': 'GR',
+                    'counts': 5,
+                },
+                {
+                    'message_id': '2000',
+                    'event_context': 'subscribe-error',
+                    'event': 'CLICK_BUTTON',
+                    'additional_properties': '{"foo": "bar"}',
+                    'channel': 'release',
+                    'country_code': 'GR',
+                    'counts': 3,
+                },
+                {
+                    'message_id': '2000',
+                    'event_context': 'subscribe-success',
+                    'event': 'CLICK_BUTTON',
+                    'channel': 'release',
+                    'country_code': 'ERROR',
+                    'counts': 9,
+                },
+                {
+                    'message_id': '2000',
+                    'event_context': '',
+                    'event': 'DISMISS',
+                    'channel': 'beta',
+                    'country_code': 'ERROR',
+                    'counts': 1,
+                },
+            ],
+        ]
+
+        with patch('snippets.base.etl.redash_rows') as redash_rows_mock:
+            redash_rows_mock.side_effect = rows
+            result = etl.update_job_metrics('2020-01-10')
+
+        self.assertTrue(result)
+        self.assertEqual(JobDailyPerformance.objects.count(), 2)
+
+        jdp1 = JobDailyPerformance.objects.get(job_id=1000)
+        self.assertEqual(jdp1.impression, 80)
+        self.assertEqual(jdp1.click, 11)
+        self.assertEqual(jdp1.block, 50)
+        self.assertEqual(jdp1.dismiss, 0)
+        self.assertEqual(jdp1.go_to_scene2, 0)
+        self.assertEqual(jdp1.subscribe_error, 0)
+        self.assertEqual(jdp1.subscribe_success, 0)
+        self.assertEqual(jdp1.other_click, 0)
+        self.assertEqual(len(jdp1.details), 5)
+        for detail in [
+                {'event': 'click', 'counts': 11, 'channel': 'release', 'country': 'GR'},
+                {'event': 'impression', 'counts': 30, 'channel': 'release', 'country': 'ES'},
+                {'event': 'impression', 'counts': 50, 'channel': 'release', 'country': 'IT'},
+                {'event': 'block', 'counts': 23, 'channel': 'release', 'country': 'UK'},
+                {'event': 'block', 'counts': 27, 'channel': 'beta', 'country': 'SW'}
+        ]:
+            self.assertTrue(detail in jdp1.details)
+
+        jdp2 = JobDailyPerformance.objects.get(job_id=2000)
+        self.assertEqual(jdp2.impression, 0)
+        self.assertEqual(jdp2.click, 5)
+        self.assertEqual(jdp2.block, 0)
+        self.assertEqual(jdp2.dismiss, 1)
+        self.assertEqual(jdp2.go_to_scene2, 44)
+        self.assertEqual(jdp2.subscribe_error, 3)
+        self.assertEqual(jdp2.subscribe_success, 9)
+        self.assertEqual(jdp2.other_click, 4)
+        self.assertEqual(len(jdp2.details), 7)
+        for detail in [
+                {'event': 'go_to_scene2', 'counts': 44, 'channel': 'release', 'country': 'GR'},
+                {'event': 'other_click', 'counts': 3, 'channel': 'release', 'country': 'BG'},
+                {'event': 'other_click', 'counts': 1, 'channel': 'release', 'country': 'AL'},
+                {'event': 'click', 'counts': 5, 'channel': 'release', 'country': 'GR'},
+                {'event': 'subscribe_error', 'counts': 3, 'channel': 'release', 'country': 'GR'},
+                {'event': 'subscribe_success', 'counts': 9, 'channel': 'release', 'country': 'XX'},
+                {'event': 'dismiss', 'counts': 1, 'channel': 'beta', 'country': 'XX'}
+        ]:
+            self.assertTrue(detail in jdp2.details)
+
+
+class TestUpdateImpressions(TestCase):
+    def test_base(self):
+        with patch('snippets.base.etl.redash_rows') as rr_mock:
+            rr_mock.side_effect = [
+                [
+                    {
+                        'channel': 'release',
+                        'counts': 100,
+                        'duration': '4',
+                    },
+                    {
+                        'channel': 'foo',
+                        'counts': 33,
+                        'duration': '4',
+                    },
+                    {
+                        'channel': 'nightlyz',  # ending `z` on purpose
+                        'counts': 10,
+                        'duration': '5',
+                    },
+                ],
+                [
+                    {
+                        'channel': 'release',
+                        'counts': 2,
+                        'duration': '6',
+                    },
+
+                ],
+            ]
+            self.assertEqual(etl.update_impressions('2019-12-20'), 3)
+        self.assertEqual(DailyImpressions.objects.all().count(), 1)
+
+        di = DailyImpressions.objects.all()[0]
+        self.assertTrue(
+            {'channel': 'release', 'duration': '4', 'counts': 133}
+            in di.details
+        )
+        self.assertTrue(
+            {'channel': 'release', 'duration': '6', 'counts': 2}
+            in di.details
+        )
+        self.assertTrue(
+            {'channel': 'nightly', 'duration': '5', 'counts': 10}
+            in di.details
+        )

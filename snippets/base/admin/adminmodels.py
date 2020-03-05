@@ -1042,7 +1042,7 @@ class JobAdmin(admin.ModelAdmin):
         'job_status',
         'publish_start',
         'publish_end',
-        'impressions_humanized',
+        'adj_impressions_humanized',
         'clicks_humanized',
         'clicks_ctr',
         'blocks_humanized',
@@ -1130,7 +1130,7 @@ class JobAdmin(admin.ModelAdmin):
         }),
         ('Metrics', {
             'fields': (
-                'impressions_humanized',
+                ('impressions_humanized', 'adj_impressions_humanized'),
                 ('clicks_humanized', 'clicks_ctr'),
                 ('blocks_humanized', 'blocks_ctr'),
                 'redash_link',
@@ -1216,15 +1216,20 @@ class JobAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         queryset = queryset.annotate(
-            impressions=Sum('dailyjobmetrics__impressions'),
-            clicks=Sum('dailyjobmetrics__clicks'),
-            blocks=Sum('dailyjobmetrics__blocks'),
+            impressions=Sum('metrics__impression'),
+            adj_impressions=Sum('metrics__adj_impression'),
+            clicks=Sum('metrics__click'),
+            blocks=Sum('metrics__block'),
         )
         return queryset
 
     def impressions_humanized(self, obj):
         return intcomma(obj.impressions or 0)
     impressions_humanized.short_description = 'Impressions'
+
+    def adj_impressions_humanized(self, obj):
+        return intcomma(obj.adj_impressions or 0)
+    adj_impressions_humanized.short_description = 'Adjusted Impressions'
 
     def clicks_humanized(self, obj):
         return intcomma(obj.clicks or 0)
@@ -1235,20 +1240,18 @@ class JobAdmin(admin.ModelAdmin):
     blocks_humanized.short_description = 'Blocks'
 
     def clicks_ctr(self, obj):
-        if not (obj.clicks or obj.impressions):
+        if not (obj.clicks or obj.adj_impressions):
             return 'N/A'
-        ratio = (obj.clicks / obj.impressions) * 100
-        ratio_class = 'ratio-red' if ratio < 0.02 else 'ratio-green'
-        return format_html(f'<span class="{ratio_class}">{ratio:.2f}%</span>')
-    clicks_ctr.short_description = 'CTR'
+        ratio = (obj.clicks / obj.adj_impressions) * 100
+        return format_html(f'<span class="">{ratio:.4f}%</span>')
+    clicks_ctr.short_description = 'Adjusted CTR'
 
     def blocks_ctr(self, obj):
-        if not (obj.blocks or obj.impressions):
+        if not (obj.blocks or obj.adj_impressions):
             return 'N/A'
-        ratio = (obj.blocks / obj.impressions) * 100
-        ratio_class = 'ratio-red' if ratio < 0.25 else 'ratio-green'
-        return format_html(f'<span class="{ratio_class}">{ratio:.2f}%</span>')
-    blocks_ctr.short_description = 'CTR'
+        ratio = (obj.blocks / obj.adj_impressions) * 100
+        return format_html(f'<span class="">{ratio:.4f}%</span>')
+    blocks_ctr.short_description = 'Adjusted BR'
 
     def redash_link(self, obj):
         publish_end = (
@@ -1373,8 +1376,20 @@ class DistributionAdmin(admin.ModelAdmin):
 
 
 class DailyJobMetricsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'job', 'date', 'impressions', 'clicks', 'blocks', 'data_fetched_on')
-    search_fields = ('job__id', 'job__snippet__name', 'job__snippet__id')
+    list_display = [
+        'id',
+        'job',
+        'date',
+        'impressions',
+        'clicks',
+        'blocks',
+        'data_fetched_on'
+    ]
+    search_fields = [
+        'job__id',
+        'job__snippet__name',
+        'job__snippet__id'
+    ]
     readonly_fields = ['redash_link']
     fieldsets = [
         ('Metrics', {
@@ -1412,63 +1427,11 @@ class DailyJobMetricsAdmin(admin.ModelAdmin):
     redash_link.short_description = 'Explore in Redash'
 
 
-class DailySnippetMetricsAdmin(admin.ModelAdmin):
-    list_display = [
-        'id',
-        'snippet',
-        'date',
-        'impressions',
-        'clicks',
-        'blocks',
-        'data_fetched_on'
-    ]
-    search_fields = [
-        'snippet__id',
-        'snippet__name'
-    ]
-    readonly_fields = ['redash_link']
-    fieldsets = [
-        ('Metrics', {
-            'fields': (
-                'snippet',
-                'date',
-                'impressions',
-                'clicks',
-                'blocks',
-                'redash_link'
-            ),
-        }),
-    ]
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-    def redash_link(self, obj):
-        link_legacy = etl.redash_source_url(
-            'redshift-message-id', begin_date=obj.date, end_date=obj.date)
-        # bq needs later end_date due to use of timestamps
-        link_bigquery = etl.redash_source_url(
-            'bq-message-id', begin_date=obj.date,
-            end_date=obj.date + timedelta(days=1))
-
-        return format_html(f'<a href="{link_legacy}">Redshift</a> - '
-                           f'<a href="{link_bigquery}">BigQuery (Fx 72+)</a>')
-
-    redash_link.short_description = 'Explore in Redash'
-
-
 class DailyChannelMetricsAdmin(admin.ModelAdmin):
     list_display = [
         'id',
         'channel',
         'date',
-        'channel',
         'impressions',
         'clicks',
         'blocks',
@@ -1559,3 +1522,74 @@ class DailyCountryMetricsAdmin(admin.ModelAdmin):
                            f'<a href="{link_bigquery}">BigQuery (Fx 72+)</a>')
 
     redash_link.short_description = 'Explore in Redash'
+
+
+class JobDailyPerformanceAdmin(admin.ModelAdmin):
+    list_display = [
+        'id',
+        'date',
+        'job',
+        'impression',
+        'adj_impression',
+        'click',
+        'click_rate',
+        'adj_click_rate',
+        'block',
+        'adj_block_rate',
+        'dismiss',
+        'go_to_scene2',
+        'subscribe_success',
+        'subscribe_error',
+        'other_click',
+        'data_fetched_on',
+    ]
+    search_fields = ['job']
+    fieldsets = [
+        ('Metrics', {
+            'fields': (
+                'job',
+                'date',
+                'impression',
+                'click',
+                'block',
+                'dismiss',
+                'go_to_scene2',
+                'subscribe_success',
+                'subscribe_error',
+                'other_click',
+                'details',
+            ),
+        }),
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class DailyImpressionsAdmin(admin.ModelAdmin):
+    list_display = [
+        'date',
+    ]
+    fieldsets = [
+        ('Metrics', {
+            'fields': (
+                'date',
+                'details',
+            ),
+        }),
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
