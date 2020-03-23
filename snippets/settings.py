@@ -350,15 +350,6 @@ ADMIN_REORDER = [
         ]
     },
     {
-        'app': 'base',
-        'label': 'Legacy Metrics',
-        'models': [
-            'base.DailyJobMetrics',
-            'base.DailyChannelMetrics',
-            'base.DailyCountryMetrics',
-        ]
-    },
-    {
         'app': 'auth',
         'label': 'Admin',
         'models': [
