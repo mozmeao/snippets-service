@@ -11,10 +11,12 @@ from snippets.base.models import CHANNELS, DailyImpressions, JobDailyPerformance
 
 
 REDASH_QUERY_IDS = {
-    'redshift-job': 68135,
     'bq-job': 68136,
-    'redshift-impressions': 68345,
     'bq-impressions': 68341,
+
+    # Not currently used but kept here for reference.
+    'redshift-job': 68135,
+    'redshift-impressions': 68345,
 }
 
 redash = RedashDynamicQuery(
@@ -145,10 +147,7 @@ def prosses_rows(rows, key='message_id'):
 
 
 def update_job_metrics(date):
-    rows = []
-    for query in ['redshift-job', 'bq-job']:
-        rows += redash_rows(query, date)
-
+    rows = redash_rows('bq-job', date)
     processed = prosses_rows(rows, key='message_id')
     with atomic():
         JobDailyPerformance.objects.filter(date=date).delete()
@@ -162,11 +161,7 @@ def update_job_metrics(date):
 
 
 def update_impressions(date):
-    rows = []
-
-    for query in ['redshift-impressions', 'bq-impressions']:
-        rows += redash_rows(query, date)
-
+    rows = redash_rows('bq-impressions', date)
     details = []
     for row in rows:
         # Normalize channel name, based on what kind of snippets they get.

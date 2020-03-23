@@ -84,9 +84,7 @@ class TestUpdateJobMetrics(TestCase):
                     'channel': 'demo',
                     'country_code': 'GR',
                     'counts': 5,
-                }
-            ],
-            [
+                },
                 {
                     'message_id': '1000',
                     'event_context': '',
@@ -225,8 +223,6 @@ class TestUpdateImpressions(TestCase):
                         'counts': 10,
                         'duration': '5',
                     },
-                ],
-                [
                     {
                         'channel': 'release',
                         'counts': 2,
