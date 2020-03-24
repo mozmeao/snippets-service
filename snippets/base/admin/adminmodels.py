@@ -1562,6 +1562,9 @@ class JobDailyPerformanceAdmin(admin.ModelAdmin):
             ),
         }),
     ]
+    actions = [
+        actions.export_as_csv,
+    ]
 
     def has_add_permission(self, request):
         return False
@@ -1584,6 +1587,9 @@ class DailyImpressionsAdmin(admin.ModelAdmin):
                 'details',
             ),
         }),
+    ]
+    actions = [
+        actions.export_as_csv,
     ]
 
     def has_add_permission(self, request):
