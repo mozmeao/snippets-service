@@ -704,12 +704,16 @@ class Template(models.Model):
         to_append = {}
         for key, value in local_data.items():
             if key == 'button_url':
-                action, args = util.convert_special_link(value)
+                action, args, entrypoint_name, entrypoint_value = util.convert_special_link(value)
                 if action:
                     to_append['button_action'] = action
                     to_delete.append(key)
                     if args:
                         to_append['button_action_args'] = args
+                    if entrypoint_name:
+                        to_append['entrypoint_name'] = entrypoint_name
+                    if entrypoint_value:
+                        to_append['entrypoint_value'] = entrypoint_value
 
         for key in to_delete:
             local_data.pop(key)
