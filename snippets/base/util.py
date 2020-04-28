@@ -100,18 +100,21 @@ def urlparams(url_, fragment=None, query_dict=None, replace=True, **query):
 
 
 def convert_special_link(url):
-    action = args = None
+    action = args = entrypoint_name = entrypoint_value = None
     if url.startswith('special:menu:'):
         action = 'OPEN_APPLICATIONS_MENU'
         args = url.rsplit(':', 1)[1]
     elif url.startswith('special:about:'):
         action = 'OPEN_ABOUT_PAGE'
         args = url.rsplit(':', 1)[1]
+        entrypoint_name = 'entryPoint'
+        entrypoint_value = 'snippets'
     elif url.startswith('special:highlight:'):
         action = 'HIGHLIGHT_FEATURE'
         args = url.rsplit(':', 1)[1]
     elif url == 'special:preferences':
         action = 'OPEN_PREFERENCES_PAGE'
+        entrypoint_value = 'snippets'
     elif url == 'special:accounts':
         action = 'SHOW_FIREFOX_ACCOUNTS'
     elif url == 'special:monitor':
@@ -127,7 +130,7 @@ def convert_special_link(url):
                 'form_type': 'button'
             }
         }
-    return action, args
+    return action, args, entrypoint_name, entrypoint_value
 
 
 def fluent_link_extractor(data, variables):
@@ -154,7 +157,7 @@ def fluent_link_extractor(data, variables):
             if url_match:
                 url = url_match.group('url')
 
-            action, args = convert_special_link(url)
+            action, args, entrypoint_name, entrypoint_value = convert_special_link(url)
 
             if action:
                 self.links[keyname] = {
@@ -162,6 +165,10 @@ def fluent_link_extractor(data, variables):
                 }
                 if args:
                     self.links[keyname]['args'] = args
+                if entrypoint_name:
+                    self.links[keyname]['entrypoint_name'] = entrypoint_name
+                if entrypoint_value:
+                    self.links[keyname]['entrypoint_value'] = entrypoint_value
             else:
                 self.links[keyname] = {
                     'url': url,

@@ -51,7 +51,9 @@ class TestFluentLinkExtractorTests(TestCase):
             'title': ('And this another variable with <a href="https://snippets.mozilla.org">more '
                       'links</a>'),
             'special_account': 'With <a href="special:accounts">special accounts link</a>.',
-            'special_appMenu': 'and another <a href="special:menu:appMenu">special menu link</a>.',
+            'special_appMenu': 'and another <a href="special:menu:appMenu">special menu link</a>',
+            'special_about': 'and an <a href="special:about:about">about:about</a> link',
+            'special_preferences': 'and finally <a href="special:preferences">preferences</a>.',
             'nolinks': 'And finally one with no links.',
         }
         final_data = {
@@ -62,6 +64,8 @@ class TestFluentLinkExtractorTests(TestCase):
             'title': 'And this another variable with <link4>more links</link4>',
             'special_account': 'With <link5>special accounts link</link5>.',
             'special_appMenu': 'and another <link6>special menu link</link6>.',
+            'special_about': 'and an <link7>about:about</link7> link',
+            'special_preferences': 'and finally <link8>preferences</link8>.',
             'nolinks': 'And finally one with no links.',
             'links': {
                 'link0': {
@@ -89,10 +93,23 @@ class TestFluentLinkExtractorTests(TestCase):
                     'action': 'OPEN_APPLICATIONS_MENU',
                     'args': 'appMenu',
                 },
+                'link7': {
+                    'action': 'OPEN_ABOUT_PAGE',
+                    'args': 'about',
+                    'entrypoint_name': 'entryPoint',
+                    'entrypoint_value': 'snippets',
+                },
+                'link8': {
+                    'action': 'OPEN_PREFERENCES_PAGE',
+                    'entrypoint_value': 'snippets',
+                },
             }
         }
         generated_data = fluent_link_extractor(
-            data, ['text', 'title', 'special_account', 'special_appMenu', 'nolinks'])
+            data,
+            ['text', 'title', 'special_account', 'special_appMenu',
+             'special_about', 'special_preferences', 'nolinks']
+        )
 
         self.assertEqual(final_data['text'], generated_data['text'])
         self.assertEqual(final_data['title'], generated_data['title'])
@@ -114,15 +131,15 @@ class ConvertSpecialLinkTests(TestCase):
             }
         }
         inputs = [
-            ('https://example.com', (None, None)),
-            ('special:menu:foo', ('OPEN_APPLICATIONS_MENU', 'foo')),
-            ('special:about:login', ('OPEN_ABOUT_PAGE', 'login')),
-            ('special:highlight:foo', ('HIGHLIGHT_FEATURE', 'foo')),
-            ('special:preferences', ('OPEN_PREFERENCES_PAGE', None)),
-            ('special:accounts', ('SHOW_FIREFOX_ACCOUNTS', None)),
-            ('special:monitor', ('ENABLE_FIREFOX_MONITOR', monitor_data)),
+            ('https://example.com', (None, None, None, None)),
+            ('special:menu:foo', ('OPEN_APPLICATIONS_MENU', 'foo', None, None)),
+            ('special:about:login', ('OPEN_ABOUT_PAGE', 'login', 'entryPoint', 'snippets')),
+            ('special:highlight:foo', ('HIGHLIGHT_FEATURE', 'foo', None, None)),
+            ('special:preferences', ('OPEN_PREFERENCES_PAGE', None, None, 'snippets')),
+            ('special:accounts', ('SHOW_FIREFOX_ACCOUNTS', None, None, None)),
+            ('special:monitor', ('ENABLE_FIREFOX_MONITOR', monitor_data, None, None)),
             # This is invalid link but test that the app doesn't choke.
-            ('special:highlight:', ('HIGHLIGHT_FEATURE', '')),
+            ('special:highlight:', ('HIGHLIGHT_FEATURE', '', None, None)),
         ]
         for url, expected_tuple in inputs:
             self.assertEqual(convert_special_link(url), expected_tuple)
