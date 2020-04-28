@@ -12,7 +12,7 @@ stages:
 build-images:
   stage: build
   tags:
-    - ec2-54-184-139-53.us-west-2.compute.amazonaws.com
+    - meao
   script:
     - docker build -t ${DOCKER_IMAGE_TAG} --build-arg GIT_SHA=${CI_COMMIT_SHA} --pull .
     - docker push ${DOCKER_IMAGE_TAG}
@@ -34,14 +34,14 @@ build-images:
 check-migrations:
   extends: .test-stage
   tags:
-    - ec2-54-184-139-53.us-west-2.compute.amazonaws.com
+    - meao
   script:
     - ${DOCKER_RUN_CMD} bash -c './manage.py makemigrations  | grep "No changes detected"'
 
 run-flake8:
   extends: .test-stage
   tags:
-    - ec2-54-184-139-53.us-west-2.compute.amazonaws.com
+    - meao
   rules:
     - allow_failure: true
   script:
@@ -50,7 +50,7 @@ run-flake8:
 run-unit-tests:
   extends: .test-stage
   tags:
-    - ec2-54-184-139-53.us-west-2.compute.amazonaws.com
+    - meao
   coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
   script:
     - ${DOCKER_RUN_CMD} bash -c 'coverage run ./manage.py test --parallel; coverage report'
@@ -58,7 +58,8 @@ run-unit-tests:
 .deploy:
   stage: deploy
   tags:
-    - ec2-54-184-139-53.us-west-2.compute.amazonaws.com
+    - meao
+    - aws
   script:
     - bin/update-config.sh
 
