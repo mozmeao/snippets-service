@@ -1,4 +1,4 @@
-Werkzeug==0.15.5
+Werkzeug==1.0.1
 ipdb==0.12.2
 ipython==7.6.1
 therapist==2.0.0
