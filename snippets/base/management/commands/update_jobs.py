@@ -77,7 +77,7 @@ class Command(BaseCommand):
             job.change_status(
                 status=Job.COMPLETED,
                 user=user,
-                reason=f'Premature termination due to missing metrics.',
+                reason='Premature termination due to missing metrics.',
             )
         count_premature_termination = jobs.count()
         count_total_completed += count_premature_termination
