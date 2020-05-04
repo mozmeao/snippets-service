@@ -289,9 +289,9 @@ future==0.17.1 \
 django-ical==1.5 \
     --hash=sha256:afdf3020e6f7ed5955a4fc4d500283714b80bed16fcc3724a24e1fdae2bff7ed \
     --hash=sha256:80071168c7113d8ddf5907bd02bc32af017cf2bfb401d3e988d657819bce4756
-icalendar==4.0.4 \
-    --hash=sha256:45b9bd1b59107b25db688160ebd8d3916b5a8fae65992dae5d7fc0b102a9ab21 \
-    --hash=sha256:347151cb935f5f2f83d58f6dd8aef8558df69f6c1709f1d2cab2000b36def299
+icalendar==4.0.5 \
+    --hash=sha256:9bfad29eaa2cc82be4c6aa0bf3bd638906e33b5abdb729c2136374f320ff99c1 \
+    --hash=sha256:b8ec6d76a23e7d196af97d64361ab37df3840e3f09ccb3ee66b4ba598c94d693
 python-dateutil==2.8.1 \
     --hash=sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a \
     --hash=sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c
