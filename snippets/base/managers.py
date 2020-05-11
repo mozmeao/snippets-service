@@ -93,7 +93,7 @@ class SnippetManager(Manager):
 
 class JobQuerySet(QuerySet):
     def match_client(self, client):
-        from snippets.base.models import CHANNELS, ClientMatchRule, Target
+        from snippets.base.models import CHANNELS, Target
 
         # Retrieve the first channel that starts with the client's channel.
         # Allows things like "release-cck-mozilla14" to match "release".
@@ -112,13 +112,7 @@ class JobQuerySet(QuerySet):
                            Q(snippet__locale__code__contains=full_locale))
         jobs = jobs.filter(targets__in=targets)
 
-        # Filter based on ClientMatchRules
-        passed_rules, failed_rules = (ClientMatchRule.objects
-                                      .filter(target__jobs__in=jobs)
-                                      .distinct()
-                                      .evaluate(client))
-
-        return jobs.exclude(targets__client_match_rules__in=failed_rules).distinct()
+        return jobs
 
 
 class JobManager(Manager):

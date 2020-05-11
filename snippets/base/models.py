@@ -513,8 +513,6 @@ class Target(models.Model):
     on_startpage_6 = models.BooleanField(default=True, verbose_name='Activity Stream Router',
                                          db_index=True)
 
-    client_match_rules = models.ManyToManyField(
-        ClientMatchRule, blank=True, verbose_name='Client Match Rules')
     filtr_is_default_browser = models.CharField(max_length=10, blank=True, default='')
     filtr_profile_age_created = models.CharField(max_length=250, blank=True, default='')
     filtr_firefox_version = models.CharField(max_length=10, blank=True, default='')
