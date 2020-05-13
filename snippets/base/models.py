@@ -868,7 +868,7 @@ class SimpleTemplate(Template):
         on_delete=models.PROTECT,
         verbose_name='Section Title Icon',
         related_name='simple_section_icons',
-        help_text=('Section title icon. 16x16px. PNG. '
+        help_text=('Section title icon. 64x64px. PNG. '
                    'section_title_text must also be specified to display.'),
     )
     section_title_text = models.CharField(
@@ -1124,7 +1124,7 @@ class FxASignupTemplate(Template):
         on_delete=models.PROTECT,
         verbose_name='Section Title Icon',
         related_name='fxa_scene1_section_icons',
-        help_text=('Section title icon. 16x16px. PNG. '
+        help_text=('Section title icon. 64x64px. PNG. '
                    'scene1_section_title_text must also be specified to display.'),
     )
     scene1_section_title_text = models.CharField(
@@ -1291,7 +1291,7 @@ class NewsletterTemplate(Template):
         on_delete=models.PROTECT,
         verbose_name='Section Title Icon',
         related_name='newsletter_scene1_section_icons',
-        help_text=('Section title icon. 16x16px. PNG. '
+        help_text=('Section title icon. 64x64px. PNG. '
                    'scene1_section_title_text must also be specified to display.'),
     )
     scene1_section_title_text = models.CharField(
@@ -1487,7 +1487,7 @@ class SendToDeviceTemplate(Template):
         on_delete=models.PROTECT,
         verbose_name='Section Title Icon',
         related_name='sendtodevice_scene1_section_icons',
-        help_text=('Section title icon. 16x16px. PNG. '
+        help_text=('Section title icon. 64x64px. PNG. '
                    'scene1_section_title_text must also be specified to display.'),
     )
     scene1_section_title_text = models.CharField(

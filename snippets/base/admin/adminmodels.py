@@ -147,6 +147,7 @@ class IconAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     search_fields = [
         'name',
         'image',
+        'id',
     ]
     readonly_fields = [
         'height',
