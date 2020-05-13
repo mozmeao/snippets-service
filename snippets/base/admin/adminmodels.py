@@ -934,9 +934,6 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
         'related_total_jobs',
         'related_published_jobs',
     ]
-    filter_horizontal = [
-        'client_match_rules',
-    ]
     search_fields = [
         'name',
     ]
@@ -982,11 +979,6 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
                 'filtr_total_devices_count',
                 'filtr_firefox_service',
             ),
-        }),
-        ('Advanced Targeting', {
-            'fields': (
-                'client_match_rules',
-            )
         }),
         ('Jobs', {
             'fields': (

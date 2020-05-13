@@ -228,37 +228,20 @@ class JobManagerTests(tests.TestCase):
         self.assertEqual(set(matched_jobs), set(jobs))
 
     def test_match_client_base(self):
-        client_match_rule_pass_1 = tests.ClientMatchRuleFactory(channel='nightly')
-        client_match_rule_pass_2 = tests.ClientMatchRuleFactory(channel='/(beta|nightly)/')
-        client_match_rule_fail = tests.ClientMatchRuleFactory(channel='release')
-
         # Matching snippets.
         snippet_1 = tests.JobFactory.create(
             targets=[
-                tests.TargetFactory(on_release=False, on_nightly=True,
-                                    client_match_rules=[client_match_rule_pass_1])
+                tests.TargetFactory(on_release=False, on_nightly=True)
             ])
         snippet_2 = tests.JobFactory.create(
             targets=[
-                tests.TargetFactory(on_release=False, on_beta=True, on_nightly=True,
-                                    client_match_rules=[client_match_rule_pass_2])
+                tests.TargetFactory(on_release=False, on_beta=True, on_nightly=True)
             ])
         snippet_3 = tests.JobFactory.create(
             targets=[tests.TargetFactory(on_release=False, on_nightly=True)])
 
         # Not matching snippets.
         tests.JobFactory.create(targets=[tests.TargetFactory(on_release=False, on_beta=True)])
-
-        tests.JobFactory.create(
-            targets=[
-                tests.TargetFactory(on_nightly=True, client_match_rules=[client_match_rule_fail])
-            ])
-        tests.JobFactory.create(
-            targets=[
-                tests.TargetFactory(
-                    on_nightly=True,
-                    client_match_rules=[client_match_rule_fail, client_match_rule_pass_2])
-            ])
         client = self._build_client(channel='nightly')
 
         snippets = Job.objects.match_client(client)
