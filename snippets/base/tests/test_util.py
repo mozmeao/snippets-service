@@ -97,11 +97,11 @@ class TestFluentLinkExtractorTests(TestCase):
                     'action': 'OPEN_ABOUT_PAGE',
                     'args': 'about',
                     'entrypoint_name': 'entryPoint',
-                    'entrypoint_value': 'snippets',
+                    'entrypoint_value': 'snippet',
                 },
                 'link8': {
                     'action': 'OPEN_PREFERENCES_PAGE',
-                    'entrypoint_value': 'snippets',
+                    'entrypoint_value': 'snippet',
                 },
             }
         }
@@ -133,9 +133,9 @@ class ConvertSpecialLinkTests(TestCase):
         inputs = [
             ('https://example.com', (None, None, None, None)),
             ('special:menu:foo', ('OPEN_APPLICATIONS_MENU', 'foo', None, None)),
-            ('special:about:login', ('OPEN_ABOUT_PAGE', 'login', 'entryPoint', 'snippets')),
+            ('special:about:login', ('OPEN_ABOUT_PAGE', 'login', 'entryPoint', 'snippet')),
             ('special:highlight:foo', ('HIGHLIGHT_FEATURE', 'foo', None, None)),
-            ('special:preferences', ('OPEN_PREFERENCES_PAGE', None, None, 'snippets')),
+            ('special:preferences', ('OPEN_PREFERENCES_PAGE', None, None, 'snippet')),
             ('special:accounts', ('SHOW_FIREFOX_ACCOUNTS', None, None, None)),
             ('special:monitor', ('ENABLE_FIREFOX_MONITOR', monitor_data, None, None)),
             # This is invalid link but test that the app doesn't choke.
