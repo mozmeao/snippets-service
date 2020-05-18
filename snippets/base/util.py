@@ -108,13 +108,13 @@ def convert_special_link(url):
         action = 'OPEN_ABOUT_PAGE'
         args = url.rsplit(':', 1)[1]
         entrypoint_name = 'entryPoint'
-        entrypoint_value = 'snippets'
+        entrypoint_value = 'snippet'
     elif url.startswith('special:highlight:'):
         action = 'HIGHLIGHT_FEATURE'
         args = url.rsplit(':', 1)[1]
     elif url == 'special:preferences':
         action = 'OPEN_PREFERENCES_PAGE'
-        entrypoint_value = 'snippets'
+        entrypoint_value = 'snippet'
     elif url == 'special:accounts':
         action = 'SHOW_FIREFOX_ACCOUNTS'
     elif url == 'special:monitor':
