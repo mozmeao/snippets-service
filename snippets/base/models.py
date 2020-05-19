@@ -709,9 +709,9 @@ class Template(models.Model):
                     if args:
                         to_append['button_action_args'] = args
                     if entrypoint_name:
-                        to_append['entrypoint_name'] = entrypoint_name
+                        to_append['button_entrypoint_name'] = entrypoint_name
                     if entrypoint_value:
-                        to_append['entrypoint_value'] = entrypoint_value
+                        to_append['button_entrypoint_value'] = entrypoint_value
 
         for key in to_delete:
             local_data.pop(key)
