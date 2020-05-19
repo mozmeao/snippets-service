@@ -340,10 +340,15 @@ class TemplateTests(TestCase):
         data = {
             'foo': '',
             'bar': 'bar',
+            'button_url': 'special:about:logins'
         }
         expected_data = {
             'bar': 'bar',
             'links': {},
+            'button_action': 'OPEN_ABOUT_PAGE',
+            'button_action_args': 'logins',
+            'button_entrypoint_name': 'entryPoint',
+            'button_entrypoint_value': 'snippet',
         }
         snippet = ASRSnippetFactory()
         with patch('snippets.base.models.util.fluent_link_extractor',
