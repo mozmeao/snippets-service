@@ -255,7 +255,8 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
     # Full list of S3 endpoints http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
-    AWS_S3_HOST = config('AWS_S3_HOST')
+    AWS_S3_HOST = f'https://{config("AWS_S3_HOST")}'
+    AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', 'us-west-2')
     AWS_CACHE_CONTROL_HEADERS = {
         MEDIA_BUNDLES_ROOT: 'max-age=2592000',  # 1 Month
         MEDIA_ICONS_ROOT: 'max-age=15552000',  # 6 Months
