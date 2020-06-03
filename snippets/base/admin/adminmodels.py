@@ -596,8 +596,8 @@ class ASRSnippetAdmin(admin.ModelAdmin):
                   <li><code>special:monitor</code> links User to Firefox Monitor and directly authenticates them. Works only in buttons. Works only after Firefox 69.</li>
                   <li><code>special:about:ABOUT_PAGE</code> links to an About page. Get a list of About pages by typing <code>about:about</code> in your awesome bar. Example: <code>special:about:protections</code>.
                   <li><code>special:preferences</code> opens the Firefox Preferences tab. Example: <code>special:preferences</code>.
-                  <li><code>special:highlight:HIGHLIGHT</code> highlights a button in the browser chrome. Get a list of <a href="https://bedrock.readthedocs.io/en/latest/uitour.html#showhighlight-target-effect">available highlights</a>. Example: <code>special:highlight:logins</code>. Works only after Firefox 71.
-                  <li><code>special:menu:MENU</code> opens a targeted menu in the browser chrome. Get a list of <a href="https://bedrock.readthedocs.io/en/latest/uitour.html#showmenu-target-callback">available menus</a>. Example: <code>special:menu:appMenu</code>.
+                  <li><code>special:highlight:HIGHLIGHT</code> highlights a button in the browser chrome. Get a list of <a href="https://firefox-source-docs.mozilla.org/browser/components/uitour/docs/UITour-lib.html#Mozilla.UITour.Target">available highlights</a>. Example: <code>special:highlight:logins</code>. Works only after Firefox 71.
+                  <li><code>special:menu:MENU</code> opens a targeted menu in the browser chrome. Get a list of <a href="https://firefox-source-docs.mozilla.org/browser/components/uitour/docs/UITour-lib.html#Mozilla.UITour.MenuName">available menus</a>. Example: <code>special:menu:appMenu</code>.
                 </ol><br/>
                 <strong>Content Variables:</strong><br/>
                 You can use <code>[[snippet_id]]</code> in any field and it
