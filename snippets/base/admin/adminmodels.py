@@ -1023,6 +1023,7 @@ class LocaleAdmin(admin.ModelAdmin):
 
 
 class JobAdmin(admin.ModelAdmin):
+    form = forms.JobAdminForm
     save_on_top = True
     preserve_filters = True
     filter_horizontal = [
@@ -1367,6 +1368,31 @@ class JobAdmin(admin.ModelAdmin):
 
 class DistributionAdmin(admin.ModelAdmin):
     save_on_top = True
+
+    list_display = [
+        'id',
+        'name',
+    ]
+
+
+class DistributionBundleAdmin(admin.ModelAdmin):
+    save_on_top = True
+    list_display = [
+        'name',
+        'code_name',
+        'enabled',
+        'distribution_list',
+    ]
+
+    def distribution_list(self, obj):
+        return mark_safe(
+            '<ul>' +
+            ''.join([
+                f'<li> {dist}' for dist in obj.distributions.values_list('name', flat=True)
+            ]) +
+            '</ul>'
+        )
+    distribution_list.short_description = 'Distributions'
 
 
 class JobDailyPerformanceAdmin(admin.ModelAdmin):

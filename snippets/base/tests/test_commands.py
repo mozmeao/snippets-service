@@ -282,7 +282,7 @@ class UpdateJobsTests(TestCase):
         self.assertEqual(job_block_limit_not_reached_just_created.status, models.Job.PUBLISHED)
 
 
-class GenerateBundles(TestCase):
+class GenerateBundlesTests(TestCase):
     def setUp(self):
         self.distribution = DistributionFactory.create(name='Default')
         self.distribution_bundle = DistributionBundleFactory.create(name='Default',
@@ -456,6 +456,13 @@ class GenerateBundles(TestCase):
 
     @override_settings(MEDIA_BUNDLES_PREGEN_ROOT='pregen')
     def test_delete(self):
+        distribution = DistributionFactory()
+        distribution_bundle = DistributionBundleFactory(
+            code_name='foo',
+            enabled=False,
+        )
+        distribution_bundle.distributions.add(distribution)
+
         target = TargetFactory(
             on_release=False, on_beta=False, on_nightly=True, on_esr=False, on_aurora=False
         )
@@ -465,14 +472,23 @@ class GenerateBundles(TestCase):
             targets=[target],
         )
 
+        # Still published, but belongs to a disabled distribution
+        JobFactory(
+            status=models.Job.PUBLISHED,
+            snippet__locale=',fr,',
+            targets=[target],
+            distribution=distribution,
+        )
+
         with patch('snippets.base.management.commands.generate_bundles.default_storage') as ds_mock:
             # Test that only removes if file exists.
             ds_mock.exists.return_value = True
             call_command('generate_bundles', stdout=Mock())
 
-        ds_mock.delete.assert_called_once_with(
-            'pregen/Firefox/nightly/fr/default.json'
-        )
+        ds_mock.delete.assert_has_calls([
+            call('pregen/Firefox/nightly/fr/default.json'),
+            call('pregen/Firefox/nightly/fr/foo.json')
+        ])
         ds_mock.save.assert_not_called()
 
     def test_delete_does_not_exist(self):

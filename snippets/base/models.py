@@ -1851,8 +1851,7 @@ class Job(models.Model):
         'Distribution',
         on_delete=models.PROTECT,
         related_name='jobs',
-        help_text=('Set a Distribution for this Job. It should be normally '
-                   'left to Default. Useful for running Normandy experiments.'),
+        # A terrible hack to get `distinct` working.
     )
 
     client_limit_lifetime = models.PositiveIntegerField(
@@ -2231,6 +2230,8 @@ class DistributionBundle(models.Model):
     distributions = models.ManyToManyField(
         'Distribution'
     )
+
+    enabled = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
