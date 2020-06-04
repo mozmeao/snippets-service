@@ -850,3 +850,14 @@ class TargetAdminForm(forms.ModelForm):
         self.instance.jexl_expr = ' && '.join([x for x in jexl_expr_array if x])
 
         return super().save(*args, **kwargs)
+
+
+class JobAdminForm(forms.ModelForm):
+    distribution = forms.ModelChoiceField(
+        queryset=models.Distribution.objects.filter(
+            distributionbundle__enabled=True
+        ).distinct(),
+        empty_label='Select Distribution',
+        help_text=('Set a Distribution for this Job. It should be normally '
+                   'left to Default. Useful for running Normandy experiments.'),
+    )

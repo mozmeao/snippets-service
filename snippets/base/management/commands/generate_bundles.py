@@ -53,7 +53,7 @@ class Command(BaseCommand):
         )
         distribution_bundles_to_process = DistributionBundle.objects.filter(
             distributions__jobs__in=total_jobs
-        ).distinct()
+        ).distinct().order_by('id')
 
         for distribution_bundle in distribution_bundles_to_process:
             distributions = distribution_bundle.distributions.all()
@@ -96,10 +96,10 @@ class Command(BaseCommand):
                         Q(snippet__locale__code__contains=splitted_locale) |
                         Q(snippet__locale__code__contains=full_locale)).distinct()
 
-                    # If there 're no Published Jobs for the channel / locale /
-                    # distribution combination, delete the current bundle file if
-                    # it exists.
-                    if not bundle_jobs.exists():
+                    # If DistributionBundle is not enabled, or if there are no
+                    # Published Jobs for the channel / locale / distribution
+                    # combination, delete the current bundle file if it exists.
+                    if not distribution_bundle.enabled or not bundle_jobs.exists():
                         if default_storage.exists(filename):
                             self.stdout.write('Removing {}'.format(filename))
                             default_storage.delete(filename)
