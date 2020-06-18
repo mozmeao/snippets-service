@@ -2290,14 +2290,20 @@ class JobDailyPerformance(models.Model):
 
     @property
     def adj_block_rate(self):
+        if self.adj_impression == 0:
+            return 'N/A'
         return float(f'{(self.block / self.adj_impression) * 100:.4f}')
 
     @property
     def adj_click_rate(self):
+        if self.adj_impression == 0:
+            return 'N/A'
         return float(f'{(self.click / self.adj_impression) * 100:.4f}')
 
     @property
     def click_rate(self):
+        if self.impression == 0:
+            return 'N/A'
         return float(f'{(self.click / self.impression) * 100:.4f}')
 
 
