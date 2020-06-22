@@ -5,6 +5,7 @@ from unittest.mock import ANY, DEFAULT, Mock, call, patch
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.db.models import Q
 from django.test.utils import override_settings
 
 from snippets.base import models
@@ -291,17 +292,20 @@ class GenerateBundlesTests(TestCase):
 
     def test_generate_all(self):
         with patch('snippets.base.management.commands.generate_bundles.Job') as job_mock:
-            job_mock.objects.all.return_value = []
+            job_mock.objects.all.return_value = models.Job.objects.none()
             call_command('generate_bundles', stdout=Mock())
         job_mock.objects.all.assert_called()
         job_mock.objects.filter.assert_not_called()
 
     def test_generate_after_timestamp(self):
         with patch('snippets.base.management.commands.generate_bundles.Job') as job_mock:
-            job_mock.objects.filter.return_value = []
+            job_mock.objects.filter.return_value = models.Job.objects.none()
             call_command('generate_bundles', timestamp='2019-01-01', stdout=Mock())
         job_mock.objects.all.assert_not_called()
-        job_mock.objects.filter.assert_called_with(snippet__modified__gte='2019-01-01')
+        job_mock.objects.filter.assert_called_with(
+            Q(snippet__modified__gte='2019-01-01') |
+            Q(distribution__distributionbundle__modified__gte='2019-01-01')
+        )
 
     @override_settings(MEDIA_BUNDLES_PREGEN_ROOT='pregen')
     def test_generation(self):

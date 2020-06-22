@@ -34,7 +34,10 @@ class Command(BaseCommand):
             self.stdout.write(
                 'Generating bundles with Jobs modified on or after {}'.format(options['timestamp'])
             )
-            total_jobs = Job.objects.filter(snippet__modified__gte=options['timestamp'])
+            total_jobs = Job.objects.filter(
+                Q(snippet__modified__gte=options['timestamp']) |
+                Q(distribution__distributionbundle__modified__gte=options['timestamp'])
+            ).distinct()
 
         if not total_jobs:
             self.stdout.write('Nothing to do…')
