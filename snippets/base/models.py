@@ -81,14 +81,6 @@ STATUS_CHOICES = {
 template_cache = LRUCache(100)
 
 
-IMPRESSION_THRESHOLD_SECONDS = 5
-# Percentage of sessions out of total sessions that stayed on
-# about:home or about:newtab for more than 5 seconds. Calculated
-# manually and to be used as fallback in case actual data for a date
-# do not exist.
-DEFAULT_IMPRESSION_PERCENTAGE = 0.63
-
-
 class SnippetTemplate(models.Model):
     """
     A template for the body of a snippet. Can have multiple variables that the
@@ -2243,50 +2235,108 @@ class DistributionBundle(models.Model):
 
 
 class JobDailyPerformance(models.Model):
+    IMPRESSION_THRESHOLD_SECONDS = 5
+    # Percentage of sessions out of total sessions that stayed on about:home or
+    # about:newtab for more than 5 seconds. Calculated manually and to be used
+    # as fallback in case actual data for a date do not exist. Similarly
+    # calculated default number for unique client IDs.
+    DEFAULT_IMPRESSION_PERCENTAGE = 0.63
+    DEFAULT_CLIENT_PERCENTAGE = 0.89
+
     job = models.ForeignKey(Job, on_delete=models.PROTECT, related_name='metrics')
     data_fetched_on = models.DateTimeField(auto_now_add=True)
     date = models.DateField(editable=False, db_index=True)
     impression = models.PositiveIntegerField(default=0, editable=False)
+    impression_no_clients = models.PositiveIntegerField(default=0, editable=False)
+    impression_no_clients_total = models.PositiveIntegerField(default=0, editable=False)
     adj_impression = models.PositiveIntegerField(default=0, editable=False)
+    adj_impression_no_clients = models.PositiveIntegerField(default=0, editable=False)
+    adj_impression_no_clients_total = models.PositiveIntegerField(default=0, editable=False)
     click = models.PositiveIntegerField(default=0, editable=False)
+    click_no_clients = models.PositiveIntegerField(
+        default=0, editable=False,
+        help_text='Must be equal or close to `click`.')
+    click_no_clients_total = models.PositiveIntegerField(
+        default=0, editable=False,
+        help_text='Must be equal or close to `click`.')
     block = models.PositiveIntegerField(default=0, editable=False)
+    block_no_clients = models.PositiveIntegerField(
+        default=0, editable=False,
+        help_text='Must be equal or close to `block`')
+    block_no_clients_total = models.PositiveIntegerField(
+        default=0, editable=False,
+        help_text='Must be equal or close to `block`')
     dismiss = models.PositiveIntegerField(default=0, editable=False)
+    dismiss_no_clients = models.PositiveIntegerField(
+        default=0, editable=False,
+        help_text='Must be equal or close to `dismiss`')
+    dismiss_no_clients_total = models.PositiveIntegerField(
+        default=0, editable=False,
+        help_text='Must be equal or close to `dismiss`')
     go_to_scene2 = models.PositiveIntegerField(default=0, editable=False)
+    go_to_scene2_no_clients = models.PositiveIntegerField(
+        default=0, editable=False,
+        help_text='Must be equal or close to `go_to_scene2`')
+    go_to_scene2_no_clients_total = models.PositiveIntegerField(
+        default=0, editable=False,
+        help_text='Must be equal or close to `go_to_scene2`')
     subscribe_success = models.PositiveIntegerField(default=0, editable=False)
+    subscribe_success_no_clients = models.PositiveIntegerField(
+        default=0, editable=False,
+        help_text='Must be equal or close to `subscribe_success`')
+    subscribe_success_no_clients_total = models.PositiveIntegerField(
+        default=0, editable=False,
+        help_text='Must be equal or close to `subscribe_success`')
     subscribe_error = models.PositiveIntegerField(default=0, editable=False)
+    subscribe_error_no_clients = models.PositiveIntegerField(default=0, editable=False)
+    subscribe_error_no_clients_total = models.PositiveIntegerField(default=0, editable=False)
     other_click = models.PositiveIntegerField(default=0, editable=False)
+    other_click_no_clients = models.PositiveIntegerField(default=0, editable=False)
+    other_click_no_clients_total = models.PositiveIntegerField(default=0, editable=False)
     details = JSONField(default=dict)
 
     class Meta:
         unique_together = ('job', 'date')
+        ordering = ('-id', )
 
     def save(self, *args, **kwargs):
-        self.adj_impression = self.calculate_adj_impression()
+        (self.adj_impression,
+         self.adj_impression_no_clients,
+         self.adj_impression_no_clients_total) = self.calculate_adj_impression()
         return super().save(*args, **kwargs)
 
     def calculate_adj_impression(self):
         try:
             di = DailyImpressions.objects.get(date=self.date)
         except DailyImpressions.DoesNotExist:
-            percentage = DEFAULT_IMPRESSION_PERCENTAGE
+            percentage = self.DEFAULT_IMPRESSION_PERCENTAGE
+            percentage_clients = self.DEFAULT_CLIENT_PERCENTAGE
         else:
             total_impressions = 0
             valid_impressions = 0
+            total_clients = 0
+            valid_clients = 0
 
             for detail in di.details:
                 total_impressions += detail['counts']
-                if int(detail['duration']) >= IMPRESSION_THRESHOLD_SECONDS:
+                total_clients += detail['no_clients']
+                if int(detail['duration']) >= self.IMPRESSION_THRESHOLD_SECONDS:
                     valid_impressions += detail['counts']
+                    valid_clients += detail['no_clients']
 
             if total_impressions < 100_000:
                 # Sample too small, set default
-                percentage = DEFAULT_IMPRESSION_PERCENTAGE
+                percentage = self.DEFAULT_IMPRESSION_PERCENTAGE
+                percentage_clients = self.DEFAULT_CLIENT_PERCENTAGE
             else:
                 percentage = valid_impressions / total_impressions
+                percentage_clients = valid_clients / total_clients
 
         adj_im = int((self.impression * percentage) + 0.5)
+        adj_clients = int((self.impression_no_clients * percentage_clients) + 0.5)
+        adj_clients_total = int((self.impression_no_clients_total * percentage_clients) + 0.5)
 
-        return adj_im
+        return (adj_im, adj_clients, adj_clients_total)
 
     @property
     def adj_block_rate(self):
@@ -2299,6 +2349,14 @@ class JobDailyPerformance(models.Model):
     @property
     def click_rate(self):
         return float(f'{(self.click / self.impression) * 100:.4f}')
+
+    @property
+    def impressions_per_client(self):
+        return float(f'{(self.impression / self.impression_no_clients) * 100:.4f}')
+
+    @property
+    def adj_impressions_per_client(self):
+        return float(f'{(self.adj_impression / self.adj_impression_no_clients) * 100:.4f}')
 
 
 class DailyImpressions(models.Model):

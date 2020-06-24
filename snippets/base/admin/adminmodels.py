@@ -1126,6 +1126,8 @@ class JobAdmin(admin.ModelAdmin):
         ('Metrics', {
             'fields': (
                 ('impressions_humanized', 'adj_impressions_humanized'),
+                ('impressions_total_clients_humanized', 'adj_impressions_total_clients_humanized'),
+                ('impressions_per_client_humanized', 'adj_impressions_per_client_humanized'),
                 ('clicks_humanized', 'clicks_ctr'),
                 ('blocks_humanized', 'blocks_ctr'),
                 'redash_link',
@@ -1225,6 +1227,22 @@ class JobAdmin(admin.ModelAdmin):
     def adj_impressions_humanized(self, obj):
         return intcomma(obj.adj_impressions or 0)
     adj_impressions_humanized.short_description = 'Adjusted Impressions'
+
+    def impressions_total_clients_humanized(self, obj):
+        return intcomma(obj.metrics.first().impression_no_clients_total or 0)
+    impressions_total_clients_humanized.short_description = 'Total Unique Clients'
+
+    def adj_impressions_total_clients_humanized(self, obj):
+        return intcomma(obj.metrics.first().adj_impression_no_clients_total or 0)
+    adj_impressions_total_clients_humanized.short_description = 'Adjusted Total Unique Clients'
+
+    def impressions_per_client_humanized(self, obj):
+        return f'{obj.impressions / obj.metrics.first().impression_no_clients_total:.2f}'
+    impressions_per_client_humanized.short_description = 'Impressions Per Client'
+
+    def adj_impressions_per_client_humanized(self, obj):
+        return f'{obj.adj_impressions / obj.metrics.first().adj_impression_no_clients_total:.2f}'
+    adj_impressions_per_client_humanized.short_description = 'Adj Impressions Per Client'
 
     def clicks_humanized(self, obj):
         return intcomma(obj.clicks or 0)
@@ -1420,14 +1438,15 @@ class JobDailyPerformanceAdmin(admin.ModelAdmin):
             'fields': (
                 'job',
                 'date',
-                'impression',
-                'click',
-                'block',
-                'dismiss',
-                'go_to_scene2',
-                'subscribe_success',
-                'subscribe_error',
-                'other_click',
+                ('impression', 'impression_no_clients'),
+                ('adj_impression', 'adj_impression_no_clients'),
+                ('click', 'click_no_clients'),
+                ('block', 'block_no_clients'),
+                ('dismiss', 'dismiss_no_clients'),
+                ('go_to_scene2', 'go_to_scene2_no_clients'),
+                ('subscribe_success', 'subscribe_success_no_clients'),
+                ('subscribe_error', 'subscribe_error_no_clients'),
+                ('other_click', 'other_click_no_clients'),
                 'details',
             ),
         }),
