@@ -11,8 +11,8 @@ from snippets.base.models import CHANNELS, DailyImpressions, JobDailyPerformance
 
 
 REDASH_QUERY_IDS = {
-    'bq-job': 68136,
-    'bq-impressions': 68341,
+    'bq-job': 72139,
+    'bq-impressions': 72140,
 
     # Not currently used but kept here for reference.
     'redshift-job': 68135,
@@ -105,12 +105,18 @@ def prosses_rows(rows, key='message_id'):
     for row in new_rows:
         event = row['event']
         processed[row[key]][event] = processed[row[key]].get(event, 0) + row['counts']
+        processed[row[key]][f'{event}_no_clients'] = (
+            processed[row[key]].get(f'{event}_no_clients', 0) + row['no_clients'])
+        processed[row[key]][f'{event}_no_clients_total'] = (
+            processed[row[key]].get(f'{event}_no_clients_total', 0) + row['no_clients_total'])
 
         detail = [{
             'event': row['event'],
             'channel': row['channel'],
             'country': row['country_code'],
             'counts': row['counts'],
+            'no_clients': row['no_clients'],
+            'no_clients_total': row['no_clients_total'],
         }]
 
         if not processed[row[key]].get('details'):
@@ -121,6 +127,8 @@ def prosses_rows(rows, key='message_id'):
                      drow['channel'] == row['channel'] and
                      drow['country'] == row['country_code'])):
                     drow['counts'] += row['counts']
+                    drow['no_clients'] += row['no_clients']
+                    drow['no_clients_total'] += row['no_clients_total']
                     break
             else:
                 processed[row[key]]['details'] += detail
@@ -136,7 +144,14 @@ def prosses_rows(rows, key='message_id'):
     for k, v in processed.items():
         if 'conversion_subscribe_activation' in v:
             processed[k]['other_click'] = processed[k].get('click', 0)
+            processed[k]['other_click_no_clients'] = processed[k].get('click_no_clients', 0)
+            processed[k]['other_click_no_clients_total'] = \
+                processed[k].get('click_no_clients_total', 0)
             processed[k]['click'] = processed[k].pop('conversion_subscribe_activation')
+            processed[k]['click_no_clients'] = \
+                processed[k].pop('conversion_subscribe_activation_no_clients')
+            processed[k]['click_no_clients_total'] = \
+                processed[k].pop('conversion_subscribe_activation_no_clients_total')
             for row in processed[k]['details']:
                 if row['event'] == 'click':
                     row['event'] = 'other_click'
@@ -161,6 +176,12 @@ def update_job_metrics(date):
 
 
 def update_impressions(date):
+    """Fetch number of Impressions per channel and per duration.
+
+    This information is used to determine the number of actually viewed
+    Snippets by disgarding Impressions the lasted too few seconds.
+
+    """
     rows = redash_rows('bq-impressions', date)
     details = []
     for row in rows:
@@ -183,6 +204,7 @@ def update_impressions(date):
                 'channel': channel,
                 'duration': row['duration'],
                 'counts': row['counts'],
+                'no_clients': row['no_clients'],
             })
 
     with atomic():
