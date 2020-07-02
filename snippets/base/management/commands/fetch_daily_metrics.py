@@ -40,12 +40,22 @@ class Command(BaseCommand):
                 check_date += timedelta(days=1)
 
         for d in dates:
-            self.stdout.write(f'Fetching data for {d}.')
+            successful_jobs = 0
+            # Fetch Daily Impression data from last Monday relative to `d` date
+            # to calculate Adjusted Impressions / Clicks / Blocks.
+            last_monday = d - timedelta(days=d.weekday())
+            if not models.DailyImpressions.objects.filter(date=last_monday).exists():
+                self.stdout.write(f'Fetching impression data for {last_monday}.')
+                if etl.update_impressions(last_monday):
+                    successful_jobs += 1
+            else:
+                successful_jobs += 1
 
-            if not all([
-                    etl.update_impressions(d),
-                    etl.update_job_metrics(d),
-            ]):
+            self.stdout.write(f'Fetching data for {d}.')
+            if etl.update_job_metrics(d):
+                successful_jobs += 1
+
+            if successful_jobs != 2:
                 # We didn't manage to fetch all data, something is wrong.
                 raise CommandError('Cannot fetch data from Telemetry.')
 

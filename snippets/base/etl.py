@@ -1,9 +1,10 @@
 import collections
 import json
-
+from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
 from django.conf import settings
+from django.db.models import Q
 from django.db.transaction import atomic
 from redash_dynamic_query import RedashDynamicQuery
 
@@ -42,7 +43,17 @@ def redash_rows(query_name, date):
 
 
 def prosses_rows(rows, key='message_id'):
-    job_ids = [str(x) for x in Job.objects.all().values_list('id', flat=True)]
+    now = datetime.utcnow()
+
+    # To fight Telemetry spam, process metrics for Jobs currently Published or
+    # Completed the last 7 days.
+    jobs = Job.objects.filter(
+        # Still published
+        Q(status=Job.PUBLISHED) |
+        # Or completed during the last 7 days
+        Q(completed_on__gte=now - timedelta(days=7))
+    )
+    job_ids = [str(x) for x in jobs.values_list('id', flat=True)]
     new_rows = []
     for row in sorted(rows, key=lambda x: x[key]):
         # Remove rows with invalid Job IDs

@@ -1985,7 +1985,7 @@ class Job(models.Model):
             return
 
         self.status = status
-        if status == self.COMPLETED:
+        if status in [self.CANCELED, self.COMPLETED]:
             self.completed_on = datetime.utcnow()
         self.save()
 
@@ -2306,33 +2306,16 @@ class JobDailyPerformance(models.Model):
         return super().save(*args, **kwargs)
 
     def calculate_adj_impression(self):
-        try:
-            di = DailyImpressions.objects.get(date=self.date)
-        except DailyImpressions.DoesNotExist:
-            percentage = self.DEFAULT_IMPRESSION_PERCENTAGE
+        # Find the most recent DailyImpressions object to `date`.
+        di = DailyImpressions.objects.filter(date__lte=self.date).order_by("-date").first()
+        if not di:
+            percentage_impressions = self.DEFAULT_IMPRESSION_PERCENTAGE
             percentage_clients = self.DEFAULT_CLIENT_PERCENTAGE
         else:
-            total_impressions = 0
-            valid_impressions = 0
-            total_clients = 0
-            valid_clients = 0
+            percentage_impressions = di.percentage_impressions
+            percentage_clients = di.percentage_clients
 
-            for detail in di.details:
-                total_impressions += detail['counts']
-                total_clients += detail['no_clients']
-                if int(detail['duration']) >= self.IMPRESSION_THRESHOLD_SECONDS:
-                    valid_impressions += detail['counts']
-                    valid_clients += detail['no_clients']
-
-            if total_impressions < 100_000:
-                # Sample too small, set default
-                percentage = self.DEFAULT_IMPRESSION_PERCENTAGE
-                percentage_clients = self.DEFAULT_CLIENT_PERCENTAGE
-            else:
-                percentage = valid_impressions / total_impressions
-                percentage_clients = valid_clients / total_clients
-
-        adj_im = int((self.impression * percentage) + 0.5)
+        adj_im = int((self.impression * percentage_impressions) + 0.5)
         adj_clients = int((self.impression_no_clients * percentage_clients) + 0.5)
         adj_clients_total = int((self.impression_no_clients_total * percentage_clients) + 0.5)
 
@@ -2369,3 +2352,40 @@ class DailyImpressions(models.Model):
     data_fetched_on = models.DateTimeField(auto_now_add=True)
     date = models.DateField(editable=False, db_index=True, unique=True)
     details = JSONField(default=dict, editable=False)
+
+    @property
+    def percentage_impressions(self):
+        total_impressions = 0
+        valid_impressions = 0
+
+        for detail in self.details:
+            total_impressions += detail['counts']
+            if int(detail['duration']) >= JobDailyPerformance.IMPRESSION_THRESHOLD_SECONDS:
+                valid_impressions += detail['counts']
+
+        if total_impressions < 100_000:
+            # Sample too small, set default
+            percentage_impressions = JobDailyPerformance.DEFAULT_IMPRESSION_PERCENTAGE
+        else:
+            percentage_impressions = valid_impressions / total_impressions
+
+        return percentage_impressions
+
+    @property
+    def percentage_clients(self):
+        total_clients = 0
+        valid_clients = 0
+
+        for detail in self.details:
+            # Not all data have `no_clients` key.
+            total_clients += detail.get('no_clients', 0)
+            if int(detail['duration']) >= JobDailyPerformance.IMPRESSION_THRESHOLD_SECONDS:
+                valid_clients += detail.get('no_clients', 0)
+
+        if total_clients < 10_000:
+            # Sample too small, set default
+            percentage_clients = JobDailyPerformance.DEFAULT_CLIENT_PERCENTAGE
+        else:
+            percentage_clients = valid_clients / total_clients
+
+        return percentage_clients
