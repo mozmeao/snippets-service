@@ -29,7 +29,9 @@ class Command(BaseCommand):
         else:
             today = date.today()
             try:
-                fetched_dates = models.JobDailyPerformance.objects.values_list('date', flat=True)
+                fetched_dates = (models.JobDailyPerformance.objects
+                                 .values_list('date', flat=True)
+                                 .distinct())
             except models.JobDailyPerformance.DoesNotExist:
                 fetched_dates = []
 
