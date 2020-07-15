@@ -534,6 +534,14 @@ class Target(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def is_custom(self):
+        """Returns True if Target's JEXL has been manualy created."""
+        for field in self._meta.get_fields():
+            if field.name.startswith('filtr_') and getattr(self, field.name):
+                return False
+        return True
+
 
 class Campaign(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)

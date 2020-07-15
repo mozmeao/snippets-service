@@ -901,3 +901,11 @@ class JobTests(TestCase):
         self.assertEqual(duplicate_job.metric_clicks, 0)
         self.assertEqual(duplicate_job.metric_blocks, 0)
         self.assertEqual(duplicate_job.completed_on, None)
+
+
+class TargetTests(TestCase):
+    def test_is_custom(self):
+        target = TargetFactory(on_release=True)
+        self.assertTrue(target.is_custom)
+        not_custom_target = TargetFactory(on_release=True, filtr_is_default_browser='true')
+        self.assertFalse(not_custom_target.is_custom)
