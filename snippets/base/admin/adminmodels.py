@@ -1248,6 +1248,8 @@ class JobAdmin(admin.ModelAdmin):
             adj_impressions=Sum('metrics__adj_impression'),
             clicks=Sum('metrics__click'),
             blocks=Sum('metrics__block'),
+            impressions_total_clients=Sum('metrics__impression_no_clients_total'),
+            adj_impressions_total_clients=Sum('metrics__adj_impression_no_clients_total'),
         )
         return queryset
 
@@ -1260,35 +1262,23 @@ class JobAdmin(admin.ModelAdmin):
     adj_impressions_humanized.short_description = 'Adjusted Impressions'
 
     def impressions_total_clients_humanized(self, obj):
-        try:
-            return intcomma(obj.metrics.first().impression_no_clients_total or 0)
-        except (AttributeError, ZeroDivisionError):
-            # Metrics don't exist yet for this Job.
-            return '-'
+        return intcomma(obj.impressions_total_clients or 0)
     impressions_total_clients_humanized.short_description = 'Total Unique Clients'
 
     def adj_impressions_total_clients_humanized(self, obj):
-        try:
-            return intcomma(obj.metrics.first().adj_impression_no_clients_total or 0)
-        except (AttributeError, ZeroDivisionError):
-            # Metrics don't exist yet for this Job.
-            return '-'
+        return intcomma(obj.adj_impressions_total_clients or 0)
     adj_impressions_total_clients_humanized.short_description = 'Adjusted Total Unique Clients'
 
     def impressions_per_client_humanized(self, obj):
-        try:
-            return f'{obj.impressions / obj.metrics.first().impression_no_clients_total:.2f}'
-        except (AttributeError, ZeroDivisionError):
-            # Metrics don't exist yet for this Job.
-            return '-'
+        if not obj.impressions_total_clients:
+            return 'N/A'
+        return f'{obj.impressions / obj.impressions_total_clients:.2f}'
     impressions_per_client_humanized.short_description = 'Impressions Per Client'
 
     def adj_impressions_per_client_humanized(self, obj):
-        try:
-            return f'{obj.adj_impressions/obj.metrics.first().adj_impression_no_clients_total:.2f}'
-        except (AttributeError, ZeroDivisionError):
-            # Metrics don't exist yet for this Job.
-            return '-'
+        if not obj.adj_impressions_total_clients:
+            return 'N/A'
+        return f'{obj.adj_impressions / obj.adj_impressions_total_clients:.2f}'
     adj_impressions_per_client_humanized.short_description = 'Adj Impressions Per Client'
 
     def clicks_humanized(self, obj):
