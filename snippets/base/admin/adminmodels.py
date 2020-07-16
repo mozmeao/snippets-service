@@ -924,13 +924,14 @@ class ProductAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
 
 
 class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
-    form = forms.TargetAdminForm
+    change_list_template = 'admin/base/target/change_list.html'
+    form_custom = forms.TargetAdminCustomForm
+    form_full = forms.TargetAdminForm
     save_on_top = True
     readonly_fields = [
         'created',
         'modified',
         'creator',
-        'jexl_expr',
         'jobs_list',
         'related_total_jobs',
         'related_published_jobs',
@@ -943,7 +944,18 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
         'related_published_jobs',
         'related_total_jobs',
     ]
-    fieldsets = [
+    list_filter = [
+        filters.RelatedPublishedASRSnippetFilter,
+    ]
+    fieldsets_custom = [
+        ('ID', {'fields': ('name',)}),
+        ('Product channels', {
+            'description': 'What channels will this snippet be available in?',
+            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
+        }),
+        ('Targeting', {'fields': ('jexl_expr',)}),
+    ]
+    fieldsets_full = [
         ('ID', {'fields': ('name',)}),
         ('Product channels', {
             'description': 'What channels will this snippet be available in?',
@@ -992,9 +1004,6 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
             'fields': ('creator', ('created', 'modified'), 'jexl_expr'),
         }),
     ]
-    list_filter = [
-        filters.RelatedPublishedASRSnippetFilter,
-    ]
 
     class Media:
         css = {
@@ -1006,6 +1015,24 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
             'js/admin/jquery.are-you-sure.js',
             'js/admin/alert-page-leaving.js',
         )
+
+    def _wants_custom_form(self, request, obj):
+        return request.GET.get('custom') == 'true' or (obj and obj.is_custom)
+
+    def get_form(self, request, obj=None, **kwargs):
+        if self._wants_custom_form(request, obj):
+            return self.form_custom
+        return self.form_full
+
+    def get_readonly_fields(self, request, obj=None, **kwargs):
+        if self._wants_custom_form(request, obj):
+            return self.readonly_fields
+        return self.readonly_fields + ['jexl_expr']
+
+    def get_fieldsets(self, request, obj=None, **kwargs):
+        if self._wants_custom_form(request, obj):
+            return self.fieldsets_custom
+        return self.fieldsets_full
 
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:

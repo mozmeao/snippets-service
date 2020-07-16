@@ -649,6 +649,12 @@ class ASRSnippetAdminForm(forms.ModelForm):
         return snippet
 
 
+class TargetAdminCustomForm(forms.ModelForm):
+    class Meta:
+        model = models.Target
+        fields = ['name', 'jexl_expr', 'on_release', 'on_esr', 'on_beta', 'on_aurora', 'on_nightly']
+
+
 class TargetAdminForm(forms.ModelForm):
     filtr_is_default_browser = fields.JEXLChoiceField(
         'isDefaultBrowser',
