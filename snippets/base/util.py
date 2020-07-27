@@ -107,8 +107,9 @@ def convert_special_link(url):
     elif url.startswith('special:about:'):
         action = 'OPEN_ABOUT_PAGE'
         args = url.rsplit(':', 1)[1]
-        entrypoint_name = 'entryPoint'
-        entrypoint_value = 'snippet'
+        if url.startswith('special:about:logins'):
+            entrypoint_name = 'entryPoint'
+            entrypoint_value = 'snippet'
     elif url.startswith('special:highlight:'):
         action = 'HIGHLIGHT_FEATURE'
         args = url.rsplit(':', 1)[1]
