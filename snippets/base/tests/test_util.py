@@ -53,6 +53,7 @@ class TestFluentLinkExtractorTests(TestCase):
             'special_account': 'With <a href="special:accounts">special accounts link</a>.',
             'special_appMenu': 'and another <a href="special:menu:appMenu">special menu link</a>',
             'special_about': 'and an <a href="special:about:about">about:about</a> link',
+            'special_about_logins': 'and another <a href="special:about:logins">about:logins</a>',
             'special_preferences': 'and finally <a href="special:preferences">preferences</a>.',
             'nolinks': 'And finally one with no links.',
         }
@@ -65,7 +66,8 @@ class TestFluentLinkExtractorTests(TestCase):
             'special_account': 'With <link5>special accounts link</link5>.',
             'special_appMenu': 'and another <link6>special menu link</link6>.',
             'special_about': 'and an <link7>about:about</link7> link',
-            'special_preferences': 'and finally <link8>preferences</link8>.',
+            'special_about_logins': 'and an <link8>about:logins</link8> link',
+            'special_preferences': 'and finally <link9>preferences</link9>.',
             'nolinks': 'And finally one with no links.',
             'links': {
                 'link0': {
@@ -96,10 +98,14 @@ class TestFluentLinkExtractorTests(TestCase):
                 'link7': {
                     'action': 'OPEN_ABOUT_PAGE',
                     'args': 'about',
+                },
+                'link8': {
+                    'action': 'OPEN_ABOUT_PAGE',
+                    'args': 'logins',
                     'entrypoint_name': 'entryPoint',
                     'entrypoint_value': 'snippet',
                 },
-                'link8': {
+                'link9': {
                     'action': 'OPEN_PREFERENCES_PAGE',
                     'entrypoint_value': 'snippet',
                 },
@@ -108,7 +114,7 @@ class TestFluentLinkExtractorTests(TestCase):
         generated_data = fluent_link_extractor(
             data,
             ['text', 'title', 'special_account', 'special_appMenu',
-             'special_about', 'special_preferences', 'nolinks']
+             'special_about', 'special_about_logins', 'special_preferences', 'nolinks']
         )
 
         self.assertEqual(final_data['text'], generated_data['text'])
@@ -133,7 +139,8 @@ class ConvertSpecialLinkTests(TestCase):
         inputs = [
             ('https://example.com', (None, None, None, None)),
             ('special:menu:foo', ('OPEN_APPLICATIONS_MENU', 'foo', None, None)),
-            ('special:about:login', ('OPEN_ABOUT_PAGE', 'login', 'entryPoint', 'snippet')),
+            ('special:about:about', ('OPEN_ABOUT_PAGE', 'about', None, None)),
+            ('special:about:logins', ('OPEN_ABOUT_PAGE', 'logins', 'entryPoint', 'snippet')),
             ('special:highlight:foo', ('HIGHLIGHT_FEATURE', 'foo', None, None)),
             ('special:preferences', ('OPEN_PREFERENCES_PAGE', None, None, 'snippet')),
             ('special:accounts', ('SHOW_FIREFOX_ACCOUNTS', None, None, None)),
