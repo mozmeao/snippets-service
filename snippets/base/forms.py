@@ -612,6 +612,7 @@ class ASRSnippetAdminForm(forms.ModelForm):
             ('fxa_signup_snippet', 'Firefox Accounts Sign Up'),
             ('newsletter_snippet', 'Newsletter Sign Up'),
             ('send_to_device_snippet', 'Send to Device'),
+            ('send_to_device_scene2_snippet', 'Send to Device Single Scene'),
             ('simple_below_search_snippet', 'Simple Below Search'),
         ),
         widget=TemplateChooserWidget,

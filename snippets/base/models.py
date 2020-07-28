@@ -680,6 +680,8 @@ class Icon(models.Model):
 
 
 class Template(models.Model):
+    TARGETING = ''
+
     snippet = models.OneToOneField('ASRSnippet', related_name='template_relation',
                                    on_delete=models.CASCADE)
 
@@ -741,6 +743,10 @@ class Template(models.Model):
     @property
     def version(self):
         return self.VERSION
+
+    @property
+    def targeting(self):
+        return self.TARGETING
 
     def get_main_body(self, bleached=False):
         body = self.text
@@ -1662,6 +1668,169 @@ class SendToDeviceTemplate(Template):
         return body
 
 
+class SendToDeviceSingleSceneTemplate(Template):
+    VERSION = '1.0.0'
+    NAME = 'Send to Device Single Scene'
+    TARGETING = 'firefoxVersion >= 80'
+
+    section_title_icon = models.ForeignKey(
+        Icon,
+        blank=True,
+        null=True,
+        on_delete=models.PROTECT,
+        verbose_name='Section Title Icon',
+        related_name='sendtodevicesinglescene_section_icons',
+        help_text=('Section title icon. 64x64px. PNG. '
+                   'section_title_text must also be specified to display.'),
+    )
+    section_title_text = models.CharField(
+        verbose_name='Section Title Text',
+        blank=True,
+        max_length=255,
+        help_text='Section title text. section_title_icon must also be specified to display.',
+    )
+    section_title_url = snippet_fields.URLField(
+        verbose_name='Section Title URL',
+        blank=True,
+        max_length=500,
+        help_text='A url, section_title_text links to this',
+    )
+
+    text = models.TextField(
+        verbose_name='Text',
+        help_text='Main text.',
+    )
+    icon = models.ForeignKey(
+        Icon,
+        on_delete=models.PROTECT,
+        verbose_name='Icon',
+        related_name='sendtodevicesinglescene_icons',
+        help_text='Image to display above the form. 192x192px PNG.'
+    )
+    button_label = models.CharField(
+        verbose_name='Button Label',
+        max_length=50,
+        default='Send',
+        help_text='Label for form submit button.',
+    )
+
+    input_placeholder = models.CharField(
+        verbose_name='Input Placeholder',
+        max_length=255,
+        default='Your email here',
+        help_text='Placeholder text for email / phone number field.',
+    )
+    disclaimer_html = models.TextField(
+        verbose_name='Disclaimer HTML',
+        help_text=(
+            'Text and link underneath the input box. HTML subset allowed: i, b, u, strong, em, br.'
+        ),
+    )
+
+    locale = models.CharField(
+        max_length=10,
+        default='EN',
+        help_text='Two to five character string for the locale code. Default "EN".',
+    )
+    country = models.CharField(
+        max_length=10,
+        default='us',
+        help_text='Two character string for the country code (used for SMS). Default "us".',
+    )
+    include_sms = models.BooleanField(
+        verbose_name='Include SMS',
+        blank=True,
+        default=False,
+        help_text='Defines whether SMS is available.',
+    )
+    message_id_sms = models.CharField(
+        verbose_name='Message ID for SMS',
+        max_length=100,
+        blank=True,
+        help_text='Newsletter/basket id representing the SMS message to be sent.',
+    )
+    message_id_email = models.CharField(
+        verbose_name='Message ID for Email',
+        max_length=100,
+        help_text=('Newsletter/basket id representing the email message to be sent. Must be '
+                   'a value from the "Slug" column here: https://basket.mozilla.org/news/.'),
+    )
+
+    success_title = models.TextField(
+        verbose_name='Success Title',
+        help_text='Title of success message after form submission.',
+    )
+    success_text = models.TextField(
+        verbose_name='Success Text',
+        help_text='Text of success message after form submission.',
+    )
+    error_text = models.TextField(
+        verbose_name='Error Text',
+        help_text='Text of error message if form submission fails.',
+    )
+    retry_button_label = models.CharField(
+        verbose_name='Retry Button Label',
+        max_length=50,
+        default='Try again',
+        help_text='Button label after a failed form submission'
+    )
+
+    ###
+    # Extras
+    ###
+    block_button_text = models.CharField(
+        verbose_name='Block Button Text',
+        max_length=50, default='Remove this',
+        help_text='Tooltip text used for dismiss button.'
+    )
+    do_not_autoblock = models.BooleanField(
+        verbose_name='Do Not Autoblock',
+        default=False, blank=True,
+        help_text=('Used to prevent blocking the snippet after the '
+                   'CTA (link or button) has been clicked.'),
+    )
+
+    @property
+    def code_name(self):
+        return 'send_to_device_scene2_snippet'
+
+    def render(self):
+        data = {
+            'section_title_icon': self.section_title_icon.url if self.section_title_icon else '',
+            'section_title_text': self.section_title_text,
+            'section_title_url': self.section_title_url,
+            'scene2_text': self.text,
+            'scene2_icon': self.icon.url if self.icon else '',
+            'scene2_button_label': self.button_label,
+            'scene2_input_placeholder': self.input_placeholder,
+            'scene2_disclaimer_html': self.disclaimer_html,
+            'locale': self.locale,
+            'country': self.country,
+            'include_sms': self.include_sms,
+            'message_id_sms': self.message_id_sms,
+            'message_id_email': self.message_id_email,
+            'success_title': self.success_title,
+            'success_text': self.success_text,
+            'error_text': self.error_text,
+            'block_button_text': self.block_button_text,
+            'do_not_autoblock': self.do_not_autoblock,
+            'retry_button_label': self.retry_button_label,
+        }
+        data = self._process_rendered_data(data)
+        return data
+
+    def get_rich_text_fields(self):
+        return [
+            'disclaimer_html',
+        ]
+
+    def get_main_body(self, bleached=False):
+        body = self.text
+        if bleached:
+            body = bleach.clean(body, tags=[], strip=True).strip()
+        return body
+
+
 class SimpleBelowSearchTemplate(Template):
     VERSION = '1.0.1'
     NAME = 'Simple below Search Bar'
@@ -1933,16 +2102,21 @@ class Job(models.Model):
             CHANNELS_MAP[channel] for channel in CHANNELS_MAP if channel in self.channels
         ])
         rendered_snippet = util.deep_search_and_replace(rendered_snippet, '[[channels]]', channels)
-        # Add JEXL targeting
-        rendered_snippet['targeting'] = ' && '.join(
-            [target.jexl_expr for
-             target in self.targets.all().order_by('id') if
-             target.jexl_expr]
-        )
+
+        # Add Targets
+        targeting = []
+        if rendered_snippet.get('targeting'):
+            targeting.append(rendered_snippet['targeting'])
+
+        targeting.extend([target.jexl_expr for
+                          target in self.targets.all().order_by('id') if
+                          target.jexl_expr])
+
+        # Make targeting always fail. Used for Nightly debuging.
         if always_eval_to_false:
-            if rendered_snippet['targeting']:
-                rendered_snippet['targeting'] += ' && '
-            rendered_snippet['targeting'] += 'false'
+            targeting.append('false')
+
+        rendered_snippet['targeting'] = ' && '.join(targeting)
 
         # Add Client Limits
         frequency = {}
@@ -2095,6 +2269,7 @@ class ASRSnippet(models.Model):
             'template': template_code_name,
             'template_version': template_version,
             'content': data,
+            'targeting': self.template_ng.targeting,
         }
 
         if preview:
