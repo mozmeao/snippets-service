@@ -514,11 +514,12 @@ class ASRSnippetTests(TestCase):
                                      '<a href="https://example.com/[[snippet_id]]/foo">link</a> in '
                                      '[[channels]] channels'),
         )
+        snippet.template_ng.TARGETING = 'true'
         generated_result = snippet.render()
-        self.maxDiff = None
         expected_result = {
             'template': snippet.template_ng.code_name,
             'template_version': snippet.template_ng.version,
+            'targeting': 'true',
             'content': {
                 'text': ('snippet id {} and with campaign [[campaign_slug]] and '
                          '<link0>link</link0> in [[channels]] channels').format(snippet.id),
@@ -544,6 +545,7 @@ class ASRSnippetTests(TestCase):
             'id': 'preview-{}'.format(snippet.id),
             'template': snippet.template_ng.code_name,
             'template_version': snippet.template_ng.version,
+            'targeting': '',
             'content': {
                 'do_not_autoblock': True,
                 # snippet_id, campaign_slug and channels must be replaced with empty string.
@@ -749,7 +751,6 @@ class JobTests(TestCase):
                               jexl_expr='foo==bar'),
             ]
         )
-
         snippet_render = {
             'template': 'simple_snippet',
             'template_version': 'xx.xx',

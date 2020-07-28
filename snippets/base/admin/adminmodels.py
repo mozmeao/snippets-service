@@ -411,6 +411,56 @@ class NewsletterTemplateInline(admin.StackedInline):
     )
 
 
+class SendToDeviceSingleSceneTemplateInline(admin.StackedInline):
+    model = models.SendToDeviceSingleSceneTemplate
+    form = forms.SendToDeviceTemplateForm
+    can_delete = False
+    classes = [
+        'inline-template',
+        'send_to_device_scene2_snippet',
+    ]
+    raw_id_fields = [
+        'section_title_icon',
+        'icon',
+    ]
+
+    fieldsets = (
+        ('Section', {
+            'fields': (
+                'section_title_icon',
+                'section_title_text',
+                'section_title_url',
+            ),
+        }),
+        ('Main', {
+            'fields': (
+                'icon',
+                'text',
+
+                'button_label',
+                'input_placeholder',
+                'disclaimer_html',
+
+                'locale',
+                ('include_sms', 'message_id_sms',),
+                'country',
+                'message_id_email',
+                'success_title',
+                'success_text',
+                'error_text',
+                'retry_button_label',
+            )
+        }),
+
+        ('Extra', {
+            'fields': (
+                'block_button_text',
+                'do_not_autoblock',
+            ),
+        })
+    )
+
+
 class SendToDeviceTemplateInline(admin.StackedInline):
     model = models.SendToDeviceTemplate
     form = forms.SendToDeviceTemplateForm
@@ -514,6 +564,7 @@ class ASRSnippetAdmin(admin.ModelAdmin):
         FxASignupTemplateInline,
         NewsletterTemplateInline,
         SendToDeviceTemplateInline,
+        SendToDeviceSingleSceneTemplateInline,
         SimpleBelowSearchTemplateInline,
     ]
     list_display_links = [
