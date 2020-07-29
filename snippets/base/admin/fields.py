@@ -198,6 +198,7 @@ class JEXLFirefoxServicesField(MultiValueField):
             ('802d56ef2a9af9fa', 'Firefox Monitor'),
             ('1f30e32975ae5112|20f7931c9054d833', 'Firefox Send'),
             ('a8c528140153d1c6|565585c1745a144d|e6eb0d1e856335fc', 'Firefox Private Network'),
+            ('9ebfe2c2f9ea3c58', 'Firefox Private Relay'),
             ('7ad9917f6c55fb77', 'Firefox Reality'),
             ('7377719276ad44ee|749818d3f2e7857f', 'Pocket'),
 
