@@ -186,8 +186,8 @@ statsd==3.3.0 \
 contextlib2==0.6.0.post1 \
     --hash=sha256:3355078a159fbb44ee60ea80abd0d87b80b78c248643b49aa6d94673b413609b \
     --hash=sha256:01f490098c18b19d2bd5bb5dc445b2054d2fa97f09a4280ba2c5f3c394c8162e
-meinheld==1.0.1 \
-    --hash=sha256:447de7189e4dc9c1f425aa1b9c8210aab492fda4d86f73a24059264e7d8b0134
+meinheld==1.0.2 \
+    --hash=sha256:008c76937ac2117cc69e032dc69cea9f85fc605de9bac1417f447c41c16a56d6
 greenlet==0.4.15 \
     --hash=sha256:99a26afdb82ea83a265137a398f570402aa1f2b5dfb4ac3300c026931817b163 \
     --hash=sha256:ac57fcdcfb0b73bb3203b58a14501abb7e5ff9ea5e2edfa06bb03035f0cff248 \
