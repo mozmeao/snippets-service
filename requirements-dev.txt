@@ -5,5 +5,5 @@ therapist==2.1.0
 pandas==1.0.3
 django-pandas==0.6.0
 jupyter==1.0.0
-matplotlib==3.1.2
+matplotlib==3.3.1
 pyarrow==0.15.1
