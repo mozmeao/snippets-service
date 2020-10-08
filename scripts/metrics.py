@@ -52,6 +52,7 @@ def pprint_cat(cat):
      for k, v in sorted(cat.items()):
           print(
                f"  {k}; "
+               f"{len(set(v['jobs']))}; "
                f"{v['impressions']}; "
                f"{v['adj_impressions']}; "
                f"{v['clicks']}; "
@@ -75,6 +76,8 @@ def run(bdate, edate):
 
      # Find Snippets without Links
      jobs_ids = query.values_list('job_id', flat=True).distinct()
+     print(f'Total Jobs: {jobs_ids.count()}')
+
      links = []
      for snippet in ASRSnippet.objects.filter(jobs__in=jobs_ids):
           r = snippet.render()
@@ -93,6 +96,7 @@ def run(bdate, edate):
                blocks=Sum('block')
           )
      )
+     print(f'Total Jobs: {len(set(links))}')
 
      # Find Simple Snippets button vs link
      jobs_ids = query.values_list('job_id', flat=True).distinct()
@@ -116,6 +120,8 @@ def run(bdate, edate):
                blocks=Sum('block'),
           )
      )
+     print(f'Total Jobs: {len(set(button_snippet))}')
+
      print('Simple Snippets using Links')
      pprint(
           query.filter(job__snippet__in=link_snippet).aggregate(
@@ -125,6 +131,7 @@ def run(bdate, edate):
                blocks=Sum('block'),
           )
      )
+     print(f'Total Jobs: {len(set(link_snippet))}')
 
      # by category
      cat = collections.defaultdict(lambda: dict(adj_impressions=0, impressions=0, clicks=0, blocks=0))
