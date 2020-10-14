@@ -678,6 +678,27 @@ class Icon(models.Model):
                     settings.IMAGE_MAX_SIZE / 1024, self.image.size / 1024)
             })
 
+    @staticmethod
+    def check_if_icon_can_be_deleted(collector, field, sub_objs, using):
+        """Checks if Icon is related to Templates that are in Draft, Scheduled or
+        Published state and prevents deletion.
+
+        """
+        asrsnippets = ASRSnippet.objects.filter(
+            template_relation__in=sub_objs, jobs__status__lte=Job.PUBLISHED
+        )
+        if asrsnippets.exists():
+            # Icon activelly used.
+            raise models.ProtectedError(
+                'Icon is in use by ASRSnippets with Draft, Scheduled or Published Jobs.',
+                asrsnippets
+            )
+        else:
+            # Icon can be deleted, set ForeignKeys referencing it to NULL.
+            # ASRSnippets that referenced this Icon will be required to set a
+            # new Icon before they can be saved through the UI.
+            collector.add_field_update(field, None, sub_objs)
+
 
 class Template(models.Model):
     TARGETING = ''
@@ -826,7 +847,7 @@ class SimpleTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         related_name='simple_title_icons',
         verbose_name='Title Icon',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
@@ -841,7 +862,9 @@ class SimpleTemplate(Template):
     )
     icon = models.ForeignKey(
         Icon,
-        on_delete=models.PROTECT,
+        on_delete=Icon.check_if_icon_can_be_deleted,
+        blank=False,
+        null=True,
         related_name='simple_icons',
         help_text='Snippet icon. 192x192px PNG.'
     )
@@ -871,7 +894,7 @@ class SimpleTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         verbose_name='Section Title Icon',
         related_name='simple_section_icons',
         help_text=('Section title icon. 64x64px. PNG. '
@@ -989,7 +1012,9 @@ class FundraisingTemplate(Template):
     )
     icon = models.ForeignKey(
         Icon,
-        on_delete=models.PROTECT,
+        blank=False,
+        null=True,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         related_name='fundraising_icons',
         help_text='Snippet icon. 192x192px PNG.'
     )
@@ -998,7 +1023,7 @@ class FundraisingTemplate(Template):
         blank=True,
         null=True,
         verbose_name='Title Icon',
-        on_delete=models.SET_NULL,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         related_name='fundraising_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
                    'PNG. Grayscale.')
@@ -1084,7 +1109,7 @@ class FxASignupTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         verbose_name='Scene 1 Title Icon',
         related_name='fxasignup_scene1_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
@@ -1101,7 +1126,9 @@ class FxASignupTemplate(Template):
     )
     scene1_icon = models.ForeignKey(
         Icon,
-        on_delete=models.PROTECT,
+        on_delete=Icon.check_if_icon_can_be_deleted,
+        blank=False,
+        null=True,
         verbose_name='Scene 1 Icon',
         related_name='fxasignup_scene1_icons',
         help_text='Snippet icon. 192x192px PNG.')
@@ -1127,7 +1154,7 @@ class FxASignupTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         verbose_name='Section Title Icon',
         related_name='fxa_scene1_section_icons',
         help_text=('Section title icon. 64x64px. PNG. '
@@ -1251,7 +1278,7 @@ class NewsletterTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         verbose_name='Scene 1 Title Icon',
         related_name='newsletter_scene1_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
@@ -1268,7 +1295,9 @@ class NewsletterTemplate(Template):
     )
     scene1_icon = models.ForeignKey(
         Icon,
-        on_delete=models.PROTECT,
+        on_delete=Icon.check_if_icon_can_be_deleted,
+        blank=False,
+        null=True,
         verbose_name='Scene 1 Icon',
         related_name='newsletter_scene1_icons',
         help_text='Snippet icon. 192x192px PNG.')
@@ -1294,7 +1323,7 @@ class NewsletterTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         verbose_name='Section Title Icon',
         related_name='newsletter_scene1_section_icons',
         help_text=('Section title icon. 64x64px. PNG. '
@@ -1447,7 +1476,7 @@ class SendToDeviceTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         verbose_name='Scene 1 Title Icon',
         related_name='sendtodevice_scene1_title_icons',
         help_text=('Small icon that shows up before the title / text. 64x64px.'
@@ -1464,7 +1493,9 @@ class SendToDeviceTemplate(Template):
     )
     scene1_icon = models.ForeignKey(
         Icon,
-        on_delete=models.PROTECT,
+        blank=False,
+        null=True,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         verbose_name='Scene 1 Icon',
         related_name='sendtodevice_scene1_icons',
         help_text='Snippet icon. 192x192 PNG.')
@@ -1490,7 +1521,7 @@ class SendToDeviceTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         verbose_name='Section Title Icon',
         related_name='sendtodevice_scene1_section_icons',
         help_text=('Section title icon. 64x64px. PNG. '
@@ -1524,7 +1555,9 @@ class SendToDeviceTemplate(Template):
     )
     scene2_icon = models.ForeignKey(
         Icon,
-        on_delete=models.PROTECT,
+        on_delete=Icon.check_if_icon_can_be_deleted,
+        blank=False,
+        null=True,
         verbose_name='Scene 2 Icon',
         related_name='sendtodevice_scene2_icons',
         help_text='Image to display above the form. 192x192px PNG.'
@@ -1677,7 +1710,7 @@ class SendToDeviceSingleSceneTemplate(Template):
         Icon,
         blank=True,
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=Icon.check_if_icon_can_be_deleted,
         verbose_name='Section Title Icon',
         related_name='sendtodevicesinglescene_section_icons',
         help_text=('Section title icon. 64x64px. PNG. '
@@ -1702,7 +1735,9 @@ class SendToDeviceSingleSceneTemplate(Template):
     )
     icon = models.ForeignKey(
         Icon,
-        on_delete=models.PROTECT,
+        on_delete=Icon.check_if_icon_can_be_deleted,
+        blank=False,
+        null=True,
         verbose_name='Icon',
         related_name='sendtodevicesinglescene_icons',
         help_text='Image to display above the form. 192x192px PNG.'
@@ -1844,7 +1879,9 @@ class SimpleBelowSearchTemplate(Template):
     )
     icon = models.ForeignKey(
         Icon,
-        on_delete=models.PROTECT,
+        on_delete=Icon.check_if_icon_can_be_deleted,
+        blank=False,
+        null=True,
         related_name='simple_below_search_icons',
         help_text='Snippet icon. 192x192px PNG.'
     )
