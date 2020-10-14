@@ -2085,7 +2085,7 @@ class Job(models.Model):
         default=0
     )
 
-    objects = managers.JobManager()
+    objects = managers.JobQuerySet.as_manager()
 
     class Meta:
         ordering = ['-modified']
