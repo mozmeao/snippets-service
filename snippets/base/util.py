@@ -207,3 +207,45 @@ def deep_search_and_replace(data, search_string, replace_string):
             data[key] = deep_search_and_replace(value, search_string, replace_string)
 
     return data
+
+
+def sumdict(dct, key='counts', channel=None, event=None):
+    """Helper function to sum all `key`s from a `list` of `dicts` with optional
+    `channel` and `event` filtering.
+
+    Example:
+    data = [{
+        'event': 'impression',
+        'channel': 'release',
+        'counts': 100
+    },
+    {
+        'event': 'click',
+        'channel': 'release',
+        'counts': 50
+    },
+    {
+        'event': 'impression',
+        'channel': 'beta',
+        'counts': 20
+    }]
+
+    >>> sum(data)
+    170
+
+    >>> sum(data, channel='release')
+    150
+
+    >>> sum(data, event='impression)
+    120
+
+    """
+    total = 0
+    for item in dct:
+        if channel and item['channel'] != channel:
+            continue
+        if event and item['event'] != event:
+            continue
+        # Handle DB storing None instead of 0
+        total += item.get(key) or 0
+    return total

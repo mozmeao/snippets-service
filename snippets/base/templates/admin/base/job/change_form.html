@@ -1,0 +1,28 @@
+{% extends 'admin/change_form.html' %}
+
+{% block after_field_sets %}
+    {{ super }}
+    <fieldset class="module aligned">
+        <h2>Metrics</h2>
+        {% if not_published_yet %}
+            Metrics will appear after Job gets published.
+        {% else %}
+          {% include "admin/metrics_table.html" with metrics=metrics %}
+            <h3>Adjusted Metrics</h3>
+            <div class="description">
+                Adjusted Metrics take into account the time a user spends in
+                the pages that display Snippets (about:newtab and
+                `about:home`). Only when a user spends at least {{ impression_threshold_seconds }} seconds in those
+                pages the Snippet impression is considered valid.
+                Otherwise it's disregarded on the basis that the user didn't spend
+                enough time to read and comprehend the snippet. Adjusted
+                Impressions are lower than unadjusted Impressions and as a
+                consequence click through rates are higher.
+            </div>
+            {% include "admin/metrics_table.html" with metrics=adj_metrics %}
+            <div title="{{ metrics_last_update }}">
+                Last Update: {{ metrics_last_update|timesince }} ago.
+            </div>
+        {% endif %}
+    </fieldset>
+{% endblock %}
