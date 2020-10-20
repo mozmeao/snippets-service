@@ -34,7 +34,7 @@ def redash_rows(query_name, **params):
     return result['query_result']['data']['rows']
 
 
-def prosses_rows(rows, date, key='message_id'):
+def process_rows(rows, date, key='message_id'):
     # To fight Telemetry spam, process metrics for Jobs currently Published or
     # Completed the last 7 days.
     jobs = Job.objects.filter(
@@ -106,10 +106,11 @@ def prosses_rows(rows, date, key='message_id'):
     for row in new_rows:
         event = row['event']
         processed[row[key]][event] = processed[row[key]].get(event, 0) + row['counts']
-        processed[row[key]][f'{event}_no_clients'] = (
-            processed[row[key]].get(f'{event}_no_clients', 0) + row['no_clients'])
-        processed[row[key]][f'{event}_no_clients_total'] = (
-            processed[row[key]].get(f'{event}_no_clients_total', 0) + row['no_clients_total'])
+        if event == 'impression':
+            processed[row[key]]['impression_no_clients_total'] = (
+                processed[row[key]].get('impression_no_clients_total', 0) +
+                row['no_clients_total']
+            )
 
         detail = [{
             'event': row['event'],
@@ -145,14 +146,7 @@ def prosses_rows(rows, date, key='message_id'):
     for k, v in processed.items():
         if 'conversion_subscribe_activation' in v:
             processed[k]['other_click'] = processed[k].get('click', 0)
-            processed[k]['other_click_no_clients'] = processed[k].get('click_no_clients', 0)
-            processed[k]['other_click_no_clients_total'] = \
-                processed[k].get('click_no_clients_total', 0)
             processed[k]['click'] = processed[k].pop('conversion_subscribe_activation')
-            processed[k]['click_no_clients'] = \
-                processed[k].pop('conversion_subscribe_activation_no_clients')
-            processed[k]['click_no_clients_total'] = \
-                processed[k].pop('conversion_subscribe_activation_no_clients_total')
             for row in processed[k]['details']:
                 if row['event'] == 'click':
                     row['event'] = 'other_click'
@@ -189,7 +183,7 @@ def update_job_metrics(date):
             start_date=job.publish_start,
             end_date=job.completed_on)
 
-    processed = prosses_rows(rows, date, key='message_id')
+    processed = process_rows(rows, date, key='message_id')
     with atomic():
         JobDailyPerformance.objects.filter(date=date).delete()
         for job, data in processed.items():

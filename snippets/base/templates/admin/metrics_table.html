@@ -1,0 +1,33 @@
+{% load humanize %}
+<style>
+ .metrics-table {
+     display:inline-block;
+     padding: 4px;
+ }
+ .metrics-table tr:nth-child(even) {
+     background-color: #f2f2f2;
+ }
+
+ .metrics-table td {
+     text-align: right;
+ }
+
+ .metrics-table th {
+     background-color: #e3e3e3;
+ }
+</style>
+<table class="metrics-table">
+    {% for line in metrics %}
+        <tr>
+            {% for item in line %}
+                {% if forloop.first or forloop.parentloop.first   %}
+                    <th >
+                        {{item|capfirst}}
+                    </th>
+                {% else %}
+                    <td> {{ item|intcomma }}</td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>

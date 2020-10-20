@@ -4,7 +4,7 @@ from snippets.base.models import Snippet
 from snippets.base.tests import SnippetFactory, TestCase
 from snippets.base.util import (convert_special_link, deep_search_and_replace,
                                 first, fluent_link_extractor,
-                                get_object_or_none, urlparams)
+                                get_object_or_none, urlparams, sumdict)
 
 
 class TestGetObjectOrNone(TestCase):
@@ -200,3 +200,29 @@ class URLParamsTests(TestCase):
         url = 'https://www.example.com'
         new_url = urlparams(url, fragment='boing')
         self.assertEqual(new_url, 'https://www.example.com/#boing')
+
+
+class SumdictTests(TestCase):
+    def test_base(self):
+        data = [
+            {
+                'event': 'impression',
+                'channel': 'release',
+                'counts': 100
+            },
+            {
+                'event': 'click',
+                'channel': 'release',
+                'counts': 50
+            },
+            {
+                'event': 'impression',
+                'channel': 'beta',
+                'counts': 20
+            }
+        ]
+
+        self.assertEqual(sumdict(data), 170)
+        self.assertEqual(sumdict(data, channel='release'), 150)
+        self.assertEqual(sumdict(data, event='impression'), 120)
+        self.assertEqual(sumdict(data, channel='release', event='impression'), 100)

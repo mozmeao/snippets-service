@@ -113,11 +113,3 @@ class JobQuerySet(QuerySet):
         jobs = jobs.filter(targets__in=targets)
 
         return jobs
-
-
-class JobManager(Manager):
-    def get_queryset(self):
-        return JobQuerySet(self.model)
-
-    def match_client(self, client):
-        return self.get_queryset().match_client(client)
