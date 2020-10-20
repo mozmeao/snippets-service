@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db.models.deletion import ProtectedError
 from django.test.utils import override_settings
 from django.urls import reverse
 
@@ -504,6 +505,17 @@ class IconTests(TestCase):
             instance.clean()
         except ValidationError as e:
             self.assertEqual(e.message_dict['image'], ['Upload only PNG images.'])
+
+    def test_can_be_deleted(self):
+        job = JobFactory(status=Job.PUBLISHED)
+        icon = job.snippet.template_ng.icon
+        self.assertRaises(ProtectedError, icon.delete)
+
+        job.change_status(status=Job.COMPLETED)
+        icon.delete()
+        job.refresh_from_db()
+
+        self.assertEqual(job.snippet.template_ng.icon, None)
 
 
 class ASRSnippetTests(TestCase):
