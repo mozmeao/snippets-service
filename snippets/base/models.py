@@ -2312,7 +2312,7 @@ class Job(models.Model):
                   'Total', 'CTR (%)', "Total Clients", '|']
                  ]
 
-        for event in ['impression', 'click', 'block', 'dismiss', 'go_to_scene2',
+        for event in ['impression', 'click', 'block', 'go_to_scene2', 'dismiss',
                       'subscribe_success', 'subscribe_error']:
             event_name = event.replace('-', ' ').replace('_', ' ')
             line = [
