@@ -46,3 +46,11 @@ class URLValidator(django_validators.URLValidator):
         self.schemes = ['https', 'special']
         self.regex = django_validators._lazy_re_compile(
             r'^(special:\w+)|(' + self.regex.pattern + ')')
+
+
+def validate_jexl(data):
+    try:
+        pyjexl.JEXL().parse(data)
+    except pyjexl.JEXLException:
+        raise ValidationError('Enter valid JEXL expression.')
+    return data

@@ -136,7 +136,7 @@ class Target(models.Model):
     filtr_firefox_service = models.CharField(max_length=250, blank=True, default='')
     filtr_operating_system = models.CharField(max_length=250, blank=True, default='')
 
-    jexl_expr = models.TextField(blank=True, default='')
+    jexl_expr = models.TextField(blank=True, default='', validators=[validators.validate_jexl])
 
     class Meta:
         ordering = ['name']
