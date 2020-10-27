@@ -357,7 +357,5 @@ REDASH_UPDATE_INTERVAL = config('REDASH_UPDATE_INTERVAL', default=600)
 # Create Bundles instantly when in development mode.
 INSTANT_BUNDLE_GENERATION = config('INSTANT_BUNDLE_GENERATION', default=DEBUG, cast=bool)
 
-NIGHTLY_INCLUDES_RELEASE = config('NIGHTLY_INCLUDES_RELEASE', default=False, cast=bool)
-
 RATELIMIT_ENABLE = config('RATELIMIT_ENABLE', default=False, cast=bool)
 RATELIMIT_RATE = config('RATELIMIT_RATE', default='10/m')

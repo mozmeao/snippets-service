@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from snippets.base import models
 from snippets.base.tests import TestCase
 from snippets.base.validators import (validate_as_router_fluent_variables,
-                                      validate_json_data)
+                                      validate_json_data, validate_jexl)
 
 
 class ASRouterFluentVariablesValidatorTests(TestCase):

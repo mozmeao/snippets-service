@@ -450,10 +450,9 @@ class JobTests(TestCase):
     def test_channels(self):
         job = JobFactory.create(
             targets=[
-                TargetFactory.create(on_release=True),
-                TargetFactory.create(on_beta=True, on_nightly=True),
-                TargetFactory.create(on_release=False, on_esr=False,
-                                     on_aurora=False, on_beta=False, on_nightly=False),
+                TargetFactory.create(channels='release'),
+                TargetFactory.create(channels='release;beta;nightly'),
+                TargetFactory.create(channels=''),
             ])
 
         self.assertTrue(job.channels, set(['release', 'beta', 'nightly']))
@@ -474,14 +473,9 @@ class JobTests(TestCase):
         job = JobFactory.create(
             weight=10, campaign__slug='demo-campaign',
             targets=[
-                TargetFactory(on_release=False, on_beta=False,
-                              on_esr=False, on_aurora=False, on_nightly=True,
-                              jexl_expr='(la==lo)'),
-                TargetFactory(on_release=False, on_beta=True,
-                              on_esr=False, on_aurora=False, on_nightly=True),
-                TargetFactory(on_release=False, on_beta=True,
-                              on_esr=False, on_aurora=False, on_nightly=True,
-                              jexl_expr='foo==bar'),
+                TargetFactory(channels='nightly', jexl_expr='(la==lo)'),
+                TargetFactory(channels='beta;nightly'),
+                TargetFactory(channels='beta;nightly', jexl_expr='foo==bar'),
             ]
         )
         snippet_render = {
@@ -513,9 +507,7 @@ class JobTests(TestCase):
         job = JobFactory.create(
             weight=10, campaign__slug='demo-campaign',
             targets=[
-                TargetFactory(on_release=False, on_beta=False,
-                              on_esr=False, on_aurora=False, on_nightly=True,
-                              jexl_expr='(la==lo)'),
+                TargetFactory(channels='nightly', jexl_expr='(la==lo)'),
             ]
         )
         job.snippet.render = Mock()
@@ -639,7 +631,7 @@ class JobTests(TestCase):
 
 class TargetTests(TestCase):
     def test_is_custom(self):
-        target = TargetFactory(on_release=True)
+        target = TargetFactory(channels='')
         self.assertTrue(target.is_custom)
-        not_custom_target = TargetFactory(on_release=True, filtr_is_default_browser='true')
+        not_custom_target = TargetFactory(filtr_is_default_browser='true')
         self.assertFalse(not_custom_target.is_custom)

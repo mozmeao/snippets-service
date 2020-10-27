@@ -4,7 +4,7 @@ Date: 2020-03-31
 
 ## Status
 
-Accepted
+Replaced by ADR 0007.
 
 ## Context
 

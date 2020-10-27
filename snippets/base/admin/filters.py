@@ -46,11 +46,11 @@ class ChannelFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('on_release', 'Release'),
-            ('on_esr', 'ESR'),
-            ('on_beta', 'Beta'),
-            ('on_aurora', 'Dev (Aurora)'),
-            ('on_nightly', 'Nightly'),
+            ('release', 'Release'),
+            ('esr', 'ESR'),
+            ('beta', 'Beta'),
+            ('aurora', 'Dev (Aurora)'),
+            ('nightly', 'Nightly'),
         )
 
     def queryset(self, request, queryset):
@@ -58,8 +58,8 @@ class ChannelFilter(admin.SimpleListFilter):
             return queryset
 
         if hasattr(queryset.model, 'jobs'):
-            return queryset.filter(**{f'jobs__targets__{self.value()}': True}).distinct()
-        return queryset.filter(**{f'targets__{self.value()}': True}).distinct()
+            return queryset.filter(jobs__targets__filtr_channels__contains=self.value()).distinct()
+        return queryset.filter(targets__filtr_channels__contains=self.value()).distinct()
 
 
 class TemplateFilter(admin.SimpleListFilter):

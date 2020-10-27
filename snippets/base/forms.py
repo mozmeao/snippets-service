@@ -250,10 +250,22 @@ class ASRSnippetAdminForm(forms.ModelForm):
 class TargetAdminCustomForm(forms.ModelForm):
     class Meta:
         model = models.Target
-        fields = ['name', 'jexl_expr', 'on_release', 'on_esr', 'on_beta', 'on_aurora', 'on_nightly']
+        fields = ['name', 'jexl_expr']
 
 
 class TargetAdminForm(forms.ModelForm):
+    filtr_channels = fields.JEXLChannelField(
+        'browserSettings.update.channel',
+        choices=[
+            ('release', 'Release'),
+            ('esr', 'ESR'),
+            ('beta', 'Beta'),
+            ('aurora', 'Dev'),
+            ('nightly', 'Nightly')
+        ],
+        widget=forms.CheckboxSelectMultiple(),
+        required=False,
+    )
     filtr_is_default_browser = fields.JEXLChoiceField(
         'isDefaultBrowser',
         choices=((None, "I don't care"),
@@ -443,16 +455,17 @@ class TargetAdminForm(forms.ModelForm):
         model = models.Target
         exclude = ['creator', 'created', 'modified']
 
-    def save(self, *args, **kwargs):
+    def generate_jexl_expr(self, data):
         jexl_expr_array = []
-
         for name, field in self.fields.items():
             if name.startswith('filtr_'):
-                value = self.cleaned_data[name]
+                value = data[name]
                 if value:
                     jexl_expr_array.append(field.to_jexl(value))
-        self.instance.jexl_expr = ' && '.join([x for x in jexl_expr_array if x])
+        return ' && '.join([x for x in jexl_expr_array if x])
 
+    def save(self, *args, **kwargs):
+        self.instance.jexl_expr = self.generate_jexl_expr(self.cleaned_data)
         return super().save(*args, **kwargs)
 
 

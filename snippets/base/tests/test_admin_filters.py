@@ -7,10 +7,10 @@ from snippets.base.tests import JobFactory, TargetFactory, TestCase
 class ChannelFilterTests(TestCase):
     def test_job(self):
         nightly_snippets = JobFactory.create_batch(
-            2, targets=[TargetFactory(on_release=False, on_nightly=True)])
-        JobFactory.create_batch(2, targets=[TargetFactory(on_release=False, on_beta=True)])
+            2, targets=[TargetFactory(channels='nightly')])
+        JobFactory.create_batch(2, targets=[TargetFactory(channels='beta')])
 
-        filtr = ChannelFilter(None, {'channel': 'on_nightly'}, Job, JobAdmin)
+        filtr = ChannelFilter(None, {'channel': 'nightly'}, Job, JobAdmin)
         result = filtr.queryset(None, Job.objects.all())
 
         self.assertTrue(result.count(), 2)

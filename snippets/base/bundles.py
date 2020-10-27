@@ -14,7 +14,7 @@ from product_details import product_details
 from snippets.base import models
 
 
-def generate_bundles(timestamp=None, limit_to_locale=None, limit_to_channel=None,
+def generate_bundles(timestamp=None, limit_to_locale=None,
                      limit_to_distribution_bundle=None, save_to_disk=True,
                      stdout=StringIO()):
     if not timestamp:
@@ -30,17 +30,14 @@ def generate_bundles(timestamp=None, limit_to_locale=None, limit_to_channel=None
         ).distinct()
 
     stdout.write('Processing bundles…')
-    if limit_to_locale and limit_to_channel:
-        combinations_to_process = [
-            (limit_to_channel, limit_to_locale)
+    if limit_to_locale:
+        all_locales_to_process = [
+            limit_to_locale,
         ]
     else:
-        combinations_to_process = set(
+        all_locales_to_process = set(
             itertools.chain.from_iterable(
-                itertools.product(
-                    job.channels,
-                    job.snippet.locale.code.strip(',').split(',')
-                )
+                job.snippet.locale.code.strip(',').split(',')
                 for job in total_jobs
             )
         )
@@ -56,25 +53,11 @@ def generate_bundles(timestamp=None, limit_to_locale=None, limit_to_channel=None
     for distribution_bundle in distribution_bundles_to_process:
         distributions = distribution_bundle.distributions.all()
 
-        for channel, locale in combinations_to_process:
-            additional_jobs = []
-            if channel == 'nightly' and settings.NIGHTLY_INCLUDES_RELEASE:
-                additional_jobs = models.Job.objects.filter(
-                    status=models.Job.PUBLISHED).filter(**{
-                        'targets__on_release': True,
-                        'distribution__in': distributions,
-                    })
+        for locale in all_locales_to_process:
 
-            channel_jobs = models.Job.objects.filter(
-                status=models.Job.PUBLISHED).filter(
-                    Q(**{
-                        'targets__on_{}'.format(channel): True,
-                        'distribution__in': distributions,
-                    }))
-
-            all_jobs = models.Job.objects.filter(
-                Q(id__in=additional_jobs) | Q(id__in=channel_jobs)
-            )
+            all_jobs = (models.Job.objects
+                        .filter(status=models.Job.PUBLISHED)
+                        .filter(distribution__in=distributions))
 
             locales_to_process = [
                 key.lower() for key in product_details.languages.keys()
@@ -82,8 +65,7 @@ def generate_bundles(timestamp=None, limit_to_locale=None, limit_to_channel=None
             ]
 
             for locale_to_process in locales_to_process:
-                filename = 'Firefox/{channel}/{locale}/{distribution}.json'.format(
-                    channel=channel,
+                filename = 'Firefox/{locale}/{distribution}.json'.format(
                     locale=locale_to_process,
                     distribution=distribution_bundle.code_name,
                 )
@@ -95,7 +77,7 @@ def generate_bundles(timestamp=None, limit_to_locale=None, limit_to_channel=None
                     Q(snippet__locale__code__contains=full_locale)).distinct()
 
                 # If DistributionBundle is not enabled, or if there are no
-                # Published Jobs for the channel / locale / distribution
+                # Published Jobs for the locale / distribution
                 # combination, delete the current bundle file if it exists.
                 if save_to_disk and not distribution_bundle.enabled or not bundle_jobs.exists():
                     if default_storage.exists(filename):
@@ -103,21 +85,14 @@ def generate_bundles(timestamp=None, limit_to_locale=None, limit_to_channel=None
                         default_storage.delete(filename)
                     continue
 
-                data = []
-                channel_job_ids = list(channel_jobs.values_list('id', flat=True))
-                for job in bundle_jobs:
-                    if job.id in channel_job_ids:
-                        render = job.render()
-                    else:
-                        render = job.render(always_eval_to_false=True)
-                    data.append(render)
-
+                data = [
+                    job.render() for job in bundle_jobs
+                ]
                 bundle_content = json.dumps({
                     'messages': data,
                     'metadata': {
                         'generated_at': datetime.utcnow().isoformat(),
                         'number_of_snippets': len(data),
-                        'channel': channel,
                         'locale': locale_to_process,
                         'distribution_bundle': distribution_bundle.code_name,
                     }
@@ -149,7 +124,6 @@ def generate_bundles(timestamp=None, limit_to_locale=None, limit_to_channel=None
                 'metadata': {
                     'generated_at': datetime.utcnow().isoformat(),
                     'number_of_snippets': 0,
-                    'channel': limit_to_channel,
                     'locale': limit_to_locale,
                     'distribution_bundle': limit_to_distribution_bundle,
                 }

@@ -64,7 +64,7 @@ class FetchSnippetPregenBundleTests(TestCase):
     def test_base(self):
         response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
         expected_url = (
-            'http://example.org/media/bundles/pregen/Firefox/release/el-gr/default.json'
+            'http://example.org/media/bundles/pregen/Firefox/el-gr/default.json'
         )
         self.assertEqual(response.url, expected_url)
 
@@ -72,16 +72,7 @@ class FetchSnippetPregenBundleTests(TestCase):
     def test_cdn(self):
         response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
         expected_url = (
-            'https://cdn.com/media/bundles/pregen/Firefox/release/el-gr/default.json'
-        )
-        self.assertEqual(response.url, expected_url)
-
-    def test_complicated_channel(self):
-        asrclient_kwargs = self.asrclient_kwargs.copy()
-        asrclient_kwargs['channel'] = 'nightly-cck-δφια'
-        response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
-        expected_url = (
-            'http://example.org/media/bundles/pregen/Firefox/nightly/el-gr/default.json'
+            'https://cdn.com/media/bundles/pregen/Firefox/el-gr/default.json'
         )
         self.assertEqual(response.url, expected_url)
 
@@ -90,7 +81,7 @@ class FetchSnippetPregenBundleTests(TestCase):
         asrclient_kwargs['name'] = 'Edge'
         response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
         expected_url = (
-            'http://example.org/media/bundles/pregen/Firefox/release/el-gr/default.json'
+            'http://example.org/media/bundles/pregen/Firefox/el-gr/default.json'
         )
         self.assertEqual(response.url, expected_url)
 
@@ -99,7 +90,7 @@ class FetchSnippetPregenBundleTests(TestCase):
         asrclient_kwargs['distribution'] = 'experiment-foo-bar'
         response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
         expected_url = (
-            'http://example.org/media/bundles/pregen/Firefox/release/el-gr/foo-bar.json'
+            'http://example.org/media/bundles/pregen/Firefox/el-gr/foo-bar.json'
         )
         self.assertEqual(response.url, expected_url)
 
@@ -109,7 +100,6 @@ class FetchSnippetPregenBundleTests(TestCase):
             generate_bundles_mock.return_value = 'foo=bar'
             response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
         generate_bundles_mock.assert_called_with(
-            limit_to_channel='release',
             limit_to_locale='el-gr',
             limit_to_distribution_bundle='default',
             save_to_disk=False,
