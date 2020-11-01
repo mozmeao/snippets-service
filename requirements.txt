@@ -384,9 +384,9 @@ netaddr==0.7.19 \
 pip-api==0.0.14 \
     --hash=sha256:86e03968ac353869b52e57aa8d8572e096f24b797ac34c4fae3a380190bb02be \
     --hash=sha256:0bbad536c70f0dfdc88e6811418ab0e8ac1aece7cf6c69223ae602a6ebc2943b
-pyparsing==2.4.5 \
-    --hash=sha256:20f995ecd72f2a1f4bf6b072b63b22e2eb457836601e76d6e5dfcd75436acc1f \
-    --hash=sha256:4ca62001be367f01bd3e92ecbb79070272a9d4964dce6a48a82ff0b8bc7e683a
+pyparsing==2.4.7 \
+    --hash=sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b \
+    --hash=sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1
 packaging==20.3 \
     --hash=sha256:82f77b9bee21c1bafbf35a84905d604d5d1223801d639cf3ed140bd651c08752 \
     --hash=sha256:3c292b474fda1671ec57d46d739d072bfd495a4f51ad01a055121d81e952b7a3
