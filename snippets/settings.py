@@ -38,14 +38,12 @@ INSTALLED_APPS = [
 
     # Third party apps
     'django_jinja',
-    'django_ace',
     'product_details',
     'django_extensions',
     'reversion',
     'cachalot',
     'mozilla_django_oidc',
     'watchman',
-    'quickedit',
     'django_admin_listfilter_dropdown',
     'admin_reorder',
     'django_filters',

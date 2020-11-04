@@ -4,19 +4,16 @@ import re
 from django.contrib import admin, messages
 from django.contrib.admin.utils import flatten_fieldsets
 from django.contrib.humanize.templatetags.humanize import intcomma
-from django.db.models import Sum, TextField, Q
+from django.db.models import Sum, Q
 from django.http import HttpResponseRedirect
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from django_ace import AceWidget
 from django_admin_listfilter_dropdown.filters import (RelatedDropdownFilter,
                                                       RelatedOnlyDropdownFilter)
 from django_statsd.clients import statsd
-from jinja2.meta import find_undeclared_variables
-from reversion.admin import VersionAdmin
 from taggit_helpers.admin import TaggitListFilter
 
 from snippets.base import forms, models
@@ -62,73 +59,9 @@ class RelatedSnippetsMixin():
         )
 
 
-class ClientMatchRuleAdmin(VersionAdmin, admin.ModelAdmin):
-    list_display = ('description', 'is_exclusion', 'startpage_version', 'name',
-                    'version', 'locale', 'appbuildid', 'build_target',
-                    'channel', 'os_version', 'distribution',
-                    'distribution_version', 'modified')
-    list_filter = ('name', 'version', 'os_version', 'appbuildid',
-                   'build_target', 'channel', 'distribution', 'locale')
-    save_on_top = True
-    search_fields = ('description',)
-
-    class Media:
-        js = (
-            'js/admin/jquery.are-you-sure.js',
-            'js/admin/alert-page-leaving.js',
-        )
-
-
 class LogEntryAdmin(admin.ModelAdmin):
     list_display = ('user', 'content_type', 'object_id', 'object_repr', 'change_message')
     list_filter = ('user', 'content_type')
-
-
-class SnippetTemplateVariableInline(admin.TabularInline):
-    model = models.SnippetTemplateVariable
-    formset = forms.SnippetTemplateVariableInlineFormset
-    max_num = 0
-    can_delete = False
-    readonly_fields = ('name',)
-    fields = ('name', 'type', 'order', 'description')
-
-
-class SnippetTemplateAdmin(VersionAdmin, admin.ModelAdmin):
-    save_on_top = True
-    list_display = ('name', 'priority', 'hidden')
-    list_filter = ('hidden', 'startpage')
-    inlines = (SnippetTemplateVariableInline,)
-    formfield_overrides = {
-        TextField: {'widget': AceWidget(mode='html', theme='github',
-                                        width='1200px', height='500px')},
-    }
-
-    def save_related(self, request, form, formsets, change):
-        """
-        After saving the related objects, remove and add
-        SnippetTemplateVariables depending on how the template code changed.
-        """
-        super(SnippetTemplateAdmin, self).save_related(request, form, formsets,
-                                                       change)
-
-        # Parse the template code and find any undefined variables.
-        ast = models.JINJA_ENV.env.parse(form.instance.code)
-        new_vars = find_undeclared_variables(ast)
-        var_manager = form.instance.variable_set
-
-        # Filter out reserved variable names.
-        new_vars = [x for x in new_vars if x not in RESERVED_VARIABLES]
-
-        # Delete variables not in the new set.
-        var_manager.filter(~Q(name__in=new_vars)).delete()
-
-        # Create variables that don't exist.
-        for i, variable in enumerate(new_vars, start=1):
-            obj, _ = models.SnippetTemplateVariable.objects.get_or_create(
-                template=form.instance, name=variable)
-            if obj.order == 0:
-                obj.order = i * 10
-                obj.save()
 
 
 class AddonAdmin(admin.ModelAdmin):

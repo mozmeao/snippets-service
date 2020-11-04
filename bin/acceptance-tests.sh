@@ -7,7 +7,6 @@ URLS=(
     "/readiness/"
     "/robots.txt"
     "/contribute.json"
-    "/5/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/en-US-test/release/Windows_NT%206.1/default/default/"
     "/6/Firefox/62.0.1/20160922113459/WINNT_x86-msvc/en-US/release/Windows_NT%206.1/default/default/"
     "/feeds/snippets.ics"
 )
@@ -56,8 +55,6 @@ done
 # Check a page that throws 404. Not ideal but will surface 500s
 check_http_code ${BASE_URL}/foo 404
 
-check_zero_content_length ${BASE_URL}/4/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/xx/release/Windows_NT%206.1/default/default/
-check_zero_content_length ${BASE_URL}/5/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/xx/release/Windows_NT%206.1/default/default/
 check_empty_json ${BASE_URL}/6/Firefox/56.0.1/20160922113459/WINNT_x86-msvc/xx/release/Windows_NT%206.1/default/default/
 
 exit ${EXIT}

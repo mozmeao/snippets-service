@@ -1,5 +1,4 @@
 import copy
-import datetime
 import re
 from urllib.parse import ParseResult, urlparse, urlencode
 
@@ -8,19 +7,6 @@ from django.utils.encoding import smart_bytes
 
 from product_details import product_details
 from product_details.version_compare import version_list
-
-EPOCH = datetime.datetime.utcfromtimestamp(0)
-
-
-def get_object_or_none(model_class, **filters):
-    """
-    Identical to Model.get, except instead of throwing exceptions, this returns
-    None.
-    """
-    try:
-        return model_class.objects.get(**filters)
-    except (model_class.DoesNotExist, model_class.MultipleObjectsReturned):
-        return None
 
 
 def first(collection, callback):

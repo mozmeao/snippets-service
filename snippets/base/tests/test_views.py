@@ -1,108 +1,16 @@
 from unittest.mock import DEFAULT, patch
 
-from django.contrib.auth.models import User
+from django.http import Http404
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.urls import reverse
 
-
 import snippets.base.models
 from snippets.base import views
 from snippets.base.models import Client
-from snippets.base.tests import (ASRSnippetFactory, SnippetFactory,
-                                 SnippetTemplateFactory, TestCase)
+from snippets.base.tests import ASRSnippetFactory, TestCase
 
 snippets.base.models.CHANNELS = ('release', 'beta', 'aurora', 'nightly')
-
-
-class PreviewSnippetTests(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_superuser('admin', 'admin@example.com', 'asdf')
-        self.client.login(username='admin', password='asdf')
-
-    def _preview_snippet(self, **kwargs):
-        return self.client.post(reverse('base.preview'), kwargs)
-
-    def test_invalid_template(self):
-        """If template_id is missing or invalid, return a 400 Bad Request."""
-        response = self._preview_snippet()
-        self.assertEqual(response.status_code, 400)
-
-        response = self._preview_snippet(template_id=9999999999999)
-        self.assertEqual(response.status_code, 400)
-
-        response = self._preview_snippet(template_id='')
-        self.assertEqual(response.status_code, 400)
-
-    def test_invalid_data(self):
-        """If data is missing or invalid, return a 400 Bad Request."""
-        template = SnippetTemplateFactory.create()
-        response = self._preview_snippet(template_id=template.id)
-        self.assertEqual(response.status_code, 400)
-
-        response = self._preview_snippet(template_id=template.id,
-                                         data='{invalid."json]')
-        self.assertEqual(response.status_code, 400)
-
-    def test_valid_args(self):
-        """If template_id and data are both valid, return the preview page."""
-        template = SnippetTemplateFactory.create()
-        data = '{"a": "b"}'
-        response = self._preview_snippet(template_id=template.id, data=data)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['client'].startpage_version, 4)
-        self.assertTemplateUsed(response, 'base/preview.jinja')
-
-    def test_valid_args_activity_stream(self):
-        """If template_id and data are both valid, return the preview page."""
-        template = SnippetTemplateFactory.create()
-        data = '{"a": "b"}'
-        response = self._preview_snippet(template_id=template.id, activity_stream=True, data=data)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['client'].startpage_version, 5)
-        self.assertTemplateUsed(response, 'base/preview_as.jinja')
-
-    def test_skip_boilerplate(self):
-        """If template_id and data are both valid, return the preview page."""
-        template = SnippetTemplateFactory.create()
-        data = '{"a": "b"}'
-        response = self._preview_snippet(template_id=template.id, skip_boilerplate=True,
-                                         activity_stream=True, data=data)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['client'].startpage_version, 5)
-        self.assertTemplateUsed(response, 'base/preview_without_shell.jinja')
-
-
-class ShowSnippetTests(TestCase):
-    def test_valid_snippet(self):
-        """Test show of snippet."""
-        snippet = SnippetFactory.create()
-        response = self.client.get(reverse('base.show', kwargs={'snippet_id': snippet.id}))
-        self.assertEqual(response.status_code, 200)
-
-    def test_invalid_snippet(self):
-        """Test invalid snippet returns 404."""
-        response = self.client.get(reverse('base.show', kwargs={'snippet_id': '100'}))
-        self.assertEqual(response.status_code, 404)
-
-    def test_valid_disabled_snippet_unauthenticated(self):
-        """Test disabled snippet returns 404 to unauthenticated users."""
-        snippet = SnippetFactory.create(published=False)
-        response = self.client.get(reverse('base.show', kwargs={'snippet_id': snippet.id}))
-        self.assertEqual(response.status_code, 404)
-
-    def test_valid_disabled_snippet_authenticated(self):
-        """Test disabled snippet returns 200 to authenticated users."""
-        snippet = SnippetFactory.create(published=False)
-        User.objects.create_superuser('admin', 'admin@example.com', 'asdf')
-        self.client.login(username='admin', password='asdf')
-        response = self.client.get(reverse('base.show', kwargs={'snippet_id': snippet.id}))
-        self.assertEqual(response.status_code, 200)
-
-    def test_uuid_snippet(self):
-        snippet = SnippetFactory.create(published=False)
-        response = self.client.get(reverse('base.show_uuid', kwargs={'snippet_id': snippet.uuid}))
-        self.assertEqual(response.status_code, 200)
 
 
 class FetchSnippetsTests(TestCase):
@@ -143,9 +51,9 @@ class FetchSnippetsTests(TestCase):
                             fetch_snippet_bundle=DEFAULT) as patches:
             with override_settings(USE_PREGEN_BUNDLES=True):
                 asrclient_kwargs['startpage_version'] = 5
-                views.fetch_snippets(request, **asrclient_kwargs)
+                self.assertRaises(Http404, views.fetch_snippets, request, **asrclient_kwargs)
                 self.assertFalse(patches['fetch_snippet_pregen_bundle'].called)
-                self.assertTrue(patches['fetch_snippet_bundle'].called)
+                self.assertFalse(patches['fetch_snippet_bundle'].called)
 
 
 @override_settings(SITE_URL='http://example.org',
@@ -239,23 +147,6 @@ class FetchSnippetBundleTests(TestCase):
             ('distribution_version', 'default_version'),
         ])
 
-    def test_normal(self):
-        with patch.object(views, 'SnippetBundle') as SnippetBundle:
-            bundle = SnippetBundle.return_value
-            bundle.url = '/foo/bar'
-            bundle.empty = False
-            bundle.cached = True
-            response = views.fetch_snippet_bundle(self.request, **self.client_kwargs)
-
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], '/foo/bar')
-
-        # Check for correct client.
-        self.assertEqual(SnippetBundle.call_args[0][0].locale, 'en-US')
-
-        # Do not generate bundle when not expired.
-        self.assertTrue(not SnippetBundle.return_value.generate.called)
-
     def test_normal_asr(self):
         with patch.object(views, 'ASRSnippetBundle') as ASRSnippetBundle:
             bundle = ASRSnippetBundle.return_value
@@ -275,28 +166,18 @@ class FetchSnippetBundleTests(TestCase):
 
     def test_regenerate(self):
         """If the bundle has expired, re-generate it."""
-        with patch.object(views, 'SnippetBundle') as SnippetBundle:
-            bundle = SnippetBundle.return_value
+        with patch.object(views, 'ASRSnippetBundle') as ASRSnippetBundle:
+            bundle = ASRSnippetBundle.return_value
             bundle.url = '/foo/bar'
             bundle.empty = False
             bundle.cached = False
-            response = views.fetch_snippet_bundle(self.request, **self.client_kwargs)
+            response = views.fetch_snippet_bundle(self.request, **self.asrclient_kwargs)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/foo/bar')
 
         # Since the bundle was expired, ensure it was re-generated.
-        self.assertTrue(SnippetBundle.return_value.generate.called)
-
-    def test_empty(self):
-        """If the bundle is empty return 200 and empty string."""
-        with patch.object(views, 'SnippetBundle') as SnippetBundle:
-            bundle = SnippetBundle.return_value
-            bundle.empty = True
-            response = views.fetch_snippet_bundle(self.request, **self.client_kwargs)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, b'')
+        self.assertTrue(ASRSnippetBundle.return_value.generate.called)
 
     def test_empty_asr(self):
         """If the bundle is empty return 200 and valid JSON for ASR."""
@@ -315,9 +196,9 @@ class FetchSnippetBundleTests(TestCase):
         Ensure that the client object is constructed correctly from the URL
         arguments.
         """
-        params = self.client_kwargs.values()
+        params = self.asrclient_kwargs.values()
         self.client.get('/{0}/'.format('/'.join(['{}'.format(x) for x in params])))
-        ClientMock.assert_called_with(**self.client_kwargs)
+        ClientMock.assert_called_with(**self.asrclient_kwargs)
 
     @override_settings(SNIPPET_BUNDLE_TIMEOUT=75)
     def test_cache_headers(self):
@@ -325,7 +206,7 @@ class FetchSnippetBundleTests(TestCase):
         fetch_snippets should always have Cache-control set to
         'public, max-age={settings.SNIPPET_BUNDLE_TIMEOUT}'
         """
-        params = self.client_kwargs.values()
+        params = self.asrclient_kwargs.values()
         response = self.client.get('/{0}/'.format('/'.join(['{}'.format(x) for x in params])))
         cache_headers = [header.strip() for header in response['Cache-control'].split(',')]
         self.assertEqual(set(cache_headers), set(['public', 'max-age=75']))
