@@ -17,17 +17,6 @@ def first(collection, callback):
     return next((item for item in collection if callback(item)), None)
 
 
-def create_locales():
-    from snippets.base.models import TargetedLocale
-
-    for code, name in product_details.languages.items():
-        locale = TargetedLocale.objects.get_or_create(code=code.lower())[0]
-        name = name['English']
-        if locale.name != name:
-            locale.name = name
-            locale.save()
-
-
 def create_countries():
     from snippets.base.models import TargetedCountry
 
