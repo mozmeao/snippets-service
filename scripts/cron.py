@@ -10,7 +10,7 @@ from django.db import connection
 import babis
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from snippets.base.util import create_countries, create_locales
+from snippets.base.util import create_countries
 
 
 MANAGE = os.path.join(settings.ROOT, 'manage.py')
@@ -63,7 +63,6 @@ def job_update_product_details():
     call_command('update_product_details')
     connection.close()
     create_countries()
-    create_locales()
 
 
 @scheduled_job('cron', month='*', day='*', hour='*', minute='*', max_instances=1, coalesce=True)
