@@ -58,9 +58,6 @@ Pygments==2.4.2 \
 django-jinja==2.4.1 \
     --hash=sha256:8a49d73de616a12075eee14c6d3bbab936261a463457d40348d8b8e2995cfbed \
     --hash=sha256:ceaa0eeebc4d91a5800967e50f4f087f0b6457503e3c2af85dc199bed8732a9a
-django-ace==1.0.5 \
-    --hash=sha256:1334f08b4c5548e8ab13b25787e6a3f49dfe5fc92bb3a3d845b5b42fa0e1aff6 \
-    --hash=sha256:a2616b0265bdc1f839cc905c77243f779d82c00f3fddf58d23c08eb07e91e189
 django-mozilla-product-details==0.14.1 \
     --hash=sha256:5fa2a8c3f2b9489aeb39b42c3612a43b0be5e778ffab07a5a2cf23b1eced4d64 \
     --hash=sha256:b7428e2dae653c4b0e35fa15363dd26b74dba821bf384c5cd835da0f1566b841
@@ -95,15 +92,9 @@ lxml==4.5.0 \
 django-cache-url==3.0.0 \
     --hash=sha256:235950e2d7cb16164082167c2974301e2f0fb2313d40bfacc9d24f5b09c3514b \
     --hash=sha256:964120787dc80e568a355385a3880a19f2f00219c251903956f3137d1583d097
-pyquery==1.4.1 \
-    --hash=sha256:710eac327b87f15f74a95c3378c6ba62ef6fcfb0a6d009a7d33349c9f7e65835 \
-    --hash=sha256:8fcf77c72e3d602ce10a0bd4e65f57f0945c18e15627e49130c27172d4939d98
 factory_boy==2.12.0 \
     --hash=sha256:728df59b372c9588b83153facf26d3d28947fc750e8e3c95cefa9bed0e6394ee \
     --hash=sha256:faf48d608a1735f0d0a3c9cbf536d64f9132b547dae7ba452c4d99a79e84a370
-cssselect==1.1.0 \
-    --hash=sha256:f612ee47b749c877ebae5bb77035d8f4202c6ad0f0fc1271b3c18ad6c4468ecf \
-    --hash=sha256:f95f8dedd925fd8f54edb3d2dfb44c190d9d18512377d3c1e2388d16126879bc
 flake8==3.8.4 \
     --hash=sha256:749dbbd6bfd0cf1318af27bf97a14e28e5ff548ef8e5b1566ccfb25a11e7c839 \
     --hash=sha256:aadae8761ec651813c24be05c6f7b4680857ef6afaae4651a4eccaef97ce6c3b
@@ -451,8 +442,6 @@ typing==3.7.4 \
     --hash=sha256:38566c558a0a94d6531012c8e917b1b8518a41e418f7f15f00e129cc80162ad3 \
     --hash=sha256:53765ec4f83a2b720214727e319607879fec4acde22c4fbb54fa2604e79e44ce \
     --hash=sha256:84698954b4e6719e912ef9a42a2431407fe3755590831699debda6fba92aac55
-django-quickedit-ng==0.2.0 \
-    --hash=sha256:be09d4ffd2c56b79a2ec167f125ef4dbd779c66dbf12910bdb1a856399e34de6
 django-admin-list-filter-dropdown==1.0.3 \
     --hash=sha256:bf1b48bab9772dad79db71efef17e78782d4f2421444d5e49bb10e0da71cd6bb \
     --hash=sha256:07cd37b6a9be1b08f11d4a92957c69b67bc70b1f87a2a7d4ae886c93ea51eb53

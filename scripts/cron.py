@@ -66,12 +66,6 @@ def job_update_product_details():
     create_locales()
 
 
-@scheduled_job('cron', month='*', day='*', hour='*/12', minute='20', max_instances=1, coalesce=True)
-@babis.decorator(ping_after=settings.DEAD_MANS_SNITCH_DISABLE_SNIPPETS)
-def job_disable_snippets_past_publish_date():
-    call_command('disable_snippets_past_publish_date')
-
-
 @scheduled_job('cron', month='*', day='*', hour='*', minute='*', max_instances=1, coalesce=True)
 @babis.decorator(ping_after=settings.DEAD_MANS_SNITCH_UPDATE_JOBS)
 def job_update_jobs():

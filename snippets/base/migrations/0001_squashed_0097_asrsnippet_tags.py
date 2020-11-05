@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255, unique=True)),
-                ('code', models.TextField(validators=[snippets.base.validators.validate_xml_template])),
+                ('code', models.TextField()),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('hidden', models.BooleanField(default=False, help_text=b'Hide from template selection dropdown')),
@@ -103,7 +103,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255, unique=True)),
-                ('data', models.TextField(default=b'{}', validators=[snippets.base.validators.validate_xml_variables])),
+                ('data', models.TextField(default=b'{}')),
                 ('priority', models.IntegerField(blank=True, default=0)),
                 ('disabled', models.BooleanField(default=True)),
                 ('publish_start', models.DateTimeField(blank=True, null=True)),

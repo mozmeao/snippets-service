@@ -1,13 +1,11 @@
 import json
 from urllib.parse import urljoin, urlparse
 
-from distutils.util import strtobool
 from django.conf import settings
-from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.utils.functional import lazy
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
@@ -19,12 +17,10 @@ from django_filters.views import FilterView
 from django_statsd.clients import statsd
 from ratelimit.decorators import ratelimit
 
-from snippets.base import util
-from snippets.base.bundles import ASRSnippetBundle, SnippetBundle
+from snippets.base.bundles import ASRSnippetBundle
 from snippets.base.decorators import access_control
 from snippets.base.filters import JobFilter
-from snippets.base.models import CHANNELS, ASRSnippet, Client, Snippet, SnippetTemplate
-from snippets.base.util import get_object_or_none
+from snippets.base.models import CHANNELS, ASRSnippet, Client
 
 
 def _bundle_timeout():
@@ -53,7 +49,10 @@ class JobListView(FilterView):
 
 
 def fetch_snippets(request, **kwargs):
-    if settings.USE_PREGEN_BUNDLES and kwargs['startpage_version'] == 6:
+    if kwargs['startpage_version'] != 6:
+        raise Http404()
+
+    if settings.USE_PREGEN_BUNDLES:
         return fetch_snippet_pregen_bundle(request, **kwargs)
     return fetch_snippet_bundle(request, **kwargs)
 
@@ -104,20 +103,11 @@ def fetch_snippet_bundle(request, **kwargs):
     statsd.incr('serve.snippets')
 
     client = Client(**kwargs)
-    if client.startpage_version == 6:
-        bundle = ASRSnippetBundle(client)
-    else:
-        bundle = SnippetBundle(client)
+    bundle = ASRSnippetBundle(client)
     if bundle.empty:
         statsd.incr('bundle.empty')
-
-        if client.startpage_version == 6:
-            # Return valid JSON for Activity Stream Router
-            return HttpResponse(status=200, content='{}', content_type='application/json')
-
-        # This is not a 204 because Activity Stream expects content, even if
-        # it's empty.
-        return HttpResponse(status=200, content='')
+        # Return valid JSON for Activity Stream Router
+        return HttpResponse(status=200, content='{}', content_type='application/json')
     elif bundle.cached:
         statsd.incr('bundle.cached')
     else:
@@ -138,78 +128,6 @@ def preview_asr_snippet(request, uuid):
         'messages': [snippet.render(preview=True)],
     })
     return HttpResponse(bundle_content, content_type='application/json')
-
-
-@csrf_exempt
-@permission_required('base.change_snippet')
-def preview_snippet(request):
-    """
-    Build a snippet using info from the POST parameters, and preview that
-    snippet on a mock about:home page.
-    """
-    try:
-        template_id = int(request.POST.get('template_id', None))
-    except (TypeError, ValueError):
-        return HttpResponseBadRequest()
-
-    template = get_object_or_none(SnippetTemplate, id=template_id)
-    data = request.POST.get('data', None)
-
-    # Validate that data is JSON.
-    try:
-        json.loads(data)
-    except (TypeError, ValueError):
-        data = None
-
-    # If your parameters are wrong, I have no sympathy for you.
-    if data is None or template is None:
-        return HttpResponseBadRequest()
-
-    # Build a snippet that isn't saved so we can render it.
-    snippet = Snippet(template=template, data=data)
-
-    if strtobool(request.POST.get('activity_stream', 'false')):
-        template_name = 'base/preview_as.jinja'
-        preview_client = Client(5, 'Firefox', '57.0', 'default', 'default', 'en-US',
-                                'release', 'default', 'default', 'default')
-    else:
-        template_name = 'base/preview.jinja'
-        preview_client = Client(4, 'Firefox', '24.0', 'default', 'default', 'en-US',
-                                'release', 'default', 'default', 'default')
-
-    skip_boilerplate = request.POST.get('skip_boilerplate', 'false')
-    skip_boilerplate = strtobool(skip_boilerplate)
-    if skip_boilerplate:
-        template_name = 'base/preview_without_shell.jinja'
-
-    return render(request, template_name, {
-        'snippets_json': json.dumps([snippet.to_dict()]),
-        'client': preview_client,
-        'preview': True,
-        'current_firefox_major_version': util.current_firefox_major_version(),
-    })
-
-
-def show_snippet(request, snippet_id, uuid=False):
-    preview_client = Client(4, 'Firefox', '24.0', 'default', 'default', 'en-US',
-                            'release', 'default', 'default', 'default')
-
-    if uuid:
-        snippet = get_object_or_404(Snippet, uuid=snippet_id)
-    else:
-        snippet = get_object_or_404(Snippet, pk=snippet_id)
-        if not snippet.published and not request.user.is_authenticated:
-            raise Http404()
-
-    template = 'base/preview.jinja'
-    if snippet.on_startpage_5:
-        template = 'base/preview_as.jinja'
-    return render(request, template, {
-        'snippets_json': json.dumps([snippet.to_dict()]),
-        'client': preview_client,
-        'preview': True,
-        'current_firefox_major_version': util.current_firefox_major_version(),
-    })
 
 
 @csrf_exempt

@@ -5,7 +5,6 @@ from django.apps import apps
 from django.contrib import admin
 from django.utils.encoding import force_text
 
-from snippets.base.managers import SnippetQuerySet
 from snippets.base import models
 
 
@@ -59,14 +58,9 @@ class ChannelFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
 
-        if isinstance(queryset, SnippetQuerySet):
-            return queryset.filter(**{self.value(): True})
-
-        # ASRSnippets
-        else:
-            if hasattr(queryset.model, 'jobs'):
-                return queryset.filter(**{f'jobs__targets__{self.value()}': True}).distinct()
-            return queryset.filter(**{f'targets__{self.value()}': True}).distinct()
+        if hasattr(queryset.model, 'jobs'):
+            return queryset.filter(**{f'jobs__targets__{self.value()}': True}).distinct()
+        return queryset.filter(**{f'targets__{self.value()}': True}).distinct()
 
 
 class ActivityStreamFilter(admin.SimpleListFilter):

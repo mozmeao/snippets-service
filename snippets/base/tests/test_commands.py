@@ -11,25 +11,7 @@ from django.test.utils import override_settings
 from snippets.base import models
 from snippets.base.management.commands import fetch_daily_metrics
 from snippets.base.tests import (DistributionFactory, DistributionBundleFactory, JobFactory,
-                                 SnippetFactory, TargetFactory, TestCase)
-
-
-class DisableSnippetsPastPublishDateTests(TestCase):
-    def test_base(self):
-        snippet_without_end_date = SnippetFactory(published=True, publish_end=None)
-        snippet_that_has_ended = SnippetFactory(published=True, publish_end=datetime.utcnow())
-        snippet_ending_in_the_future = SnippetFactory(
-            published=True, publish_end=datetime.utcnow() + timedelta(days=1))
-
-        call_command('disable_snippets_past_publish_date', stdout=Mock())
-
-        snippet_without_end_date.refresh_from_db()
-        snippet_that_has_ended.refresh_from_db()
-        snippet_ending_in_the_future.refresh_from_db()
-
-        self.assertFalse(snippet_that_has_ended.published)
-        self.assertTrue(snippet_without_end_date.published)
-        self.assertTrue(snippet_ending_in_the_future.published)
+                                 TargetFactory, TestCase)
 
 
 @override_settings(REDASH_API_KEY='secret')

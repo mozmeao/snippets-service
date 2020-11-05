@@ -8,44 +8,14 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.template.loader import render_to_string
 from django.utils.functional import cached_property
 
 import brotli
 
-from snippets.base import util
 from snippets.base import models
 
 
 ONE_DAY = 60 * 60 * 24
-
-SNIPPET_FETCH_TEMPLATE_HASH = hashlib.sha1(
-    render_to_string(
-        'base/fetch_snippets.jinja',
-        {
-            'date': '',
-            'snippet_ids': [],
-            'snippets_json': '',
-            'locale': 'xx',
-            'settings': settings,
-            'current_firefox_major_version': '00',
-            'metrics_url': settings.METRICS_URL,
-        }
-    ).encode('utf-8')).hexdigest()
-
-SNIPPET_FETCH_TEMPLATE_AS_HASH = hashlib.sha1(
-    render_to_string(
-        'base/fetch_snippets_as.jinja',
-        {
-            'date': '',
-            'snippet_ids': [],
-            'snippets_json': '',
-            'locale': 'xx',
-            'settings': settings,
-            'current_firefox_major_version': '00',
-            'metrics_url': settings.METRICS_URL,
-        }
-    ).encode('utf-8')).hexdigest()
 
 # On application load combine all the version strings of all available
 # templates into one. To be used in ASRSnippetBundle.key method to calculate
@@ -58,45 +28,9 @@ TEMPLATES_NG_VERSIONS = '-'.join([
 ])
 
 
-class SnippetBundle(object):
-    """
-    Group of snippets to be sent to a particular client configuration.
-    """
+class ASRSnippetBundle():
     def __init__(self, client):
         self.client = client
-
-    @cached_property
-    def key(self):
-        """A unique key for this bundle as a sha1 hexdigest."""
-        # Key should consist of snippets that are in the bundle. This part
-        # accounts for all the properties sent by the Client, since the
-        # self.snippets lists snippets are all filters and CMRs have been
-        # applied.
-        key_properties = [
-            '{id}-{date}-{templatedate}'.format(id=snippet.id,
-                                                date=snippet.modified.isoformat(),
-                                                templatedate=snippet.template.modified.isoformat())
-            for snippet in self.snippets]
-
-        # Additional values used to calculate the key are the templates and the
-        # variables used to render them besides snippets.
-        key_properties.extend([
-            str(self.client.startpage_version),
-            self.client.locale,
-            util.current_firefox_major_version(),
-            str(settings.BUNDLE_BROTLI_COMPRESS),
-        ])
-        if self.client.startpage_version >= 5:
-            key_properties.append(SNIPPET_FETCH_TEMPLATE_AS_HASH)
-        else:
-            key_properties.append(SNIPPET_FETCH_TEMPLATE_HASH)
-
-        key_string = '_'.join(key_properties)
-        return hashlib.sha1(key_string.encode('utf-8')).hexdigest()
-
-    @property
-    def empty(self):
-        return len(self.snippets) == 0
 
     @property
     def cache_key(self):
@@ -123,10 +57,6 @@ class SnippetBundle(object):
         return not cache.get(self.cache_key)
 
     @property
-    def filename(self):
-        return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.html'.format(self.key))
-
-    @property
     def url(self):
         bundle_url = default_storage.url(self.filename)
         full_url = urljoin(settings.SITE_URL, bundle_url).split('?')[0]
@@ -135,44 +65,6 @@ class SnippetBundle(object):
             full_url = urljoin(cdn_url, urlparse(bundle_url).path)
 
         return full_url
-
-    @cached_property
-    def snippets(self):
-        return (models.Snippet.objects
-                .filter(published=True)
-                .match_client(self.client)
-                .select_related('template')
-                .prefetch_related('countries', 'exclude_from_search_providers')
-                .filter_by_available())
-
-    def generate(self):
-        """Generate and save the code for this snippet bundle."""
-        template = 'base/fetch_snippets.jinja'
-        if self.client.startpage_version == 5:
-            template = 'base/fetch_snippets_as.jinja'
-        bundle_content = render_to_string(template, {
-            'snippet_ids': [snippet.id for snippet in self.snippets],
-            'snippets_json': json.dumps([s.to_dict() for s in self.snippets]),
-            'client': self.client,
-            'locale': self.client.locale,
-            'settings': settings,
-            'current_firefox_major_version': util.current_firefox_major_version(),
-        })
-
-        if isinstance(bundle_content, str):
-            bundle_content = bundle_content.encode('utf-8')
-
-        if (settings.BUNDLE_BROTLI_COMPRESS and self.client.startpage_version >= 5):
-            content_file = ContentFile(brotli.compress(bundle_content))
-            content_file.content_encoding = 'br'
-        else:
-            content_file = ContentFile(bundle_content)
-
-        default_storage.save(self.filename, content_file)
-        cache.set(self.cache_key, True, ONE_DAY)
-
-
-class ASRSnippetBundle(SnippetBundle):
 
     @cached_property
     def key(self):
