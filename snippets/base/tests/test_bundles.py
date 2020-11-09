@@ -1,129 +1,278 @@
 import json
+from unittest.mock import ANY, DEFAULT, Mock, call, patch
 
-from unittest.mock import ANY, DEFAULT, Mock, patch
-
+from django.db.models import Q
 from django.test.utils import override_settings
 
-from snippets.base.bundles import ONE_DAY, ASRSnippetBundle
-from snippets.base.models import Client
-from snippets.base.tests import JobFactory, TestCase
+from snippets.base.bundles import generate_bundles
+from snippets.base.models import Distribution, DistributionBundle, Job
+from snippets.base.tests import (DistributionBundleFactory, DistributionFactory,
+                                 JobFactory, TargetFactory, TestCase)
 
 
-class ASRSnippetBundleTests(TestCase):
+class GenerateBundlesTests(TestCase):
     def setUp(self):
-        self.job1, self.job2 = JobFactory.create_batch(2)
+        self.distribution = DistributionFactory.create(name='Default')
+        self.distribution_bundle = DistributionBundleFactory.create(name='Default',
+                                                                    code_name='default')
+        self.distribution_bundle.distributions.add(self.distribution)
 
-    def _client(self, **kwargs):
-        client_kwargs = dict((key, '') for key in Client._fields)
-        client_kwargs['startpage_version'] = 4
-        client_kwargs.update(kwargs)
-        return Client(**client_kwargs)
+    def test_generate_all(self):
+        with patch('snippets.base.bundles.models.Job') as job_mock:
+            job_mock.objects.all.return_value = Job.objects.none()
+            generate_bundles(stdout=Mock())
+        job_mock.objects.all.assert_called()
+        job_mock.objects.filter.assert_not_called()
 
-    def test_empty(self):
-        client = self._client(locale='en-US')
-        bundle = ASRSnippetBundle(client)
-        self.assertFalse(bundle.empty)
+    def test_generate_after_timestamp(self):
+        with patch('snippets.base.bundles.models.Job') as job_mock:
+            job_mock.objects.filter.return_value = Job.objects.none()
+            generate_bundles(timestamp='2019-01-01', stdout=Mock())
+        job_mock.objects.all.assert_not_called()
+        job_mock.objects.filter.assert_called_with(
+            Q(snippet__modified__gte='2019-01-01') |
+            Q(distribution__distributionbundle__modified__gte='2019-01-01')
+        )
 
-        client = self._client(locale='it')
-        bundle = ASRSnippetBundle(client)
-        self.assertTrue(bundle.empty)
+    @override_settings(MEDIA_BUNDLES_PREGEN_ROOT='pregen')
+    def test_generation(self):
+        target = TargetFactory(
+            on_release=True, on_beta=True, on_nightly=False, on_esr=False, on_aurora=False
+        )
+        # Draft, completed, scheduled or cancelled
+        JobFactory(
+            status=Job.DRAFT,
+            snippet__locale=',en,',
+            targets=[target],
+        )
+        JobFactory(
+            status=Job.COMPLETED,
+            snippet__locale=',en,',
+            targets=[target],
+        )
+        JobFactory(
+            status=Job.SCHEDULED,
+            snippet__locale=',en,',
+            targets=[target],
+        )
+        JobFactory(
+            status=Job.CANCELED,
+            snippet__locale=',en,',
+            targets=[target],
+        )
+        JobFactory(
+            status=Job.PUBLISHED,
+            snippet__locale=',en,',
+            targets=[target],
+            distribution__name='not-default',
+        )
 
-    def test_key_jobs(self):
-        """
-        bundle.key must be different between bundles if they have
-        different Jobs.
-        """
-        client = self._client()
-        bundle1 = ASRSnippetBundle(client)
-        bundle1.jobs = [self.job1, self.job2]
-        bundle2 = ASRSnippetBundle(client)
-        bundle2.jobs = [self.job2]
+        # Jobs to be included in the bundle
+        published_job_1 = JobFactory(
+            status=Job.PUBLISHED,
+            snippet__locale=',en,',
+            targets=[target],
+        )
+        published_job_2 = JobFactory(
+            status=Job.PUBLISHED,
+            snippet__locale=',en,',
+            targets=[target],
+            distribution__name='other-distribution-part-of-default-bundle',
+        )
 
-        self.assertNotEqual(bundle1.key, bundle2.key)
+        # Add Distribution to the Default DistributionBundle
+        DistributionBundle.objects.get(name='Default').distributions.add(
+            Distribution.objects.get(name='other-distribution-part-of-default-bundle')
+        )
 
-    def test_key_funny_characters(self):
-        """
-        bundle.key should generate even when client contains strange unicode
-        characters
-        """
-        client = self._client(channel='release-cck- \xe2\x80\x9cubuntu\xe2\x80\x9d')
-        ASRSnippetBundle(client).key
+        with patch.multiple('snippets.base.bundles',
+                            json=DEFAULT,
+                            product_details=DEFAULT,
+                            default_storage=DEFAULT) as mock:
+            mock['json'].dumps.return_value = ''
+            mock['product_details'].languages.keys.return_value = ['fr', 'en-us', 'en-au']
+            generate_bundles(stdout=Mock())
 
-    def test_key_startpage_version(self):
-        """
-        bundle.key must be different between bundles if they have
-        different startpage versions.
-        """
-        client1 = self._client(startpage_version=1)
-        client2 = self._client(startpage_version=2)
-        bundle1 = ASRSnippetBundle(client1)
-        bundle2 = ASRSnippetBundle(client2)
+        self.assertEqual(mock['default_storage'].save.call_count, 4)
 
-        self.assertNotEqual(bundle1.key, bundle2.key)
+        mock['default_storage'].save.assert_has_calls([
+            call('pregen/Firefox/release/en-us/default.json', ANY),
+            call('pregen/Firefox/release/en-au/default.json', ANY),
+            call('pregen/Firefox/beta/en-us/default.json', ANY),
+            call('pregen/Firefox/beta/en-au/default.json', ANY),
+        ], any_order=True)
 
-    def test_key_locale(self):
-        """
-        bundle.key must be different between bundles if they have
-        different locales.
-        """
-        client1 = self._client(locale='en-US')
-        client2 = self._client(locale='fr')
-        bundle1 = ASRSnippetBundle(client1)
-        bundle2 = ASRSnippetBundle(client2)
+        # Check that there's only one job included in the bundle and that it's
+        # the correct one.
+        self.assertEqual(
+            len(mock['json'].dumps.call_args_list[0][0][0]['messages']),
+            2
+        )
+        self.assertEqual(
+            set([mock['json'].dumps.call_args_list[0][0][0]['messages'][0]['id'],
+                 mock['json'].dumps.call_args_list[0][0][0]['messages'][1]['id']]),
+            set([str(published_job_1.id), str(published_job_2.id)])
+        )
 
-        self.assertNotEqual(bundle1.key, bundle2.key)
+    @override_settings(
+        MEDIA_BUNDLES_PREGEN_ROOT='pregen',
+        NIGHTLY_INCLUDES_RELEASE=True,
+    )
+    def test_nightly_includes_release(self):
+        release_job = JobFactory(
+            status=Job.PUBLISHED,
+            snippet__locale=',en,',
+            targets=[
+                TargetFactory(
+                    on_release=True, on_beta=True, on_nightly=False, on_esr=False, on_aurora=False)
+            ]
+        )
+        nightly_job = JobFactory(
+            status=Job.PUBLISHED,
+            snippet__locale=',en,',
+            targets=[
+                TargetFactory(
+                    on_release=True, on_beta=False, on_nightly=True, on_esr=False, on_aurora=False)
+            ]
+        )
 
-    def test_key_equal(self):
-        client1 = self._client(locale='en-US', startpage_version=4)
-        client2 = self._client(locale='en-US', startpage_version=4)
-        bundle1 = ASRSnippetBundle(client1)
-        bundle1.jobs = [self.job1, self.job2]
-        bundle2 = ASRSnippetBundle(client2)
-        bundle2.jobs = [self.job1, self.job2]
+        # Beta only job, not to be included
+        JobFactory(
+            status=Job.PUBLISHED,
+            snippet__locale=',en,',
+            targets=[
+                TargetFactory(
+                    on_release=False, on_beta=True, on_nightly=False, on_esr=False, on_aurora=False)
+            ]
+        )
 
-        self.assertEqual(bundle1.key, bundle2.key)
+        with patch.multiple('snippets.base.bundles',
+                            json=DEFAULT,
+                            product_details=DEFAULT,
+                            default_storage=DEFAULT) as mock:
+            mock['json'].dumps.return_value = ''
+            mock['product_details'].languages.keys.return_value = ['en-us']
+            generate_bundles(stdout=Mock())
 
-    def test_key_snippet_modified(self):
-        client1 = self._client(locale='en-US', startpage_version=4)
-        bundle = ASRSnippetBundle(client1)
-        bundle.jobs = [self.job1]
-        key_1 = bundle.key
+        # Loop to find the nighlty bundle
+        for arg_list in mock['json'].dumps.call_args_list:
+            if arg_list[0][0]['metadata']['channel'] == 'nightly':
+                self.assertEqual(
+                    len(arg_list[0][0]['messages']),
+                    2
+                )
+                self.assertEqual(
+                    set([arg_list[0][0]['messages'][0]['id'],
+                         arg_list[0][0]['messages'][1]['id']]),
+                    set([str(release_job.id), str(nightly_job.id)])
+                )
+                self.assertEqual(
+                    set([arg_list[0][0]['messages'][0]['targeting'],
+                         arg_list[0][0]['messages'][1]['targeting']]),
+                    set(['', 'false'])
+                )
 
-        # save snippet, touch modified
-        self.job1.snippet.save()
-        bundle = ASRSnippetBundle(client1)
-        bundle.jobs = [self.job1]
-        key_2 = bundle.key
-        self.assertNotEqual(key_1, key_2)
+    @override_settings(BUNDLE_BROTLI_COMPRESS=True)
+    def test_brotli_called(self):
+        with patch('snippets.base.bundles.brotli') as brotli_mock:
+            brotli_mock.compress.return_value = ''
+            self.test_generation()
+        brotli_mock.compress.assert_called()
 
     @override_settings(BUNDLE_BROTLI_COMPRESS=False)
-    def test_generate(self):
-        """
-        bundle.generate should render the snippets, save them to the
-        filesystem, and mark the bundle as not-expired in the cache for
-        activity stream router!
-        """
-        bundle = ASRSnippetBundle(self._client(locale='fr', startpage_version=6))
-        bundle.storage = Mock()
-        bundle.jobs = [self.job1, self.job2]
-        self.job1.render = Mock()
-        self.job1.render.return_value = 'job1'
-        self.job2.render = Mock()
-        self.job2.render.return_value = 'job2'
+    def test_no_brotli(self):
+        with patch('snippets.base.bundles.brotli') as brotli_mock:
+            self.test_generation()
+        brotli_mock.compress.assert_not_called()
 
-        datetime_mock = Mock()
-        datetime_mock.utcnow.return_value.isoformat.return_value = 'now'
-        with patch.multiple('snippets.base.bundles',
-                            datetime=datetime_mock,
-                            cache=DEFAULT, default_storage=DEFAULT) as mocks:
-            bundle.generate()
+    @override_settings(MEDIA_BUNDLES_PREGEN_ROOT='pregen')
+    def test_delete(self):
+        distribution = DistributionFactory()
+        distribution_bundle = DistributionBundleFactory(
+            code_name='foo',
+            enabled=False,
+        )
+        distribution_bundle.distributions.add(distribution)
 
-        self.assertTrue(bundle.filename.endswith('.json'))
-        mocks['default_storage'].save.assert_called_with(bundle.filename, ANY)
-        mocks['cache'].set.assert_called_with(bundle.cache_key, True, ONE_DAY)
+        target = TargetFactory(
+            on_release=False, on_beta=False, on_nightly=True, on_esr=False, on_aurora=False
+        )
+        JobFactory(
+            status=Job.COMPLETED,
+            snippet__locale=',fr,',
+            targets=[target],
+        )
 
-        # Check content of saved file.
-        content_file = mocks['default_storage'].save.call_args[0][1]
-        content_json = json.load(content_file)
-        self.assertEqual(content_json['messages'], ['job1', 'job2'])
-        self.assertEqual(content_json['metadata']['generated_at'], 'now')
+        # Still published, but belongs to a disabled distribution
+        JobFactory(
+            status=Job.PUBLISHED,
+            snippet__locale=',fr,',
+            targets=[target],
+            distribution=distribution,
+        )
+
+        with patch('snippets.base.bundles.default_storage') as ds_mock:
+            # Test that only removes if file exists.
+            ds_mock.exists.return_value = True
+            generate_bundles(stdout=Mock())
+
+        ds_mock.delete.assert_has_calls([
+            call('pregen/Firefox/nightly/fr/default.json'),
+            call('pregen/Firefox/nightly/fr/foo.json')
+        ])
+        ds_mock.save.assert_not_called()
+
+    def test_delete_does_not_exist(self):
+        target = TargetFactory(
+            on_release=False, on_beta=False, on_nightly=True, on_esr=False, on_aurora=False
+        )
+        JobFactory(
+            status=Job.COMPLETED,
+            snippet__locale=',fr,',
+            targets=[target],
+        )
+
+        with patch('snippets.base.bundles.default_storage') as ds_mock:
+            # Test that only removes if file exists.
+            ds_mock.exists.return_value = False
+            generate_bundles(stdout=Mock())
+
+        ds_mock.delete.assert_not_called()
+        ds_mock.save.assert_not_called()
+
+    def test_limit_to_locale_channel_dist(self):
+        job = JobFactory(
+            status=Job.PUBLISHED,
+            snippet__locale=',el,',
+        )
+
+        result = json.loads(
+            generate_bundles(
+                limit_to_locale='el',
+                limit_to_channel='release',
+                limit_to_distribution_bundle='default',
+                save_to_disk=False
+            ).read()
+        )
+
+        self.assertEqual(result['messages'][0]['id'], str(job.id))
+        self.assertEqual(result['metadata']['number_of_snippets'], 1)
+        self.assertEqual(result['metadata']['channel'], 'release')
+        self.assertEqual(result['metadata']['locale'], 'el')
+        self.assertEqual(result['metadata']['distribution_bundle'], 'default')
+
+    def test_limit_to_locale_channel_dist_no_snippets(self):
+        result = json.loads(
+            generate_bundles(
+                limit_to_locale='el',
+                limit_to_channel='release',
+                limit_to_distribution_bundle='default',
+                save_to_disk=False
+            ).read()
+        )
+
+        self.assertEqual(len(result['messages']), 0)
+        self.assertEqual(result['metadata']['number_of_snippets'], 0)
+        self.assertEqual(result['metadata']['channel'], 'release')
+        self.assertEqual(result['metadata']['locale'], 'el')
+        self.assertEqual(result['metadata']['distribution_bundle'], 'default')

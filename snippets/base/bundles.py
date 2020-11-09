@@ -1,136 +1,158 @@
-import hashlib
+import itertools
 import json
+import os
+from io import StringIO
 from datetime import datetime
-from urllib.parse import urljoin, urlparse
 
-from django.apps import apps
 from django.conf import settings
-from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.utils.functional import cached_property
+from django.db.models import Q
 
 import brotli
+from product_details import product_details
 
 from snippets.base import models
 
 
-ONE_DAY = 60 * 60 * 24
+def generate_bundles(timestamp=None, limit_to_locale=None, limit_to_channel=None,
+                     limit_to_distribution_bundle=None, save_to_disk=True,
+                     stdout=StringIO()):
+    if not timestamp:
+        stdout.write('Generating all bundles.')
+        total_jobs = models.Job.objects.all()
+    else:
+        stdout.write(
+            'Generating bundles with Jobs modified on or after {}'.format(timestamp)
+        )
+        total_jobs = models.Job.objects.filter(
+            Q(snippet__modified__gte=timestamp) |
+            Q(distribution__distributionbundle__modified__gte=timestamp)
+        ).distinct()
 
-# On application load combine all the version strings of all available
-# templates into one. To be used in ASRSnippetBundle.key method to calculate
-# the bundle key. The point is that this string should change when the Template
-# schema changes.
-TEMPLATES_NG_VERSIONS = '-'.join([
-    model.VERSION
-    for model in apps.get_models()
-    if issubclass(model, models.Template) and not model.__name__ == 'Template'
-])
+    stdout.write('Processing bundles…')
+    if limit_to_locale and limit_to_channel:
+        combinations_to_process = [
+            (limit_to_channel, limit_to_locale)
+        ]
+    else:
+        combinations_to_process = set(
+            itertools.chain.from_iterable(
+                itertools.product(
+                    job.channels,
+                    job.snippet.locale.code.strip(',').split(',')
+                )
+                for job in total_jobs
+            )
+        )
+    distribution_bundles_to_process = models.DistributionBundle.objects.filter(
+        distributions__jobs__in=total_jobs
+    ).distinct().order_by('id')
 
+    if limit_to_distribution_bundle:
+        distribution_bundles_to_process = distribution_bundles_to_process.filter(
+            name__iexact=limit_to_distribution_bundle
+        )
 
-class ASRSnippetBundle():
-    def __init__(self, client):
-        self.client = client
+    for distribution_bundle in distribution_bundles_to_process:
+        distributions = distribution_bundle.distributions.all()
 
-    @property
-    def cache_key(self):
-        return 'bundle_' + self.key
+        for channel, locale in combinations_to_process:
+            additional_jobs = []
+            if channel == 'nightly' and settings.NIGHTLY_INCLUDES_RELEASE:
+                additional_jobs = models.Job.objects.filter(
+                    status=models.Job.PUBLISHED).filter(**{
+                        'targets__on_release': True,
+                        'distribution__in': distributions,
+                    })
 
-    @property
-    def cached(self):
-        if cache.get(self.cache_key):
-            return True
+            channel_jobs = models.Job.objects.filter(
+                status=models.Job.PUBLISHED).filter(
+                    Q(**{
+                        'targets__on_{}'.format(channel): True,
+                        'distribution__in': distributions,
+                    }))
 
-        # Check if available on S3 already.
-        if default_storage.exists(self.filename):
-            cache.set(self.cache_key, True, ONE_DAY)
-            return True
+            all_jobs = models.Job.objects.filter(
+                Q(id__in=additional_jobs) | Q(id__in=channel_jobs)
+            )
 
-        return False
-
-    @property
-    def expired(self):
-        """
-        If True, the code for this bundle should be re-generated before
-        use.
-        """
-        return not cache.get(self.cache_key)
-
-    @property
-    def url(self):
-        bundle_url = default_storage.url(self.filename)
-        full_url = urljoin(settings.SITE_URL, bundle_url).split('?')[0]
-        cdn_url = getattr(settings, 'CDN_URL', None)
-        if cdn_url:
-            full_url = urljoin(cdn_url, urlparse(bundle_url).path)
-
-        return full_url
-
-    @cached_property
-    def key(self):
-        """A unique key for this bundle as a sha1 hexdigest."""
-        # Key should consist of snippets that are in the bundle. This part
-        # accounts for all the properties sent by the Client, since the
-        # self.snippets lists snippets are all filters and CMRs have been
-        # applied.
-        #
-        # Key must change when Snippet or related Template, Campaign or Target
-        # get updated.
-        key_properties = []
-        for job in self.jobs:
-            attributes = [
-                job.id,
-                job.snippet.modified.isoformat(),
+            locales_to_process = [
+                key.lower() for key in product_details.languages.keys()
+                if key.lower().startswith(locale)
             ]
 
-            key_properties.append('-'.join([str(x) for x in attributes]))
+            for locale_to_process in locales_to_process:
+                filename = 'Firefox/{channel}/{locale}/{distribution}.json'.format(
+                    channel=channel,
+                    locale=locale_to_process,
+                    distribution=distribution_bundle.code_name,
+                )
+                filename = os.path.join(settings.MEDIA_BUNDLES_PREGEN_ROOT, filename)
+                full_locale = ',{},'.format(locale_to_process.lower())
+                splitted_locale = ',{},'.format(locale_to_process.lower().split('-', 1)[0])
+                bundle_jobs = all_jobs.filter(
+                    Q(snippet__locale__code__contains=splitted_locale) |
+                    Q(snippet__locale__code__contains=full_locale)).distinct()
 
-        # Additional values used to calculate the key are the templates and the
-        # variables used to render them besides snippets.
-        key_properties.extend([
-            str(self.client.startpage_version),
-            self.client.locale,
-            str(settings.BUNDLE_BROTLI_COMPRESS),
-            TEMPLATES_NG_VERSIONS,
-        ])
+                # If DistributionBundle is not enabled, or if there are no
+                # Published Jobs for the channel / locale / distribution
+                # combination, delete the current bundle file if it exists.
+                if save_to_disk and not distribution_bundle.enabled or not bundle_jobs.exists():
+                    if default_storage.exists(filename):
+                        stdout.write('Removing {}'.format(filename))
+                        default_storage.delete(filename)
+                    continue
 
-        key_string = '_'.join(key_properties)
-        return hashlib.sha1(key_string.encode('utf-8')).hexdigest()
+                data = []
+                channel_job_ids = list(channel_jobs.values_list('id', flat=True))
+                for job in bundle_jobs:
+                    if job.id in channel_job_ids:
+                        render = job.render()
+                    else:
+                        render = job.render(always_eval_to_false=True)
+                    data.append(render)
 
-    @property
-    def empty(self):
-        return len(self.jobs) == 0
+                bundle_content = json.dumps({
+                    'messages': data,
+                    'metadata': {
+                        'generated_at': datetime.utcnow().isoformat(),
+                        'number_of_snippets': len(data),
+                        'channel': channel,
+                        'locale': locale_to_process,
+                        'distribution_bundle': distribution_bundle.code_name,
+                    }
+                })
 
-    @property
-    def filename(self):
-        return urljoin(settings.MEDIA_BUNDLES_ROOT, 'bundle_{0}.json'.format(self.key))
+                # Convert str to bytes.
+                if isinstance(bundle_content, str):
+                    bundle_content = bundle_content.encode('utf-8')
 
-    @cached_property
-    def jobs(self):
-        return (models.Job.objects.filter(status=models.Job.PUBLISHED)
-                .select_related('snippet')
-                .match_client(self.client))
+                if settings.BUNDLE_BROTLI_COMPRESS:
+                    content_file = ContentFile(brotli.compress(bundle_content))
+                    content_file.content_encoding = 'br'
+                else:
+                    content_file = ContentFile(bundle_content)
 
-    def generate(self):
-        """Generate and save the code for this snippet bundle."""
-        # Generate the new AS Router bundle format
-        data = [job.render() for job in self.jobs]
-        bundle_content = json.dumps({
-            'messages': data,
-            'metadata': {
-                'generated_at': datetime.utcnow().isoformat(),
-                'number_of_snippets': len(data),
-            }
-        })
+                if save_to_disk is True:
+                    default_storage.save(filename, content_file)
+                    stdout.write('Writing bundle {}'.format(filename))
+                else:
+                    return content_file
 
-        if isinstance(bundle_content, str):
-            bundle_content = bundle_content.encode('utf-8')
-
-        if settings.BUNDLE_BROTLI_COMPRESS:
-            content_file = ContentFile(brotli.compress(bundle_content))
-            content_file.content_encoding = 'br'
-        else:
-            content_file = ContentFile(bundle_content)
-
-        default_storage.save(self.filename, content_file)
-        cache.set(self.cache_key, True, ONE_DAY)
+    # If save_to_disk is False and we reach this point, it means that we didn't
+    # have any Jobs to return for the locale, channel, distribution combination.
+    # Return an empty bundle
+    if save_to_disk is False:
+        return ContentFile(
+            json.dumps({
+                'messages': [],
+                'metadata': {
+                    'generated_at': datetime.utcnow().isoformat(),
+                    'number_of_snippets': 0,
+                    'channel': limit_to_channel,
+                    'locale': limit_to_locale,
+                    'distribution_bundle': limit_to_distribution_bundle,
+                }
+            })
+        )

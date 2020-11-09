@@ -2,12 +2,14 @@ import random
 import string
 
 from django.test import TransactionTestCase
+from django.test.utils import override_settings
 
 import factory
 
 from snippets.base import models
 
 
+@override_settings(SECURE_SSL_REDIRECT=False)
 class TestCase(TransactionTestCase):
     pass
 
