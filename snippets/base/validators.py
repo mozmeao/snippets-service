@@ -1,10 +1,8 @@
-import re
 import json
 
+import bleach
 import django.core.validators as django_validators
 from django.core.exceptions import ValidationError
-
-import bleach
 
 ALLOWED_TAGS = ['a', 'i', 'b', 'u', 'strong', 'em', 'br']
 ALLOWED_ATTRIBUTES = {'a': ['href', 'data-metric']}
@@ -32,15 +30,6 @@ def validate_as_router_fluent_variables(obj, variables):
             ).format(', '.join(ALLOWED_TAGS))
             raise ValidationError({variable: error_msg})
     return obj
-
-
-def validate_regex(regex_str):
-    if regex_str.startswith('/'):
-        try:
-            re.compile(regex_str[1:-1])
-        except re.error as exp:
-            raise ValidationError(str(exp))
-    return regex_str
 
 
 def validate_json_data(data):

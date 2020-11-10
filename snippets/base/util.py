@@ -1,12 +1,10 @@
 import copy
 import re
-from urllib.parse import ParseResult, urlparse, urlencode
+from urllib.parse import ParseResult, urlencode, urlparse
 
 from django.http import QueryDict
 from django.utils.encoding import smart_bytes
-
 from product_details import product_details
-from product_details.version_compare import version_list
 
 
 def first(collection, callback):
@@ -25,13 +23,6 @@ def create_countries():
         if country.name != name:
             country.name = name
             country.save()
-
-
-def current_firefox_major_version():
-    full_version = version_list(
-        product_details.firefox_history_major_releases)[0]
-
-    return full_version.split('.', 1)[0]
 
 
 def urlparams(url_, fragment=None, query_dict=None, replace=True, **query):

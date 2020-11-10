@@ -5,6 +5,7 @@ from django.utils.deconstruct import deconstructible
 from storages.backends.s3boto3 import S3Boto3Storage
 
 
+# TODO
 class OverwriteStorage(FileSystemStorage):
     """
     Comes from http://www.djangosnippets.org/snippets/976/

@@ -30,7 +30,7 @@ from PIL import Image
 from taggit_selectize.managers import TaggableManager
 
 import snippets.base.fields as snippet_fields
-from snippets.base import managers, slack, util, validators
+from snippets.base import slack, util, validators
 
 
 JINJA_ENV = engines['backend']
@@ -1694,8 +1694,6 @@ class Job(models.Model):
         verbose_name='Max Monthly Impressions',
         default=0
     )
-
-    objects = managers.JobQuerySet.as_manager()
 
     class Meta:
         ordering = ['-modified']
