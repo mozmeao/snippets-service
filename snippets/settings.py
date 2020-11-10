@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'product_details',
     'django_extensions',
     'reversion',
-    'cachalot',
     'mozilla_django_oidc',
     'watchman',
     'django_admin_listfilter_dropdown',
@@ -215,12 +214,7 @@ CACHES = {
             'MAX_ENTRIES': 200,  # currently 104 json files
             'CULL_FREQUENCY': 4,  # 1/4 entries deleted if max reached
         }
-
     },
-    'cachalot': config(
-        'CACHALOT_CACHE_URL',
-        default='locmem://?location=cachalog&max_entries=500&cull_frequency=4',
-        cast=django_cache_url.parse),
 }
 
 PROD_DETAILS_CACHE_NAME = 'product-details'
@@ -269,11 +263,6 @@ sentry_sdk.init(
     environment=config('SENTRY_ENVIRONMENT', 'dev'),
     server_name='.'.join(x for x in [HOSTNAME, K8S_NAMESPACE, CLUSTER_NAME] if x),
 )
-
-
-CACHALOT_ENABLED = config('CACHALOT_ENABLED', default=not DEBUG, cast=bool)
-CACHALOT_TIMEOUT = config('CACHALOT_TIMEOUT', default=300, cast=int)  # 300 = 5 minutes
-CACHALOT_CACHE = config('CACHELOT_CACHE', default='cachalot')
 
 OIDC_ENABLE = config('OIDC_ENABLE', default=False, cast=bool)
 if OIDC_ENABLE:
