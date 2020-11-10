@@ -17,8 +17,7 @@ from django_filters.views import FilterView
 from django_statsd.clients import statsd
 from ratelimit.decorators import ratelimit
 
-from snippets.base.bundles import ASRSnippetBundle
-from snippets.base.decorators import access_control
+from snippets.base.bundles import generate_bundles
 from snippets.base.filters import JobFilter
 from snippets.base.models import CHANNELS, ASRSnippet, Client
 
@@ -52,9 +51,7 @@ def fetch_snippets(request, **kwargs):
     if kwargs['startpage_version'] != 6:
         raise Http404()
 
-    if settings.USE_PREGEN_BUNDLES:
-        return fetch_snippet_pregen_bundle(request, **kwargs)
-    return fetch_snippet_bundle(request, **kwargs)
+    return fetch_snippet_pregen_bundle(request, **kwargs)
 
 
 @cache_control(public=True, max_age=settings.SNIPPET_BUNDLE_PREGEN_REDIRECT_TIMEOUT)
@@ -79,6 +76,15 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
     else:
         distribution = 'default'
 
+    if settings.INSTANT_BUNDLE_GENERATION:
+        content = generate_bundles(
+            limit_to_channel=channel,
+            limit_to_locale=locale,
+            limit_to_distribution_bundle=distribution,
+            save_to_disk=False
+        )
+        return HttpResponse(status=200, content=content, content_type='application/json')
+
     filename = (
         f'{settings.MEDIA_BUNDLES_PREGEN_ROOT}/{product}/{channel}/'
         f'{locale}/{distribution}.json'
@@ -90,31 +96,6 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
     full_url = full_url.split('?')[0]
 
     return HttpResponseRedirect(full_url)
-
-
-@cache_control(public=True, max_age=SNIPPET_BUNDLE_TIMEOUT)
-@access_control(max_age=SNIPPET_BUNDLE_TIMEOUT)
-def fetch_snippet_bundle(request, **kwargs):
-    """
-    Return one of the following responses:
-    - 200 with empty body when the bundle is empty
-    - 302 to a bundle URL after generating it if not cached.
-    """
-    statsd.incr('serve.snippets')
-
-    client = Client(**kwargs)
-    bundle = ASRSnippetBundle(client)
-    if bundle.empty:
-        statsd.incr('bundle.empty')
-        # Return valid JSON for Activity Stream Router
-        return HttpResponse(status=200, content='{}', content_type='application/json')
-    elif bundle.cached:
-        statsd.incr('bundle.cached')
-    else:
-        statsd.incr('bundle.generate')
-        bundle.generate()
-
-    return HttpResponseRedirect(bundle.url)
 
 
 def preview_asr_snippet(request, uuid):

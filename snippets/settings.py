@@ -387,7 +387,8 @@ REDASH_JOB_QUERY_BIGQUERY_ID = config('REDASH_JOB_QUERY_BIGQUERY_ID', default=66
 
 REDASH_UPDATE_INTERVAL = config('REDASH_UPDATE_INTERVAL', default=600)
 
-USE_PREGEN_BUNDLES = config('USE_PREGEN_BUNDLES', default=False, cast=bool)
+# Create Bundles instantly when in development mode.
+INSTANT_BUNDLE_GENERATION = config('INSTANT_BUNDLE_GENERATION', default=DEBUG, cast=bool)
 
 NIGHTLY_INCLUDES_RELEASE = config('NIGHTLY_INCLUDES_RELEASE', default=False, cast=bool)
 
