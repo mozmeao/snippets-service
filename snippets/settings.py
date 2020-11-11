@@ -160,12 +160,16 @@ TEMPLATES = [
             "match_extension": None,
             'match_regex': r'.+\.jinja(\.json)?',
             'newstyle_gettext': True,
+            'context_processors': [
+                'snippets.base.context_processors.settings',
+            ],
         }
     },
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'APP_DIRS': True,
         'OPTIONS': {
+            'debug': DEBUG_TEMPLATE,
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
                 'django.template.context_processors.debug',
@@ -174,6 +178,7 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
+                'snippets.base.context_processors.settings',
             ],
         }
     },
