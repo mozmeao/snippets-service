@@ -4,7 +4,6 @@ from snippets.base import models
 
 import snippets.base.admin.adminmodels as adminmodels
 
-# Current
 admin.site.register(models.Addon, adminmodels.AddonAdmin)
 admin.site.register(models.ASRSnippet, adminmodels.ASRSnippetAdmin)
 admin.site.register(models.Campaign, adminmodels.CampaignAdmin)

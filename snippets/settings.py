@@ -8,7 +8,6 @@ import sentry_sdk
 from decouple import Csv, config
 from sentry_sdk.integrations.django import DjangoIntegration
 
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 ROOT = os.path.dirname(os.path.join(BASE_DIR, '..'))
@@ -41,7 +40,6 @@ INSTALLED_APPS = [
     'product_details',
     'django_extensions',
     'reversion',
-    'cachalot',
     'mozilla_django_oidc',
     'watchman',
     'django_admin_listfilter_dropdown',
@@ -162,10 +160,6 @@ TEMPLATES = [
             "match_extension": None,
             'match_regex': r'.+\.jinja(\.json)?',
             'newstyle_gettext': True,
-            'context_processors': [
-                'snippets.base.context_processors.settings',
-                'snippets.base.context_processors.i18n',
-            ],
         }
     },
     {
@@ -180,7 +174,6 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
-                'snippets.base.context_processors.settings',
             ],
         }
     },
@@ -198,22 +191,15 @@ CSP_REPORT_ENABLE = config('CSP_REPORT_ENABLE', default=True, cast=bool)
 if CSP_REPORT_ENABLE:
     CSP_REPORT_URI = config('CSP_REPORT_URI', default='/csp-violation-capture')
 
-SNIPPET_SIZE_LIMIT = 500
-SNIPPET_IMAGE_SIZE_LIMIT = 250
-
 ENABLE_ADMIN = config('ENABLE_ADMIN', default=False, cast=bool)
 CSRF_USE_SESSIONS = config('CSRF_USE_SESSIONS', default=False, cast=bool)
 CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=not DEBUG, cast=bool)
 CSRF_COOKIE_SAMESITE = config('CSRF_COOKIE_SAMESITE', default='Lax')
 
-SNIPPET_BUNDLE_TIMEOUT = config('SNIPPET_BUNDLE_TIMEOUT', default=15 * 60, cast=int)  # 15 minutes
 SNIPPET_BUNDLE_PREGEN_REDIRECT_TIMEOUT = config(
     'SNIPPET_BUNDLE_PREGEN_REDIRECT_TIMEOUT', default=60 * 60 * 24, cast=int)  # One day
 
 BUNDLE_BROTLI_COMPRESS = config('BUNDLE_BROTLI_COMPRESS', default=False, cast=bool)
-
-METRICS_URL = config('METRICS_URL', default='https://snippets-stats.mozilla.org/foo.html')
-METRICS_SAMPLE_RATE = config('METRICS_SAMPLE_RATE', default=0.1, cast=float)
 
 SITE_URL = config('SITE_URL', default='')
 SITE_HEADER = config('SITE_HEADER', default='Snippets Administration')
@@ -228,15 +214,8 @@ CACHES = {
             'MAX_ENTRIES': 200,  # currently 104 json files
             'CULL_FREQUENCY': 4,  # 1/4 entries deleted if max reached
         }
-
     },
-    'cachalot': config(
-        'CACHALOT_CACHE_URL',
-        default='locmem://?location=cachalog&max_entries=500&cull_frequency=4',
-        cast=django_cache_url.parse),
 }
-
-GEO_URL = 'https://location.services.mozilla.com/v1/country?key=fff72d56-b040-4205-9a11-82feda9d83a3'  # noqa
 
 PROD_DETAILS_CACHE_NAME = 'product-details'
 PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
@@ -257,7 +236,6 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     AWS_S3_HOST = f'https://{config("AWS_S3_HOST")}'
     AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', 'us-west-2')
     AWS_CACHE_CONTROL_HEADERS = {
-        MEDIA_BUNDLES_ROOT: 'max-age=2592000',  # 1 Month
         MEDIA_ICONS_ROOT: 'max-age=15552000',  # 6 Months
         MEDIA_BUNDLES_PREGEN_ROOT: 'max-age=600',  # 10 minutes
     }
@@ -265,16 +243,11 @@ if DEFAULT_FILE_STORAGE == 'snippets.base.storage.S3Storage':
     AWS_BUCKET_ACL = 'public-read'
 
 DEAD_MANS_SNITCH_PRODUCT_DETAILS = config('DEAD_MANS_SNITCH_PRODUCT_DETAILS', default=None)
-DEAD_MANS_SNITCH_DISABLE_SNIPPETS = config('DEAD_MANS_SNITCH_DISABLE_SNIPPETS', default=None)
 DEAD_MANS_SNITCH_UPDATE_JOBS = config('DEAD_MANS_SNITCH_UPDATE_JOBS', default=None)
 DEAD_MANS_SNITCH_FETCH_METRICS = config('DEAD_MANS_SNITCH_FETCH_METRICS', default=None)
 DEAD_MANS_SNITCH_FETCH_DAILY_METRICS = config('DEAD_MANS_SNITCH_FETCH_DAILY_METRICS', default=None)
 
-SNIPPETS_PER_PAGE = config('SNIPPETS_PER_PAGE', default=50)
-
 ENGAGE_ROBOTS = config('ENGAGE_ROBOTS', default=False)
-
-CACHE_EMPTY_QUERYSETS = True
 
 ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
 
@@ -291,15 +264,10 @@ sentry_sdk.init(
     server_name='.'.join(x for x in [HOSTNAME, K8S_NAMESPACE, CLUSTER_NAME] if x),
 )
 
-
-CACHALOT_ENABLED = config('CACHALOT_ENABLED', default=not DEBUG, cast=bool)
-CACHALOT_TIMEOUT = config('CACHALOT_TIMEOUT', default=300, cast=int)  # 300 = 5 minutes
-CACHALOT_CACHE = config('CACHELOT_CACHE', default='cachalot')
-
 OIDC_ENABLE = config('OIDC_ENABLE', default=False, cast=bool)
 if OIDC_ENABLE:
     AUTHENTICATION_BACKENDS = (
-        'snippets.base.authentication.AuthBackend',
+        'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
     )
     OIDC_OP_AUTHORIZATION_ENDPOINT = config('OIDC_OP_AUTHORIZATION_ENDPOINT')
     OIDC_OP_TOKEN_ENDPOINT = config('OIDC_OP_TOKEN_ENDPOINT')
@@ -361,12 +329,6 @@ ADMIN_REORDER = [
 
 SLACK_ENABLE = config('SLACK_ENABLE', default=False, cast=bool)
 SLACK_WEBHOOK = config('SLACK_WEBHOOK', default='')
-
-
-# Required for the migration to ASRSnippets or SuspiciousOperation
-# (TooManyFields) will be raised due to the number of Snippets selected in the
-# admin tool.
-DATA_UPLOAD_MAX_NUMBER_FIELDS = config('DATA_UPLOAD_MAX_NUMBER_FIELDS', default=1000, cast=int)
 
 IMAGE_OPTIMIZE = config('IMAGE_OPTIMIZE', default=True, cast=bool)
 # Set to zero to disable

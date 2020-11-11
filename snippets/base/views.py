@@ -1,18 +1,17 @@
 import json
 from urllib.parse import urljoin, urlparse
 
+import sentry_sdk
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
-from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
+                         HttpResponseRedirect)
 from django.shortcuts import get_object_or_404
-from django.utils.functional import lazy
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
-
-import sentry_sdk
 from django_filters.views import FilterView
 from django_statsd.clients import statsd
 from ratelimit.decorators import ratelimit
@@ -20,11 +19,6 @@ from ratelimit.decorators import ratelimit
 from snippets.base.bundles import generate_bundles
 from snippets.base.filters import JobFilter
 from snippets.base.models import CHANNELS, ASRSnippet, Client
-
-
-def _bundle_timeout():
-    return getattr(settings, 'SNIPPET_BUNDLE_TIMEOUT')
-SNIPPET_BUNDLE_TIMEOUT = lazy(_bundle_timeout, int)()  # noqa
 
 
 class HomeView(TemplateView):

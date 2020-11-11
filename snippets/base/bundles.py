@@ -1,15 +1,14 @@
 import itertools
 import json
 import os
-from io import StringIO
 from datetime import datetime
+from io import StringIO
 
+import brotli
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db.models import Q
-
-import brotli
 from product_details import product_details
 
 from snippets.base import models
