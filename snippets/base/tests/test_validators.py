@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from snippets.base import models
 from snippets.base.tests import TestCase
 from snippets.base.validators import (validate_as_router_fluent_variables,
-                                      validate_json_data)
+                                      validate_json_data, validate_jexl)
 
 
 class ASRouterFluentVariablesValidatorTests(TestCase):
@@ -39,3 +39,13 @@ class ValidateJSONDataTests(TestCase):
     def test_invalid_data(self):
         data = '{"foo": 3'
         self.assertRaises(ValidationError, validate_json_data, data)
+
+
+class ValidatorJEXL(TestCase):
+    def test_base(self):
+        data = 'browser.update == True && foo'
+        self.assertEqual(validate_jexl(data), data)
+
+    def test_invalid_Data(self):
+        data = '(browser.update == True'
+        self.assertRaises(ValidationError, validate_jexl, data)

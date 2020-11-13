@@ -25,10 +25,16 @@ class UserFactory(factory.django.DjangoModelFactory):
 class TargetFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Target {0}'.format(n))
     creator = factory.SubFactory(UserFactory)
-    on_release = True
 
     class Meta:
         model = models.Target
+
+    @factory.post_generation
+    def channels(obj, create, extracted, **kwargs):
+        if extracted is None:
+            obj.filtr_channels = 'release'
+        else:
+            obj.filtr_channels = extracted
 
 
 class CampaignFactory(factory.django.DjangoModelFactory):

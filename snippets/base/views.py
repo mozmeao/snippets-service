@@ -18,7 +18,7 @@ from ratelimit.decorators import ratelimit
 
 from snippets.base.bundles import generate_bundles
 from snippets.base.filters import JobFilter
-from snippets.base.models import CHANNELS, ASRSnippet, Client
+from snippets.base.models import ASRSnippet, Client
 
 
 class HomeView(TemplateView):
@@ -53,8 +53,6 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
     statsd.incr('serve.bundle_pregen')
     client = Client(**kwargs)
     product = 'Firefox'
-    channel = client.channel.lower()
-    channel = next((item for item in CHANNELS if channel.startswith(item)), None) or 'release'
     locale = client.locale.lower()
 
     # Distribution populated by client's distribution if it starts with
@@ -62,8 +60,8 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
     #
     # This is because non-Mozilla distributors of Firefox (e.g. Linux
     # Distributions) override the distribution field with their identification.
-    # We want all Firefox clients to get the default bundle for the locale /
-    # channel combination, unless they are part of an experiment.
+    # We want all Firefox clients to get the default bundle of each locale,
+    # unless they are part of an experiment.
     distribution = client.distribution.lower()
     if distribution.startswith('experiment-'):
         distribution = distribution[11:]
@@ -72,7 +70,6 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
 
     if settings.INSTANT_BUNDLE_GENERATION:
         content = generate_bundles(
-            limit_to_channel=channel,
             limit_to_locale=locale,
             limit_to_distribution_bundle=distribution,
             save_to_disk=False
@@ -80,7 +77,7 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
         return HttpResponse(status=200, content=content, content_type='application/json')
 
     filename = (
-        f'{settings.MEDIA_BUNDLES_PREGEN_ROOT}/{product}/{channel}/'
+        f'{settings.MEDIA_BUNDLES_PREGEN_ROOT}/{product}/'
         f'{locale}/{distribution}.json'
     )
 

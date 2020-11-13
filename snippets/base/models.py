@@ -105,16 +105,10 @@ class Target(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
 
-    on_release = models.BooleanField(default=False, verbose_name='Release', db_index=True)
-    on_beta = models.BooleanField(default=False, verbose_name='Beta', db_index=True)
-    on_aurora = models.BooleanField(default=False, verbose_name='Dev Edition (old Aurora)',
-                                    db_index=True)
-    on_nightly = models.BooleanField(default=False, verbose_name='Nightly', db_index=True)
-    on_esr = models.BooleanField(default=False, verbose_name='ESR', db_index=True)
-
     on_startpage_6 = models.BooleanField(default=True, verbose_name='Activity Stream Router',
                                          db_index=True)
 
+    filtr_channels = models.CharField(max_length=255, blank=False, default='')
     filtr_is_default_browser = models.CharField(max_length=10, blank=True, default='')
     filtr_profile_age_created = models.CharField(max_length=250, blank=True, default='')
     filtr_firefox_version = models.CharField(max_length=10, blank=True, default='')
@@ -136,7 +130,7 @@ class Target(models.Model):
     filtr_firefox_service = models.CharField(max_length=250, blank=True, default='')
     filtr_operating_system = models.CharField(max_length=250, blank=True, default='')
 
-    jexl_expr = models.TextField(blank=True, default='')
+    jexl_expr = models.TextField(blank=True, default='', validators=[validators.validate_jexl])
 
     class Meta:
         ordering = ['name']
@@ -1800,11 +1794,11 @@ class Job(models.Model):
     @property
     def channels(self):
         channels = []
-
         for target in self.targets.all():
-            for channel in CHANNELS:
-                if getattr(target, 'on_{0}'.format(channel), False):
-                    channels.append(channel)
+            channels += [
+                channel for channel in target.filtr_channels.split(';')
+                if channel
+            ]
         return set(channels)
 
     def change_status(self, status, user=None, send_slack=True, reason=''):

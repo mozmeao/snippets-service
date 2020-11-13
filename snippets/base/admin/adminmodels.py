@@ -931,20 +931,13 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
     ]
     fieldsets_custom = [
         ('ID', {'fields': ('name',)}),
-        ('Product channels', {
-            'description': 'What channels will this snippet be available in?',
-            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
-        }),
         ('Targeting', {'fields': ('jexl_expr',)}),
     ]
     fieldsets_full = [
         ('ID', {'fields': ('name',)}),
-        ('Product channels', {
-            'description': 'What channels will this snippet be available in?',
-            'fields': (('on_release', 'on_beta', 'on_aurora', 'on_nightly', 'on_esr'),)
-        }),
         ('Targeting', {
             'fields': (
+                'filtr_channel',
                 'filtr_is_default_browser',
                 'filtr_needs_update',
                 'filtr_updates_enabled',

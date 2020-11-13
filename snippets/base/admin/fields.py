@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
-from django.forms import (ChoiceField, ModelChoiceField, ModelMultipleChoiceField,
-                          MultiValueField, MultipleChoiceField)
+from django.forms import (ChoiceField, ModelChoiceField,
+                          ModelMultipleChoiceField, MultipleChoiceField,
+                          MultiValueField)
 
 from snippets.base.models import Addon, TargetedCountry
 
@@ -14,7 +15,7 @@ class MultipleChoiceFieldCSV(MultipleChoiceField):
 
     def prepare_value(self, value):
         value = super(MultipleChoiceFieldCSV, self).prepare_value(value)
-        if not isinstance(value, list):
+        if value and not isinstance(value, list):
             value = value.split(';')
         return value
 
@@ -29,6 +30,30 @@ class JEXLBaseField():
             return self.jexl.format(attr_name=self.attr_name, value=value)
 
         return None
+
+
+class JEXLMultipleChoiceField(JEXLBaseField, MultipleChoiceFieldCSV):
+    def __init__(self, attr_name, *args, **kwargs):
+        self.attr_name = attr_name
+        super().__init__(*args, **kwargs)
+
+    def to_jexl(self, value):
+        if value:
+            return f'{self.attr_name} in {[x for x in value.split(";")]}'
+        return None
+
+
+class JEXLChannelField(JEXLMultipleChoiceField):
+    def to_jexl(self, value):
+        if not value:
+            return None
+        values = value.split(';')
+
+        # When `release` is selected, also add `default`
+        if 'release' in values:
+            values.append('default')
+
+        return f'{self.attr_name} in {[x for x in values]}'
 
 
 class JEXLChoiceField(JEXLBaseField, ChoiceField):
