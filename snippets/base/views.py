@@ -1,10 +1,8 @@
 import json
-from urllib.parse import urljoin, urlparse
 
 import sentry_sdk
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.files.storage import default_storage
 from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
 from django.shortcuts import get_object_or_404
@@ -13,12 +11,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 from django_filters.views import FilterView
-from django_statsd.clients import statsd
 from ratelimit.decorators import ratelimit
 
+from redirector.redirect import calculate_redirect
 from snippets.base.bundles import generate_bundles
 from snippets.base.filters import JobFilter
-from snippets.base.models import ASRSnippet, Client
+from snippets.base.models import ASRSnippet
 
 
 class HomeView(TemplateView):
@@ -50,23 +48,8 @@ def fetch_snippets(request, **kwargs):
 
 @cache_control(public=True, max_age=settings.SNIPPET_BUNDLE_PREGEN_REDIRECT_TIMEOUT)
 def fetch_snippet_pregen_bundle(request, **kwargs):
-    statsd.incr('serve.bundle_pregen')
-    client = Client(**kwargs)
-    product = 'Firefox'
-    locale = client.locale.lower()
-
-    # Distribution populated by client's distribution if it starts with
-    # `experiment-`. Otherwise default to `default`.
-    #
-    # This is because non-Mozilla distributors of Firefox (e.g. Linux
-    # Distributions) override the distribution field with their identification.
-    # We want all Firefox clients to get the default bundle of each locale,
-    # unless they are part of an experiment.
-    distribution = client.distribution.lower()
-    if distribution.startswith('experiment-'):
-        distribution = distribution[11:]
-    else:
-        distribution = 'default'
+    locale, distribution, full_url = calculate_redirect(locale=kwargs['locale'],
+                                                        distribution=kwargs['distribution'])
 
     if settings.INSTANT_BUNDLE_GENERATION:
         content = generate_bundles(
@@ -75,16 +58,6 @@ def fetch_snippet_pregen_bundle(request, **kwargs):
             save_to_disk=False
         )
         return HttpResponse(status=200, content=content, content_type='application/json')
-
-    filename = (
-        f'{settings.MEDIA_BUNDLES_PREGEN_ROOT}/{product}/'
-        f'{locale}/{distribution}.json'
-    )
-
-    full_url = urljoin(settings.CDN_URL or settings.SITE_URL,
-                       urlparse(default_storage.url(filename)).path)
-    # Remove AWS S3 parameters
-    full_url = full_url.split('?')[0]
 
     return HttpResponseRedirect(full_url)
 
