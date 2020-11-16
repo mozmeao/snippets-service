@@ -937,7 +937,7 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
         ('ID', {'fields': ('name',)}),
         ('Targeting', {
             'fields': (
-                'filtr_channel',
+                'filtr_channels',
                 'filtr_is_default_browser',
                 'filtr_needs_update',
                 'filtr_updates_enabled',
