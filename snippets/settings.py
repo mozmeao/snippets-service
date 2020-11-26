@@ -261,10 +261,12 @@ STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
 STATSD_PREFIX = config('STATSD_PREFIX', K8S_NAMESPACE)
 STATSD_CLIENT = config('STATSD_CLIENT', 'django_statsd.clients.null')
 
+GIT_SHA = config('GIT_SHA', default='HEAD')
+
 sentry_sdk.init(
     dsn=config('SENTRY_DSN', None),
     integrations=[DjangoIntegration()],
-    release=config('GIT_SHA', None),
+    release=GIT_SHA,
     environment=config('SENTRY_ENVIRONMENT', 'dev'),
     server_name='.'.join(x for x in [HOSTNAME, K8S_NAMESPACE, CLUSTER_NAME] if x),
 )

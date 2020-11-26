@@ -62,37 +62,14 @@ class FetchSnippetPregenBundleTests(TestCase):
         ])
 
     def test_base(self):
-        response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
-        expected_url = (
-            'http://example.org/media/bundles/pregen/Firefox/el-gr/default.json'
+        with patch('snippets.base.views.calculate_redirect') as calculate_redirect_mock:
+            calculate_redirect_mock.return_value = ('el-gr', 'default', 'https://example.com')
+            response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
+        calculate_redirect_mock.assert_called_with(
+            locale='el-GR', distribution='other-than-default'
         )
-        self.assertEqual(response.url, expected_url)
 
-    @override_settings(CDN_URL='https://cdn.com')
-    def test_cdn(self):
-        response = views.fetch_snippet_pregen_bundle(self.request, **self.asrclient_kwargs)
-        expected_url = (
-            'https://cdn.com/media/bundles/pregen/Firefox/el-gr/default.json'
-        )
-        self.assertEqual(response.url, expected_url)
-
-    def test_other_product(self):
-        asrclient_kwargs = self.asrclient_kwargs.copy()
-        asrclient_kwargs['name'] = 'Edge'
-        response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
-        expected_url = (
-            'http://example.org/media/bundles/pregen/Firefox/el-gr/default.json'
-        )
-        self.assertEqual(response.url, expected_url)
-
-    def test_distribution(self):
-        asrclient_kwargs = self.asrclient_kwargs.copy()
-        asrclient_kwargs['distribution'] = 'experiment-foo-bar'
-        response = views.fetch_snippet_pregen_bundle(self.request, **asrclient_kwargs)
-        expected_url = (
-            'http://example.org/media/bundles/pregen/Firefox/el-gr/foo-bar.json'
-        )
-        self.assertEqual(response.url, expected_url)
+        self.assertEqual(response.url, 'https://example.com')
 
     @override_settings(INSTANT_BUNDLE_GENERATION=True)
     def test_instant_bundle_generation(self):
