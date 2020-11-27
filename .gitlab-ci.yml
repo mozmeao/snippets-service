@@ -59,9 +59,8 @@ run-unit-tests-django:
   extends: .test-stage
   tags:
     - mozmeao
-  coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
   script:
-    - ${DOCKER_RUN_CMD} bash -c 'coverage run ./manage.py test --parallel; coverage report'
+    - ${DOCKER_RUN_CMD} bash -c './manage.py test --parallel'
 
 run-unit-tests-redirector:
   extends: .test-stage
