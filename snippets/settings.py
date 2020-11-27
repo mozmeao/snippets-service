@@ -68,8 +68,6 @@ MIDDLEWARE = (
     'snippets.base.middleware.HostnameMiddleware',
     'allow_cidr.middleware.AllowCIDRMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'django_statsd.middleware.GraphiteRequestTimingMiddleware',
-    'django_statsd.middleware.GraphiteMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'snippets.base.middleware.FetchSnippetsMiddleware',
     'snippets.base.middleware.EnforceHostIPMiddleware',
@@ -255,11 +253,6 @@ DEAD_MANS_SNITCH_FETCH_DAILY_METRICS = config('DEAD_MANS_SNITCH_FETCH_DAILY_METR
 ENGAGE_ROBOTS = config('ENGAGE_ROBOTS', default=False)
 
 ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
-
-STATSD_HOST = config('STATSD_HOST', default='localhost')
-STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
-STATSD_PREFIX = config('STATSD_PREFIX', K8S_NAMESPACE)
-STATSD_CLIENT = config('STATSD_CLIENT', 'django_statsd.clients.null')
 
 GIT_SHA = config('GIT_SHA', default='HEAD')
 
