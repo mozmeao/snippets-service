@@ -6,3 +6,4 @@ image-dumps
 static
 media
 product_details
+.env

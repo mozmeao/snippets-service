@@ -47,7 +47,7 @@ WORKDIR /app
 
 RUN bash -c 'for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done' && \
     apt-get update && \
-    apt-get install -y --no-install-recommends postgresql-client pngquant libxslt1.1 libxml2 && \
+    apt-get install -y --no-install-recommends libpq-dev postgresql-client pngquant libxslt1.1 libxml2 && \
     rm -rf /var/lib/apt/lists/* /usr/share/man
 
 COPY --from=builder /venv /venv
