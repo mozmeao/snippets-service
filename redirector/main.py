@@ -24,6 +24,7 @@ def revision():
 
 
 @route('/healthz')
+@route('/healthz/')
 def healthz():
     return 'OK'
 
