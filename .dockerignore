@@ -1,2 +1,9 @@
 .git
 .product_details
+database-dumps
+venv
+image-dumps
+static
+media
+product_details
+.env

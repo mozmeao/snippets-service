@@ -13,7 +13,6 @@ from django.utils.safestring import mark_safe
 
 from django_admin_listfilter_dropdown.filters import (RelatedDropdownFilter,
                                                       RelatedOnlyDropdownFilter)
-from django_statsd.clients import statsd
 from taggit_helpers.admin import TaggitListFilter
 
 from snippets.base import forms, models
@@ -625,7 +624,6 @@ class ASRSnippetAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
             obj.creator = request.user
-        statsd.incr('save.asrsnippet')
         super().save_model(request, obj, form, change)
 
     def preview_url_light_theme(self, obj):
@@ -785,7 +783,6 @@ class CampaignAdmin(RelatedJobsMixin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
             obj.creator = request.user
-        statsd.incr('save.campaign')
         super().save_model(request, obj, form, change)
 
 
@@ -843,7 +840,6 @@ class CategoryAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
             obj.creator = request.user
-        statsd.incr('save.category')
         super().save_model(request, obj, form, change)
 
 
@@ -901,7 +897,6 @@ class ProductAdmin(RelatedSnippetsMixin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
             obj.creator = request.user
-        statsd.incr('save.product')
         super().save_model(request, obj, form, change)
 
 
@@ -1012,7 +1007,6 @@ class TargetAdmin(RelatedJobsMixin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not obj.creator_id:
             obj.creator = request.user
-        statsd.incr('save.target')
         super().save_model(request, obj, form, change)
 
 

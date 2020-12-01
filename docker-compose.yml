@@ -10,7 +10,8 @@ services:
     build:
       context: .
       args:
-        DEVELOPMENT: "true"
+        GIT_SHA: "${CI_COMMIT_SHORT_SHA:-HEAD}"
+    image: "mozmeao/snippets:${CI_COMMIT_SHORT_SHA:-latest}"
     ports:
       - "8443:8443"
       - "8000:8000"
@@ -18,34 +19,28 @@ services:
       - .:/app
     depends_on:
       - db
-    environment:
-      - PYTHONDONTWRITEBYTECODE=1
-      - DATABASE_URL=postgres://snippets:snippets@db/snippets
-      - DEBUG=True
-      - ALLOWED_HOSTS=*
-      - SECRET_KEY=59114b6a-2858-4caf-8878-482a24ee9542
-      - ENABLE_ADMIN=True
-      - CSP_REPORT_ONLY=True
-      - PROD_DETAILS_DIR=./.product_details/
     command:
       ./bin/run-dev.sh
-  jupyter:
+
+  redirector:
     build:
-      context: .
+      context: ./redirector
       args:
-        DEVELOPMENT: "true"
-    ports:
-      - "8888:8888"
+        GIT_SHA: "${CI_COMMIT_SHORT_SHA:-HEAD}"
+    image: "mozmeao/snippets:redirector-${CI_COMMIT_SHORT_SHA:-latest}"
     volumes:
-      - .:/app
+      - ./redirector:/app
+
+  test-web:
+    image: "mozmeao/snippets:${CI_COMMIT_SHORT_SHA:-latest}"
     depends_on:
       - db
-    environment:
-      - PYTHONDONTWRITEBYTECODE=1
-      - DATABASE_URL=postgres://snippets:snippets@db/snippets
-      - DEBUG=True
-      - ALLOWED_HOSTS=*
-      - SECRET_KEY=59114b6a-2858-4caf-8878-482a24ee9542
-      - PROD_DETAILS_DIR=./.product_details/
+    env_file:
+      - test.env
     command:
-      python manage.py shell_plus --notebook
+      ./manage.py test --parallel
+
+  test-redirector:
+    image: "mozmeao/snippets:redirector-${CI_COMMIT_SHORT_SHA:-latest}"
+    command:
+      pytest test.py

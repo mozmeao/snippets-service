@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-from bottle import redirect, response, route, run
+from bottle import redirect, response, route, run, default_app
 from decouple import config
 
 from redirect import calculate_redirect
@@ -11,6 +11,8 @@ SNIPPET_BUNDLE_PREGEN_REDIRECT_TIMEOUT = config(
     'SNIPPET_BUNDLE_PREGEN_REDIRECT_TIMEOUT', default=60 * 60 * 24, cast=int)  # One day
 
 GIT_SHA = config('GIT_SHA', default='HEAD')
+
+app = default_app()
 
 
 @route('/')
@@ -45,8 +47,3 @@ def redirect_to_bundle(*args, **kwargs):
 if __name__ == '__main__':
     if DEBUG:
         run(host='localhost', port=8000)
-    else:
-        run(host='0.0.0.0',
-            port=8000,
-            server='gunicorn',
-            workers=config('WSGI_NUM_WORKERS', default=2, cast=int))

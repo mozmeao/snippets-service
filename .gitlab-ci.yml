@@ -9,51 +9,58 @@ stages:
   - test
   - deploy
 
-build-images:
+build-image-django:
   stage: build
   tags:
     - mozmeao
   script:
-    - docker build -t ${DOCKER_IMAGE_TAG} --build-arg GIT_SHA=${CI_COMMIT_SHA} --pull .
-    - docker push ${DOCKER_IMAGE_TAG}
+    - CI_COMMIT_SHORT_SHA=latest make pull app=web
+    - make build app=web
+    - make push app=web
+    # With latest tag for caching
+    - CI_COMMIT_SHORT_SHA=latest make build app=web
+    - CI_COMMIT_SHORT_SHA=latest make push app=web
 
-.test-stage:
-  stage: test
-  variables:
-    DOCKER_DEBUG: "False"
-    DOCKER_ALLOWED_HOSTS: "*"
-    DOCKER_SECRET_KEY: "foo"
-    DOCKER_DATABASE_URL: "sqlite:///"
-    DOCKER_SITE_URL: "http://localhost:8000"
-    DOCKER_CACHE_URL: "dummy://"
-    DOCKER_ENABLE_ADMIN: "True"
-    DOCKER_SECURE_SSL_REDIRECT: "False"
-  before_script:
-    - env | grep "^DOCKER" | sed 's/DOCKER_//' > .docker-env
-
-check-migrations:
-  extends: .test-stage
+build-image-redirector:
+  stage: build
   tags:
     - mozmeao
   script:
-    - ${DOCKER_RUN_CMD} bash -c './manage.py makemigrations  | grep "No changes detected"'
+    - CI_COMMIT_SHORT_SHA=latest make pull app=web
+    - make build app=redirector
+    - make push app=redirector
+    # With latest tag for caching
+    - CI_COMMIT_SHORT_SHA=latest make build app=redirector
+    - CI_COMMIT_SHORT_SHA=latest make push app=redirector
+
+check-migrations:
+  stage: test
+  tags:
+    - mozmeao
+  script:
+    - make check-migrations
 
 run-flake8:
-  extends: .test-stage
+  stage: test
   tags:
     - mozmeao
   rules:
     - allow_failure: true
   script:
-    - ${DOCKER_RUN_CMD} flake8 snippets
+    - make lint
 
-run-unit-tests:
-  extends: .test-stage
+run-unit-tests-django:
+  stage: test
   tags:
     - mozmeao
-  coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
   script:
-    - ${DOCKER_RUN_CMD} bash -c 'coverage run ./manage.py test --parallel; coverage report'
+    - make test-web
+
+run-unit-tests-redirector:
+  tags:
+    - mozmeao
+  script:
+    - make test-redirector
 
 .deploy:
   stage: deploy
