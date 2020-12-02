@@ -9,7 +9,7 @@ cd snippets-config
 
 set -u
 for CLUSTER in ${CLUSTERS}; do
-    for DEPLOYMENT in {web,clock}-deploy.yaml; do
+    for DEPLOYMENT in {web,clock}.yaml; do
         DEPLOYMENT_FILE=${CLUSTER}/${NAMESPACE}/${DEPLOYMENT}
         if [[ -f ${DEPLOYMENT_FILE} ]]; then
             sed -i -e "s|image: .*|image: ${DOCKER_IMAGE_TAG}|" ${DEPLOYMENT_FILE}
