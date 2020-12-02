@@ -36,10 +36,8 @@ def test_redirect_calculate_redirect_default_experiment():
     assert distribution == 'default'
 
 
-@patch('main.redirect')
-def test_main_index(redirect_mock):
-    main.index()
-    redirect_mock.assert_called_with('https://snippets.cdn.mozilla.net/')
+def test_main_index():
+    assert main.index() == ''
 
 
 def test_main_healthz():
