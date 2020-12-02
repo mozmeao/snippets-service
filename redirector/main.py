@@ -12,21 +12,36 @@ SNIPPET_BUNDLE_PREGEN_REDIRECT_TIMEOUT = config(
 
 GIT_SHA = config('GIT_SHA', default='HEAD')
 
+CLUSTER_NAME = config('CLUSTER_NAME', default='cluster')
+K8S_NAMESPACE = config('K8S_NAMESPACE', default='namespace')
+K8S_POD_NAME = config('K8S_POD_NAME', default='pod')
+
 app = default_app()
 
 
+def set_xbackend_header(fn):
+    def _inner(*args, **kwargs):
+        response.add_header('X-Backend-Server', f'{CLUSTER_NAME}/{K8S_NAMESPACE}/{K8S_POD_NAME}')
+        return fn(*args, **kwargs)
+
+    return _inner
+
+
 @route('/')
+@set_xbackend_header
 def index():
     return redirect('https://snippets.cdn.mozilla.net/')
 
 
 @route('/static/revision.txt')
+@set_xbackend_header
 def revision():
     return GIT_SHA
 
 
 @route('/healthz')
 @route('/healthz/')
+@set_xbackend_header
 def healthz():
     return 'OK'
 
@@ -34,6 +49,7 @@ def healthz():
 @route('/<startpage_version>/<name>/<version>/<appbuildid>/'
        '<build_target>/<locale>/<channel>/<os_version>/'
        '<distribution>/<distribution_version>/')
+@set_xbackend_header
 def redirect_to_bundle(*args, **kwargs):
     locale, distribution, full_url = calculate_redirect(*args, **kwargs)
 
