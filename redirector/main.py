@@ -30,7 +30,7 @@ def set_xbackend_header(fn):
 @route('/')
 @set_xbackend_header
 def index():
-    return redirect('https://snippets.cdn.mozilla.net/')
+    return ''
 
 
 @route('/static/revision.txt')
