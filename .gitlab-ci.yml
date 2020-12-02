@@ -1,8 +1,5 @@
 variables:
   DOCKER_REPOSITORY: "mozmeao/snippets"
-  DOCKER_IMAGE_TAG: "${DOCKER_REPOSITORY}:${CI_COMMIT_SHORT_SHA}"
-  # Cannot use $DOCKER_IMAGE_TAG because it contains other variables itself.
-  DOCKER_RUN_CMD: "docker run --env-file .docker-env ${DOCKER_REPOSITORY}:${CI_COMMIT_SHORT_SHA}"
 
 stages:
   - build
@@ -70,14 +67,6 @@ run-unit-tests-redirector:
   script:
     - bin/update-config.sh
 
-dev:
-  extends: .deploy
-  only:
-    - master
-  variables:
-    NAMESPACE: snippets-dev
-    CLUSTERS: oregon-a
-
 stage:
   extends: .deploy
   only:
@@ -85,6 +74,7 @@ stage:
   variables:
     NAMESPACE: snippets-stage
     CLUSTERS: oregon-a
+    DOCKER_IMAGE_TAG: "${DOCKER_REPOSITORY}:${CI_COMMIT_SHORT_SHA}"
 
 admin:
   extends: .deploy
@@ -93,6 +83,7 @@ admin:
   variables:
     NAMESPACE: snippets-admin
     CLUSTERS: oregon-a
+    DOCKER_IMAGE_TAG: "${DOCKER_REPOSITORY}:${CI_COMMIT_SHORT_SHA}"
 
 prod:
   extends: .deploy
@@ -100,4 +91,5 @@ prod:
     - prod
   variables:
     NAMESPACE: snippets-prod
-    CLUSTERS: frankfurt oregon-a
+    CLUSTERS: frankfurt-eks oregon-eks
+    DOCKER_IMAGE_TAG: "${DOCKER_REPOSITORY}:redirector-${CI_COMMIT_SHORT_SHA}"

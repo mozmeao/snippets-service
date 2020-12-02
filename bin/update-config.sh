@@ -18,8 +18,8 @@ for CLUSTER in ${CLUSTERS}; do
     done
 done
 
-cp ${BIN_DIR}/acceptance-tests.sh .
-git add acceptance-tests.sh
+cp ${BIN_DIR}/acceptance-tests*.sh .
+git add acceptance-tests*.sh
 git commit -m "set image to ${DOCKER_IMAGE_TAG}" || echo "nothing new to commit"
 git push
 popd
