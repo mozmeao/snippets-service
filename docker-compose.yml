@@ -10,7 +10,7 @@ services:
     build:
       context: .
       args:
-        GIT_SHA: "${CI_COMMIT_SHORT_SHA:-HEAD}"
+        GIT_SHA: "${CI_COMMIT_SHA:-HEAD}"
     image: "mozmeao/snippets:${CI_COMMIT_SHORT_SHA:-latest}"
     ports:
       - "8443:8443"
@@ -26,7 +26,7 @@ services:
     build:
       context: ./redirector
       args:
-        GIT_SHA: "${CI_COMMIT_SHORT_SHA:-HEAD}"
+        GIT_SHA: "${CI_COMMIT_SHA:-HEAD}"
     image: "mozmeao/snippets:redirector-${CI_COMMIT_SHORT_SHA:-latest}"
     volumes:
       - ./redirector:/app
