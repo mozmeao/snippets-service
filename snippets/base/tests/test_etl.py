@@ -86,6 +86,19 @@ class TestUpdateJobMetrics(TestCase):
                     'no_clients': 50,
                     'no_clients_total': 0,
                 },
+                {
+                    'message_id': '1000',
+                    'event_context': 'EOYSnippetForm',
+                    'event': 'CLICK_BUTTON',
+                    'additional_properties': (
+                        '{"source":"NEWTAB_FOOTER_BAR_CONTENT","id":"NEWTAB_FOOTER_BAR_CONTENT"}'
+                    ),
+                    'channel': 'release',
+                    'country_code': 'IT',
+                    'counts': 10,
+                    'no_clients': 4,
+                    'no_clients_total': 0,
+                },
                 # To be discarded
                 {
                     'message_id': '500',
@@ -216,14 +229,14 @@ class TestUpdateJobMetrics(TestCase):
         jdp1 = JobDailyPerformance.objects.filter(job_id=1000).order_by('-id')[0]
         self.assertEqual(jdp1.impression, 80)
         self.assertEqual(jdp1.impression_no_clients_total, 653)
-        self.assertEqual(jdp1.click, 11)
+        self.assertEqual(jdp1.click, 21)
         self.assertEqual(jdp1.block, 50)
         self.assertEqual(jdp1.dismiss, 0)
         self.assertEqual(jdp1.go_to_scene2, 0)
         self.assertEqual(jdp1.subscribe_error, 0)
         self.assertEqual(jdp1.subscribe_success, 0)
         self.assertEqual(jdp1.other_click, 0)
-        self.assertEqual(len(jdp1.details), 5)
+        self.assertEqual(len(jdp1.details), 6)
         for detail in [
                 {'event': 'click', 'counts': 11, 'channel': 'release',
                  'country': 'GR', 'no_clients': 12, 'no_clients_total': 0},

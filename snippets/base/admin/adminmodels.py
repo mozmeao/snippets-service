@@ -1407,7 +1407,7 @@ class JobDailyPerformanceAdmin(admin.ModelAdmin):
         'adj_client_percentage',
         'data_fetched_on',
     ]
-    search_fields = ['job']
+    search_fields = ['id', 'job__id', 'job__snippet__id']
     fieldsets = [
         ('Metrics', {
             'fields': (
