@@ -59,7 +59,12 @@ def process_rows(rows, date, key='message_id'):
         # place the event context. Extract information from both
         # places to identify the event.
         properties = json.loads(row.get('additional_properties', '{}'))
-        event = row['event_context'] or properties.get('value', '') or row['event']
+
+        # Fundraising metrics need special treatment.
+        if row['event_context'] == 'EOYSnippetForm' and row['event'] == 'CLICK_BUTTON':
+            event = 'CLICK'
+        else:
+            event = row['event_context'] or properties.get('value', '') or row['event']
 
         if event in ['CLICK_BUTTON', 'CLICK']:
             event = 'click'
