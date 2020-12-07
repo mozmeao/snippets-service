@@ -12,18 +12,21 @@ build-image-django:
     - mozmeao
   script:
     - CI_COMMIT_SHORT_SHA=latest make pull app=web
+    - CI_COMMIT_SHORT_SHA=latest make pull app=builder
     - make build app=web
     - make push app=web
     # With latest tag for caching
     - CI_COMMIT_SHORT_SHA=latest make build app=web
     - CI_COMMIT_SHORT_SHA=latest make push app=web
+    - CI_COMMIT_SHORT_SHA=latest make build app=builder
+    - CI_COMMIT_SHORT_SHA=latest make push app=builder
 
 build-image-redirector:
   stage: build
   tags:
     - mozmeao
   script:
-    - CI_COMMIT_SHORT_SHA=latest make pull app=web
+    - CI_COMMIT_SHORT_SHA=latest make pull app=redirector
     - make build app=redirector
     - make push app=redirector
     # With latest tag for caching
