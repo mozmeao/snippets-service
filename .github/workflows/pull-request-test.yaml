@@ -1,0 +1,20 @@
+name: Test Pull Request
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mozmeao/checkout@v1
+      - name: Docker pull
+        run: CI_COMMIT_SHORT_SHA=latest make pull
+      - name: Docker build
+        run: make build
+      - name: Lint
+        run: make lint
+      - name: Check migrations
+        run: make check-migrations
+      - name: Test
+        run: make test

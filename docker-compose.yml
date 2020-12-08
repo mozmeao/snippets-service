@@ -6,9 +6,23 @@ services:
       - POSTGRES_PASSWORD=snippets
       - POSTGRES_USER=snippets
       - POSTGRES_DB=snippets
+
+  builder:
+    build:
+      context: .
+      target: builder
+      cache_from:
+        - mozmeao/snippets:builder-latest
+      args:
+        GIT_SHA: "${CI_COMMIT_SHA:-HEAD}"
+    image: "mozmeao/snippets:builder-${CI_COMMIT_SHORT_SHA:-latest}"
+
   web:
     build:
       context: .
+      cache_from:
+        - mozmeao/snippets:builder-latest
+        - mozmeao/snippets:latest
       args:
         GIT_SHA: "${CI_COMMIT_SHA:-HEAD}"
     image: "mozmeao/snippets:${CI_COMMIT_SHORT_SHA:-latest}"
@@ -25,6 +39,8 @@ services:
   redirector:
     build:
       context: ./redirector
+      cache_from:
+        - mozmeao/snippets:redirector-latest
       args:
         GIT_SHA: "${CI_COMMIT_SHA:-HEAD}"
     image: "mozmeao/snippets:redirector-${CI_COMMIT_SHORT_SHA:-latest}"
