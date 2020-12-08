@@ -4,7 +4,6 @@
     "repository": {
         "url": "https://github.com/mozmeao/snippets-service/",
         "license": "MPL 2.0",
-        "tests": "https://travis-ci.org/mozmeao/snippets-service/"
     },
     "urls": {
          "prod": "https://snippets.mozilla.com",
