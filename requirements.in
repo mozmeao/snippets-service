@@ -22,7 +22,7 @@ django-mozilla-product-details==0.14.1
 django-ratelimit==2.0.0
 django-redis==4.11.0
 django-reversion==3.0.4
-django-storages==1.9.1
+django-storages==1.11.1
 django-taggit-helpers==0.1.4
 django-watchman==0.18.0
 factory-boy==2.12.0
