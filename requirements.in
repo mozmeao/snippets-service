@@ -49,4 +49,4 @@ flake8==3.8.4
 hashin==0.15.0
 ipdb==0.13.2
 pip-tools==5.4.0
-pylint==2.5.3
+pylint==2.6.0
