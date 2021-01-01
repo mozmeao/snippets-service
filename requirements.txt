@@ -221,9 +221,9 @@ django-reversion==3.0.4 \
     --hash=sha256:1aeed0b723b5be14c4dc7e7c7e03f9538e7ef29c997585e2e8fb414cf38818f4 \
     --hash=sha256:ed46722389fb2441860d471c7538967dee545bcee891d3d907b04f4baa98f5fa \
     # via -r requirements.in
-django-storages==1.9.1 \
-    --hash=sha256:3103991c2ee8cef8a2ff096709973ffe7106183d211a79f22cf855f33533d924 \
-    --hash=sha256:a59e9923cbce7068792f75344ed7727021ee4ac20f227cf17297d0d03d141e91 \
+django-storages==1.11.1 \
+    --hash=sha256:c823dbf56c9e35b0999a13d7e05062b837bae36c518a40255d522fbe3750fbb4 \
+    --hash=sha256:f28765826d507a0309cfaa849bd084894bc71d81bf0d09479168d44785396f80 \
     # via -r requirements.in
 django-taggit-helpers==0.1.4 \
     --hash=sha256:240a0c2281807d9c356d50cbaf176bcaffdb3a039acc72af18223e78ab1703e4 \
