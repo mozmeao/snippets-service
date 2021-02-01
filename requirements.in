@@ -3,7 +3,7 @@ asn1crypto==1.3.0
 babis==0.2.4
 bleach==3.2.1
 boto3==1.16.63
-Brotli==1.0.7
+Brotli==1.0.9
 configparser==5.0.0
 contextlib2==0.6.0.post1
 Django==2.2.13
