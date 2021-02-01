@@ -189,9 +189,9 @@ django-csp==3.7 \
 django-enforce-host==1.0.1 \
     --hash=sha256:40c4b4830e7fc27710c1606e8f3a91e82f8f1d5ae6c26aaec76f453b1407fc3d
     # via -r requirements.in
-django-extensions==2.2.9 \
-    --hash=sha256:2f81b618ba4d1b0e58603e25012e5c74f88a4b706e0022a3b21f24f0322a6ce6 \
-    --hash=sha256:b19182d101a441fe001c5753553a901e2ef3ff60e8fbbe38881eb4a61fdd17c4
+django-extensions==3.1.0 \
+    --hash=sha256:7cd002495ff0a0e5eb6cdd6be759600905b4e4079232ea27618fc46bdd853651 \
+    --hash=sha256:c7f88625a53f631745d4f2bef9ec4dcb999ed59476393bdbbe99db8596778846
     # via -r requirements.in
 django-filter==2.2.0 \
     --hash=sha256:558c727bce3ffa89c4a7a0b13bc8976745d63e5fd576b3a9a851650ef11c401b \
@@ -643,7 +643,6 @@ six==1.15.0 \
     #   babis
     #   bleach
     #   cryptography
-    #   django-extensions
     #   josepy
     #   mozilla-django-oidc
     #   parsimonious
