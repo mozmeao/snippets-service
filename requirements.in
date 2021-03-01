@@ -19,7 +19,7 @@ django-ical==1.5
 django-jinja==2.4.1
 django-modeladmin-reorder==0.3.1
 django-mozilla-product-details==0.14.1
-django-ratelimit==2.0.0
+django-ratelimit==3.0.1
 django-redis==4.11.0
 django-reversion==3.0.4
 django-storages==1.11.1
