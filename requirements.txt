@@ -184,9 +184,9 @@ django-filter==2.2.0 \
     --hash=sha256:558c727bce3ffa89c4a7a0b13bc8976745d63e5fd576b3a9a851650ef11c401b \
     --hash=sha256:c3deb57f0dd7ff94d7dce52a047516822013e2b441bed472b722a317658cfd14
     # via -r requirements.in
-django-ical==1.5 \
-    --hash=sha256:80071168c7113d8ddf5907bd02bc32af017cf2bfb401d3e988d657819bce4756 \
-    --hash=sha256:afdf3020e6f7ed5955a4fc4d500283714b80bed16fcc3724a24e1fdae2bff7ed
+django-ical==1.8.0 \
+    --hash=sha256:0552d71595712129b78f104de175f6be6719c94b35f0e3b3679cf4e83938ec48 \
+    --hash=sha256:12a4e1dd9a0daeb57b4bee89cae0b597ef76192447e633257a8840d2e6da27fc
     # via -r requirements.in
 django-jinja==2.4.1 \
     --hash=sha256:8a49d73de616a12075eee14c6d3bbab936261a463457d40348d8b8e2995cfbed \
@@ -207,6 +207,10 @@ django-ratelimit==3.0.1 \
     --hash=sha256:73223d860abd5c5d7b9a807fabb39a6220068129b514be8d78044b52607ab154 \
     --hash=sha256:857e797f23de948b204a31dba9d88aea3ce731b7a5d926d0240c772e19b5486f
     # via -r requirements.in
+django-recurrence==1.10.3 \
+    --hash=sha256:715f681f6af029ff3a8d73c7b1460abd8cbc5d5a5001efcb127032e84d9cb963 \
+    --hash=sha256:9053b44b78b7fbfe3530673edfdd6d2f562105f8a192bc6a4b906a3df4f95f59
+    # via django-ical
 django-redis==4.11.0 \
     --hash=sha256:a5b1e3ffd3198735e6c529d9bdf38ca3fcb3155515249b98dc4d966b8ddf9d2b \
     --hash=sha256:e1aad4cc5bd743d8d0b13d5cae0cef5410eaace33e83bff5fc3a139ad8db50b4
@@ -244,6 +248,7 @@ django==2.2.24 \
     #   django-jinja
     #   django-modeladmin-reorder
     #   django-mozilla-product-details
+    #   django-recurrence
     #   django-redis
     #   django-reversion
     #   django-storages
@@ -614,6 +619,7 @@ python-dateutil==2.8.1 \
     --hash=sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a
     # via
     #   botocore
+    #   django-recurrence
     #   faker
     #   icalendar
 python-decouple==3.4 \
@@ -626,6 +632,7 @@ pytz==2020.4 \
     # via
     #   apscheduler
     #   django
+    #   django-recurrence
     #   icalendar
     #   tzlocal
 redash-dynamic-query==1.0.4 \
