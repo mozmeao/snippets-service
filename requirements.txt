@@ -231,9 +231,9 @@ django-watchman==0.18.0 \
     --hash=sha256:3977ede248f6dce17a6936834efbf0b201376ea3c2aa98b8352935f3d09ed7e3 \
     --hash=sha256:9a2b8442d4791afc995dc3ba67ab7cf9461488f7aa07e0f4c0d2f4e52d2266d6
     # via -r requirements.in
-django==2.2.13 \
-    --hash=sha256:84f370f6acedbe1f3c41e1a02de44ac206efda3355e427139ecb785b5f596d80 \
-    --hash=sha256:e8fe3c2b2212dce6126becab7a693157f1a441a07b62ec994c046c76af5bb66d
+django==2.2.24 \
+    --hash=sha256:3339ff0e03dee13045aef6ae7b523edff75b6d726adf7a7a48f53d5a501f7db7 \
+    --hash=sha256:f2084ceecff86b1e631c2cd4107d435daf4e12f1efcdf11061a73bf0b5e95f92
     # via
     #   -r requirements.in
     #   django-allow-cidr
