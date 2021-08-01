@@ -230,9 +230,9 @@ django-redis==4.11.0 \
     --hash=sha256:a5b1e3ffd3198735e6c529d9bdf38ca3fcb3155515249b98dc4d966b8ddf9d2b \
     --hash=sha256:e1aad4cc5bd743d8d0b13d5cae0cef5410eaace33e83bff5fc3a139ad8db50b4
     # via -r requirements.in
-django-reversion==3.0.4 \
-    --hash=sha256:1aeed0b723b5be14c4dc7e7c7e03f9538e7ef29c997585e2e8fb414cf38818f4 \
-    --hash=sha256:ed46722389fb2441860d471c7538967dee545bcee891d3d907b04f4baa98f5fa
+django-reversion==4.0.0 \
+    --hash=sha256:ad6d714b4b9b824e22b88d47201cc0f74b5c4294c8d4e1f8d7ac7c3631ef3188 \
+    --hash=sha256:f059c654e38c0dd8dccd7f0990aa2f6d9ad22dab55c5e095f9596aeda8079dcd
     # via -r requirements.in
 django-storages==1.11.1 \
     --hash=sha256:c823dbf56c9e35b0999a13d7e05062b837bae36c518a40255d522fbe3750fbb4 \
