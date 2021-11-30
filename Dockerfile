@@ -12,8 +12,16 @@ RUN python -m venv /venv/
 # https://github.com/debuerreotype/debuerreotype/issues/10#issuecomment-438342078
 RUN bash -c 'for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done' && \
     apt-get update && \
-    apt-get install -y --no-install-recommends build-essential libxslt1.1 libxml2 libxml2-dev \
-                                               libxslt1-dev libpq-dev && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    libxslt1.1 \
+    libxml2 \
+    libxml2-dev \
+    libxslt1-dev \
+    libpq-dev \
+    libffi-dev \
+    zlib1g-dev \
+    libjpeg-dev && \
     rm -rf /var/lib/apt/lists/* /user/share/man
 
 WORKDIR /app
@@ -47,7 +55,13 @@ WORKDIR /app
 
 RUN bash -c 'for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done' && \
     apt-get update && \
-    apt-get install -y --no-install-recommends libpq-dev postgresql-client pngquant libxslt1.1 libxml2 && \
+    apt-get install -y --no-install-recommends \
+    libpq-dev \
+    postgresql-client \
+    pngquant \
+    libxslt1.1 \
+    libxml2 \
+    libjpeg-dev && \
     rm -rf /var/lib/apt/lists/* /usr/share/man
 
 COPY --from=builder /venv /venv
