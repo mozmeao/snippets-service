@@ -157,25 +157,6 @@ dj-database-url==0.5.0 \
     --hash=sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9
     # via -r requirements.in
-django==2.2.13 \
-    --hash=sha256:84f370f6acedbe1f3c41e1a02de44ac206efda3355e427139ecb785b5f596d80 \
-    --hash=sha256:e8fe3c2b2212dce6126becab7a693157f1a441a07b62ec994c046c76af5bb66d
-    # via
-    #   -r requirements.in
-    #   django-allow-cidr
-    #   django-csp
-    #   django-filter
-    #   django-ical
-    #   django-jinja
-    #   django-modeladmin-reorder
-    #   django-mozilla-product-details
-    #   django-redis
-    #   django-reversion
-    #   django-storages
-    #   django-taggit
-    #   django-taggit-helpers
-    #   django-watchman
-    #   mozilla-django-oidc
 django-admin-list-filter-dropdown==1.0.3 \
     --hash=sha256:07cd37b6a9be1b08f11d4a92957c69b67bc70b1f87a2a7d4ae886c93ea51eb53 \
     --hash=sha256:bf1b48bab9772dad79db71efef17e78782d4f2421444d5e49bb10e0da71cd6bb
@@ -250,6 +231,25 @@ django-watchman==0.18.0 \
     --hash=sha256:3977ede248f6dce17a6936834efbf0b201376ea3c2aa98b8352935f3d09ed7e3 \
     --hash=sha256:9a2b8442d4791afc995dc3ba67ab7cf9461488f7aa07e0f4c0d2f4e52d2266d6
     # via -r requirements.in
+django==2.2.24 \
+    --hash=sha256:3339ff0e03dee13045aef6ae7b523edff75b6d726adf7a7a48f53d5a501f7db7 \
+    --hash=sha256:f2084ceecff86b1e631c2cd4107d435daf4e12f1efcdf11061a73bf0b5e95f92
+    # via
+    #   -r requirements.in
+    #   django-allow-cidr
+    #   django-csp
+    #   django-filter
+    #   django-ical
+    #   django-jinja
+    #   django-modeladmin-reorder
+    #   django-mozilla-product-details
+    #   django-redis
+    #   django-reversion
+    #   django-storages
+    #   django-taggit
+    #   django-taggit-helpers
+    #   django-watchman
+    #   mozilla-django-oidc
 factory-boy==2.12.0 \
     --hash=sha256:728df59b372c9588b83153facf26d3d28947fc750e8e3c95cefa9bed0e6394ee \
     --hash=sha256:faf48d608a1735f0d0a3c9cbf536d64f9132b547dae7ba452c4d99a79e84a370
