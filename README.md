@@ -9,14 +9,18 @@ The root of all messaging.
 One time setup of your environment and database:
 
 0. Make sure you have [docker](https://docker.io) and [docker-compose](https://github.com/docker/compose)
-1. `$ docker-compose run --service-ports web bash`
-2. `[docker]$ ./manage.py update_product_details`
-   -  If you get an error connecting to the database, you probably need to wait
-      for a few seconds for PostgreSQL to initialize and then re-try the command.
-3. `[docker]$ ./manage.py migrate`
-4. `[docker]$ ./manage.py createsuperuser` (enter any user/email/pass you wish. Email is not required.)
-5. `[docker]$ ./manage.py shell -c 'from snippets.base.util import *; create_countries(); create_locales();'`
-   - Create a list of Countries and Locales from Product Details info.
+1. Setup an .env file with in the project root dir with at least:
+   - `SECRET_KEY` set
+   - `DATABASE_URL=postgres://snippets:snippets@db:5432/snippets`
+   - `PROD_DETAILS_DIR` set to a writeable path, eg `PROD_DETAILS_DIR=/home/webdev/`
+2. `$ docker-compose run --service-ports web bash`
+3. `[docker]$ ./manage.py update_product_details`
+   - If you get an error connecting to the database, you probably need to wait
+     for a few seconds for PostgreSQL to initialize and then re-try the command.
+4. `[docker]$ ./manage.py migrate`
+5. `[docker]$ ./manage.py createsuperuser` (enter any user/email/pass you wish. Email is not required.)
+6. `[docker]$ ./manage.py shell -c 'from snippets.base.util import *; create_countries();'`
+   - Create a list of Countries from Product Details info. Note that create_locales() no longer exists.
 
 Start the development server:
 
@@ -32,7 +36,6 @@ to use `--service-ports` flag to make docker compose map the required ports.
 
 The project is configured for `docker-compose up` if that's your preference.
 
-
 ## TLS Certificates
 
 Firefox communicates with the snippets service only over secure HTTPS
@@ -45,8 +48,7 @@ Snippets from your development environment.
 
 ## Run the tests
 
- `$ ./manage.py test --parallel`
-
+`$ ./manage.py test --parallel`
 
 ## Rebuild your Docker Compose Envinronment
 
@@ -60,7 +62,6 @@ $ docker-compose build
 
 ```
 
-
 ## Install Therapist
 
 [Therapist](https://github.com/rehandalal/therapist) is a smart pre-commit hook
@@ -68,4 +69,4 @@ for git to ensure that committed code has been properly linted.
 
 Install the hooks by running:
 
- `$ therapist install`
+`$ therapist install`
