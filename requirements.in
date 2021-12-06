@@ -33,7 +33,7 @@ mozilla-django-oidc==1.2.4
 newrelic==5.0.2.126
 Pillow==8.3.2
 psycopg2==2.8.6
-pyjexl==0.2.3
+pyjexl==0.3.0
 python-decouple==3.4
 redash-dynamic-query==1.0.4
 sentry-sdk==0.14.3
