@@ -157,6 +157,27 @@ dj-database-url==0.5.0 \
     --hash=sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9
     # via -r requirements.in
+django==2.2.24 \
+    --hash=sha256:3339ff0e03dee13045aef6ae7b523edff75b6d726adf7a7a48f53d5a501f7db7 \
+    --hash=sha256:f2084ceecff86b1e631c2cd4107d435daf4e12f1efcdf11061a73bf0b5e95f92
+    # via
+    #   -r requirements.in
+    #   django-allow-cidr
+    #   django-csp
+    #   django-extensions
+    #   django-filter
+    #   django-ical
+    #   django-jinja
+    #   django-modeladmin-reorder
+    #   django-mozilla-product-details
+    #   django-recurrence
+    #   django-redis
+    #   django-reversion
+    #   django-storages
+    #   django-taggit
+    #   django-taggit-helpers
+    #   django-watchman
+    #   mozilla-django-oidc
 django-admin-list-filter-dropdown==1.0.3 \
     --hash=sha256:07cd37b6a9be1b08f11d4a92957c69b67bc70b1f87a2a7d4ae886c93ea51eb53 \
     --hash=sha256:bf1b48bab9772dad79db71efef17e78782d4f2421444d5e49bb10e0da71cd6bb
@@ -235,30 +256,9 @@ django-watchman==0.18.0 \
     --hash=sha256:3977ede248f6dce17a6936834efbf0b201376ea3c2aa98b8352935f3d09ed7e3 \
     --hash=sha256:9a2b8442d4791afc995dc3ba67ab7cf9461488f7aa07e0f4c0d2f4e52d2266d6
     # via -r requirements.in
-django==2.2.24 \
-    --hash=sha256:3339ff0e03dee13045aef6ae7b523edff75b6d726adf7a7a48f53d5a501f7db7 \
-    --hash=sha256:f2084ceecff86b1e631c2cd4107d435daf4e12f1efcdf11061a73bf0b5e95f92
-    # via
-    #   -r requirements.in
-    #   django-allow-cidr
-    #   django-csp
-    #   django-extensions
-    #   django-filter
-    #   django-ical
-    #   django-jinja
-    #   django-modeladmin-reorder
-    #   django-mozilla-product-details
-    #   django-recurrence
-    #   django-redis
-    #   django-reversion
-    #   django-storages
-    #   django-taggit
-    #   django-taggit-helpers
-    #   django-watchman
-    #   mozilla-django-oidc
-factory-boy==3.2.0 \
-    --hash=sha256:1d3db4b44b8c8c54cdd8b83ae4bdb9aeb121e464400035f1f03ae0e1eade56a4 \
-    --hash=sha256:401cc00ff339a022f84d64a4339503d1689e8263a4478d876e58a3295b155c5b
+factory-boy==3.2.1 \
+    --hash=sha256:a98d277b0c047c75eb6e4ab8508a7f81fb03d2cb21986f627913546ef7a2a55e \
+    --hash=sha256:eb02a7dd1b577ef606b75a253b9818e6f9eaf996d94449c9d5ebb124f90dc795
     # via -r requirements.in
 faker==4.18.0 \
     --hash=sha256:2ba20a4438429cb08d729175d7bb0435ef3c2c4cedc7b1ceb703ee6da8dad906 \
