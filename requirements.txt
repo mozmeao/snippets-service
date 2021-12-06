@@ -4,9 +4,9 @@
 #
 #    pip-compile --generate-hashes
 #
-apscheduler==3.7.0 \
-    --hash=sha256:1cab7f2521e107d07127b042155b632b7a1cd5e02c34be5a28ff62f77c900c6a \
-    --hash=sha256:c06cc796d5bb9eb3c4f77727f6223476eb67749e7eea074d1587550702a7fbe3
+apscheduler==3.8.1 \
+    --hash=sha256:5cf344ebcfbdaa48ae178c029c055cec7bc7a4a47c21e315e4d1f08bd35f2355 \
+    --hash=sha256:c22cb14b411a31435eb2c530dfbbec948ac63015b517087c7978adb61b574865
     # via -r requirements.in
 asn1crypto==1.3.0 \
     --hash=sha256:5a215cb8dc12f892244e3a113fe05397ee23c5c4ca7a69cd6e69811755efc42d \
