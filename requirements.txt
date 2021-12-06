@@ -157,6 +157,27 @@ dj-database-url==0.5.0 \
     --hash=sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9
     # via -r requirements.in
+django==2.2.24 \
+    --hash=sha256:3339ff0e03dee13045aef6ae7b523edff75b6d726adf7a7a48f53d5a501f7db7 \
+    --hash=sha256:f2084ceecff86b1e631c2cd4107d435daf4e12f1efcdf11061a73bf0b5e95f92
+    # via
+    #   -r requirements.in
+    #   django-allow-cidr
+    #   django-csp
+    #   django-extensions
+    #   django-filter
+    #   django-ical
+    #   django-jinja
+    #   django-modeladmin-reorder
+    #   django-mozilla-product-details
+    #   django-recurrence
+    #   django-redis
+    #   django-reversion
+    #   django-storages
+    #   django-taggit
+    #   django-taggit-helpers
+    #   django-watchman
+    #   mozilla-django-oidc
 django-admin-list-filter-dropdown==1.0.3 \
     --hash=sha256:07cd37b6a9be1b08f11d4a92957c69b67bc70b1f87a2a7d4ae886c93ea51eb53 \
     --hash=sha256:bf1b48bab9772dad79db71efef17e78782d4f2421444d5e49bb10e0da71cd6bb
@@ -235,27 +256,6 @@ django-watchman==0.18.0 \
     --hash=sha256:3977ede248f6dce17a6936834efbf0b201376ea3c2aa98b8352935f3d09ed7e3 \
     --hash=sha256:9a2b8442d4791afc995dc3ba67ab7cf9461488f7aa07e0f4c0d2f4e52d2266d6
     # via -r requirements.in
-django==2.2.24 \
-    --hash=sha256:3339ff0e03dee13045aef6ae7b523edff75b6d726adf7a7a48f53d5a501f7db7 \
-    --hash=sha256:f2084ceecff86b1e631c2cd4107d435daf4e12f1efcdf11061a73bf0b5e95f92
-    # via
-    #   -r requirements.in
-    #   django-allow-cidr
-    #   django-csp
-    #   django-extensions
-    #   django-filter
-    #   django-ical
-    #   django-jinja
-    #   django-modeladmin-reorder
-    #   django-mozilla-product-details
-    #   django-recurrence
-    #   django-redis
-    #   django-reversion
-    #   django-storages
-    #   django-taggit
-    #   django-taggit-helpers
-    #   django-watchman
-    #   mozilla-django-oidc
 factory-boy==3.2.0 \
     --hash=sha256:1d3db4b44b8c8c54cdd8b83ae4bdb9aeb121e464400035f1f03ae0e1eade56a4 \
     --hash=sha256:401cc00ff339a022f84d64a4339503d1689e8263a4478d876e58a3295b155c5b
@@ -653,9 +653,9 @@ s3transfer==0.3.3 \
     --hash=sha256:2482b4259524933a022d59da830f51bd746db62f047d6eb213f2f8855dcb8a13 \
     --hash=sha256:921a37e2aefc64145e7b73d50c71bb4f26f46e4c9f414dc648c6245ff92cf7db
     # via boto3
-sentry-sdk==0.14.3 \
-    --hash=sha256:23808d571d2461a4ce3784ec12bbee5bdb8c026c143fe79d36cef8a6d653e71f \
-    --hash=sha256:bb90a4e19c7233a580715fc986cc44be2c48fc10b31e71580a2037e1c94b6950
+sentry-sdk==1.5.0 \
+    --hash=sha256:0db297ab32e095705c20f742c3a5dac62fe15c4318681884053d0898e5abb2f6 \
+    --hash=sha256:789a11a87ca02491896e121efdd64e8fd93327b69e8f2f7d42f03e2569648e88
     # via -r requirements.in
 six==1.15.0 \
     --hash=sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259 \
