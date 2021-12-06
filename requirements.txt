@@ -595,9 +595,9 @@ pygments==2.7.4 \
     --hash=sha256:bc9591213a8f0e0ca1a5e68a479b4887fdc3e75d0774e5c71c31920c427de435 \
     --hash=sha256:df49d09b498e83c1a73128295860250b0b7edd4c723a32e9bc0d295c7c2ec337
     # via ipython
-pyjexl==0.2.3 \
-    --hash=sha256:1369c08c3f1f6931bc3c3089f24e79902680b6022412ccfc5e818441cf0dca52 \
-    --hash=sha256:56eb1ab1bd78eb12d3c514b6e2f2c93fe7f2fdd00bd821873e3f089706452c51
+pyjexl==0.3.0 \
+    --hash=sha256:da486f966546db71c3825fcb57ed2326cbb216e3e823bf4ba2bcda7ac9708a67 \
+    --hash=sha256:e7aea7f4d7c3574cb630ca5d026ec0ab5e4e48f20a5f1e495e2740779d0045dd
     # via -r requirements.in
 pylint==2.6.0 \
     --hash=sha256:bb4a908c9dadbc3aac18860550e870f58e1a02c9f2c204fdf5693d73be061210 \
