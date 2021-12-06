@@ -16,6 +16,7 @@ services:
       args:
         GIT_SHA: "${CI_COMMIT_SHA:-HEAD}"
     image: "mozmeao/snippets:builder-${CI_COMMIT_SHORT_SHA:-latest}"
+    platform: linux/amd64
 
   web:
     build:
@@ -26,6 +27,7 @@ services:
       args:
         GIT_SHA: "${CI_COMMIT_SHA:-HEAD}"
     image: "mozmeao/snippets:${CI_COMMIT_SHORT_SHA:-latest}"
+    platform: linux/amd64
     ports:
       - "8443:8443"
       - "8000:8000"
@@ -44,11 +46,13 @@ services:
       args:
         GIT_SHA: "${CI_COMMIT_SHA:-HEAD}"
     image: "mozmeao/snippets:redirector-${CI_COMMIT_SHORT_SHA:-latest}"
+    platform: linux/amd64
     volumes:
       - ./redirector:/app
 
   test-web:
     image: "mozmeao/snippets:${CI_COMMIT_SHORT_SHA:-latest}"
+    platform: linux/amd64
     depends_on:
       - db
     env_file:
@@ -58,5 +62,6 @@ services:
 
   test-redirector:
     image: "mozmeao/snippets:redirector-${CI_COMMIT_SHORT_SHA:-latest}"
+    platform: linux/amd64
     command:
       pytest test.py
