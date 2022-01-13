@@ -157,9 +157,9 @@ dj-database-url==0.5.0 \
     --hash=sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9
     # via -r requirements.in
-django==2.2.24 \
-    --hash=sha256:3339ff0e03dee13045aef6ae7b523edff75b6d726adf7a7a48f53d5a501f7db7 \
-    --hash=sha256:f2084ceecff86b1e631c2cd4107d435daf4e12f1efcdf11061a73bf0b5e95f92
+django==2.2.26 \
+    --hash=sha256:85e62019366692f1d5afed946ca32fef34c8693edf342ac9d067d75d64faf0ac \
+    --hash=sha256:dfa537267d52c6243a62b32855a744ca83c37c70600aacffbfd98bc5d6d8518f
     # via
     #   -r requirements.in
     #   django-allow-cidr
