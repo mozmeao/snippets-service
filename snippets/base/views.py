@@ -3,12 +3,17 @@ import json
 import sentry_sdk
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
-                         HttpResponseRedirect)
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseRedirect,
+)
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from django_filters.views import FilterView
 from ratelimit.decorators import ratelimit
@@ -26,8 +31,13 @@ class HomeView(TemplateView):
 class JobListView(FilterView):
     filterset_class = JobFilter
 
-    @ratelimit(rate=settings.RATELIMIT_RATE, block=True,
-               key=lambda g, r: r.META.get('HTTP_X_FORWARDED_FOR', r.META['REMOTE_ADDR']))
+    @method_decorator(
+        ratelimit(
+            rate=settings.RATELIMIT_RATE,
+            block=True,
+            key=lambda g, r: r.META.get('HTTP_X_FORWARDED_FOR', r.META['REMOTE_ADDR'])
+        )
+    )
     def get(self, request, **kwargs):
         return super().get(request, **kwargs)
 
