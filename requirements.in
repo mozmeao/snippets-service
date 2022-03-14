@@ -30,7 +30,7 @@ gunicorn==19.9.0
 hiredis==1.1.0
 meinheld==1.0.2
 mozilla-django-oidc==1.2.4
-newrelic==7.4.0.172
+newrelic==7.6.0.173
 Pillow==9.0.1
 psycopg2==2.8.6
 pyjexl==0.3.0
