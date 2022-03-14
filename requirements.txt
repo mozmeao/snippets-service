@@ -257,9 +257,9 @@ django-ical==1.8.0 \
     --hash=sha256:0552d71595712129b78f104de175f6be6719c94b35f0e3b3679cf4e83938ec48 \
     --hash=sha256:12a4e1dd9a0daeb57b4bee89cae0b597ef76192447e633257a8840d2e6da27fc
     # via -r requirements.in
-django-jinja==2.4.1 \
-    --hash=sha256:8a49d73de616a12075eee14c6d3bbab936261a463457d40348d8b8e2995cfbed \
-    --hash=sha256:ceaa0eeebc4d91a5800967e50f4f087f0b6457503e3c2af85dc199bed8732a9a
+django-jinja==2.10.0 \
+    --hash=sha256:ae6a3fdf1ffa7a9ef6fd2f0a59c1a68c96b29f7f00f5166375658ef392f1ed32 \
+    --hash=sha256:cce084eaf0be8a89f0955cde34cf33da7faaf6c68d05c076eda6fcd98481264c
     # via -r requirements.in
 django-jsonview==2.0.0 \
     --hash=sha256:1871983f6c7ab0bec1bad3249b06ce64c47d3bed57cd190f87e5acaf65722ebb \
