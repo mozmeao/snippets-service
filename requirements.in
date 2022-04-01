@@ -48,4 +48,4 @@ Werkzeug==1.0.1
 flake8==3.8.4
 hashin==0.17.0
 pip-tools==5.4.0
-pylint==2.6.0
+pylint==2.13.4
