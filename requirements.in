@@ -6,7 +6,7 @@ boto3==1.16.63
 Brotli==1.0.9
 configparser==5.0.0
 contextlib2==0.6.0.post1
-Django==2.2.27
+Django==2.2.28
 dj-database-url==0.5.0
 django-admin-list-filter-dropdown==1.0.3
 django-allow-cidr==0.3.1
@@ -16,7 +16,7 @@ django-enforce-host==1.0.1
 django-extensions==3.1.5
 django-filter==2.4.0
 django-ical==1.8.0
-django-jinja==2.4.1
+django-jinja==2.10.0
 django-modeladmin-reorder==0.3.1
 django-mozilla-product-details==0.14.1
 django-ratelimit==3.0.1
@@ -41,7 +41,7 @@ taggit-selectize==2.7.1
 urlwait==1.0
 whitenoise==5.2.0
 typed-ast==1.4.0
-importlib-metadata==3.3.0
+importlib-metadata==4.11.3
 
 # dev
 Werkzeug==1.0.1
