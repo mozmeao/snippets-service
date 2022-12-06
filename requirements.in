@@ -30,7 +30,7 @@ factory-boy==3.2.1
 gunicorn==19.9.0
 hiredis==1.1.0
 meinheld==1.0.2
-mozilla-django-oidc==1.2.4
+mozilla-django-oidc==2.0.0
 newrelic==7.10.0.175
 Pillow==9.3.0
 psycopg2==2.8.6
