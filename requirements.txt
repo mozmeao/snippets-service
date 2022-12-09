@@ -140,9 +140,9 @@ brotli==1.0.9 \
     --hash=sha256:ec1947eabbaf8e0531e8e899fc1d9876c179fc518989461f5d24e2223395a9e3 \
     --hash=sha256:f909bbbc433048b499cb9db9e713b5d8d949e8c109a2a548502fb9aa8630f0b1
     # via -r requirements.in
-certifi==2022.9.24 \
-    --hash=sha256:0d9c601124e5a6ba9712dbc60d9c53c21e34f5f641fe83002317394311bdce14 \
-    --hash=sha256:90c1a32f1d68f940488354e36370f6cca89f0f106db09518524c88d6ed83f382
+certifi==2022.12.7 \
+    --hash=sha256:35824b4c3a97115964b408844d64aa14db1cc518f6562e8d7261699d1350a9e3 \
+    --hash=sha256:4ad3232f5e926d6718ec31cfc1fcadfde020920e278684144551c91769c7bc18
     # via
     #   requests
     #   sentry-sdk
@@ -582,13 +582,12 @@ newrelic==7.10.0.175 \
     --hash=sha256:c8459f08619f2579c0ff3168c6ff91d48f8befa73394e68398eb3f15b9626e38 \
     --hash=sha256:e5efed952dca9a226bb8a2ac1706e3057968a25ceffb6c012343cd4c2ca49645
     # via -r requirements.in
-packaging==21.3 \
-    --hash=sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb \
-    --hash=sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522
+packaging==22.0 \
+    --hash=sha256:2198ec20bd4c017b8f9717e00f0c8714076fc2fd93816750ab48e2c41de2cfd3 \
+    --hash=sha256:957e2148ba0e1a3b282772e791ef1d8083648bc131c8ab0c1feba110ce1146c3
     # via
     #   bleach
     #   hashin
-    #   redis
 parsimonious==0.10.0 \
     --hash=sha256:8281600da180ec8ae35427a4ab4f7b82bfec1e3d1e52f80cb60ea82b9512501c \
     --hash=sha256:982ab435fabe86519b57f6b35610aa4e4e977e9f02a14353edf4bbc75369fc0f
@@ -709,10 +708,6 @@ pyopenssl==22.1.0 \
     --hash=sha256:7a83b7b272dd595222d672f5ce29aa030f1fb837630ef229f62e72e395ce8968 \
     --hash=sha256:b28437c9773bb6c6958628cf9c3bebe585de661dba6f63df17111966363dd15e
     # via josepy
-pyparsing==3.0.9 \
-    --hash=sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb \
-    --hash=sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc
-    # via packaging
 pystache==0.6.0 \
     --hash=sha256:93bf92b2149a4c4b58d12142e2c4c6dd5c08d89e4c95afccd4b6efe2ee1d470d
     # via redash-dynamic-query
@@ -739,9 +734,9 @@ pytz==2022.6 \
 redash-dynamic-query==1.0.4 \
     --hash=sha256:d2756ad2f7fd21f33cbf8c751ec3fccaf9ad350a27b968cd56b3d1783650b5f9
     # via -r requirements.in
-redis==4.3.5 \
-    --hash=sha256:30c07511627a4c5c4d970e060000772f323174f75e745a26938319817ead7a12 \
-    --hash=sha256:46652271dc7525cd5a9667e5b0ca983c848c75b2b8f7425403395bb8379dcf25
+redis==4.4.0 \
+    --hash=sha256:7b8c87d19c45d3f1271b124858d2a5c13160c4e74d4835e28273400fa34d5228 \
+    --hash=sha256:cae3ee5d1f57d8caf534cd8764edf3163c77e073bdd74b6f54a87ffafdc5e7d9
     # via django-redis
 regex==2022.10.31 \
     --hash=sha256:052b670fafbe30966bbe5d025e90b2a491f85dfe5b2583a163b5e60a85a321ad \
