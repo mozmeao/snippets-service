@@ -27,13 +27,13 @@ django-taggit==2.1.0  # Downpinned because 3+ needs Django 3.2
 django-taggit-helpers==0.1.4
 django-watchman==0.18.0
 factory-boy==3.2.1
-gunicorn==19.9.0
+gunicorn==20.1.0
 hiredis==1.1.0
 meinheld==1.0.2
-mozilla-django-oidc==1.2.4
+mozilla-django-oidc==2.0.0
 newrelic==7.10.0.175
 Pillow==9.3.0
-psycopg2==2.8.6
+psycopg2==2.9.5
 pyjexl==0.3.0
 python-decouple==3.5
 redash-dynamic-query==1.0.4
@@ -49,4 +49,4 @@ Werkzeug==1.0.1
 flake8==3.8.4
 hashin==0.17.0
 pip-tools==6.6.2
-pylint==2.6.0
+pylint==2.7.1
