@@ -45,7 +45,7 @@ typed-ast==1.4.0
 importlib-metadata==3.3.0
 
 # dev
-Werkzeug==1.0.1
+Werkzeug==2.2.3
 flake8==3.8.4
 hashin==0.17.0
 pip-tools==6.6.2
