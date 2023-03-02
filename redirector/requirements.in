@@ -2,5 +2,5 @@ bottle==0.12.21
 python-decouple==3.5
 gunicorn==20.1.0
 pytest==6.2.5
-importlib-metadata==3.3.0
+importlib-metadata==6.0.0
 meinheld==1.0.2
