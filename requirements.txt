@@ -388,8 +388,9 @@ django-csp==3.7 \
     --hash=sha256:01443a07723f9a479d498bd7bb63571aaa771e690f64bde515db6cdb76e8041a \
     --hash=sha256:01eda02ad3f10261c74131cdc0b5a6a62b7c7ad4fd017fbefb7a14776e0a9727
     # via -r requirements.in
-django-enforce-host==1.0.1 \
-    --hash=sha256:40c4b4830e7fc27710c1606e8f3a91e82f8f1d5ae6c26aaec76f453b1407fc3d
+django-enforce-host==1.1.0 \
+    --hash=sha256:0b365f768e104666751c36d722c8f5c7649852b0e462ef6340c927e7324cebbd \
+    --hash=sha256:fb732b58aa78e107d1df5809a8addea33e82f66edd46d5a286ebae18e2af2402
     # via -r requirements.in
 django-extensions==3.1.5 \
     --hash=sha256:28e1e1bf49f0e00307ba574d645b0af3564c981a6dfc87209d48cb98f77d0b1a \
@@ -1151,6 +1152,7 @@ zipp==3.18.1 \
     # via importlib-metadata
 
 # WARNING: The following packages were not pinned, but pip requires them to be
-# pinned when the requirements file includes hashes. Consider using the --allow-unsafe flag.
+# pinned when the requirements file includes hashes and the requirement is not
+# satisfied by a package already installed. Consider using the --allow-unsafe flag.
 # pip
 # setuptools
