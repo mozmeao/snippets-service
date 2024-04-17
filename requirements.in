@@ -46,7 +46,7 @@ whitenoise==5.2.0
 typed-ast==1.4.0
 
 # dev
-Werkzeug==2.2.3
+Werkzeug==2.3.8
 flake8==3.8.4
 hashin==0.17.0
 pip-tools==6.6.2
