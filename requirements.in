@@ -5,7 +5,7 @@ bleach==4.1.0
 boto3==1.16.63
 Brotli==1.0.9
 certifi>=2023.7.22
-configparser==5.0.0
+configparser==7.0.0
 contextlib2==0.6.0.post1
 cryptography>=41.0.0
 Django==2.2.28
