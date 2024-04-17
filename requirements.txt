@@ -1000,8 +1000,8 @@ sqlparse==0.5.0 \
     --hash=sha256:714d0a4932c059d16189f58ef5411ec2287a4360f17cdd0edd2d09d4c5087c93 \
     --hash=sha256:c204494cd97479d0e39f28c93d46c0b2d5959c7b9ab904762ea6c7af211c8663
     # via django
-taggit-selectize==2.7.1 \
-    --hash=sha256:5c45faf1bb58176d3392446951ae0c0dc53f093deaf7cff2597769207c5f5a61
+taggit-selectize==2.11.0 \
+    --hash=sha256:72cb253bcd20a5df4d099679a6f199e97f18081f0fbff96fc3d7bb3e1f8bbdaf
     # via -r requirements.in
 tomli==2.0.1 \
     --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc \
@@ -1151,6 +1151,7 @@ zipp==3.18.1 \
     # via importlib-metadata
 
 # WARNING: The following packages were not pinned, but pip requires them to be
-# pinned when the requirements file includes hashes. Consider using the --allow-unsafe flag.
+# pinned when the requirements file includes hashes and the requirement is not
+# satisfied by a package already installed. Consider using the --allow-unsafe flag.
 # pip
 # setuptools
