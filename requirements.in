@@ -49,5 +49,5 @@ typed-ast==1.4.0
 Werkzeug==2.3.8
 flake8==3.8.4
 hashin==0.17.0
-pip-tools==6.6.2
+pip-tools==7.4.1
 pylint==2.16.2

@@ -140,6 +140,10 @@ brotli==1.0.9 \
     --hash=sha256:ec1947eabbaf8e0531e8e899fc1d9876c179fc518989461f5d24e2223395a9e3 \
     --hash=sha256:f909bbbc433048b499cb9db9e713b5d8d949e8c109a2a548502fb9aa8630f0b1
     # via -r requirements.in
+build==1.2.1 \
+    --hash=sha256:526263f4870c26f26c433545579475377b2b7588b6f1eac76a001e873ae3e19d \
+    --hash=sha256:75e10f767a433d9a86e50d83f418e83efc18ede923ee5ff7df93b6cb0306c5d4
+    # via pip-tools
 certifi==2024.2.2 \
     --hash=sha256:0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f \
     --hash=sha256:dc383c07b76109f368f6106eee2b593b04a011ea4d55f652c6ca24a754d1cdd1
@@ -555,7 +559,9 @@ idna==3.7 \
 importlib-metadata==7.1.0 \
     --hash=sha256:30962b96c0c223483ed6cc7280e7f0199feb01a0e40cfae4d4450fc6fab1f570 \
     --hash=sha256:b78938b926ee8d5f020fc4772d487045805a55ddbad2ecf21c6d60938dc7fcd2
-    # via pystache
+    # via
+    #   build
+    #   pystache
 isort==5.13.2 \
     --hash=sha256:48fdfcb9face5d58a4f6dde2e72a1fb8dcaf8ab26f95ab49fab84c2ddefb0109 \
     --hash=sha256:8ca5e72a8d85860d5a3fa69b8745237f2939afe12dbf656afbcb47fe72d947a6
@@ -716,16 +722,13 @@ packaging==24.0 \
     --hash=sha256:eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9
     # via
     #   bleach
+    #   build
     #   gunicorn
     #   hashin
 parsimonious==0.10.0 \
     --hash=sha256:8281600da180ec8ae35427a4ab4f7b82bfec1e3d1e52f80cb60ea82b9512501c \
     --hash=sha256:982ab435fabe86519b57f6b35610aa4e4e977e9f02a14353edf4bbc75369fc0f
     # via pyjexl
-pep517==0.13.1 \
-    --hash=sha256:1b2fa2ffd3938bb4beffe5d6146cbcb2bda996a5a4da9f31abffd8b24e07b317 \
-    --hash=sha256:31b206f67165b3536dd577c5c3f1518e8fbaf38cbc57efff8369a392feff1721
-    # via pip-tools
 pillow==10.3.0 \
     --hash=sha256:048ad577748b9fa4a99a0548c64f2cb8d672d5bf2e643a739ac8faff1164238c \
     --hash=sha256:048eeade4c33fdf7e08da40ef402e748df113fd0b4584e32c4af74fe78baaeb2 \
@@ -801,9 +804,9 @@ pip-api==0.0.33 \
     --hash=sha256:1c2522ae21efcb034d89cc99f6cf1025293b31c63c29ee98b23f03a85f36bdae \
     --hash=sha256:b8d6eb5a87d3a9e112a20a8e9d24a6fc12d4e1c94d7595eeaf74be11ad47276c
     # via hashin
-pip-tools==6.6.2 \
-    --hash=sha256:6b486548e5a139e30e4c4a225b3b7c2d46942a9f6d1a91143c21b1de4d02fd9b \
-    --hash=sha256:f638503a9f77d98d9a7d72584b1508d3f82ed019b8fab24f4e5ad078c1b8c95e
+pip-tools==7.4.1 \
+    --hash=sha256:4c690e5fbae2f21e87843e89c26191f0d9454f362d8acdbd695716493ec8b3a9 \
+    --hash=sha256:864826f5073864450e24dbeeb85ce3920cdfb09848a3d69ebf537b521f14bcc9
     # via -r requirements.in
 platformdirs==4.2.0 \
     --hash=sha256:0614df2a2f37e1a662acbd8e2b25b92ccf8632929bc6d43467e17fe89c75e068 \
@@ -848,6 +851,12 @@ pyopenssl==24.1.0 \
     --hash=sha256:17ed5be5936449c5418d1cd269a1a9e9081bc54c17aed272b45856a3d3dc86ad \
     --hash=sha256:cabed4bfaa5df9f1a16c0ef64a0cb65318b5cd077a7eda7d6970131ca2f41a6f
     # via josepy
+pyproject-hooks==1.1.0 \
+    --hash=sha256:4b37730834edbd6bd37f26ece6b44802fb1c1ee2ece0e54ddff8bfc06db86965 \
+    --hash=sha256:7ceeefe9aec63a1064c18d939bdc3adf2d8aa1988a510afec15151578b232aa2
+    # via
+    #   build
+    #   pip-tools
 pystache==0.6.5 \
     --hash=sha256:84546278219431f1a2ecc86a627cc1b0fe3c83b5612f8a7d9c81ea0119ac8f49 \
     --hash=sha256:9f238d5a06f18843e0d491d8e4e292dc03fed6a54cb0a5c34be37a3faa973174
@@ -1008,7 +1017,8 @@ tomli==2.0.1 \
     --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc \
     --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
     # via
-    #   pep517
+    #   build
+    #   pip-tools
     #   pylint
 tomlkit==0.12.4 \
     --hash=sha256:5cd82d48a3dd89dee1f9d64420aa20ae65cfbd00668d6f094d7578a78efbb77b \
@@ -1152,6 +1162,7 @@ zipp==3.18.1 \
     # via importlib-metadata
 
 # WARNING: The following packages were not pinned, but pip requires them to be
-# pinned when the requirements file includes hashes. Consider using the --allow-unsafe flag.
+# pinned when the requirements file includes hashes and the requirement is not
+# satisfied by a package already installed. Consider using the --allow-unsafe flag.
 # pip
 # setuptools
